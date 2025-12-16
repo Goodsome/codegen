@@ -1,0 +1,15 @@
+from .command import {{ pascal }}{{ kind_suffix }}
+from .result import {{ pascal }}Result
+{% if with_mapper %}
+from .mapper import {{ pascal }}Mapper
+{% endif %}
+
+class {{ pascal }}Handler:
+    """{{ kind }} handler (application service)."""
+
+    def __init__(self{% if with_mapper %}, mapper: {{ pascal }}Mapper | None = None{% endif %}) -> None:
+        {% if with_mapper %}self._mapper = mapper or {{ pascal }}Mapper(){% endif %}
+
+    def handle(self, {{ kind_var }}: {{ pascal }}{{ kind_suffix }}) -> {{ pascal }}Result:
+        # TODO: implement
+        return {{ pascal }}Result(ok=True)
