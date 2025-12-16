@@ -4,7 +4,6 @@ Name: {{ name_snake }}
 """
 
 from dataclasses import dataclass
-from typing import Any
 
 @dataclass(frozen=True)
 class {{ pascal }}{{ kind_suffix }}:
@@ -17,10 +16,11 @@ class {{ pascal }}Result:
     ok: bool = True
     # TODO: define fields
 
+@dataclass
 class {{ pascal }}Handler:
     """{{ kind }} handler (application service)."""
 
-    def handle(self, {{ kind_var }}: {{ pascal }}{{ kind_suffix }}) -> {{ pascal }}Result:
+    def execute(self, {{ kind_var }}: {{ pascal }}{{ kind_suffix }}) -> {{ pascal }}Result:
         # TODO: implement
         return {{ pascal }}Result(ok=True)
 
