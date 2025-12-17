@@ -1,0 +1,16 @@
+"""
+Kind: ValueObject
+Name: {{ name }}
+Description: {{ description }}
+"""
+
+from codegen.domain.shared.models import ValueObject
+{% for import in imports %}
+{{ import }}
+{% endfor %}
+
+class {{ name }}(ValueObject):
+    """{{ description }}"""
+{% for attr in attributes %}
+    {{ attr.name }}: {{ attr.type }}
+{% endfor %}
