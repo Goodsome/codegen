@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any, Dict
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
-from src.codegen.domain.ports.template_port import TemplatePort
+from codegen.domain.ports.template_port import TemplatePort
 
 class JinjaTemplateAdapter(TemplatePort):
     def __init__(self, template_dir: Path):

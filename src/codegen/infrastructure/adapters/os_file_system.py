@@ -1,5 +1,5 @@
 from pathlib import Path
-from src.codegen.domain.ports.file_system_port import FileSystemPort
+from codegen.domain.ports.file_system_port import FileSystemPort
 
 class RealFileSystemAdapter(FileSystemPort):
     def write_file(self, path: Path, content: str) -> None:

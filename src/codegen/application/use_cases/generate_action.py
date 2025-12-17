@@ -6,10 +6,10 @@ Name: generate_action
 from dataclasses import dataclass
 from pathlib import Path
 
-from src.codegen.domain.ports.file_system_port import FileSystemPort
-from src.codegen.domain.ports.template_port import TemplatePort
-from src.codegen.domain.value_objects.enums import ActionKind, CodeForm
-from src.codegen.domain.value_objects.feature_name import FeatureName
+from codegen.domain.ports.file_system_port import FileSystemPort
+from codegen.domain.ports.template_port import TemplatePort
+from codegen.shared.enums import ActionKind, CodeForm
+from codegen.domain.value_objects.feature_name import FeatureName
 
 
 @dataclass(frozen=True)

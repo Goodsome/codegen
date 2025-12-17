@@ -6,7 +6,7 @@ Name: init_project
 from dataclasses import dataclass
 from pathlib import Path
 
-from src.codegen.domain.ports.file_system_port import FileSystemPort
+from codegen.domain.ports.file_system_port import FileSystemPort
 
 DDD_DIRS = ("domain", "application", "infrastructure", "interfaces")
 

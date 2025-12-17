@@ -3,11 +3,11 @@ from typing import Annotated
 
 import typer
 
-from src.codegen.application.use_cases.generate_action import GenerateActionHandler, GenerateActionCommand
-from src.codegen.application.use_cases.init_project import InitProjectCommand, InitProjectHandler
-from src.codegen.domain.value_objects.enums import ActionKind, CodeForm
-from src.codegen.infrastructure.adapters.jinja_adapter import JinjaTemplateAdapter
-from src.codegen.infrastructure.adapters.os_file_system import RealFileSystemAdapter
+from codegen.application.use_cases.generate_action import GenerateActionHandler, GenerateActionCommand
+from codegen.application.use_cases.init_project import InitProjectCommand, InitProjectHandler
+from codegen.shared.enums import ActionKind, CodeForm
+from codegen.infrastructure.adapters.jinja_adapter import JinjaTemplateAdapter
+from codegen.infrastructure.adapters.os_file_system import RealFileSystemAdapter
 
 # 创建 Typer 应用实例
 app = typer.Typer(
@@ -63,10 +63,10 @@ def generate_action(
     """
     repo_root = Path(__file__).resolve().parents[1]
     template_dir = repo_root / "templates"
-    
+
     templater = JinjaTemplateAdapter(template_dir)
     fs = RealFileSystemAdapter()
-    
+
     handler = GenerateActionHandler(templater, fs)
     project_pkg_dir = _resolve_project_root(target, package, no_src)
     cmd = GenerateActionCommand(
