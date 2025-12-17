@@ -1,0 +1,66 @@
+name: Codegen
+layout: ddd_standard
+description: "DDD-based Code Generator that generates itself."
+
+contexts:
+  - name: core
+    description: "Core Code Generation Logic"
+    
+    aggregates:
+      - name: Blueprint
+        description: "Root of the generation model. Represents the entire project definition."
+        attributes:
+          - { name: name, type: str, description: "Project Name" }
+          - { name: layout, type: str, description: "Layout strategy name" }
+          - { name: contexts, type: "List[BoundedContext]", description: "List of bounded contexts" }
+        behaviors:
+          - load_from_dict
+          
+    value_objects:
+      - name: BoundedContext
+        description: "A logical boundary within the system."
+        attributes:
+          - { name: name, type: str }
+          - { name: description, type: str }
+          - { name: aggregates, type: "List[Aggregate]" }
+          - { name: value_objects, type: "List[ValueSpec]" }
+          
+      - name: LayoutStrategy
+        description: "Strategy for determining file paths."
+        attributes:
+          - { name: name, type: str }
+        behaviors:
+          - resolve_path
+          
+      - name: Aggregate
+        description: "A domain aggregate."
+        attributes:
+          - { name: name, type: str }
+          - { name: description, type: str }
+          - { name: attributes, type: "List[Attribute]" }
+          - { name: behaviors, type: "List[str]" }
+          
+      - name: ValueSpec
+        description: "A domain value object."
+        attributes:
+          - { name: name, type: str }
+          - { name: description, type: str }
+          - { name: attributes, type: "List[Attribute]" }
+          
+      - name: FeatureName
+        description: "Handles snake_case, PascalCase conversions."
+        attributes:
+          - { name: value, type: str }
+          
+      - name: CodeForm
+        description: "Single file or Package based generation."
+        attributes:
+          - { name: value, type: str }
+
+      - name: Attribute
+        description: "A property of a domain model."
+        attributes:
+            - { name: name, type: str }
+            - { name: type, type: str }
+            - { name: description, type: str }
+          
