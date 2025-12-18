@@ -1,0 +1,14 @@
+from typing import List, Dict, Any, Optional
+
+class {{ name }}:
+    """
+    {{ description }}
+    """
+    {% for op in operations %}
+    def {{ op.name }}(self, {% for input in op.inputs %}{{ input.name }}: {{ input.type }}{% if not loop.last %}, {% endif %}{% endfor %}) -> {{ op.output_type }}:
+        """
+        {{ op.description }}
+        """
+        # TODO: Implement domain service logic
+        pass
+    {% endfor %}
