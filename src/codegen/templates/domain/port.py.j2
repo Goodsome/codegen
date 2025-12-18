@@ -1,0 +1,15 @@
+from abc import ABC, abstractmethod
+from typing import List, Dict, Any, Optional
+
+class {{ name }}(ABC):
+    """
+    {{ description }}
+    """
+    {% for op in operations %}
+    @abstractmethod
+    def {{ op.name }}(self, {% for input in op.inputs %}{{ input.name }}: {{ input.type }}{% if not loop.last %}, {% endif %}{% endfor %}) -> {{ op.output_type }}:
+        """
+        {{ op.description }}
+        """
+        pass
+    {% endfor %}
