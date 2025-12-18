@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=codegen.schema.json
 name: Codegen
 layout: ddd_standard
 description: "DDD-based Code Generator that generates itself."
