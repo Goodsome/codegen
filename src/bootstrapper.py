@@ -129,7 +129,7 @@ def generate_aggregate(base_path: Path, agg: Aggregate, known_vos: List[str] = N
 
     template_dir = Path(__file__).parent / "codegen" / "templates"
     env = Environment(loader=FileSystemLoader(template_dir))
-    template = env.get_template("aggregate.py.j2")
+    template = env.get_template("domain/aggregate.py.j2")
     
     content = template.render(
         name=agg.name,
@@ -173,7 +173,7 @@ def generate_value_object(base_path: Path, vo: ValueObject, known_vos: List[str]
 
     template_dir = Path(__file__).parent / "codegen" / "templates"
     env = Environment(loader=FileSystemLoader(template_dir))
-    template = env.get_template("value_object.py.j2")
+    template = env.get_template("domain/value_object.py.j2")
     
     content = template.render(
         name=vo.name,
