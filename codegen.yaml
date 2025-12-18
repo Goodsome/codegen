@@ -2,65 +2,199 @@ name: Codegen
 layout: ddd_standard
 description: "DDD-based Code Generator that generates itself."
 
+shared:
+  application:
+    use_cases: []
+  infrastructure:
+    adapters:
+      - name: JinjaAdapter
+        implements: TemplatePort
+        description: "Jinja-based template rendering adapter."
+        config:
+          template_root: "src/codegen/templates"
+          autoescape: false
+
+      - name: OSFileSystem
+        implements: FileSystemPort
+        description: "OS file system adapter for reading/writing files."
+        config:
+          output_root: "out"
+          encoding: "utf-8"
+
 contexts:
   - name: core
     description: "Core Code Generation Logic"
-    
-    aggregates:
-      - name: Blueprint
-        description: "Root of the generation model. Represents the entire project definition."
-        attributes:
-          - { name: name, type: str, description: "Project Name" }
-          - { name: layout, type: str, description: "Layout strategy name" }
-          - { name: contexts, type: "List[BoundedContext]", description: "List of bounded contexts" }
-        behaviors:
-          - load_from_dict
-          
-    value_objects:
-      - name: BoundedContext
-        description: "A logical boundary within the system."
-        attributes:
-          - { name: name, type: str }
-          - { name: description, type: str }
-          - { name: aggregates, type: "List[Aggregate]" }
-          - { name: value_objects, type: "List[ValueSpec]" }
-          
-      - name: LayoutStrategy
-        description: "Strategy for determining file paths."
-        attributes:
-          - { name: name, type: str }
-        behaviors:
-          - resolve_path
-          
-      - name: Aggregate
-        description: "A domain aggregate."
-        attributes:
-          - { name: name, type: str }
-          - { name: description, type: str }
-          - { name: attributes, type: "List[Attribute]" }
-          - { name: behaviors, type: "List[str]" }
-          
-      - name: ValueSpec
-        description: "A domain value object."
-        attributes:
-          - { name: name, type: str }
-          - { name: description, type: str }
-          - { name: attributes, type: "List[Attribute]" }
-          
-      - name: FeatureName
-        description: "Handles snake_case, PascalCase conversions."
-        attributes:
-          - { name: value, type: str }
-          
-      - name: CodeForm
-        description: "Single file or Package based generation."
-        attributes:
-          - { name: value, type: str }
 
-      - name: Attribute
-        description: "A property of a domain model."
-        attributes:
+    domain:
+      aggregates:
+        - name: Blueprint
+          description: "Root of the generation model. Represents the entire project definition."
+          attributes:
+            - { name: name, type: str, description: "Project Name" }
+            - { name: layout, type: str, description: "Layout strategy name" }
+            - { name: contexts, type: "List[BoundedContext]", description: "List of bounded contexts" }
+          behaviors:
+            - load_from_dict
+
+      value_objects:
+        - name: BoundedContext
+          description: "A logical boundary within the system."
+          attributes:
+            - { name: name, type: str }
+            - { name: description, type: str }
+            - { name: aggregates, type: "List[Aggregate]" }
+            - { name: value_objects, type: "List[ValueSpec]" }
+
+        - name: LayoutStrategy
+          description: "Strategy for determining file paths."
+          attributes:
+            - { name: name, type: str }
+          behaviors:
+            - resolve_path
+
+        - name: Aggregate
+          description: "A domain aggregate."
+          attributes:
+            - { name: name, type: str }
+            - { name: description, type: str }
+            - { name: attributes, type: "List[Attribute]" }
+            - { name: behaviors, type: "List[str]" }
+
+        - name: ValueSpec
+          description: "Specification of a domain value object to be generated."
+          attributes:
+            - { name: name, type: str }
+            - { name: description, type: str }
+            - { name: attributes, type: "List[Attribute]" }
+
+        - name: FeatureName
+          description: "Handles snake_case, PascalCase conversions."
+          attributes:
+            - { name: value, type: str }
+
+        - name: CodeForm
+          description: "Single file or Package based generation."
+          attributes:
+            - { name: value, type: str }
+
+        - name: Attribute
+          description: "A property of a domain model."
+          attributes:
             - { name: name, type: str }
             - { name: type, type: str }
             - { name: description, type: str }
-          
+
+      services:
+        - name: NamingService
+          description: "Provide naming conversions used during code generation."
+          operations:
+            - name: to_snake
+              description: "Convert to snake_case"
+              inputs:
+                - { name: text, type: str }
+              output: { type: str }
+            - name: to_pascal
+              description: "Convert to PascalCase"
+              inputs:
+                - { name: text, type: str }
+              output: { type: str }
+            - name: to_kebab
+              description: "Convert to kebab-case"
+              inputs:
+                - { name: text, type: str }
+              output: { type: str }
+
+        - name: LayoutPlanner
+          description: "Plan output paths based on the selected layout strategy and blueprint."
+          operations:
+            - name: plan_paths
+              description: "Return a list of file paths that will be generated."
+              inputs:
+                - { name: layout, type: LayoutStrategy }
+                - { name: blueprint, type: Blueprint }
+              output: { type: "List[str]" }
+
+        - name: TemplateContextBuilder
+          description: "Build the template rendering context from the blueprint."
+          operations:
+            - name: build_context
+              inputs:
+                - { name: blueprint, type: Blueprint }
+              output: { type: "Dict[str, Any]" }
+
+      ports:
+        - name: TemplatePort
+          description: "Render templates with a given context."
+          kind: gateway
+          operations:
+            - name: render
+              inputs:
+                - { name: template, type: str }
+                - { name: context, type: "Dict[str, Any]" }
+              output: { type: str }
+        - name: FileSystemPort
+          description: "File system operations used by the generator."
+          kind: repository
+          operations:
+            - name: read_text
+              inputs:
+                - { name: path, type: str }
+              output: { type: str }
+            - name: write_text
+              inputs:
+                - { name: path, type: str }
+                - { name: content, type: str }
+              output: { type: None }
+            - name: makedirs
+              inputs:
+                - { name: path, type: str }
+                - { name: exist_ok, type: bool }
+              output: { type: None }
+
+    application:
+      use_cases:
+        - name: InitProject
+          kind: command            # command | query
+          description: "Initialize a new codegen project structure."
+          command:
+            name: InitProjectCommand
+            attributes:
+              - { name: project_name, type: str }
+              - { name: template_root, type: str }
+              - { name: output_root, type: str }
+          result:
+            name: InitProjectResult
+            attributes:
+              - { name: message, type: str }
+          depends_on:
+            services: [NamingService]
+            ports: [TemplatePort, FileSystemPort]
+
+        - name: GenerateAction
+          kind: command
+          description: "Generate an application action (command/handler/mapper/result or single file)."
+          command:
+            name: GenerateActionCommand
+            attributes:
+              - { name: feature_name, type: FeatureName }
+              - { name: code_form, type: CodeForm }
+              - { name: output_root, type: str }
+          result:
+            name: GenerateActionResult
+            attributes:
+              - { name: files_written, type: "List[str]" }
+          depends_on:
+            services: [NamingService, LayoutPlanner, TemplateContextBuilder]
+            ports: [TemplatePort, FileSystemPort]
+
+# Orchestration/Bootstrap settings (top-level for runtime wiring)
+bootstrap:
+  default_context: core
+  bindings:
+    contexts:
+      core:
+        TemplatePort: JinjaAdapter
+        FileSystemPort: OSFileSystem
+  options:
+    dry_run: false
+    overwrite: true
