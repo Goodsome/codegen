@@ -1,0 +1,225 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Codegen Configuration Schema",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The name of the project."
+    },
+    "layout": {
+      "type": "string",
+      "description": "The layout strategy to use for file generation."
+    },
+    "description": {
+      "type": "string",
+      "description": "A description of the project."
+    },
+    "shared": {
+      "type": "object",
+      "properties": {
+        "application": {
+          "type": "object",
+          "properties": {
+            "use_cases": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/UseCase" }
+            }
+          }
+        },
+        "infrastructure": {
+          "type": "object",
+          "properties": {
+            "adapters": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "implements": { "type": "string" },
+                  "description": { "type": "string" },
+                  "config": { "type": "object" }
+                },
+                "required": ["name", "implements"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "contexts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "domain": {
+            "type": "object",
+            "properties": {
+              "aggregates": {
+                "type": "array",
+                "items": { "$ref": "#/definitions/ModelSpec" }
+              },
+              "value_objects": {
+                "type": "array",
+                "items": { "$ref": "#/definitions/ModelSpec" }
+              },
+              "services": {
+                "type": "array",
+                "items": { "$ref": "#/definitions/ServiceSpec" }
+              },
+              "ports": {
+                "type": "array",
+                "items": { "$ref": "#/definitions/PortSpec" }
+              }
+            }
+          },
+          "application": {
+            "type": "object",
+            "properties": {
+              "use_cases": {
+                "type": "array",
+                "items": { "$ref": "#/definitions/UseCase" }
+              }
+            }
+          }
+        },
+        "required": ["name"]
+      }
+    },
+    "bootstrap": {
+      "type": "object",
+      "properties": {
+        "default_context": { "type": "string" },
+        "bindings": {
+          "type": "object",
+          "properties": {
+            "contexts": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "additionalProperties": { "type": "string" }
+              }
+            }
+          }
+        },
+        "options": {
+          "type": "object",
+          "properties": {
+            "dry_run": { "type": "boolean" },
+            "overwrite": { "type": "boolean" }
+          }
+        }
+      }
+    }
+  },
+  "required": ["name", "contexts"],
+  "definitions": {
+    "Attribute": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "required": ["name", "type"]
+    },
+    "ModelSpec": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "attributes": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Attribute" }
+        },
+        "behaviors": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["name"]
+    },
+    "Operation": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "inputs": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Attribute" }
+        },
+        "output": {
+          "type": "object",
+          "properties": {
+            "type": { "type": "string" }
+          },
+          "required": ["type"]
+        }
+      },
+      "required": ["name"]
+    },
+    "ServiceSpec": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "operations": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Operation" }
+        }
+      },
+      "required": ["name"]
+    },
+    "PortSpec": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "kind": { "type": "string" },
+        "operations": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Operation" }
+        }
+      },
+      "required": ["name"]
+    },
+    "UseCase": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "kind": { "type": "string", "enum": ["command", "query"] },
+        "description": { "type": "string" },
+        "command": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "attributes": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/Attribute" }
+            }
+          }
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "attributes": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/Attribute" }
+            }
+          }
+        },
+        "depends_on": {
+          "type": "object",
+          "properties": {
+            "services": { "type": "array", "items": { "type": "string" } },
+            "ports": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      },
+      "required": ["name"]
+    }
+  }
+}
