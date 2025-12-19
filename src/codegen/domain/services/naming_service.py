@@ -1,4 +1,4 @@
-
+import re
 
 class NamingService:
     """
@@ -9,20 +9,17 @@ class NamingService:
         """
         Convert to snake_case
         """
-        # TODO: Implement domain service logic
-        pass
+        return re.sub(r"(?<!^)(?=[A-Z])", "_", text).lower()
     
     def to_pascal(self, text: str) -> str:
         """
         Convert to PascalCase
         """
-        # TODO: Implement domain service logic
-        pass
+        return "".join(word.capitalize() for word in text.split("_"))
     
     def to_kebab(self, text: str) -> str:
         """
         Convert to kebab-case
         """
-        # TODO: Implement domain service logic
-        pass
+        return self.to_snake(text).replace("_", "-")
     
