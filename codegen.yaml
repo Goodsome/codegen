@@ -40,11 +40,15 @@ contexts:
       value_objects:
         - name: BoundedContext
           description: "A logical boundary within the system."
+          # 与 bootstrapper.BoundedContext 对齐：需要包含 use_cases、services、ports
           attributes:
             - { name: name, type: str }
             - { name: description, type: str }
             - { name: aggregates, type: "List[Aggregate]" }
             - { name: value_objects, type: "List[ValueSpec]" }
+            - { name: services, type: "List[Service]", description: "Domain services within this context" }
+            - { name: ports, type: "List[Port]", description: "Domain ports (gateways/repositories) within this context" }
+            - { name: use_cases, type: "List[UseCase]", description: "Application use cases within this context" }
 
         - name: LayoutStrategy
           description: "Strategy for determining file paths."
@@ -84,6 +88,53 @@ contexts:
             - { name: name, type: str }
             - { name: type, type: str }
             - { name: description, type: str }
+
+        # ===== Meta-model types to align with bootstrapper =====
+        - name: Operation
+          description: "An operation of a Service/Port."
+          attributes:
+            - { name: name, type: str }
+            - { name: description, type: str }
+            - { name: inputs, type: "List[Attribute]" }
+            - { name: output_type, type: str }
+
+        - name: Service
+          description: "Domain service specification (meta-model)."
+          attributes:
+            - { name: name, type: str }
+            - { name: description, type: str }
+            - { name: operations, type: "List[Operation]" }
+
+        - name: Port
+          description: "Domain port specification (meta-model)."
+          attributes:
+            - { name: name, type: str }
+            - { name: description, type: str }
+            - { name: kind, type: str }
+            - { name: operations, type: "List[Operation]" }
+
+        - name: Command
+          description: "Use case command DTO (meta-model)."
+          attributes:
+            - { name: name, type: str }
+            - { name: attributes, type: "List[Attribute]" }
+
+        - name: Result
+          description: "Use case result DTO (meta-model)."
+          attributes:
+            - { name: name, type: str }
+            - { name: attributes, type: "List[Attribute]" }
+
+        - name: UseCase
+          description: "Application use case specification (meta-model)."
+          attributes:
+            - { name: name, type: str }
+            - { name: kind, type: str }
+            - { name: description, type: str }
+            - { name: command, type: Command }
+            - { name: result, type: Result }
+            - { name: depends_on_services, type: "List[str]" }
+            - { name: depends_on_ports, type: "List[str]" }
 
       services:
         - name: NamingService
