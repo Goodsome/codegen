@@ -1,4 +1,6 @@
 from typing import List, Dict, Any, Optional
+from pathlib import Path
+from jinja2 import Environment, FileSystemLoader
 from codegen.domain.ports.template_port import TemplatePort
 
 class JinjaAdapter(TemplatePort):
@@ -7,17 +9,24 @@ class JinjaAdapter(TemplatePort):
     """
     def __init__(self, config: Dict[str, Any]):
         self.config = config
-        
-        self.template_root = config.get("template_root", 'src/codegen/templates')
-        
+        self.template_root = Path(config.get("template_root", 'src/codegen/templates'))
         self.autoescape = config.get("autoescape", False)
         
+        self.env = Environment(
+            loader=FileSystemLoader(self.template_root),
+            autoescape=self.autoescape
+        )
+        # Register standard filters
+        from codegen.domain.services.naming_service import NamingService
+        ns = NamingService()
+        self.env.filters["snake"] = ns.to_snake
+        self.env.filters["pascal"] = ns.to_pascal
+        self.env.filters["repr"] = repr
 
-    
-    def render(self, template: str, context: Dict[str, Any]) -> str:
+    def render(self, template_path: str, context: Dict[str, Any]) -> str:
         """
-        
+        Renders a template with the given context.
         """
-        # TODO: Implement adapter logic
-        pass
+        template = self.env.get_template(template_path)
+        return template.render(**context)
     
