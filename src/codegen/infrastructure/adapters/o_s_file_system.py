@@ -1,8 +1,7 @@
 from typing import List, Dict, Any, Optional
-# TODO: Import the port being implemented
-# from codegen.domain.ports.file_system_port import FileSystemPort
+from codegen.domain.ports.file_system_port import FileSystemPort
 
-class OSFileSystem: # In a real scenario, this would inherit from FileSystemPort
+class OSFileSystem(FileSystemPort):
     """
     OS file system adapter for reading/writing files.
     """

@@ -1,0 +1,32 @@
+{% for imp in imports %}
+{{ imp }}
+{% endfor %}
+
+@dataclass(frozen=True)
+class {{ command.name }}:
+    """Command/Query for {{ name }}."""
+    {% for attr in command.attributes %}
+    {{ attr.name }}: {{ attr.type }}  # {{ attr.description }}
+    {% endfor %}
+
+@dataclass(frozen=True)
+class {{ result.name }}:
+    """Result of {{ name }}."""
+    {% for attr in result.attributes %}
+    {{ attr.name }}: {{ attr.type }}  # {{ attr.description }}
+    {% endfor %}
+
+class {{ name }}Handler:
+    """Handler for {{ name }} ({{ kind }})."""
+
+    {% for svc in depends_on_services %}
+    {{ svc | snake }}: {{ svc }}
+    {% endfor %}
+    {% for port in depends_on_ports %}
+    {{ port | snake }}: {{ port }}
+    {% endfor %}
+
+    def execute(self, cmd: {{ command.name }}) -> {{ result.name }}:
+        """Implement the use case logic."""
+        # TODO: Implement use case logic
+        return {{ result.name }}({% for attr in result.attributes %}{{ attr.name }}=None{% if not loop.last %}, {% endif %}{% endfor %})

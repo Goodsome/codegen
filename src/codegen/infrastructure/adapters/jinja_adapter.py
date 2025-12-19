@@ -1,17 +1,23 @@
-from pathlib import Path
-from typing import Any, Dict
-from jinja2 import Environment, FileSystemLoader, StrictUndefined
+from typing import List, Dict, Any, Optional
 from codegen.domain.ports.template_port import TemplatePort
 
-class JinjaTemplateAdapter(TemplatePort):
-    def __init__(self, template_dir: Path):
-        self.env = Environment(
-            loader=FileSystemLoader(str(template_dir)),
-            autoescape=False,
-            undefined=StrictUndefined,
-            keep_trailing_newline=True,
-        )
+class JinjaAdapter(TemplatePort):
+    """
+    Jinja-based template rendering adapter.
+    """
+    def __init__(self, config: Dict[str, Any]):
+        self.config = config
+        
+        self.template_root = config.get("template_root", 'src/codegen/templates')
+        
+        self.autoescape = config.get("autoescape", False)
+        
 
-    def render(self, template_name: str, context: Dict[str, Any]) -> str:
-        template = self.env.get_template(template_name)
-        return template.render(**context)
+    
+    def render(self, template: str, context: Dict[str, Any]) -> str:
+        """
+        
+        """
+        # TODO: Implement adapter logic
+        pass
+    

@@ -1,7 +1,7 @@
 """
 Kind: ValueObject
 Name: ValueSpec
-Description: A domain value object.
+Description: Specification of a domain value object to be generated.
 """
 
 from codegen.domain.shared.models import ValueObject
@@ -12,7 +12,7 @@ from typing import List
 
 
 class ValueSpec(ValueObject):
-    """A domain value object."""
+    """Specification of a domain value object to be generated."""
 
     name: str
 
