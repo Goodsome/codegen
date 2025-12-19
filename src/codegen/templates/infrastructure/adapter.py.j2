@@ -1,8 +1,7 @@
 from typing import List, Dict, Any, Optional
-# TODO: Import the port being implemented
-# from codegen.domain.ports.{{ implements_snake }} import {{ implements }}
+from codegen.domain.ports.{{ implements_snake }} import {{ implements }}
 
-class {{ name }}: # In a real scenario, this would inherit from {{ implements }}
+class {{ name }}({{ implements }}):
     """
     {{ description }}
     """

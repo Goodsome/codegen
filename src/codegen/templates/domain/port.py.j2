@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any, Optional
+{% for imp in imports %}
+{{ imp }}
+{% endfor %}
 
 class {{ name }}(ABC):
     """

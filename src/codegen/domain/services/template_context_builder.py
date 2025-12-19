@@ -1,4 +1,8 @@
-from typing import List, Dict, Any, Optional
+
+from codegen.domain.aggregates.blueprint import Blueprint
+
+from typing import Any, Dict
+
 
 class TemplateContextBuilder:
     """

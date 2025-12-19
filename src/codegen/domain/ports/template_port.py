@@ -1,6 +1,17 @@
-from typing import Protocol, Any, Dict
+from abc import ABC, abstractmethod
 
-class TemplatePort(Protocol):
-    def render(self, template_name: str, context: Dict[str, Any]) -> str:
-        """渲染模板，返回字符串内容"""
-        ...
+from typing import Any, Dict
+
+
+class TemplatePort(ABC):
+    """
+    Render templates with a given context.
+    """
+    
+    @abstractmethod
+    def render(self, template: str, context: Dict[str, Any]) -> str:
+        """
+        
+        """
+        pass
+    

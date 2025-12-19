@@ -236,7 +236,7 @@ def parse_context(data: dict) -> BoundedContext:
 def generate_shared_kernel(root_path: Path):
     """Generates the shared kernel from templates."""
     shared_dir = root_path / "shared"
-    shared_dir.mkdir(parents=True, exist_ok=True)
+    ensure_package(shared_dir)
 
     # In a real scenario, use jinja2 to render. Here we simulate copying/rendering.
     # Assuming the templates are at src/codegen/templates/domain/shared
@@ -269,28 +269,54 @@ def get_jinja_env():
     return env
 
 
-def generate_aggregate(base_path: Path, agg: Aggregate, env: Environment, known_vos: List[str] = None):
+import argparse
+
+def write_if_needed(file_path: Path, content: str, overwrite: bool):
+    if file_path.exists() and not overwrite:
+        print(f"Skipping: {file_path} (exists)")
+        return
+    file_path.write_text(content, encoding="utf-8")
+    print(f"Generated: {file_path}")
+
+
+def extract_all_types(type_strs: List[str]) -> set:
+    import re
+    types = set()
+    for ts in type_strs:
+        if ts is None: continue
+        # Find all words: List[Blueprint] -> ['List', 'Blueprint']
+        found = re.findall(r'\b\w+\b', ts)
+        for f in found:
+            types.add(f)
+    return types
+
+
+def resolve_imports(types_used: set, registry: dict, current_name: str, force_dataclass: bool = False) -> List[str]:
+    imports = []
+    typing_keywords = {"List", "Dict", "Optional", "Any", "Union"}
+    used_typing = types_used.intersection(typing_keywords)
+    
+    if used_typing:
+        imports.append(f"from typing import {', '.join(sorted(used_typing))}")
+    
+    if force_dataclass:
+        imports.append("from dataclasses import dataclass")
+    
+    for t in types_used:
+        if t != current_name and t in registry:
+            imports.append(registry[t])
+            
+    return sorted(list(set(imports)))
+
+
+def generate_aggregate(base_path: Path, agg: Aggregate, env: Environment, overwrite: bool, registry: dict):
     folder = base_path / "domain" / "aggregates"
-    folder.mkdir(parents=True, exist_ok=True)
+    ensure_package(folder)
     file_path = folder / f"{to_snake(agg.name)}.py"
 
-    imports = []
-    typing_imports = set()
-    typing_keywords = ["List", "Dict", "Optional", "Any", "Union"]
-
-    for attr in agg.attributes:
-        for keyword in typing_keywords:
-            if keyword in attr.type:
-                typing_imports.add(keyword)
-        if known_vos:
-            base_type = extract_base_type(attr.type)
-            if base_type != agg.name and base_type in known_vos:
-                import_path = f"codegen.domain.value_objects.{to_snake(base_type)}"
-                imports.append(f"from {import_path} import {base_type}")
-
-    if typing_imports:
-        imports.append(f"from typing import {', '.join(sorted(typing_imports))}")
-    imports = sorted(list(set(imports)))
+    types_used = extract_all_types([a.type for a in agg.attributes])
+    # Add types from behaviors if needed, but currently they are just strings
+    imports = resolve_imports(types_used, registry, agg.name)
 
     template = env.get_template("domain/aggregate.py.j2")
     content = template.render(
@@ -300,32 +326,16 @@ def generate_aggregate(base_path: Path, agg: Aggregate, env: Environment, known_
         behaviors=agg.behaviors,
         imports=imports,
     )
-    file_path.write_text(content, encoding="utf-8")
-    print(f"Generated Aggregate: {file_path}")
+    write_if_needed(file_path, content, overwrite)
 
 
-def generate_value_object(base_path: Path, vo: ValueObject, env: Environment, known_vos: List[str] = None):
+def generate_value_object(base_path: Path, vo: ValueObject, env: Environment, overwrite: bool, registry: dict):
     folder = base_path / "domain" / "value_objects"
-    folder.mkdir(parents=True, exist_ok=True)
+    ensure_package(folder)
     file_path = folder / f"{to_snake(vo.name)}.py"
 
-    imports = []
-    typing_imports = set()
-    typing_keywords = ["List", "Dict", "Optional", "Any", "Union"]
-
-    for attr in vo.attributes:
-        for keyword in typing_keywords:
-            if keyword in attr.type:
-                typing_imports.add(keyword)
-        if known_vos:
-            base_type = extract_base_type(attr.type)
-            if base_type != vo.name and base_type in known_vos:
-                import_path = f"codegen.domain.value_objects.{to_snake(base_type)}"
-                imports.append(f"from {import_path} import {base_type}")
-
-    if typing_imports:
-        imports.append(f"from typing import {', '.join(sorted(typing_imports))}")
-    imports = sorted(list(set(imports)))
+    types_used = extract_all_types([a.type for a in vo.attributes])
+    imports = resolve_imports(types_used, registry, vo.name)
 
     template = env.get_template("domain/value_object.py.j2")
     content = template.render(
@@ -334,43 +344,67 @@ def generate_value_object(base_path: Path, vo: ValueObject, env: Environment, kn
         attributes=vo.attributes,
         imports=imports,
     )
-    file_path.write_text(content, encoding="utf-8")
-    print(f"Generated ValueObject: {file_path}")
+    write_if_needed(file_path, content, overwrite)
 
 
-def generate_port(base_path: Path, port: Port, env: Environment):
+def generate_port(base_path: Path, port: Port, env: Environment, overwrite: bool, registry: dict):
     folder = base_path / "domain" / "ports"
-    folder.mkdir(parents=True, exist_ok=True)
+    ensure_package(folder)
     file_path = folder / f"{to_snake(port.name)}.py"
+
+    types_used = set()
+    for op in port.operations:
+        types_used.update(extract_all_types([i.type for i in op.inputs]))
+        types_used.update(extract_all_types([op.output_type]))
+
+    imports = resolve_imports(types_used, registry, port.name)
+
     template = env.get_template("domain/port.py.j2")
     content = template.render(
         name=port.name,
         description=port.description,
         operations=port.operations,
+        imports=imports,
     )
-    file_path.write_text(content, encoding="utf-8")
-    print(f"Generated Port: {file_path}")
+    write_if_needed(file_path, content, overwrite)
 
 
-def generate_service(base_path: Path, svc: Service, env: Environment):
+def generate_service(base_path: Path, svc: Service, env: Environment, overwrite: bool, registry: dict):
     folder = base_path / "domain" / "services"
-    folder.mkdir(parents=True, exist_ok=True)
+    ensure_package(folder)
     file_path = folder / f"{to_snake(svc.name)}.py"
+
+    types_used = set()
+    for op in svc.operations:
+        types_used.update(extract_all_types([i.type for i in op.inputs]))
+        types_used.update(extract_all_types([op.output_type]))
+
+    imports = resolve_imports(types_used, registry, svc.name)
+
     template = env.get_template("domain/service.py.j2")
     content = template.render(
         name=svc.name,
         description=svc.description,
         operations=svc.operations,
+        imports=imports,
     )
-    file_path.write_text(content, encoding="utf-8")
-    print(f"Generated Domain Service: {file_path}")
+    write_if_needed(file_path, content, overwrite)
 
 
-def generate_use_case(base_path: Path, uc: UseCase, env: Environment):
+def generate_use_case(base_path: Path, uc: UseCase, env: Environment, overwrite: bool, registry: dict):
     folder = base_path / "application" / "use_cases"
-    folder.mkdir(parents=True, exist_ok=True)
+    ensure_package(folder)
     file_path = folder / f"{to_snake(uc.name)}.py"
-    template = env.get_template("application_action/single.py.j2")
+
+    types_used = set()
+    types_used.update(extract_all_types([a.type for a in uc.command.attributes]))
+    types_used.update(extract_all_types([a.type for a in uc.result.attributes]))
+    types_used.update(extract_all_types(uc.depends_on_services))
+    types_used.update(extract_all_types(uc.depends_on_ports))
+    
+    imports = resolve_imports(types_used, registry, uc.name, force_dataclass=True)
+
+    template = env.get_template("application/use_case.py.j2")
     content = template.render(
         name=uc.name,
         kind=uc.kind,
@@ -379,14 +413,14 @@ def generate_use_case(base_path: Path, uc: UseCase, env: Environment):
         result=uc.result,
         depends_on_services=uc.depends_on_services,
         depends_on_ports=uc.depends_on_ports,
+        imports=imports,
     )
-    file_path.write_text(content, encoding="utf-8")
-    print(f"Generated UseCase: {file_path}")
+    write_if_needed(file_path, content, overwrite)
 
 
-def generate_adapter(base_path: Path, adapter: Adapter, env: Environment, ports: List[Port] = None):
+def generate_adapter(base_path: Path, adapter: Adapter, env: Environment, overwrite: bool, ports: List[Port] = None):
     folder = base_path / "infrastructure" / "adapters"
-    folder.mkdir(parents=True, exist_ok=True)
+    ensure_package(folder)
     file_path = folder / f"{to_snake(adapter.name)}.py"
     template = env.get_template("infrastructure/adapter.py.j2")
     
@@ -405,11 +439,15 @@ def generate_adapter(base_path: Path, adapter: Adapter, env: Environment, ports:
         config=adapter.config,
         operations=operations
     )
-    file_path.write_text(content, encoding="utf-8")
-    print(f"Generated Adapter: {file_path}")
+    write_if_needed(file_path, content, overwrite)
 
 
 def main():
+    parser = argparse.ArgumentParser(description="DDD Bootstrapper CLI")
+    parser.add_argument("--overwrite", action="store_true", help="Overwrite existing files")
+    parser.add_argument("--node", type=str, help="Specific node name to generate (e.g., Blueprint)")
+    args = parser.parse_args()
+
     root = Path(__file__).parent.parent
     yaml_path = root / "codegen.yaml"
 
@@ -423,40 +461,59 @@ def main():
     target_root = root / "src" / "codegen"
     env = get_jinja_env()
 
-    # 1. Generate Shared Kernel
-    generate_shared_kernel(target_root / "domain")
-
-    all_ports = []
-    
-    # 2. Generate Contexts
+    # Pre-build Type Registry
+    registry = {}
+    all_contexts = []
     for ctx_data in data.get("contexts", []):
         ctx = parse_context(ctx_data)
+        all_contexts.append(ctx)
+        
+        for agg in ctx.aggregates:
+            registry[agg.name] = f"from codegen.domain.aggregates.{to_snake(agg.name)} import {agg.name}"
+        for vo in ctx.value_objects:
+            registry[vo.name] = f"from codegen.domain.value_objects.{to_snake(vo.name)} import {vo.name}"
+        for port in ctx.ports:
+            registry[port.name] = f"from codegen.domain.ports.{to_snake(port.name)} import {port.name}"
+        for svc in ctx.services:
+            registry[svc.name] = f"from codegen.domain.services.{to_snake(svc.name)} import {svc.name}"
+
+    # Shared kernel
+    if not args.node:
+        generate_shared_kernel(target_root / "domain")
+
+    # 2. Generate Contexts
+    all_ports = [p for ctx in all_contexts for p in ctx.ports]
+    
+    for ctx in all_contexts:
         print(f"Generating context '{ctx.name}'...")
 
-        known_vo_names = [vo.name for vo in ctx.value_objects]
-
         for agg in ctx.aggregates:
-            generate_aggregate(target_root, agg, env, known_vo_names)
+            if not args.node or args.node == agg.name:
+                generate_aggregate(target_root, agg, env, args.overwrite, registry)
 
         for vo in ctx.value_objects:
-            generate_value_object(target_root, vo, env, known_vo_names)
+            if not args.node or args.node == vo.name:
+                generate_value_object(target_root, vo, env, args.overwrite, registry)
 
         for svc in ctx.services:
-            generate_service(target_root, svc, env)
+            if not args.node or args.node == svc.name:
+                generate_service(target_root, svc, env, args.overwrite, registry)
 
         for port in ctx.ports:
-            generate_port(target_root, port, env)
-            all_ports.append(port)
+            if not args.node or args.node == port.name:
+                generate_port(target_root, port, env, args.overwrite, registry)
 
         for uc in ctx.use_cases:
-            generate_use_case(target_root, uc, env)
+            if not args.node or args.node == uc.name:
+                generate_use_case(target_root, uc, env, args.overwrite, registry)
 
-    # 3. Generate Infrastructure (Adapters from shared or elsewhere)
+    # 3. Generate Infrastructure
     shared = data.get("shared", {})
     infra = shared.get("infrastructure", {})
     for adapter_data in infra.get("adapters", []):
         adapter = Adapter(**adapter_data)
-        generate_adapter(target_root, adapter, env, all_ports)
+        if not args.node or args.node == adapter.name:
+            generate_adapter(target_root, adapter, env, args.overwrite, all_ports)
 
 
 if __name__ == "__main__":

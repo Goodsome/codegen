@@ -1,11 +1,29 @@
-from typing import Protocol
-from pathlib import Path
+from abc import ABC, abstractmethod
 
-class FileSystemPort(Protocol):
-    def write_file(self, path: Path, content: str) -> None:
-        """写入文件，自动创建父目录"""
-        ...
 
-    def ensure_package(self, path: Path) -> None:
-        """确保目录存在且包含 __init__.py"""
-        ...
+class FileSystemPort(ABC):
+    """
+    File system operations used by the generator.
+    """
+    
+    @abstractmethod
+    def read_text(self, path: str) -> str:
+        """
+        
+        """
+        pass
+    
+    @abstractmethod
+    def write_text(self, path: str, content: str) -> None:
+        """
+        
+        """
+        pass
+    
+    @abstractmethod
+    def makedirs(self, path: str, exist_ok: bool) -> None:
+        """
+        
+        """
+        pass
+    
