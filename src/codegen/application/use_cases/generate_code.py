@@ -43,8 +43,10 @@ class GenerateCodeHandler:
 
         for task in render_tasks:
             content = self.template_port.render(task.template_name, task.context_data)
+            target_path = f"target/{task.target_path}"
+            print(f"Writing {target_path}")
             self.file_system_port.write_text(
-                path=task.target_path,
+                path=target_path,
                 content=content,
                 overwrite=cmd.overwrite,
             )

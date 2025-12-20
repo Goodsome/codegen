@@ -143,12 +143,13 @@ class ScaffoldService:
         """
         get path for a specific component
         """
+        snake_name = self.naming_service.to_snake(name)
         mapping = {
-            "aggregate": f"domain/aggregates/{name.lower()}.py",
-            "value_object": f"domain/value_objects/{name.lower()}.py",
-            "service": f"domain/services/{name.lower()}.py",
-            "port": f"domain/ports/{name.lower()}.py",
-            "use_case": f"application/use_cases/{name.lower()}.py",
-            "adapter": f"infrastructure/adapters/{name.lower()}.py",
+            "aggregate": f"domain/aggregates/{snake_name}.py",
+            "value_object": f"domain/value_objects/{snake_name}.py",
+            "service": f"domain/services/{snake_name}.py",
+            "port": f"domain/ports/{snake_name}.py",
+            "use_case": f"application/use_cases/{snake_name}.py",
+            "adapter": f"infrastructure/adapters/{snake_name}.py",
         }
-        return mapping.get(component_type, f"unknown/{name.lower()}.py")
+        return mapping.get(component_type, f"unknown/{snake_name}.py")

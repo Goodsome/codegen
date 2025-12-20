@@ -230,7 +230,7 @@ contexts:
               inputs:
                 - { name: path, type: str }
                 - { name: content, type: str }
-                - { name: overwrite, type: bool, default: false }
+                - { name: overwrite, type: bool, default: "False" }
               output: { type: None }
             - name: makedirs
               inputs:
