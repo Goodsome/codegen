@@ -10,8 +10,8 @@ from codegen.domain.services.scaffold_service import ScaffoldService
 class GenerateCodeCommand:
     """Command/Query for GenerateCode."""
 
-    overwrite: bool  #
-    node: str  #
+    overwrite: bool = False
+    node: str | None = None
 
 
 @dataclass(frozen=True)
@@ -38,6 +38,7 @@ class GenerateCodeHandler:
 
         render_tasks = self.scaffold_service.plan_generation(
             blueprint,
+            node=cmd.node,
         )
         written_files: list[str] = []
 
