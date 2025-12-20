@@ -1,28 +1,24 @@
 {% for imp in imports %}
-{{ imp }}
-{% endfor %}
+{{ imp }}{% endfor %}
 
 
 @dataclass(frozen=True)
 class {{ command.name }}:
     """Command/Query for {{ name }}."""
     {% for attr in command.attributes %}
-    {{ attr.name }}: {{ attr.type }}  # {{ attr.description }}
-    {% endfor %}
+    {{ attr.name }}: {{ attr.type }}  # {{ attr.description }}{% endfor %}
 
 @dataclass(frozen=True)
 class {{ result.name }}:
     """Result of {{ name }}."""
     {% for attr in result.attributes %}
-    {{ attr.name }}: {{ attr.type }}  # {{ attr.description }}
-    {% endfor %}
+    {{ attr.name }}: {{ attr.type }}  # {{ attr.description }}{% endfor %}
 
 @dataclass
 class {{ name }}Handler:
     """{{ description }}"""
 {% for attr in attributes %}
-    {{ attr.name }}: {{ attr.type }}
-{% endfor %}
+    {{ attr.name }}: {{ attr.type }}{% endfor %}
 
     def execute(self, cmd: {{ command.name }}) -> {{ result.name }}:
         """ TODO: Implement use case logic """
