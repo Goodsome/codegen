@@ -14,16 +14,11 @@ from codegen.domain.value_objects.meta_service import MetaService
 
 from codegen.domain.value_objects.meta_value_object import MetaValueObject
 
-from typing import List
-
 
 class MetaDomain(ValueObject):
     """Specification of a domain to be generated."""
 
-    aggregates: List[MetaAggregate]
-
-    value_objects: List[MetaValueObject]
-
-    services: List[MetaService]
-
-    ports: List[MetaDomainPort]
+    aggregates: list[MetaAggregate]
+    value_objects: list[MetaValueObject]
+    services: list[MetaService]
+    ports: list[MetaDomainPort]
