@@ -15,17 +15,17 @@ class ScaffoldService:
     """
 
     naming_service: NamingService = NamingService()
+    template_context_builder: TemplateContextBuilder = TemplateContextBuilder()
 
-    def plan_generation(
-        self, blueprint: Blueprint, template_context_builder: TemplateContextBuilder
-    ) -> list[RenderTask]:
+    def plan_generation(self, blueprint: Blueprint) -> list[RenderTask]:
+        self.template_context_builder.build_registry(blueprint)
         render_tasks: list[RenderTask] = []
         all_ports = [p for ctx in blueprint.contexts for p in ctx.domain.ports]
         for ctx in blueprint.contexts:
             # 1. Aggregates
             for agg in ctx.domain.aggregates:
                 path = self.get_component_path("aggregate", agg.name)
-                tpl_ctx = template_context_builder.build_context(agg)
+                tpl_ctx = self.template_context_builder.build_context(agg)
                 render_tasks.append(
                     RenderTask(
                         target_path=path,
@@ -37,7 +37,7 @@ class ScaffoldService:
             # 2. Value Objects
             for vo in ctx.domain.value_objects:
                 path = self.get_component_path("value_object", vo.name)
-                tpl_ctx = template_context_builder.build_context(vo)
+                tpl_ctx = self.template_context_builder.build_context(vo)
                 render_tasks.append(
                     RenderTask(
                         target_path=path,
@@ -49,7 +49,7 @@ class ScaffoldService:
             # 3. Services
             for svc in ctx.domain.services:
                 path = self.get_component_path("service", svc.name)
-                tpl_ctx = template_context_builder.build_context(svc)
+                tpl_ctx = self.template_context_builder.build_context(svc)
                 render_tasks.append(
                     RenderTask(
                         target_path=path,
@@ -61,7 +61,7 @@ class ScaffoldService:
             # 4. Ports
             for port in ctx.domain.ports:
                 path = self.get_component_path("port", port.name)
-                tpl_ctx = template_context_builder.build_context(port)
+                tpl_ctx = self.template_context_builder.build_context(port)
                 render_tasks.append(
                     RenderTask(
                         target_path=path,
@@ -73,7 +73,7 @@ class ScaffoldService:
             # 5. Use Cases
             for uc in ctx.application.use_cases:
                 path = self.get_component_path("use_case", uc.name)
-                tpl_ctx = template_context_builder.build_context(uc)
+                tpl_ctx = self.template_context_builder.build_context(uc)
                 render_tasks.append(
                     RenderTask(
                         target_path=path,

@@ -230,6 +230,7 @@ contexts:
               inputs:
                 - { name: path, type: str }
                 - { name: content, type: str }
+                - { name: overwrite, type: bool, default: false }
               output: { type: None }
             - name: makedirs
               inputs:
@@ -260,9 +261,7 @@ contexts:
             attributes:
               - { name: files_written, type: "list[str]" }
           attributes:
-            - { name: naming_service, type: NamingService }
             - { name: scaffold_service, type: ScaffoldService }
-            - { name: template_context_builder, type: TemplateContextBuilder }
             - { name: template_port, type: TemplatePort }
             - { name: file_system_port, type: FileSystemPort }
             - { name: blueprint_loader, type: BlueprintLoaderPort }

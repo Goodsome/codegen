@@ -9,7 +9,6 @@ from codegen.domain.ports.blueprint_loader_port import BlueprintLoaderPort
 
 class YamlBlueprintLoader(BlueprintLoaderPort):
 
-    @override
     def load(self, source: str) -> Blueprint | None:
         if not os.path.exists(source):
             return None
