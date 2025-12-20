@@ -6,17 +6,11 @@ Description: A logical boundary within the system.
 
 from codegen.domain.shared.models import ValueObject
 
-from codegen.domain.value_objects.aggregate import Aggregate
+from codegen.domain.value_objects.meta_application import MetaApplication
 
-from codegen.domain.value_objects.port import Port
+from codegen.domain.value_objects.meta_domain import MetaDomain
 
-from codegen.domain.value_objects.service import Service
-
-from codegen.domain.value_objects.use_case import UseCase
-
-from codegen.domain.value_objects.value_spec import ValueSpec
-
-from typing import List
+from codegen.domain.value_objects.meta_infrastructure import MetaInfrastructure
 
 
 class BoundedContext(ValueObject):
@@ -26,12 +20,8 @@ class BoundedContext(ValueObject):
 
     description: str
 
-    aggregates: List[Aggregate]
+    domain: MetaDomain
 
-    value_objects: List[ValueSpec]
+    application: MetaApplication
 
-    services: List[Service]
-
-    ports: List[Port]
-
-    use_cases: List[UseCase]
+    infrastructure: MetaInfrastructure

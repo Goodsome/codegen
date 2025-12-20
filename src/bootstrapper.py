@@ -13,6 +13,15 @@ class Attribute:
     name: str
     type: str
     description: str = ""
+    optional: bool = False
+    default: Any = None
+
+@dataclass
+class MethodSpec:
+    name: str
+    description: str
+    inputs: List[Attribute]
+    output_type: str
 
 
 @dataclass
@@ -20,7 +29,7 @@ class Aggregate:
     name: str
     description: str
     attributes: List[Attribute]
-    behaviors: List[str]
+    behaviors: List[MethodSpec]
 
 
 @dataclass
@@ -31,18 +40,10 @@ class ValueObject:
 
 
 @dataclass
-class Operation:
-    name: str
-    description: str
-    inputs: List[Attribute]
-    output_type: str
-
-
-@dataclass
 class Service:
     name: str
     description: str
-    operations: List[Operation]
+    operations: List[MethodSpec]
 
 
 @dataclass
@@ -50,7 +51,7 @@ class Port:
     name: str
     description: str
     kind: str  # gateway | repository
-    operations: List[Operation]
+    operations: List[MethodSpec]
 
 
 @dataclass
@@ -133,9 +134,9 @@ def load_yaml(path: Path) -> dict:
         return yaml.safe_load(f)
 
 
-def parse_operation(op_data: dict) -> Operation:
+def parse_operation(op_data: dict) -> MethodSpec:
     inputs = [Attribute(**attr) for attr in op_data.get("inputs", [])]
-    return Operation(
+    return MethodSpec(
         name=op_data["name"],
         description=op_data.get("description", ""),
         inputs=inputs,
@@ -243,14 +244,14 @@ def generate_shared_kernel(root_path: Path):
     # root_path is src/codegen/domain, so template_dir is src/codegen/templates/domain/shared
     template_dir = root_path.parent / "templates" / "domain" / "shared"
 
-    files = ["models.py.j2", "events.py.j2"]
+    files = ["models.j2", "events.j2"]
     for tpl_file in files:
         src = template_dir / tpl_file
         if not src.exists():
             print(f"Warning: Template {src} not found.")
             continue
 
-        dest = shared_dir / tpl_file.replace(".j2", "")
+        dest = shared_dir / tpl_file.replace(".j2", ".py")
         with open(src, "r", encoding="utf-8") as f:
             content = f.read()
 
@@ -318,7 +319,7 @@ def generate_aggregate(base_path: Path, agg: Aggregate, env: Environment, overwr
     # Add types from behaviors if needed, but currently they are just strings
     imports = resolve_imports(types_used, registry, agg.name)
 
-    template = env.get_template("domain/aggregate.py.j2")
+    template = env.get_template("domain/aggregate.j2")
     content = template.render(
         name=agg.name,
         description=agg.description,
@@ -337,7 +338,7 @@ def generate_value_object(base_path: Path, vo: ValueObject, env: Environment, ov
     types_used = extract_all_types([a.type for a in vo.attributes])
     imports = resolve_imports(types_used, registry, vo.name)
 
-    template = env.get_template("domain/value_object.py.j2")
+    template = env.get_template("domain/value_object.j2")
     content = template.render(
         name=vo.name,
         description=vo.description,
@@ -359,7 +360,7 @@ def generate_port(base_path: Path, port: Port, env: Environment, overwrite: bool
 
     imports = resolve_imports(types_used, registry, port.name)
 
-    template = env.get_template("domain/port.py.j2")
+    template = env.get_template("domain/port.j2")
     content = template.render(
         name=port.name,
         description=port.description,
@@ -381,7 +382,7 @@ def generate_service(base_path: Path, svc: Service, env: Environment, overwrite:
 
     imports = resolve_imports(types_used, registry, svc.name)
 
-    template = env.get_template("domain/service.py.j2")
+    template = env.get_template("domain/service.j2")
     content = template.render(
         name=svc.name,
         description=svc.description,
@@ -404,7 +405,7 @@ def generate_use_case(base_path: Path, uc: UseCase, env: Environment, overwrite:
     
     imports = resolve_imports(types_used, registry, uc.name, force_dataclass=True)
 
-    template = env.get_template("application/use_case.py.j2")
+    template = env.get_template("application/use_case.j2")
     content = template.render(
         name=uc.name,
         kind=uc.kind,
@@ -422,7 +423,7 @@ def generate_adapter(base_path: Path, adapter: Adapter, env: Environment, overwr
     folder = base_path / "infrastructure" / "adapters"
     ensure_package(folder)
     file_path = folder / f"{to_snake(adapter.name)}.py"
-    template = env.get_template("infrastructure/adapter.py.j2")
+    template = env.get_template("infrastructure/adapter.j2")
     
     operations = []
     if ports:
