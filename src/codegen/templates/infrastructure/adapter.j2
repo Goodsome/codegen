@@ -8,8 +8,7 @@ class {{ name }}({{ implements }}):
     def __init__(self, config: Dict[str, Any]):
         self.config = config
         {% for key, value in config.items() %}
-        self.{{ key }} = config.get("{{ key }}", {{ value | repr }})
-        {% endfor %}
+        self.{{ key }} = config.get("{{ key }}", {{ value | repr }}){% endfor %}
 
     {% for op in operations %}
     def {{ op.name }}(self, {% for input in op.inputs %}{{ input.name }}: {{ input.type }}{% if not loop.last %}, {% endif %}{% endfor %}) -> {{ op.output_type }}:
