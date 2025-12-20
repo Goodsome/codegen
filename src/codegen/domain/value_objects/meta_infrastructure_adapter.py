@@ -3,6 +3,7 @@ Kind: ValueObject
 Name: MetaInfrastructureAdapter
 Description: Specification of an infrastructure adapter to be generated.
 """
+
 from pydantic import Field
 
 from codegen.domain.shared.models import ValueObject
@@ -19,4 +20,4 @@ class MetaInfrastructureAdapter(ValueObject):
 
     implements: str
 
-    config: Dict[str, Any]
+    config: Dict[str, Any] = Field(default_factory=dict)
