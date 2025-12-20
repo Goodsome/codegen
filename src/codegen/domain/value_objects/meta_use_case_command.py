@@ -1,7 +1,7 @@
 """
 Kind: ValueObject
-Name: Result
-Description: Use case result DTO (meta-model).
+Name: MetaUseCaseCommand
+Description: Specification of a use case command to be generated.
 """
 
 from codegen.domain.shared.models import ValueObject
@@ -11,8 +11,8 @@ from codegen.domain.value_objects.attribute import Attribute
 from typing import List
 
 
-class Result(ValueObject):
-    """Use case result DTO (meta-model)."""
+class MetaUseCaseCommand(ValueObject):
+    """Specification of a use case command to be generated."""
 
     name: str
 

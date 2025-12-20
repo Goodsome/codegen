@@ -3,25 +3,6 @@ name: Codegen
 layout: ddd_standard
 description: "DDD-based Code Generator that generates itself."
 
-shared:
-  application:
-    use_cases: []
-  infrastructure:
-    adapters:
-      - name: JinjaAdapter
-        implements: TemplatePort
-        description: "Jinja-based template rendering adapter."
-        config:
-          template_root: "src/codegen/templates"
-          autoescape: false
-
-      - name: OSFileSystem
-        implements: FileSystemPort
-        description: "OS file system adapter for reading/writing files."
-        config:
-          output_root: "out"
-          encoding: "utf-8"
-
 contexts:
   - name: core
     description: "Core Code Generation Logic"
@@ -32,109 +13,138 @@ contexts:
           description: "Root of the generation model. Represents the entire project definition."
           attributes:
             - { name: name, type: str, description: "Project Name" }
+            - { name: description, type: str }
             - { name: layout, type: str, description: "Layout strategy name" }
-            - { name: contexts, type: "List[BoundedContext]", description: "List of bounded contexts" }
-          behaviors:
-            - load_from_dict
+            - { name: contexts, type: "List[BoundedContext]" }
+            - { name: bootstrap, type: MetaBootstrap }
 
       value_objects:
-        - name: BoundedContext
-          description: "A logical boundary within the system."
-          # 与 bootstrapper.BoundedContext 对齐：需要包含 use_cases、services、ports
-          attributes:
-            - { name: name, type: str }
-            - { name: description, type: str }
-            - { name: aggregates, type: "List[Aggregate]" }
-            - { name: value_objects, type: "List[ValueSpec]" }
-            - { name: services, type: "List[Service]", description: "Domain services within this context" }
-            - { name: ports, type: "List[Port]", description: "Domain ports (gateways/repositories) within this context" }
-            - { name: use_cases, type: "List[UseCase]", description: "Application use cases within this context" }
-
-        - name: LayoutStrategy
-          description: "Strategy for determining file paths."
-          attributes:
-            - { name: name, type: str }
-          behaviors:
-            - resolve_path
-
-        - name: Aggregate
-          description: "A domain aggregate."
-          attributes:
-            - { name: name, type: str }
-            - { name: description, type: str }
-            - { name: attributes, type: "List[Attribute]" }
-            - { name: behaviors, type: "List[str]" }
-
-        - name: ValueSpec
-          description: "Specification of a domain value object to be generated."
-          attributes:
-            - { name: name, type: str }
-            - { name: description, type: str }
-            - { name: attributes, type: "List[Attribute]" }
-
-        - name: FeatureName
-          description: "Handles snake_case, PascalCase conversions."
-          attributes:
-            - { name: value, type: str }
-
-        - name: CodeForm
-          description: "Single file or Package based generation."
-          attributes:
-            - { name: value, type: str }
-
         - name: Attribute
-          description: "A property of a domain model."
+          description: "Standard specification for a class attribute."
           attributes:
             - { name: name, type: str }
             - { name: type, type: str }
-            - { name: description, type: str }
+            - { name: description, type: str, default: "" }
+            - { name: optional, type: bool, default: "False" }
+            - { name: default, type: str, optional: true }
 
-        # ===== Meta-model types to align with bootstrapper =====
-        - name: Operation
-          description: "An operation of a Service/Port."
+        - name: MethodOutput
+          description: "Specification of the output of a method."
+          attributes:
+            - { name: type, type: str }
+
+        - name: MethodSpec
+          description: "Standard specification for a class method."
           attributes:
             - { name: name, type: str }
-            - { name: description, type: str }
+            - { name: description, type: str, default: "" }
             - { name: inputs, type: "List[Attribute]" }
-            - { name: output_type, type: str }
+            - { name: output, type: MethodOutput, optional: true }
 
-        - name: Service
-          description: "Domain service specification (meta-model)."
+        - name: MetaAggregate
+          description: "Specification of a domain aggregate to be generated."
           attributes:
             - { name: name, type: str }
-            - { name: description, type: str }
-            - { name: operations, type: "List[Operation]" }
+            - { name: description, type: str, default: "" }
+            - { name: attributes, type: "List[Attribute]" }
+            - { name: behaviors, type: "List[MethodSpec]", default: "[]" }
 
-        - name: Port
-          description: "Domain port specification (meta-model)."
+        - name: MetaValueObject
+          description: "Specification of a value object to be generated."
           attributes:
             - { name: name, type: str }
-            - { name: description, type: str }
+            - { name: description, type: str, default: "" }
+            - { name: attributes, type: "List[Attribute]" }
+
+        - name: MetaService
+          description: "Specification of a domain service to be generated."
+          attributes:
+            - { name: name, type: str }
+            - { name: description, type: str, default: "" }
+            - { name: operations, type: "List[MethodSpec]" }
+
+        - name: MetaDomainPort
+          description: "Specification of a domain port to be generated."
+          attributes:
+            - { name: name, type: str }
+            - { name: description, type: str, default: "" }
             - { name: kind, type: str }
-            - { name: operations, type: "List[Operation]" }
+            - { name: operations, type: "List[MethodSpec]" }
 
-        - name: Command
-          description: "Use case command DTO (meta-model)."
+        - name: MetaDomain
+          description: "Specification of a domain to be generated."
+          attributes:
+            - { name: aggregates, type: "List[MetaAggregate]" }
+            - { name: value_objects, type: "List[MetaValueObject]" }
+            - { name: services, type: "List[MetaService]" }
+            - { name: ports, type: "List[MetaDomainPort]" }
+
+        - name: MetaUseCaseCommand
+          description: "Specification of a use case command to be generated."
           attributes:
             - { name: name, type: str }
             - { name: attributes, type: "List[Attribute]" }
 
-        - name: Result
-          description: "Use case result DTO (meta-model)."
+        - name: MetaUseCaseResult
+          description: "Specification of a use case result to be generated."
           attributes:
             - { name: name, type: str }
             - { name: attributes, type: "List[Attribute]" }
 
-        - name: UseCase
-          description: "Application use case specification (meta-model)."
+        - name: MetaUseCase
+          description: "Specification of a use case to be generated."
           attributes:
             - { name: name, type: str }
+            - { name: attributes, type: "List[Attribute]" }
             - { name: kind, type: str }
             - { name: description, type: str }
-            - { name: command, type: Command }
-            - { name: result, type: Result }
-            - { name: depends_on_services, type: "List[str]" }
-            - { name: depends_on_ports, type: "List[str]" }
+            - { name: command, type: MetaUseCaseCommand }
+            - { name: result, type: MetaUseCaseResult }
+
+        - name: MetaApplication
+          description: "Specification of an application to be generated."
+          attributes:
+            - { name: use_cases, type: "List[MetaUseCase]" }
+
+        - name: MetaInfrastructureAdapter
+          description: "Specification of an infrastructure adapter to be generated."
+          attributes:
+            - { name: name, type: str }
+            - { name: description, type: str, default: "" }
+            - { name: implements, type: str }
+            - { name: config, type: "Dict[str, Any]" }
+
+        - name: MetaInfrastructure
+          description: "Specification of an infrastructure to be generated."
+          attributes:
+            - { name: adapters, type: "List[MetaInfrastructureAdapter]" }
+
+        - name: BoundedContext
+          description: "A logical boundary within the system."
+          attributes:
+            - { name: name, type: str }
+            - { name: description, type: str }
+            - { name: domain, type: MetaDomain }
+            - { name: application, type: MetaApplication }
+            - { name: infrastructure, type: MetaInfrastructure }
+
+        - name: PortBinding
+          description: "Binding between a port and an adapter."
+          attributes:
+            - { name: port, type: str }
+            - { name: implementation, type: str }
+
+        - name: MetaBootstrap
+          description: "Specification of the bootstrap configuration."
+          attributes:
+            - { name: bindings, type: "List[PortBinding]" }
+
+        - name: RenderTask
+          description: "Task for rendering templates with context data."
+          attributes:
+            - { name: target_path, type: str }
+            - { name: template_name, type: str }
+            - { name: context_data, type: "Dict[str, Any]" }
 
       services:
         - name: NamingService
@@ -156,23 +166,47 @@ contexts:
                 - { name: text, type: str }
               output: { type: str }
 
-        - name: LayoutPlanner
-          description: "Plan output paths based on the selected layout strategy and blueprint."
-          operations:
-            - name: plan_paths
-              description: "Return a list of file paths that will be generated."
-              inputs:
-                - { name: layout, type: LayoutStrategy }
-                - { name: blueprint, type: Blueprint }
-              output: { type: "List[str]" }
-
         - name: TemplateContextBuilder
           description: "Build the template rendering context from the blueprint."
           operations:
+            - name: build_registry
+              inputs:
+                - { name: blueprint, type: Blueprint }
+              output: { type: None }
+            - name: extract_types
+              inputs:
+                - { name: type_strs, type: "List[str]" }
+              output: { type: "Set[str]" }
+            - name: resolve_imports
+              inputs:
+                - { name: types_used, type: "Set[str]" }
+                - { name: current_name, type: str }
+                - { name: force_dataclass, type: bool }
+              output: { type: "List[str]" }
             - name: build_context
               inputs:
                 - { name: blueprint, type: Blueprint }
               output: { type: "Dict[str, Any]" }
+
+        - name: ScaffoldService
+          description: "Converts the Blueprint into a flat list of render tasks."
+          operations:
+            - name: plan_generation
+              inputs:
+                - { name: blueprint, type: Blueprint }
+              output: { type: "List[RenderTask]" }
+
+            - name: plan_paths
+              inputs:
+                - { name: blueprint, type: Blueprint }
+              output: { type: "List[Path]" }
+
+            - name: get_component_paths
+              description: "get path for a specific component"
+              inputs:
+                - { name: component_type, type: str }
+                - { name: name, type: str}
+              output: { type: "Path" }
 
       ports:
         - name: TemplatePort
@@ -205,48 +239,42 @@ contexts:
 
     application:
       use_cases:
-        - name: InitProject
-          kind: command            # command | query
-          description: "Initialize a new codegen project structure."
-          command:
-            name: InitProjectCommand
-            attributes:
-              - { name: project_name, type: str }
-              - { name: template_root, type: str }
-              - { name: output_root, type: str }
-          result:
-            name: InitProjectResult
-            attributes:
-              - { name: message, type: str }
-          depends_on:
-            services: [NamingService]
-            ports: [TemplatePort, FileSystemPort]
-
-        - name: GenerateAction
+        - name: GenerateCode
           kind: command
-          description: "Generate an application action (command/handler/mapper/result or single file)."
+          description: "Generate project code from the blueprint. "
           command:
-            name: GenerateActionCommand
+            name: GenerateCodeCommand
             attributes:
-              - { name: feature_name, type: FeatureName }
-              - { name: code_form, type: CodeForm }
-              - { name: output_root, type: str }
+              - { name: overwrite, type: bool }
+              - { name: node, type: str, optional: true }
           result:
-            name: GenerateActionResult
+            name: GenerateCodeResult
             attributes:
               - { name: files_written, type: "List[str]" }
-          depends_on:
-            services: [NamingService, LayoutPlanner, TemplateContextBuilder]
-            ports: [TemplatePort, FileSystemPort]
+          attributes:
+            - { name: naming_service, type: NamingService }
+            - { name: scaffold_service, type: ScaffoldService }
+            - { name: template_context_builder, type: TemplateContextBuilder }
+            - { name: template_port, type: TemplatePort }
+            - { name: file_system_port, type: FileSystemPort }
 
-# Orchestration/Bootstrap settings (top-level for runtime wiring)
+    infrastructure:
+      adapters:
+        - name: JinjaAdapter
+          implements: TemplatePort
+          description: "Jinja-based template rendering adapter."
+          config:
+            template_root: "src/codegen/templates"
+            autoescape: false
+
+        - name: OSFileSystem
+          implements: FileSystemPort
+          description: "OS file system adapter for reading/writing files."
+          config:
+            output_root: "out"
+            encoding: "utf-8"
+
 bootstrap:
-  default_context: core
   bindings:
-    contexts:
-      core:
-        TemplatePort: JinjaAdapter
-        FileSystemPort: OSFileSystem
-  options:
-    dry_run: false
-    overwrite: true
+    - { port: TemplatePort, implementation: JinjaAdapter }
+    - { port: FileSystemPort, implementation: OSFileSystem }

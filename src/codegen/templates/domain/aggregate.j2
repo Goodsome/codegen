@@ -1,0 +1,20 @@
+"""
+Kind: Aggregate
+Name: {{ name }}
+Description: {{ description }}
+"""
+
+from codegen.domain.shared.models import AggregateRoot
+{% for import in imports %}
+{{ import }}{% endfor %}
+
+class {{ name }}(AggregateRoot):
+    """{{ description }}"""
+{% for attr in attributes %}
+    {{ attr.name }}: {{ attr.type }}{% endfor %}
+
+{% for behavior in behaviors %}
+    def {{ behavior.name }}(self, {% for input in behavior.inputs %}{{ input.name }}: {{ input.type }}{% if not loop.last %}, {% endif %}{% endfor %}) -> {{ behavior.output.type }}:
+        """ TODO: implement {{ behavior.name }}"""
+
+{% endfor %}

@@ -91,17 +91,11 @@
     "bootstrap": {
       "type": "object",
       "properties": {
-        "default_context": { "type": "string" },
         "bindings": {
-          "type": "object",
-          "properties": {
-            "contexts": {
-              "type": "object",
-              "additionalProperties": {
-                "type": "object",
-                "additionalProperties": { "type": "string" }
-              }
-            }
+          "type": "array",
+          "items": {
+            "port": "string",
+            "implementation": "string"
           }
         },
         "options": {
@@ -125,23 +119,7 @@
       },
       "required": ["name", "type"]
     },
-    "ModelSpec": {
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "description": { "type": "string" },
-        "attributes": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/Attribute" }
-        },
-        "behaviors": {
-          "type": "array",
-          "items": { "type": "string" }
-        }
-      },
-      "required": ["name"]
-    },
-    "Operation": {
+    "MethodSpec": {
       "type": "object",
       "properties": {
         "name": { "type": "string" },
@@ -160,6 +138,22 @@
       },
       "required": ["name"]
     },
+    "ModelSpec": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "attributes": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Attribute" }
+        },
+        "behaviors": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/MethodSpec" }
+        }
+      },
+      "required": ["name"]
+    },
     "ServiceSpec": {
       "type": "object",
       "properties": {
@@ -167,7 +161,7 @@
         "description": { "type": "string" },
         "operations": {
           "type": "array",
-          "items": { "$ref": "#/definitions/Operation" }
+          "items": { "$ref": "#/definitions/MethodSpec" }
         }
       },
       "required": ["name"]
@@ -180,7 +174,7 @@
         "kind": { "type": "string" },
         "operations": {
           "type": "array",
-          "items": { "$ref": "#/definitions/Operation" }
+          "items": { "$ref": "#/definitions/MethodSpec" }
         }
       },
       "required": ["name"]

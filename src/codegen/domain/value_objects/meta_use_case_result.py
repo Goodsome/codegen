@@ -1,7 +1,7 @@
 """
 Kind: ValueObject
-Name: ValueSpec
-Description: Specification of a domain value object to be generated.
+Name: MetaUseCaseResult
+Description: Specification of a use case result to be generated.
 """
 
 from codegen.domain.shared.models import ValueObject
@@ -11,11 +11,9 @@ from codegen.domain.value_objects.attribute import Attribute
 from typing import List
 
 
-class ValueSpec(ValueObject):
-    """Specification of a domain value object to be generated."""
+class MetaUseCaseResult(ValueObject):
+    """Specification of a use case result to be generated."""
 
     name: str
-
-    description: str
 
     attributes: List[Attribute]

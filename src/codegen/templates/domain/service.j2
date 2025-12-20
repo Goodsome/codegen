@@ -10,7 +10,6 @@ class {{ name }}:
     def {{ op.name }}(self, {% for input in op.inputs %}{{ input.name }}: {{ input.type }}{% if not loop.last %}, {% endif %}{% endfor %}) -> {{ op.output_type }}:
         """
         {{ op.description }}
+        TODO: Implement domain service logic
         """
-        # TODO: Implement domain service logic
-        pass
     {% endfor %}
