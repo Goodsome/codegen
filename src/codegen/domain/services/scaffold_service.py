@@ -31,6 +31,7 @@ class ScaffoldService:
                 if node and agg.name != node:
                     continue
                 path = self.get_component_path("aggregate", agg.name)
+                path = f"{ctx.name}/{path}"
                 tpl_ctx = self.template_context_builder.build_context(agg)
                 render_tasks.append(
                     RenderTask(
@@ -45,6 +46,7 @@ class ScaffoldService:
                 if node and vo.name != node:
                     continue
                 path = self.get_component_path("value_object", vo.name)
+                path = f"{ctx.name}/{path}"
                 tpl_ctx = self.template_context_builder.build_context(vo)
                 render_tasks.append(
                     RenderTask(
@@ -59,6 +61,7 @@ class ScaffoldService:
                 if node and svc.name != node:
                     continue
                 path = self.get_component_path("service", svc.name)
+                path = f"{ctx.name}/{path}"
                 tpl_ctx = self.template_context_builder.build_context(svc)
                 render_tasks.append(
                     RenderTask(
@@ -73,6 +76,7 @@ class ScaffoldService:
                 if node and port.name != node:
                     continue
                 path = self.get_component_path("port", port.name)
+                path = f"{ctx.name}/{path}"
                 tpl_ctx = self.template_context_builder.build_context(port)
                 render_tasks.append(
                     RenderTask(
@@ -87,6 +91,7 @@ class ScaffoldService:
                 if node and uc.name != node:
                     continue
                 path = self.get_component_path("use_case", uc.name)
+                path = f"{ctx.name}/{path}"
                 tpl_ctx = self.template_context_builder.build_context(uc)
                 render_tasks.append(
                     RenderTask(
@@ -101,6 +106,7 @@ class ScaffoldService:
                 if node and infra_adapter.name != node:
                     continue
                 path = self.get_component_path("adapter", infra_adapter.name)
+                path = f"{ctx.name}/{path}"
                 adapter_data = infra_adapter
                 port_ops = []
                 for p in all_ports:

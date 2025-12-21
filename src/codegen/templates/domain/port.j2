@@ -6,9 +6,12 @@ class {{ name }}(ABC):
     """
     {{ description }}
     """
-    {% for op in operations %}
+    {% for op in target.operations %}
     @abstractmethod
-    def {{ op.name }}(self, {% for input in op.inputs %}{{ input.name }}: {{ input.type }}{% if not loop.last %}, {% endif %}{% endfor %}) -> {{ op.output_type }}:
+    def {{ op.name }}(
+            self, {% for input in op.inputs %}
+            {{ input.name }}: {{ input.type }}{% if not loop.last %}, {% endif %}{% endfor %}
+    ) -> {{ op.output.type }}:
         {% if op.description %}"""
         {{ op.description }}
         """{% endif %}
