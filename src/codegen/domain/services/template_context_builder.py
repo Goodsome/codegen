@@ -22,19 +22,19 @@ class TemplateContextBuilder:
         for ctx in contexts:
             for agg in ctx.aggregates:
                 self.registry[agg.name] = (
-                    f"from codegen.domain.aggregates.{self.naming.to_snake(agg.name)} import {agg.name}"
+                    f"from codegen.{ctx.name}.domain.aggregates.{self.naming.to_snake(agg.name)} import {agg.name}"
                 )
             for vo in ctx.value_objects:
                 self.registry[vo.name] = (
-                    f"from codegen.domain.value_objects.{self.naming.to_snake(vo.name)} import {vo.name}"
+                    f"from codegen.{ctx.name}.domain.value_objects.{self.naming.to_snake(vo.name)} import {vo.name}"
                 )
             for port in ctx.ports:
                 self.registry[port.name] = (
-                    f"from codegen.domain.ports.{self.naming.to_snake(port.name)} import {port.name}"
+                    f"from codegen.{ctx.name}.domain.ports.{self.naming.to_snake(port.name)} import {port.name}"
                 )
             for svc in ctx.services:
                 self.registry[svc.name] = (
-                    f"from codegen.domain.services.{self.naming.to_snake(svc.name)} import {svc.name}"
+                    f"from codegen.{ctx.name}.domain.services.{self.naming.to_snake(svc.name)} import {svc.name}"
                 )
 
     def extract_types(self, type_strs: List[str]) -> Set[str]:
@@ -69,12 +69,14 @@ class TemplateContextBuilder:
         """
         Builds a context dictionary for a template based on the target domain object.
         """
-        # Generic context building logic
-        # For a real robust implementation, we might want specialized methods for each type
-        if hasattr(target, "model_dump"):
-            ctx = target.model_dump()
-        else:
-            ctx = vars(target).copy()
+        # Build a context without recursively converting nested domain objects into dicts.
+        # Jinja templates rely on attribute access (e.g. attr.name), so we must preserve
+        # nested objects like Attribute/MethodSpec instead of `model_dump()`.
+        raw = vars(target).copy()
+        ctx = {k: v for k, v in raw.items() if not k.startswith("_")}
+
+        # Expose the original object for templates that want direct object access.
+        ctx["target"] = target
 
         # Add common helpers
         ctx["target_name"] = getattr(target, "name", "unknown")
@@ -84,13 +86,6 @@ class TemplateContextBuilder:
         force_dataclass = False
 
         if hasattr(target, "attributes"):
-            types_used.update(
-                self.extract_types(
-                    [a.name if hasattr(a, "type") else "" for a in target.attributes]
-                )
-            )
-            # Wait, attributes in domain model are objects.
-            # a.type should be the type string.
             types_used.update(
                 self.extract_types([getattr(a, "type", "") for a in target.attributes])
             )
@@ -115,13 +110,6 @@ class TemplateContextBuilder:
                     [getattr(a, "type", "") for a in target.result.attributes]
                 )
             )
-            if getattr(target, "depends_on_services", []) or getattr(
-                target, "depends_on_ports", []
-            ):
-                types_used.add("Any")
-                # Also add the specific ports/services to imports if they are in registry
-                types_used.update(getattr(target, "depends_on_services", []))
-                types_used.update(getattr(target, "depends_on_ports", []))
 
         ctx["imports"] = self.resolve_imports(
             types_used, ctx.get("name", ""), force_dataclass

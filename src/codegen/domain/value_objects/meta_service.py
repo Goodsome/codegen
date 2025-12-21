@@ -4,6 +4,8 @@ Name: MetaService
 Description: Specification of a domain service to be generated.
 """
 
+from pydantic import Field
+
 from codegen.domain.shared.models import ValueObject
 
 from codegen.domain.value_objects.method_spec import MethodSpec
@@ -18,4 +20,4 @@ class MetaService(ValueObject):
 
     description: str
 
-    operations: List[MethodSpec]
+    operations: List[MethodSpec] = Field(default_factory=list)

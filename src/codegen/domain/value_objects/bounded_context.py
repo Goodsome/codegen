@@ -4,6 +4,8 @@ Name: BoundedContext
 Description: A logical boundary within the system.
 """
 
+from pydantic import Field
+
 from codegen.domain.shared.models import ValueObject
 
 from codegen.domain.value_objects.meta_aggregate import MetaAggregate
@@ -27,8 +29,8 @@ class BoundedContext(ValueObject):
     name: str
     description: str
     domain: MetaDomain
-    application: MetaApplication
-    infrastructure: MetaInfrastructure
+    application: MetaApplication = Field(default_factory=MetaApplication)
+    infrastructure: MetaInfrastructure = Field(default_factory=MetaInfrastructure)
 
     @property
     def aggregates(self) -> list[MetaAggregate]:

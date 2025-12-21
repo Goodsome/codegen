@@ -15,101 +15,102 @@
       "type": "string",
       "description": "A description of the project."
     },
-    "shared": {
+    "contexts": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/ContextSpec" }
+    },
+    "bootstrap": { "$ref": "#/definitions/BootstrapSpec" }
+  },
+  "required": ["name", "contexts"],
+  "definitions": {
+    "ContextSpec": {
       "type": "object",
       "properties": {
-        "application": {
-          "type": "object",
-          "properties": {
-            "use_cases": {
-              "type": "array",
-              "items": { "$ref": "#/definitions/UseCase" }
-            }
-          }
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "domain": { "$ref": "#/definitions/DomainSpec" },
+        "application": { "$ref": "#/definitions/ApplicationSpec" },
+        "infrastructure": { "$ref": "#/definitions/InfrastructureSpec" }
+      },
+      "required": ["name"]
+    },
+    "DomainSpec": {
+      "type": "object",
+      "properties": {
+        "aggregates": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/ClassSpec" }
         },
-        "infrastructure": {
-          "type": "object",
-          "properties": {
-            "adapters": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "name": { "type": "string" },
-                  "implements": { "type": "string" },
-                  "description": { "type": "string" },
-                  "config": { "type": "object" }
-                },
-                "required": ["name", "implements"]
-              }
-            }
-          }
+        "value_objects": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/ClassSpec" }
+        },
+        "services": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/ServiceSpec" }
+        },
+        "ports": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/PortSpec" }
         }
       }
     },
-    "contexts": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": { "type": "string" },
-          "description": { "type": "string" },
-          "domain": {
-            "type": "object",
-            "properties": {
-              "aggregates": {
-                "type": "array",
-                "items": { "$ref": "#/definitions/ModelSpec" }
-              },
-              "value_objects": {
-                "type": "array",
-                "items": { "$ref": "#/definitions/ModelSpec" }
-              },
-              "services": {
-                "type": "array",
-                "items": { "$ref": "#/definitions/ServiceSpec" }
-              },
-              "ports": {
-                "type": "array",
-                "items": { "$ref": "#/definitions/PortSpec" }
-              }
-            }
-          },
-          "application": {
-            "type": "object",
-            "properties": {
-              "use_cases": {
-                "type": "array",
-                "items": { "$ref": "#/definitions/UseCase" }
-              }
-            }
-          }
-        },
-        "required": ["name"]
+    "ApplicationSpec": {
+      "type": "object",
+      "properties": {
+        "use_cases": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/UseCase" }
+        }
       }
     },
-    "bootstrap": {
+    "InfrastructureAdapterSpec": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "implements": { "type": "string" },
+        "config": { "type": "object" }
+      },
+      "required": ["name", "implements"]
+    },
+    "InfrastructureSpec": {
+      "type": "object",
+      "properties": {
+        "adapters": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/InfrastructureAdapterSpec" }
+        },
+        "acl": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/ClassSpec" }
+        }
+      }
+    },
+    "BootstrapSpec": {
       "type": "object",
       "properties": {
         "bindings": {
           "type": "array",
-          "items": {
-            "port": "string",
-            "implementation": "string"
-          }
+          "items": { "$ref": "#/definitions/BindingSpec" }
         },
-        "options": {
-          "type": "object",
-          "properties": {
-            "dry_run": { "type": "boolean" },
-            "overwrite": { "type": "boolean" }
-          }
-        }
+        "options": { "$ref": "#/definitions/BootstrapOptions" }
       }
-    }
-  },
-  "required": ["name", "contexts"],
-  "definitions": {
+    },
+    "BindingSpec": {
+      "type": "object",
+      "properties": {
+        "port": { "type": "string" },
+        "implementation": { "type": "string" }
+      }
+    },
+    "BootstrapOptions": {
+      "type": "object",
+      "properties": {
+        "dry_run": { "type": "boolean" },
+        "overwrite": { "type": "boolean" }
+      }
+    },
     "Attribute": {
       "type": "object",
       "properties": {
@@ -138,7 +139,7 @@
       },
       "required": ["name"]
     },
-    "ModelSpec": {
+    "ClassSpec": {
       "type": "object",
       "properties": {
         "name": { "type": "string" },
@@ -148,6 +149,10 @@
           "items": { "$ref": "#/definitions/Attribute" }
         },
         "behaviors": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/MethodSpec" }
+        },
+        "operations": {
           "type": "array",
           "items": { "$ref": "#/definitions/MethodSpec" }
         }
@@ -203,13 +208,6 @@
               "type": "array",
               "items": { "$ref": "#/definitions/Attribute" }
             }
-          }
-        },
-        "depends_on": {
-          "type": "object",
-          "properties": {
-            "services": { "type": "array", "items": { "type": "string" } },
-            "ports": { "type": "array", "items": { "type": "string" } }
           }
         }
       },

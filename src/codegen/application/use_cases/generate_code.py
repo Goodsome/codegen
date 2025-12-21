@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
 from codegen.domain.ports.blueprint_loader_port import BlueprintLoaderPort
-from codegen.domain.ports.file_system_port import FileSystemPort
-from codegen.domain.ports.template_port import TemplatePort
+from codegen.shared.domain.ports.file_system_port import FileSystemPort
+from codegen.shared.domain.ports.template_port import TemplatePort
 from codegen.domain.services.scaffold_service import ScaffoldService
 
 
@@ -10,8 +10,9 @@ from codegen.domain.services.scaffold_service import ScaffoldService
 class GenerateCodeCommand:
     """Command/Query for GenerateCode."""
 
-    overwrite: bool = False
+    overwrite: bool
     node: str | None = None
+    target_path: str = "target"
 
 
 @dataclass(frozen=True)
@@ -44,9 +45,9 @@ class GenerateCodeHandler:
 
         for task in render_tasks:
             content = self.template_port.render(task.template_name, task.context_data)
-            target_path = f"target/{task.target_path}"
-            print(f"Writing {target_path}")
-            self.file_system_port.write_text(
+            target_path = f"{cmd.target_path}/{task.target_path}"
+            print(f"Writing {target_path}, {cmd.overwrite}")
+            self.file_system_port.write_file(
                 path=target_path,
                 content=content,
                 overwrite=cmd.overwrite,

@@ -4,8 +4,8 @@ layout: ddd_standard
 description: "DDD-based Code Generator that generates itself."
 
 contexts:
-  - name: core
-    description: "Core Code Generation Logic"
+  - name: domain_definition
+    description: "Parses the codegen.yaml blueprint."
 
     domain:
       aggregates:
@@ -209,34 +209,6 @@ contexts:
               output: { type: "Path" }
 
       ports:
-        - name: TemplatePort
-          description: "Render templates with a given context."
-          kind: gateway
-          operations:
-            - name: render
-              inputs:
-                - { name: template, type: str }
-                - { name: context, type: "Dict[str, Any]" }
-              output: { type: str }
-        - name: FileSystemPort
-          description: "File system operations used by the generator."
-          kind: repository
-          operations:
-            - name: read_text
-              inputs:
-                - { name: path, type: str }
-              output: { type: str }
-            - name: write_text
-              inputs:
-                - { name: path, type: str }
-                - { name: content, type: str }
-                - { name: overwrite, type: bool, default: "False" }
-              output: { type: None }
-            - name: makedirs
-              inputs:
-                - { name: path, type: str }
-                - { name: exist_ok, type: bool }
-              output: { type: None }
         - name: BlueprintLoaderPort
           description: "Loads the blueprint from a file."
           kind: repository
@@ -268,6 +240,137 @@ contexts:
 
     infrastructure:
       adapters:
+        - name: YamlBlueprintLoader
+          implements: BlueprintLoaderPort
+          description: "Blueprint loader that reads from a YAML file."
+
+  - name: python_gen
+    description: "Models the structure of Python code."
+    domain:
+      aggregates:
+        - name: PackageSpec
+          description: "Represents a Python package."
+          attributes:
+            - { name: path, type: str }
+            - { name: modules, type: "list[ModuleSpec]" }
+
+      value_objects:
+        - name: ImportSpec
+          description: "Represents an import statement in a Python module."
+          attributes:
+            - { name: module, type: str }
+            - { name: name, type: str}
+            - { name: alias, type: str, optional: true }
+        - name: TypeAnnotationSpec
+          description: "Represents a type annotation."
+          attributes:
+          - { name: name, type: str }
+        - name: ParameterSpec
+          description: "Represents a parameter in a Python function."
+          attributes:
+            - { name: name, type: str }
+            - { name: annotation, type: TypeAnnotationSpec }
+            - { name: default, type: str, optional: true }
+        - name: FunctionSpec
+          description: "Represents a function in a Python module."
+          attributes:
+            - { name: decorators, type: "list[str]" }
+            - { name: name, type: str }
+            - { name: parameters, type: "list[ParameterSpec]" }
+            - { name: return_annotation, type: TypeAnnotationSpec }
+            - { name: suite, type: str }
+        - name: ClassSpec
+          description: "Represents a class in a Python module."
+          attributes:
+            - { name: name, type: str }
+            - { name: decorators, type: "list[str]" }
+            - { name: inheritance, type: "list[str]" }
+            - { name: attributes, type: "list[ParameterSpec]" }
+            - { name: methods, type: "list[FunctionSpec]" }
+        - name: ModuleSpec
+          description: "Represents a Python module."
+          attributes:
+            - { name: path, type: str }
+            - { name: functions, type: "list[FunctionSpec]" }
+            - { name: classes, type: "list[ClassSpec]" }
+
+      services:
+        - name: ImportOrganizer
+          description: "Organizes imports in a Python module."
+
+    application:
+      use_cases:
+        - name: GeneratePackage
+          kind: command
+          description: "Generate Python package."
+          command:
+            name: GeneratePackageCommand
+            attributes:
+              - { name: package_spec, type: PackageSpec }
+              - { name: overwrite, type: bool, default: "False" }
+          result:
+            name: GeneratePackageResult
+            attributes:
+              - { name: result, type: str }
+          attributes:
+            - { name: template_port, type: TemplatePort }
+            - { name: file_system_port, type: FileSystemPort }
+        - name: GenerateModule
+          kind: command
+          description: "Generate Python module."
+          command:
+            name: GenerateModuleCommand
+            attributes:
+              - { name: module_spec, type: ModuleSpec }
+              - { name: overwrite, type: bool, default: "False" }
+          result:
+            name: GenerateModuleResult
+            attributes:
+              - { name: result, type: str }
+          attributes:
+            - { name: template_port, type: TemplatePort }
+            - { name: file_system_port, type: FileSystemPort }
+
+#    infrastructure:
+#      acl:
+#        - name: BlueprintTranslator
+#          description: "Translate blueprint into Python code."
+#          operations:
+#            - name: to_package_spec
+#              inputs:
+#                - { name: blueprint, type: Blueprint }
+#              output: { type: PackageSpec }
+
+  - name: shared
+    description: "Shared between contexts."
+    domain:
+      ports:
+        - name: TemplatePort
+          description: "Port for generating templates."
+          kind: gateway
+          operations:
+            - name: render
+              inputs:
+                - { name: template_path, type: str }
+                - { name: context, type: "Dict[str, Any]" }
+              output: { type: str }
+        - name: FileSystemPort
+          description: "Port for interacting with the file system."
+          kind: repository
+          operations:
+            - name: read_file
+              inputs:
+                - { name: path, type: str }
+              output: { type: str }
+            - name: write_file
+              inputs:
+                - { name: path, type: str }
+                - { name: content, type: str }
+                - { name: overwrite, type: bool, default: "False" }
+              output: { type: None }
+
+    infrastructure:
+      adapters:
         - name: JinjaAdapter
           implements: TemplatePort
           description: "Jinja-based template rendering adapter."
@@ -281,10 +384,6 @@ contexts:
           config:
             output_root: "out"
             encoding: "utf-8"
-
-        - name: YamlFileBlueprintLoader
-          implements: BlueprintLoaderPort
-          description: "Blueprint loader that reads from a YAML file."
 
 
 bootstrap:

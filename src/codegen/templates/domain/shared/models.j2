@@ -60,7 +60,7 @@ class ValueObject(BaseModel):
 
     model_config = ConfigDict(
         frozen=True,
-        extra="forbid",
+        extra="forbid"
     )
 
 
@@ -75,7 +75,7 @@ class AggregateRoot(Entity):
 
     _domain_events: list["DomainEvent"] = PrivateAttr(default_factory=list)
 
-    def add_domain_event(self, event: "DomainEvent") -> None:  # noqa: F821
+    def add_domain_event(self, event: "DomainEvent") -> None:
         """添加领域事件
 
         Args:
@@ -92,7 +92,7 @@ class AggregateRoot(Entity):
 
         self._domain_events.append(event)
 
-    def collect_events(self) -> list["DomainEvent"]:  # noqa: F821
+    def collect_events(self) -> list["DomainEvent"]:
         """收集并清空领域事件
 
         Returns:

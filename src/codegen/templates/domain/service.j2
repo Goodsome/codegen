@@ -6,7 +6,7 @@ class {{ name }}:
     {{ description }}
     """
     {% for op in operations %}
-    def {{ op.name }}(self, {% for input in op.inputs %}{{ input.name }}: {{ input.type }}{% if not loop.last %}, {% endif %}{% endfor %}) -> {{ op.output_type }}:
+    def {{ op.name }}(self, {% for input in op.inputs %}{{ input.name }}: {{ input.type }}{% if not loop.last %}, {% endif %}{% endfor %}) -> {{ op.output.type }}:
         """
         {{ op.description }}
         TODO: Implement domain service logic
