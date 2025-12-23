@@ -19,12 +19,6 @@ class JinjaAdapter(TemplatePort):
         self.env = Environment(
             loader=FileSystemLoader(self.template_root), autoescape=self.autoescape
         )
-        # Register standard filters
-        from codegen.domain.services.naming_service import NamingService
-
-        ns = NamingService()
-        self.env.filters["snake"] = ns.to_snake
-        self.env.filters["pascal"] = ns.to_pascal
         self.env.filters["repr"] = repr
 
     def render(self, template_path: str, context: Dict[str, Any]) -> str:
