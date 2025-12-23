@@ -2,7 +2,7 @@ import typer
 from pathlib import Path
 from typing import Optional
 from codegen.bootstrap import Container
-from codegen.application.use_cases.generate_code import GenerateCodeCommand
+from codegen.orchestration.workflows.generate_project import GenerateCodeCommand
 
 # 创建 Typer 应用实例
 app = typer.Typer(
@@ -24,34 +24,17 @@ def generate(
     Generate code based on the blueprint.
     """
     # 1. 初始化容器并加载配置
-    container = Container()
 
     current_dir = Path(__file__).parent.parent  # src/codegen
     config = {
-        "template_root": current_dir / "templates",
-        "output_root": current_dir.parent.parent,  # Root of project
+        "template_root": current_dir / "python_gen" / "templates",
+        "output_root": current_dir.parent.parent / "target",
         "encoding": "utf-8",
     }
-    container.config.from_dict(config)
-
-    # 2. 获取 Handler
-    handler = container.generate_code_use_case()
-
-    # 3. 确定目标路径
-    if build:
-        target_path = "src/codegen"
-    else:
-        target_path = "target"
-
-    # 4. 执行命令
-    cmd = GenerateCodeCommand(
-        overwrite=overwrite,
-        node=node,
-        target_path=target_path,
-    )
-
-    result = handler.execute(cmd)
-    typer.echo(f"Generation Complete. {len(result.files_written)} files processed.")
+    container = Container(config=config)
+    workflow = container.generate_code_workflow()
+    cmd = GenerateCodeCommand(overwrite=overwrite, node=node)
+    workflow.execute(cmd)
 
 
 if __name__ == "__main__":
