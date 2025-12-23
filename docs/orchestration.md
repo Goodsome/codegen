@@ -78,7 +78,8 @@ class BlueprintToPythonTranslator:
 ```python
 from codegen.domain_definition.domain.ports import BlueprintLoaderPort
 from codegen.python_gen.application.use_cases import GeneratePackage, GeneratePackageCommand
-from codegen.orchestration.translators.blueprint_to_python import BlueprintToPythonTranslator
+from codegen.orchestration.translators.blueprint_to_package_spec import BlueprintToPythonTranslator
+
 
 class ProjectGenerationWorkflow:
     def __init__(
@@ -98,7 +99,7 @@ class ProjectGenerationWorkflow:
             raise ValueError("Blueprint not found")
 
         # Step 2: 在编排层进行转化 (Blueprint -> PackageSpec)
-        package_spec = self.translator.translate(blueprint)
+        package_spec = self.translator.execute(blueprint)
 
         # Step 3: 调用 python_gen 下发生成命令
         command = GeneratePackageCommand(

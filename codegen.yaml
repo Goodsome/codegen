@@ -220,22 +220,18 @@ contexts:
 
     application:
       use_cases:
-        - name: GenerateCode
+        - name: LoadBlueprint
           kind: command
-          description: "Generate project code from the blueprint. "
+          description: "Loads the blueprint from a file."
           command:
-            name: GenerateCodeCommand
+            name: LoadBlueprintCommand
             attributes:
-              - { name: overwrite, type: bool }
               - { name: node, type: str, optional: true }
           result:
-            name: GenerateCodeResult
+            name: LoadBlueprintResult
             attributes:
-              - { name: files_written, type: "list[str]" }
+              - { name: blueprint, type: "Blueprint" }
           attributes:
-            - { name: scaffold_service, type: ScaffoldService }
-            - { name: template_port, type: TemplatePort }
-            - { name: file_system_port, type: FileSystemPort }
             - { name: blueprint_loader, type: BlueprintLoaderPort }
 
     infrastructure:
@@ -247,13 +243,6 @@ contexts:
   - name: python_gen
     description: "Models the structure of Python code."
     domain:
-      aggregates:
-        - name: PackageSpec
-          description: "Represents a Python package."
-          attributes:
-            - { name: path, type: str }
-            - { name: modules, type: "list[ModuleSpec]" }
-
       value_objects:
         - name: ImportSpec
           description: "Represents an import statement in a Python module."
@@ -290,9 +279,17 @@ contexts:
         - name: ModuleSpec
           description: "Represents a Python module."
           attributes:
-            - { name: path, type: str }
+            - { name: filename, type: str }
+            - { name: directory, type: Path }
             - { name: functions, type: "list[FunctionSpec]" }
             - { name: classes, type: "list[ClassSpec]" }
+            - { name: imports, type: "list[ImportSpec]" }
+        - name: PackageSpec
+          description: "Represents a Python package."
+          attributes:
+            - { name: path, type: Path }
+            - { name: modules, type: "list[ModuleSpec]" }
+            - { name: packages, type: "list[\"PackageSpec\"]"}
 
       services:
         - name: ImportOrganizer
@@ -385,6 +382,12 @@ contexts:
             output_root: "out"
             encoding: "utf-8"
 
+#orchestration:
+#  workflows:
+#    - name: GenerateProject
+#  translators:
+#    - from: Blueprint
+#      to: PackageSpec
 
 bootstrap:
   bindings:

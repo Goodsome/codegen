@@ -1,0 +1,9 @@
+{% for imp in module_spec.imports -%}
+{% set import_spec = imp %}{% include 'import.j2' %}
+{%- endfor %}
+
+{% for cls in module_spec.classes %}
+{% set class_spec = cls %}{% include 'class.j2' %} {% endfor %}
+
+{% for func in module_spec.functions %}
+{% set function_spec = func %} {% include 'function.j2' %} {% endfor %}
