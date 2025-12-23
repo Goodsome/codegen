@@ -8,16 +8,6 @@ contexts:
     description: "Parses the codegen.yaml blueprint."
 
     domain:
-      aggregates:
-        - name: Blueprint
-          description: "Root of the generation model. Represents the entire project definition."
-          attributes:
-            - { name: name, type: str, description: "Project Name" }
-            - { name: description, type: str }
-            - { name: layout, type: str, description: "Layout strategy name" }
-            - { name: contexts, type: "list[BoundedContext]" }
-            - { name: bootstrap, type: MetaBootstrap }
-
       value_objects:
         - name: Attribute
           description: "Standard specification for a class attribute."
@@ -133,80 +123,18 @@ contexts:
           attributes:
             - { name: port, type: str }
             - { name: implementation, type: str }
-
         - name: MetaBootstrap
           description: "Specification of the bootstrap configuration."
           attributes:
             - { name: bindings, type: "list[PortBinding]" }
-
-        - name: RenderTask
-          description: "Task for rendering templates with context data."
+        - name: Blueprint
+          description: "Root of the generation model. Represents the entire project definition."
           attributes:
-            - { name: target_path, type: str }
-            - { name: template_name, type: str }
-            - { name: context_data, type: "Dict[str, Any]" }
-
-      services:
-        - name: NamingService
-          description: "Provide naming conversions used during code generation."
-          operations:
-            - name: to_snake
-              description: "Convert to snake_case"
-              inputs:
-                - { name: text, type: str }
-              output: { type: str }
-            - name: to_pascal
-              description: "Convert to PascalCase"
-              inputs:
-                - { name: text, type: str }
-              output: { type: str }
-            - name: to_kebab
-              description: "Convert to kebab-case"
-              inputs:
-                - { name: text, type: str }
-              output: { type: str }
-
-        - name: TemplateContextBuilder
-          description: "Build the template rendering context from the blueprint."
-          operations:
-            - name: build_registry
-              inputs:
-                - { name: blueprint, type: Blueprint }
-              output: { type: None }
-            - name: extract_types
-              inputs:
-                - { name: type_strs, type: "list[str]" }
-              output: { type: "Set[str]" }
-            - name: resolve_imports
-              inputs:
-                - { name: types_used, type: "Set[str]" }
-                - { name: current_name, type: str }
-                - { name: force_dataclass, type: bool }
-              output: { type: "list[str]" }
-            - name: build_context
-              inputs:
-                - { name: blueprint, type: Blueprint }
-              output: { type: "Dict[str, Any]" }
-
-        - name: ScaffoldService
-          description: "Converts the Blueprint into a flat list of render tasks."
-          operations:
-            - name: plan_generation
-              inputs:
-                - { name: blueprint, type: Blueprint }
-              output: { type: "list[RenderTask]" }
-
-            - name: plan_paths
-              inputs:
-                - { name: blueprint, type: Blueprint }
-              output: { type: "list[Path]" }
-
-            - name: get_component_paths
-              description: "get path for a specific component"
-              inputs:
-                - { name: component_type, type: str }
-                - { name: name, type: str}
-              output: { type: "Path" }
+            - { name: name, type: str, description: "Project Name" }
+            - { name: description, type: str }
+            - { name: layout, type: str, description: "Layout strategy name" }
+            - { name: contexts, type: "list[BoundedContext]" }
+            - { name: bootstrap, type: MetaBootstrap }
 
       ports:
         - name: BlueprintLoaderPort
