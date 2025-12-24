@@ -1,12 +1,15 @@
+from codegen.python_gen.application.use_cases.generate_package import (
+    GeneratePackage,
+)
 from dependency_injector import containers, providers
 from dependency_injector.providers import Singleton, Factory
 
-from codegen.application.use_cases.load_blueprint import LoadBlueprintHandler
+from codegen.application.use_cases.load_blueprint import LoadBlueprint
 from codegen.infrastructure.adapters.yaml_blueprint_loader import YamlBlueprintLoader
 from codegen.orchestration.translators.blueprint_to_package_spec import (
     BlueprintToPackageSpecTranslator,
 )
-from codegen.orchestration.workflows.generate_project import GenerateCodeWorkflow
+from codegen.orchestration.workflows.generate_project import GenerateProject
 from codegen.python_gen.application.use_cases.generate_module import (
     GenerateModuleHandler,
 )
@@ -23,8 +26,8 @@ class Container(containers.DeclarativeContainer):
 
     blueprint_loader_provider = Singleton(YamlBlueprintLoader)
 
-    load_blueprint_use_case: Factory[LoadBlueprintHandler] = Factory(
-        LoadBlueprintHandler,
+    load_blueprint_use_case: Factory[LoadBlueprint] = Factory(
+        LoadBlueprint,
         blueprint_loader=blueprint_loader_provider,
     )
 
@@ -34,9 +37,15 @@ class Container(containers.DeclarativeContainer):
         file_system_port=os_file_port,
     )
 
-    generate_code_workflow: Factory[GenerateCodeWorkflow] = Factory(
-        GenerateCodeWorkflow,
+    generate_package_use_case: Factory[GeneratePackage] = Factory(
+        GeneratePackage,
+        template_port=template_port_provider,
+        file_system_port=os_file_port,
+    )
+
+    generate_code_workflow: Factory[GenerateProject] = Factory(
+        GenerateProject,
         loader=load_blueprint_use_case,
-        generator=generate_module_use_case,
+        generator=generate_package_use_case,
         translator=BlueprintToPackageSpecTranslator,
     )

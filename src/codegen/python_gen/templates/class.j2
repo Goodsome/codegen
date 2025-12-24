@@ -1,6 +1,7 @@
 {% for decorator in class_spec.decorators %}
 @{{ decorator }} {% endfor %}
 class {{ class_spec.name }}{% if class_spec.inheritance %}({{ class_spec.inheritance | join(', ') }}){% endif %}:
+    {% if class_spec.description %}"""{{ class_spec.description }}"""{% endif %}
     {% if not class_spec.attributes and not class_spec.methods %} pass {% else %}
     {% for attr in class_spec.attributes %}
     {{ attr.name }}: {{ attr.annotation.name }}{% if attr.default %} = {{ attr.default }}{% endif %} {% endfor %}

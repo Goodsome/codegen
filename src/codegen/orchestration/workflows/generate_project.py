@@ -1,15 +1,15 @@
+from codegen.python_gen.application.use_cases.generate_package import (
+    GeneratePackage,
+    GeneratePackageCommand,
+)
 from codegen.orchestration.translators.blueprint_to_package_spec import (
     BlueprintToPackageSpecTranslator,
 )
 from dataclasses import dataclass
 
 from codegen.application.use_cases.load_blueprint import (
-    LoadBlueprintHandler,
+    LoadBlueprint,
     LoadBlueprintCommand,
-)
-from codegen.python_gen.application.use_cases.generate_module import (
-    GenerateModuleHandler,
-    GenerateModuleCommand,
 )
 
 
@@ -29,10 +29,10 @@ class GenerateCodeResult:
 
 
 @dataclass
-class GenerateCodeWorkflow:
-    loader: LoadBlueprintHandler
+class GenerateProject:
+    loader: LoadBlueprint
     translator: BlueprintToPackageSpecTranslator
-    generator: GenerateModuleHandler
+    generator: GeneratePackage
 
     def execute(self, cmd: GenerateCodeCommand) -> GenerateCodeResult:
         """Orchestrates blueprint loading and module generation"""
@@ -41,12 +41,8 @@ class GenerateCodeWorkflow:
             return GenerateCodeResult(files_written=[])
 
         package_spec = self.translator.execute(load_result.blueprint)
-
-        for module in package_spec.modules:
-            generate_module_cmd = GenerateModuleCommand(
-                module_spec=module,
-                overwrite=cmd.overwrite,
-            )
-            self.generator.execute(generate_module_cmd)
+        self.generator.execute(
+            GeneratePackageCommand(package_spec=package_spec, overwrite=cmd.overwrite)
+        )
 
         return GenerateCodeResult(files_written=[])

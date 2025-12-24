@@ -19,7 +19,7 @@ class LoadBlueprintResult:
 
 
 @dataclass
-class LoadBlueprintHandler:
+class LoadBlueprint:
     """Handler for LoadBlueprint (command)."""
 
     blueprint_loader: BlueprintLoaderPort

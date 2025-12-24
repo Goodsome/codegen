@@ -20,13 +20,19 @@ class GeneratePackageResult:
 
 
 @dataclass
-class GeneratePackageHandler:
+class GeneratePackage:
     """Generate Python package."""
 
     template_port: TemplatePort
     file_system_port: FileSystemPort
 
     def execute(self, cmd: GeneratePackageCommand) -> GeneratePackageResult:
+        package_spec = cmd.package_spec
+        if not package_spec.has_init_file():
+            self.file_system_port.write_file(
+                path=package_spec.path / "__init__.py",
+                content="",
+            )
         for module in cmd.package_spec.modules:
             context = {"module_spec": module}
             content = self.template_port.render("module.j2", context)
@@ -35,4 +41,9 @@ class GeneratePackageHandler:
                 content=content,
                 overwrite=cmd.overwrite,
             )
+        for subpackage in cmd.package_spec.packages:
+            _cmd = GeneratePackageCommand(
+                package_spec=subpackage, overwrite=cmd.overwrite
+            )
+            self.execute(_cmd)
         return GeneratePackageResult(result="success")
