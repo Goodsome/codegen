@@ -42,7 +42,10 @@ class GenerateProject:
 
         package_spec = self.translator.execute(load_result.blueprint)
         self.generator.execute(
-            GeneratePackageCommand(package_spec=package_spec, overwrite=cmd.overwrite)
+            GeneratePackageCommand(
+                package_spec=package_spec,
+                overwrite=cmd.overwrite,
+            )
         )
 
         return GenerateCodeResult(files_written=[])

@@ -1,0 +1,66 @@
+from typing import Iterable
+from typing import Sequence
+from codegen.python_gen.domain.aggregates.package_spec import PackageSpec
+from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
+from dataclasses import dataclass
+
+from codegen.python_gen.domain.value_objects.imported_name import ImportedName
+from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+BUILTIN_TYPES = {
+    "str",
+    "int",
+    "float",
+    "bool",
+    "None",
+    "list",
+}
+
+GLOBAL_REGISTRY = {
+    "Path": "pathlib",
+    "Any": "typing",
+    "Dict": "typing",
+    "Union": "typing",
+    "dataclass": "dataclasses",
+    "ValueObject": "codegen.domain.shared.models",
+}
+
+TEMPORARY_MAPPING = {"dataclass(frozen=True)": "dataclass"}
+
+
+@dataclass
+class DependencyResolver:
+
+    global_registry: dict[str, str]
+
+    @classmethod
+    def build_from_package_spec(cls, package_spec: PackageSpec) -> "DependencyResolver":
+        global_registry = package_spec.get_global_registry()
+        global_registry.update(GLOBAL_REGISTRY)
+        return cls(global_registry=global_registry)
+
+    def resolve_module(self, module_spec: ModuleSpec) -> Iterable[ImportFromSpec]:
+        required_types = module_spec.get_required_types()
+        import_spec_bags: dict[str, ImportFromSpec] = {}
+        for rt in required_types:
+            if module_spec.has_class_or_function(rt):
+                continue
+            if rt in BUILTIN_TYPES:
+                continue
+            rt = TEMPORARY_MAPPING.get(rt, rt)
+            if rt not in self.global_registry:
+                logger.warning(f"Could not find type {rt} in global registry")
+                continue
+            module_path = self.global_registry[rt]
+            if module_path not in import_spec_bags:
+                import_spec_bags[module_path] = ImportFromSpec(
+                    module=module_path, names=[]
+                )
+            import_spec_bags[module_path].add_name(rt)
+
+        return import_spec_bags.values()

@@ -17,3 +17,6 @@ class ParameterSpec(ValueObject):
     name: str
     annotation: TypeAnnotationSpec
     default: str | None = None
+
+    def get_required_types(self) -> set[str]:
+        return self.annotation.get_all_referenced_names()

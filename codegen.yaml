@@ -172,16 +172,21 @@ contexts:
     description: "Models the structure of Python code."
     domain:
       value_objects:
-        - name: ImportSpec
-          description: "Represents an import statement in a Python module."
+        - name: ImportedName
+          description: "Represents a name imported from another module."
+          attributes:
+            - { name: name, type: str }
+            - { name: alias, type: str | None, default: None }
+        - name: ImportFromSpec
+          description: "Represents an import statement from another module."
           attributes:
             - { name: module, type: str }
-            - { name: name, type: str}
-            - { name: alias, type: str, optional: true }
+            - { name: names, type: "list[ImportedName]" }
         - name: TypeAnnotationSpec
           description: "Represents a type annotation."
           attributes:
           - { name: name, type: str }
+          - { name: sub_annotations, type: "list[TypeAnnotationSpec]", optional: true }
         - name: ParameterSpec
           description: "Represents a parameter in a Python function."
           attributes:
@@ -200,10 +205,11 @@ contexts:
           description: "Represents a class in a Python module."
           attributes:
             - { name: name, type: str }
-            - { name: decorators, type: "list[str]" }
-            - { name: inheritance, type: "list[str]" }
-            - { name: attributes, type: "list[ParameterSpec]" }
-            - { name: methods, type: "list[FunctionSpec]" }
+            - { name: description, type: str, default: "" }
+            - { name: decorators, type: "list[str]", default: "Field(default_factory=list)" }
+            - { name: inheritance, type: "list[str]", default: "Field(default_factory=list)" }
+            - { name: attributes, type: "list[ParameterSpec]", default: "Field(default_factory=list)" }
+            - { name: methods, type: "list[FunctionSpec]", default: "Field(default_factory=list)" }
         - name: ModuleSpec
           description: "Represents a Python module."
           attributes:
@@ -211,14 +217,13 @@ contexts:
             - { name: directory, type: Path }
             - { name: functions, type: "list[FunctionSpec]" }
             - { name: classes, type: "list[ClassSpec]" }
-            - { name: imports, type: "list[ImportSpec]" }
+            - { name: imports, type: "list[ImportFromSpec]" }
         - name: PackageSpec
           description: "Represents a Python package."
           attributes:
             - { name: path, type: Path }
             - { name: modules, type: "list[ModuleSpec]" }
-            - { name: packages, type: "list[\"PackageSpec\"]"}
-
+            - { name: sub_packages, type: "list[PackageSpec]"}
       services:
         - name: ImportOrganizer
           description: "Organizes imports in a Python module."

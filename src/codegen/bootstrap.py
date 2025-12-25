@@ -1,6 +1,3 @@
-from codegen.python_gen.application.use_cases.generate_package import (
-    GeneratePackage,
-)
 from dependency_injector import containers, providers
 from dependency_injector.providers import Singleton, Factory
 
@@ -10,8 +7,8 @@ from codegen.orchestration.translators.blueprint_to_package_spec import (
     BlueprintToPackageSpecTranslator,
 )
 from codegen.orchestration.workflows.generate_project import GenerateProject
-from codegen.python_gen.application.use_cases.generate_module import (
-    GenerateModuleHandler,
+from codegen.python_gen.application.use_cases.generate_package import (
+    GeneratePackage,
 )
 from codegen.shared.infrastructure.adapters.jinja_adapter import JinjaAdapter
 from codegen.shared.infrastructure.adapters.o_s_file_system import OSFileSystem
@@ -29,12 +26,6 @@ class Container(containers.DeclarativeContainer):
     load_blueprint_use_case: Factory[LoadBlueprint] = Factory(
         LoadBlueprint,
         blueprint_loader=blueprint_loader_provider,
-    )
-
-    generate_module_use_case: Factory[GenerateModuleHandler] = Factory(
-        GenerateModuleHandler,
-        template_port=template_port_provider,
-        file_system_port=os_file_port,
     )
 
     generate_package_use_case: Factory[GeneratePackage] = Factory(
