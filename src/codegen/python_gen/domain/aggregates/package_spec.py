@@ -8,19 +8,51 @@ from pathlib import Path
 
 from pydantic import Field
 
-from codegen.domain.shared.models import ValueObject
-
+from codegen.domain.shared.models import MutableValueObject
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 
 
-class PackageSpec(ValueObject):
+class PackageSpec(MutableValueObject):
     """Represents a Python package."""
 
-    path: Path
+    name: str
     modules: list[ModuleSpec] = Field(default_factory=list)
-    packages: list["PackageSpec"] = Field(default_factory=list)
+    sub_packages: list["PackageSpec"] = Field(default_factory=list)
 
-    def has_init_file(self) -> bool:
-        """检查包是否已存在 __init__.py 文件"""
-        init_file_path = self.path / "__init__.py"
-        return init_file_path.exists()
+    @classmethod
+    def create(
+        cls,
+        name: str,
+        modules: list[ModuleSpec] | None = None,
+        sub_packages: list["PackageSpec"] | None = None,
+    ):
+        if modules is None:
+            modules = []
+        if sub_packages is None:
+            sub_packages = []
+        return cls(
+            name=name,
+            modules=modules,
+            sub_packages=sub_packages,
+        )
+
+    def get_global_registry(self, root_name: str = "") -> dict[str, str]:
+        symbol_table: dict[str, str] = {}
+        self._build_symbol_table(root_name, symbol_table)
+        return symbol_table
+
+    def _build_symbol_table(self, root_path: str, table: dict[str, str]):
+        """递归扫描所有模块，记录每个类属于哪个绝对路径"""
+        if root_path:
+            current_path = f"{root_path}.{self.name}"
+        else:
+            current_path = self.name
+
+        for mod in self.modules:
+            mod_name = Path(mod.filename).stem
+            full_mod_path = f"{current_path}.{mod_name}"
+            for cls in mod.classes:
+                table[cls.name] = full_mod_path
+
+        for pkg in self.sub_packages:
+            pkg._build_symbol_table(current_path, table)

@@ -20,3 +20,13 @@ class ClassSpec(ValueObject):
     inheritance: list[str] = Field(default_factory=list)
     attributes: list[ParameterSpec] = Field(default_factory=list)
     methods: list[FunctionSpec] = Field(default_factory=list)
+
+    def get_required_types(self) -> set[str]:
+        types: set[str] = set()
+        types.update(self.inheritance)
+        types.update(self.decorators)
+        for attribute in self.attributes:
+            types.update(attribute.get_required_types())
+        for method in self.methods:
+            types.update(method.get_required_types())
+        return types

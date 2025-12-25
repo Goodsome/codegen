@@ -1,4 +1,4 @@
-{% for imp in module_spec.imports -%}
+{% for imp in imports -%}
 {% set import_spec = imp %}{% include 'import.j2' %}
 {%- endfor %}
 

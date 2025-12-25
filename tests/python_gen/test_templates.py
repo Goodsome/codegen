@@ -4,7 +4,6 @@ from codegen.python_gen.domain.value_objects.type_annotation_spec import (
 from codegen.python_gen.domain.value_objects.parameter_spec import ParameterSpec
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
-from codegen.python_gen.domain.value_objects.import_spec import ImportSpec
 import pytest
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, Template
@@ -45,29 +44,6 @@ def jinja_env(template_dir: Path) -> Environment:
 
 @pytest.fixture(scope="module")
 def module_spec() -> ModuleSpec:
-    path = ""
-    imports = [
-        ImportSpec(
-            module="pydantic.fields",
-            name="Field",
-        ),
-        ImportSpec(
-            module="codegen.domain.shared.models",
-            name="ValueObject",
-        ),
-        ImportSpec(
-            module="codegen.python_gen.domain.value_objects.class_spec",
-            name="ClassSpec",
-        ),
-        ImportSpec(
-            module="codegen.python_gen.domain.value_objects.function_spec",
-            name="FunctionSpec",
-        ),
-        ImportSpec(
-            module="codegen.python_gen.domain.value_objects.import_spec",
-            name="ImportSpec",
-        ),
-    ]
     class_spec = ClassSpec(
         name="ModuleSpec",
         decorators=[],
@@ -93,10 +69,8 @@ def module_spec() -> ModuleSpec:
         methods=[],
     )
     return ModuleSpec.create(
-        directory=path,
         filename="module.py",
         classes=[class_spec],
-        imports=imports,
     )
 
 

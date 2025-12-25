@@ -1,9 +1,11 @@
 {% for decorator in function_spec.decorators %}
 @{{ decorator }}
 {% endfor %}
-def {{ function_spec.name }}({% for param in function_spec.parameters %}{{ param.name }}: {{ param.annotation.name }}{% if param.default %} = {{ param.default }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}) -> {{ function_spec.return_annotation.name }}:
+def {{ function_spec.name }}({% for param in function_spec.parameters %}
+    {% if function_spec.is_instance_method() %}self, {% endif %}
+    {{ param.name }}: {{ param.annotation.name }}{% if param.default %} = {{ param.default }}{% endif %}{% if not loop.last %}, {% endif %} {% endfor %}
+) -> {{ function_spec.return_annotation.render() }}:
     {% if function_spec.suite %}
     {{ function_spec.suite | indent(4) }}
-    {% else %}
-    pass
+    {% else %}...
     {% endif %}

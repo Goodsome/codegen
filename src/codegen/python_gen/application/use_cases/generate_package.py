@@ -1,4 +1,7 @@
+from pathlib import Path
+
 from codegen.python_gen.domain.aggregates.package_spec import PackageSpec
+from codegen.python_gen.domain.services.dependency_resolver import DependencyResolver
 from codegen.shared.domain.ports.file_system_port import FileSystemPort
 from codegen.shared.domain.ports.template_port import TemplatePort
 from dataclasses import dataclass
@@ -8,8 +11,8 @@ from dataclasses import dataclass
 class GeneratePackageCommand:
     """Command/Query for GeneratePackage."""
 
-    package_spec: PackageSpec  #
-    overwrite: bool  #
+    package_spec: PackageSpec
+    overwrite: bool
 
 
 @dataclass(frozen=True)
@@ -27,23 +30,44 @@ class GeneratePackage:
     file_system_port: FileSystemPort
 
     def execute(self, cmd: GeneratePackageCommand) -> GeneratePackageResult:
-        package_spec = cmd.package_spec
-        if not package_spec.has_init_file():
-            self.file_system_port.write_file(
-                path=package_spec.path / "__init__.py",
-                content="",
-            )
-        for module in cmd.package_spec.modules:
-            context = {"module_spec": module}
-            content = self.template_port.render("module.j2", context)
-            self.file_system_port.write_file(
-                path=module.full_path,
-                content=content,
-                overwrite=cmd.overwrite,
-            )
-        for subpackage in cmd.package_spec.packages:
-            _cmd = GeneratePackageCommand(
-                package_spec=subpackage, overwrite=cmd.overwrite
-            )
-            self.execute(_cmd)
+        dependency_resolver = DependencyResolver.build_from_package_spec(
+            cmd.package_spec
+        )
+        self._execute_recursive(
+            root_path=None,
+            package_spec=cmd.package_spec,
+            overwrite=cmd.overwrite,
+            dependency_resolver=dependency_resolver,
+        )
         return GeneratePackageResult(result="success")
+
+    def _execute_recursive(
+        self,
+        root_path: Path | None,
+        package_spec: PackageSpec,
+        dependency_resolver: DependencyResolver,
+        overwrite: bool = False,
+    ):
+        if root_path:
+            current_path = root_path / package_spec.name
+        else:
+            current_path = Path(package_spec.name)
+        for module in package_spec.modules:
+            imports = dependency_resolver.resolve_module(
+                module_spec=module,
+            )
+            context = {"module_spec": module, "imports": imports}
+            content = self.template_port.render("module.j2", context)
+            module_path = current_path / module.filename
+            self.file_system_port.write_file(
+                path=module_path,
+                content=content,
+                overwrite=overwrite,
+            )
+        for subpackage in package_spec.sub_packages:
+            self._execute_recursive(
+                root_path=current_path,
+                package_spec=subpackage,
+                dependency_resolver=dependency_resolver,
+                overwrite=overwrite,
+            )
