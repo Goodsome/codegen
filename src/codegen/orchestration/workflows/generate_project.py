@@ -7,7 +7,7 @@ from codegen.orchestration.translators.blueprint_to_package_spec import (
 )
 from dataclasses import dataclass
 
-from codegen.application.use_cases.load_blueprint import (
+from codegen.domain_definition.application.use_cases.load_blueprint import (
     LoadBlueprint,
     LoadBlueprintCommand,
 )

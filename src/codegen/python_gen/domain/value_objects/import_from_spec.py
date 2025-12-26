@@ -1,4 +1,4 @@
-from codegen.domain.shared.models import ValueObject
+from codegen.shared.models import ValueObject
 from codegen.python_gen.domain.value_objects.imported_name import ImportedName
 
 
@@ -16,3 +16,11 @@ class ImportFromSpec(ValueObject):
             return self
         self.names.append(ImportedName(name=name))
         return self
+
+    def render_names(self) -> str:
+        if not self.names:
+            return ""
+        if len(self.names) == 1:
+            return self.names[0].render()
+        else:
+            return ", ".join(name.render() for name in self.names)

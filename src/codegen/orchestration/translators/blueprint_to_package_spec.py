@@ -1,23 +1,33 @@
-from codegen.domain.value_objects.meta_application import MetaApplication
-from codegen.domain.value_objects.bounded_context import BoundedContext
-from codegen.domain.value_objects.meta_domain import MetaDomain
-from codegen.domain.value_objects.meta_aggregate import MetaAggregate
-from codegen.domain.value_objects.meta_value_object import MetaValueObject
-from codegen.domain.value_objects.meta_service import MetaService
-from codegen.domain.value_objects.meta_domain_port import MetaDomainPort
-from codegen.domain.value_objects.meta_use_case import MetaUseCase
-from codegen.domain.value_objects.attribute import Attribute
-from codegen.domain.value_objects.meta_infrastructure import MetaInfrastructure
-from codegen.domain.value_objects.meta_infrastructure_adapter import (
+from codegen.domain_definition.domain.value_objects.meta_application import (
+    MetaApplication,
+)
+from codegen.domain_definition.domain.value_objects.bounded_context import (
+    BoundedContext,
+)
+from codegen.domain_definition.domain.value_objects.meta_domain import MetaDomain
+from codegen.domain_definition.domain.value_objects.meta_aggregate import MetaAggregate
+from codegen.domain_definition.domain.value_objects.meta_value_object import (
+    MetaValueObject,
+)
+from codegen.domain_definition.domain.value_objects.meta_service import MetaService
+from codegen.domain_definition.domain.value_objects.meta_domain_port import (
+    MetaDomainPort,
+)
+from codegen.domain_definition.domain.value_objects.meta_use_case import MetaUseCase
+from codegen.domain_definition.domain.value_objects.attribute import Attribute
+from codegen.domain_definition.domain.value_objects.meta_infrastructure import (
+    MetaInfrastructure,
+)
+from codegen.domain_definition.domain.value_objects.meta_infrastructure_adapter import (
     MetaInfrastructureAdapter,
 )
-from codegen.domain.value_objects.method_spec import MethodSpec
-from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
-from codegen.domain.aggregates.blueprint import Blueprint
+from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
+from codegen.domain_definition.domain.value_objects.blueprint import Blueprint
 from codegen.python_gen.domain.value_objects.function_spec import (
     FunctionSpec,
     FunctionType,
 )
+from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.python_gen.domain.value_objects.parameter_spec import ParameterSpec
@@ -43,18 +53,27 @@ def _translate_attributes(
     return [_translate_attribute(a, in_pydantic_model) for a in attributes]
 
 
-def _translate_method(method_spec: MethodSpec) -> FunctionSpec:
+def _translate_method(
+    method_spec: MethodSpec, is_abstract: bool = False
+) -> FunctionSpec:
     parameter_specs = _translate_attributes(method_spec.inputs, in_pydantic_model=False)
+    if is_abstract:
+        decorators = ["abstractmethod"]
+    else:
+        decorators = []
     return FunctionSpec(
         name=method_spec.name,
+        decorators=decorators,
         parameters=parameter_specs,
         return_annotation=TypeAnnotationSpec.parse(method_spec.output.type),
         function_type=FunctionType.INSTANCE_METHOD,
     )
 
 
-def _translate_methods(method_specs: list[MethodSpec]) -> list[FunctionSpec]:
-    return [_translate_method(m) for m in method_specs]
+def _translate_methods(
+    method_specs: list[MethodSpec], is_abstract: bool = False
+) -> list[FunctionSpec]:
+    return [_translate_method(m, is_abstract) for m in method_specs]
 
 
 def _translate_aggregate(aggregate: MetaAggregate) -> ClassSpec:
@@ -93,9 +112,10 @@ def _translate_service(service: MetaService) -> ClassSpec:
 
 
 def _translate_port(port: MetaDomainPort) -> ClassSpec:
-    methods = _translate_methods(port.operations)
+    methods = _translate_methods(port.operations, is_abstract=True)
     return ClassSpec(
         name=port.name,
+        inheritance=["ABC"],
         description=port.description,
         methods=methods,
     )
@@ -120,6 +140,7 @@ def _translate_use_case(use_case: MetaUseCase) -> list[ClassSpec]:
         name=use_case.name,
         description=use_case.description,
         decorators=["dataclass"],
+        attributes=_translate_attributes(use_case.attributes),
         methods=[
             FunctionSpec(
                 name="execute",

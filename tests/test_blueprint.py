@@ -1,6 +1,6 @@
 import yaml
 from pathlib import Path
-from codegen.domain.aggregates.blueprint import Blueprint
+from codegen.domain_definition.domain.value_objects.blueprint import Blueprint
 
 
 def test_blueprint():

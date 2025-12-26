@@ -1,8 +1,10 @@
 from dependency_injector import containers, providers
 from dependency_injector.providers import Singleton, Factory
 
-from codegen.application.use_cases.load_blueprint import LoadBlueprint
-from codegen.infrastructure.adapters.yaml_blueprint_loader import YamlBlueprintLoader
+from codegen.domain_definition.application.use_cases.load_blueprint import LoadBlueprint
+from codegen.domain_definition.infrastructure.adapters.yaml_blueprint_loader import (
+    YamlBlueprintLoader,
+)
 from codegen.orchestration.translators.blueprint_to_package_spec import (
     BlueprintToPackageSpecTranslator,
 )

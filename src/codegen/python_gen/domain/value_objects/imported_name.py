@@ -1,4 +1,4 @@
-from codegen.domain.shared.models import ValueObject
+from codegen.shared.models import ValueObject
 
 
 class ImportedName(ValueObject):
@@ -6,3 +6,8 @@ class ImportedName(ValueObject):
 
     name: str
     alias: str | None = None
+
+    def render(self) -> str:
+        if self.alias:
+            return f"{self.name} as {self.alias}"
+        return self.name
