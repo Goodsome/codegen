@@ -1,0 +1,29 @@
+from codegen.domain_definition.domain.ports.blueprint_loader_port import (
+    BlueprintLoaderPort,
+)
+from dataclasses import dataclass
+from typing import Union
+from codegen.domain_definition.domain.value_objects.blueprint import Blueprint
+
+
+@dataclass(frozen=True)
+class LoadBlueprintCommand:
+
+    node: str | None = None
+
+
+@dataclass(frozen=True)
+class LoadBlueprintResult:
+
+    blueprint: Blueprint | None
+
+
+@dataclass
+class LoadBlueprint:
+    """Loads the blueprint from a file."""
+
+    blueprint_loader: BlueprintLoaderPort
+
+    def execute(self, cmd: LoadBlueprintCommand) -> LoadBlueprintResult:
+        blueprint = self.blueprint_loader.load("codegen.yaml")
+        return LoadBlueprintResult(blueprint=blueprint)

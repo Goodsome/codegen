@@ -8,7 +8,7 @@ from pathlib import Path
 
 from pydantic import Field
 
-from codegen.domain.shared.models import ValueObject
+from codegen.shared.models import ValueObject
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 
 

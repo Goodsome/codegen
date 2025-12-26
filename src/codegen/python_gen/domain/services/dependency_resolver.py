@@ -17,6 +17,7 @@ BUILTIN_TYPES = {
     "bool",
     "None",
     "list",
+    "dict",
 }
 
 GLOBAL_REGISTRY = {
@@ -27,6 +28,8 @@ GLOBAL_REGISTRY = {
     "Union": "typing",
     "dataclass": "dataclasses",
     "ValueObject": "codegen.domain.shared.models",
+    "ABC": "abc",
+    "abstractmethod": "abc",
 }
 
 TEMPORARY_MAPPING = {"dataclass(frozen=True)": "dataclass"}

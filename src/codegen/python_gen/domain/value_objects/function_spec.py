@@ -7,7 +7,7 @@ Description: Represents a function in a Python module.
 from pydantic import Field
 from enum import StrEnum
 
-from codegen.domain.shared.models import ValueObject
+from codegen.shared.models import ValueObject
 
 from codegen.python_gen.domain.value_objects.parameter_spec import ParameterSpec
 from codegen.python_gen.domain.value_objects.type_annotation_spec import (
@@ -35,6 +35,7 @@ class FunctionSpec(ValueObject):
     def get_required_types(self) -> set[str]:
         types: set[str] = set()
         types.update(self.return_annotation.get_all_referenced_names())
+        types.update(self.decorators)
         for p in self.parameters:
             types.update(p.annotation.get_all_referenced_names())
         return types

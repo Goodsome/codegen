@@ -1,2 +1,2 @@
-from {{ import_spec.module }} import {{ import_spec.names[0].name }}{% if import_spec.names[0].alias %} as {{ import_spec.names[0].alias }}{% endif %}
+from {{ import_spec.module }} import {{ import_spec.render_names() }}
 

@@ -8,7 +8,7 @@ import re
 
 from pydantic.fields import Field
 
-from codegen.domain.shared.models import ValueObject
+from codegen.shared.models import ValueObject
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 

@@ -5,7 +5,7 @@ Description: Represents a class in a Python module.
 """
 
 from pydantic.fields import Field
-from codegen.domain.shared.models import ValueObject
+from codegen.shared.models import ValueObject
 
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.parameter_spec import ParameterSpec

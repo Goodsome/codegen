@@ -1,6 +1,5 @@
 {% for decorator in function_spec.decorators %}
-@{{ decorator }}
-{% endfor %}
+@{{ decorator }} {% endfor %}
 def {{ function_spec.name }}({% for param in function_spec.parameters %}
     {% if function_spec.is_instance_method() %}self, {% endif %}
     {{ param.name }}: {{ param.annotation.name }}{% if param.default %} = {{ param.default }}{% endif %}{% if not loop.last %}, {% endif %} {% endfor %}

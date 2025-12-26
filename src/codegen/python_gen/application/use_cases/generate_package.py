@@ -39,6 +39,7 @@ class GeneratePackage:
             package_spec=cmd.package_spec,
             overwrite=cmd.overwrite,
             dependency_resolver=dependency_resolver,
+            node=cmd.node,
         )
         return GeneratePackageResult(result="success")
 

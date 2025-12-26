@@ -8,7 +8,7 @@ import ast
 
 from pydantic import Field
 
-from codegen.domain.shared.models import ValueObject
+from codegen.shared.models import ValueObject
 
 
 class TypeAnnotationSpec(ValueObject):
