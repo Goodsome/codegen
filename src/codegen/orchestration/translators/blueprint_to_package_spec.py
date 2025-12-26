@@ -19,27 +19,32 @@ from codegen.python_gen.domain.value_objects.function_spec import (
     FunctionType,
 )
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
-from codegen.python_gen.domain.aggregates.package_spec import PackageSpec
+from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.python_gen.domain.value_objects.parameter_spec import ParameterSpec
 from codegen.python_gen.domain.value_objects.type_annotation_spec import (
     TypeAnnotationSpec,
 )
 
 
-def _translate_attribute(attribute: Attribute) -> ParameterSpec:
-    return ParameterSpec(
+def _translate_attribute(
+    attribute: Attribute, in_pydantic_model: bool
+) -> ParameterSpec:
+    return ParameterSpec.create(
         name=attribute.name,
-        annotation=TypeAnnotationSpec.parse(attribute.type),
-        default=attribute.default,
+        annotation=attribute.type,
+        optional=attribute.optional,
+        in_pydantic_model=in_pydantic_model,
     )
 
 
-def _translate_attributes(attributes: list[Attribute]) -> list[ParameterSpec]:
-    return [_translate_attribute(a) for a in attributes]
+def _translate_attributes(
+    attributes: list[Attribute], in_pydantic_model: bool = False
+) -> list[ParameterSpec]:
+    return [_translate_attribute(a, in_pydantic_model) for a in attributes]
 
 
 def _translate_method(method_spec: MethodSpec) -> FunctionSpec:
-    parameter_specs = _translate_attributes(method_spec.inputs)
+    parameter_specs = _translate_attributes(method_spec.inputs, in_pydantic_model=False)
     return FunctionSpec(
         name=method_spec.name,
         parameters=parameter_specs,
@@ -53,7 +58,7 @@ def _translate_methods(method_specs: list[MethodSpec]) -> list[FunctionSpec]:
 
 
 def _translate_aggregate(aggregate: MetaAggregate) -> ClassSpec:
-    attributes = _translate_attributes(aggregate.attributes)
+    attributes = _translate_attributes(aggregate.attributes, in_pydantic_model=True)
     methods = _translate_methods(aggregate.behaviors)
     class_spec = ClassSpec(
         name=aggregate.name,
@@ -66,7 +71,10 @@ def _translate_aggregate(aggregate: MetaAggregate) -> ClassSpec:
 
 
 def _translate_value_object(vo: MetaValueObject) -> ClassSpec:
-    attributes = _translate_attributes(vo.attributes)
+    attributes = _translate_attributes(
+        vo.attributes,
+        in_pydantic_model=True,
+    )
     return ClassSpec(
         name=vo.name,
         description=vo.description,
@@ -142,7 +150,7 @@ def _translate_domain_aggregates(aggregates: list[MetaAggregate]) -> PackageSpec
     for aggregate in aggregates:
         class_spec = _translate_aggregate(aggregate)
         module_spec = ModuleSpec.create(
-            filename=aggregate.name,
+            name=aggregate.name,
             classes=[class_spec],
         )
         modules.append(module_spec)
@@ -159,7 +167,7 @@ def _translate_domain_value_objects(
     for vo in value_objects:
         class_spec = _translate_value_object(vo)
         module_spec = ModuleSpec.create(
-            filename=vo.name,
+            name=vo.name,
             classes=[class_spec],
         )
         modules.append(module_spec)
@@ -174,7 +182,7 @@ def _translate_domain_services(services: list[MetaService]) -> PackageSpec:
     for service in services:
         class_spec = _translate_service(service)
         module_spec = ModuleSpec.create(
-            filename=service.name,
+            name=service.name,
             classes=[class_spec],
         )
         modules.append(module_spec)
@@ -189,7 +197,7 @@ def _translate_domain_ports(ports: list[MetaDomainPort]) -> PackageSpec:
     for port in ports:
         class_spec = _translate_port(port)
         module_spec = ModuleSpec.create(
-            filename=port.name,
+            name=port.name,
             classes=[class_spec],
         )
         modules.append(module_spec)
@@ -217,7 +225,7 @@ def _translate_application_use_cases(use_cases: list[MetaUseCase]) -> PackageSpe
     for use_case in use_cases:
         classes = _translate_use_case(use_case)
         module_spec = ModuleSpec.create(
-            filename=use_case.name,
+            name=use_case.name,
             classes=classes,
         )
         modules.append(module_spec)
@@ -244,7 +252,7 @@ def _translate_infrastructure_adapters(
     for adapter in adapters:
         class_spec = _translate_adapter(adapter)
         module_spec = ModuleSpec.create(
-            filename=adapter.name,
+            name=adapter.name,
             classes=[class_spec],
         )
         modules.append(module_spec)
@@ -271,7 +279,7 @@ def _translate_context(ctx: BoundedContext) -> PackageSpec:
         _translate_domain(ctx.domain),
     ]
 
-    return PackageSpec(
+    return PackageSpec.create(
         name=ctx.name,
         sub_packages=packages,
     )
@@ -284,7 +292,7 @@ class BlueprintToPackageSpecTranslator:
         package_specs: list[PackageSpec] = []
         for ctx in blueprint.contexts:
             package_specs.append(_translate_context(ctx))
-        return PackageSpec(
+        return PackageSpec.create(
             name="codegen",
             sub_packages=package_specs,
         )

@@ -16,25 +16,34 @@ from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 class ModuleSpec(ValueObject):
     """Represents a Python module."""
 
-    filename: str
+    name: str
     functions: list[FunctionSpec] = Field(default_factory=list)
     classes: list[ClassSpec] = Field(default_factory=list)
 
     @classmethod
     def create(
         cls,
-        filename: str,
+        name: str,
         functions: list[FunctionSpec] | None = None,
         classes: list[ClassSpec] | None = None,
     ) -> "ModuleSpec":
-        filename = cls._to_snake_case(filename)
-        if not filename.endswith(".py"):
-            filename += ".py"
+        name = cls._to_snake_case(name)
         return cls(
-            filename=filename,
+            name=name,
             functions=functions or [],
             classes=classes or [],
         )
+
+    @classmethod
+    def get_init_module(cls) -> "ModuleSpec":
+        return cls.create(name="__init__")
+
+    @property
+    def filename(self) -> str:
+        return f"{self.name}.py"
+
+    def is_init_module(self) -> bool:
+        return self.name == "__init__"
 
     @staticmethod
     def _to_snake_case(name: str) -> str:

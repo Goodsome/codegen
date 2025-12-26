@@ -53,23 +53,20 @@ def module_spec() -> ModuleSpec:
             ParameterSpec(
                 name="functions",
                 annotation=TypeAnnotationSpec(name="list[FunctionSpec]"),
-                default="Field(default_factory=list)",
             ),
             ParameterSpec(
                 name="classes",
                 annotation=TypeAnnotationSpec(name="list[ClassSpec]"),
-                default="Field(default_factory=list)",
             ),
             ParameterSpec(
                 name="imports",
                 annotation=TypeAnnotationSpec(name="list[ImportSpec]"),
-                default="Field(default_factory=list)",
             ),
         ],
         methods=[],
     )
     return ModuleSpec.create(
-        filename="module.py",
+        name="module.py",
         classes=[class_spec],
     )
 

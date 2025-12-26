@@ -45,6 +45,7 @@ class GenerateProject:
             GeneratePackageCommand(
                 package_spec=package_spec,
                 overwrite=cmd.overwrite,
+                node=cmd.node,
             )
         )
 

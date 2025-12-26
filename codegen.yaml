@@ -196,9 +196,9 @@ contexts:
         - name: FunctionSpec
           description: "Represents a function in a Python module."
           attributes:
-            - { name: decorators, type: "list[str]" }
+            - { name: decorators, type: "list[str]", optional: true }
             - { name: name, type: str }
-            - { name: parameters, type: "list[ParameterSpec]" }
+            - { name: parameters, type: "list[ParameterSpec]", optional: true }
             - { name: return_annotation, type: TypeAnnotationSpec }
             - { name: suite, type: str }
         - name: ClassSpec
@@ -206,18 +206,18 @@ contexts:
           attributes:
             - { name: name, type: str }
             - { name: description, type: str, default: "" }
-            - { name: decorators, type: "list[str]", default: "Field(default_factory=list)" }
-            - { name: inheritance, type: "list[str]", default: "Field(default_factory=list)" }
-            - { name: attributes, type: "list[ParameterSpec]", default: "Field(default_factory=list)" }
-            - { name: methods, type: "list[FunctionSpec]", default: "Field(default_factory=list)" }
+            - { name: decorators, type: "list[str]", optional: true }
+            - { name: inheritance, type: "list[str]", optional: true }
+            - { name: attributes, type: "list[ParameterSpec]", optional: true }
+            - { name: methods, type: "list[FunctionSpec]", optional: true }
         - name: ModuleSpec
           description: "Represents a Python module."
           attributes:
-            - { name: filename, type: str }
+            - { name: name, type: str }
             - { name: directory, type: Path }
-            - { name: functions, type: "list[FunctionSpec]" }
-            - { name: classes, type: "list[ClassSpec]" }
-            - { name: imports, type: "list[ImportFromSpec]" }
+            - { name: functions, type: "list[FunctionSpec]", optional: true }
+            - { name: classes, type: "list[ClassSpec]", optional: true }
+            - { name: imports, type: "list[ImportFromSpec]", optional: true }
         - name: PackageSpec
           description: "Represents a Python package."
           attributes:
