@@ -225,8 +225,8 @@ contexts:
             - { name: modules, type: "list[ModuleSpec]" }
             - { name: sub_packages, type: "list[PackageSpec]"}
       services:
-        - name: ImportOrganizer
-          description: "Organizes imports in a Python module."
+        - name: DependencyResolver
+          description: "Resolves dependencies between modules."
 
     application:
       use_cases:
@@ -240,21 +240,6 @@ contexts:
               - { name: overwrite, type: bool, default: "False" }
           result:
             name: GeneratePackageResult
-            attributes:
-              - { name: result, type: str }
-          attributes:
-            - { name: template_port, type: TemplatePort }
-            - { name: file_system_port, type: FileSystemPort }
-        - name: GenerateModule
-          kind: command
-          description: "Generate Python module."
-          command:
-            name: GenerateModuleCommand
-            attributes:
-              - { name: module_spec, type: ModuleSpec }
-              - { name: overwrite, type: bool, default: "False" }
-          result:
-            name: GenerateModuleResult
             attributes:
               - { name: result, type: str }
           attributes:
