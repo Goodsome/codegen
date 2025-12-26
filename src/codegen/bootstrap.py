@@ -11,7 +11,7 @@ from codegen.python_gen.application.use_cases.generate_package import (
     GeneratePackage,
 )
 from codegen.shared.infrastructure.adapters.jinja_adapter import JinjaAdapter
-from codegen.shared.infrastructure.adapters.o_s_file_system import OSFileSystem
+from codegen.shared.infrastructure.adapters.os_file_system import OSFileSystem
 
 
 class Container(containers.DeclarativeContainer):

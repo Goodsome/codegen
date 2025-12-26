@@ -69,8 +69,6 @@ class GeneratePackage:
                 overwrite=overwrite,
             )
         for subpackage in package_spec.sub_packages:
-            if node and node == subpackage.name:
-                node = None
             self._execute_recursive(
                 root_path=current_path,
                 package_spec=subpackage,
