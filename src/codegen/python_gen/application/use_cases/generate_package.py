@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from codegen.python_gen.domain.aggregates.package_spec import PackageSpec
+from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.python_gen.domain.services.dependency_resolver import DependencyResolver
 from codegen.shared.domain.ports.file_system_port import FileSystemPort
 from codegen.shared.domain.ports.template_port import TemplatePort
@@ -13,6 +13,7 @@ class GeneratePackageCommand:
 
     package_spec: PackageSpec
     overwrite: bool
+    node: str | None = None
 
 
 @dataclass(frozen=True)
@@ -47,12 +48,15 @@ class GeneratePackage:
         package_spec: PackageSpec,
         dependency_resolver: DependencyResolver,
         overwrite: bool = False,
+        node: str | None = None,
     ):
         if root_path:
             current_path = root_path / package_spec.name
         else:
             current_path = Path(package_spec.name)
         for module in package_spec.modules:
+            if node and node != module.name and not module.is_init_module():
+                continue
             imports = dependency_resolver.resolve_module(
                 module_spec=module,
             )
@@ -65,9 +69,12 @@ class GeneratePackage:
                 overwrite=overwrite,
             )
         for subpackage in package_spec.sub_packages:
+            if node and node == subpackage.name:
+                node = None
             self._execute_recursive(
                 root_path=current_path,
                 package_spec=subpackage,
                 dependency_resolver=dependency_resolver,
                 overwrite=overwrite,
+                node=node,
             )

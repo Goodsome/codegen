@@ -115,3 +115,11 @@ class TypeAnnotationSpec(ValueObject):
         for arg in self.args:
             names.update(arg.get_all_referenced_names())
         return names
+
+    def is_nullable(self) -> bool:
+        """判断类型是否可为空"""
+        if self.name == "None":
+            return True
+        if self.name == "Union" and "None" in [arg.name for arg in self.args]:
+            return True
+        return False

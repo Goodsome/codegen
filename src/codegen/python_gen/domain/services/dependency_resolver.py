@@ -1,10 +1,8 @@
 from typing import Iterable
-from typing import Sequence
-from codegen.python_gen.domain.aggregates.package_spec import PackageSpec
+from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
 from dataclasses import dataclass
 
-from codegen.python_gen.domain.value_objects.imported_name import ImportedName
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 
 import logging
@@ -22,6 +20,7 @@ BUILTIN_TYPES = {
 }
 
 GLOBAL_REGISTRY = {
+    "Field": "pydantic",
     "Path": "pathlib",
     "Any": "typing",
     "Dict": "typing",

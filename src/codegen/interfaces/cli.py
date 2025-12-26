@@ -25,10 +25,11 @@ def generate(
     """
     # 1. 初始化容器并加载配置
 
+    target = "src" if build else "target"
     current_dir = Path(__file__).parent.parent  # src/codegen
     config = {
         "template_root": current_dir / "python_gen" / "templates",
-        "output_root": current_dir.parent.parent / "target",
+        "output_root": current_dir.parent.parent / target,
         "encoding": "utf-8",
     }
     container = Container(config=config)

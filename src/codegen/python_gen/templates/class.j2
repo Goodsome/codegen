@@ -3,7 +3,7 @@
 class {{ class_spec.name }}{% if class_spec.inheritance %}({{ class_spec.inheritance | join(', ') }}){% endif %}:
     {% if class_spec.description %}"""{{ class_spec.description }}"""{% endif %}
     {% if not class_spec.attributes and not class_spec.methods %}...{% else %}
-    {% for attr in class_spec.attributes %}{{ attr.name }}: {{ attr.annotation.render() }}{% if attr.default %} = {{ attr.default }}{% endif %}
+    {% for attr in class_spec.attributes %}{{ attr.name }}: {{ attr.annotation.render() }}{% if attr.default %} = {{ attr.render_default() }}{% endif %}
     {% endfor %}
     {% for method in class_spec.methods %} {% filter indent(width=4) %} {% set function_spec = method %}{% include 'function.j2' %} {% endfilter %}
     {% endfor %} {% endif %}
