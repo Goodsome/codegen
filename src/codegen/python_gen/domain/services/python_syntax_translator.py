@@ -15,12 +15,40 @@ class PythonSyntaxTranslator:
 
     template_port: TemplatePort
 
-    def to_module_spec(self, source_code: str, module_name: str) -> ModuleSpec:
-        return ModuleSpec.parse_code(source_code, module_name)
-
     def to_package_spec(
         self, source_code_tree: dict[Path, str], package_name: str
-    ) -> PackageSpec: ...
+    ) -> PackageSpec:
+        """
+        Reconstruct a PackageSpec from a dictionary of file paths and their contents.
+        """
+        modules: list[ModuleSpec] = []
+        sub_packages_data: dict[str, dict[Path, str]] = {}
+
+        for path, code in source_code_tree.items():
+            parts = path.parts
+            if len(parts) == 1:
+                # Top-level module in this package
+                if path.suffix == ".py":
+                    modules.append(ModuleSpec.parse_code(code, path.stem))
+            else:
+                # Sub-package
+                sub_pkg_name = parts[0]
+                if sub_pkg_name not in sub_packages_data:
+                    sub_packages_data[sub_pkg_name] = {}
+
+                # Relative path within the sub-package
+                sub_path = Path(*parts[1:])
+                sub_packages_data[sub_pkg_name][sub_path] = code
+
+        sub_packages = [
+            self.to_package_spec(data, name) for name, data in sub_packages_data.items()
+        ]
+
+        return PackageSpec.create(
+            name=package_name,
+            modules=modules,
+            sub_packages=sub_packages,
+        )
 
     def to_code(
         self, module_spec: ModuleSpec, imports: Iterable[ImportFromSpec]
