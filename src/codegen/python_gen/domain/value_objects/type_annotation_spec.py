@@ -38,6 +38,12 @@ class TypeAnnotationSpec(ValueObject):
         return cls._parse_node(tree.body)
 
     @classmethod
+    def parse_ast(cls, node: ast.AST | None) -> "TypeAnnotationSpec":
+        if node is None:
+            return cls(name="Any")
+        return cls._parse_node(node)
+
+    @classmethod
     def _parse_node(cls, node: ast.AST) -> "TypeAnnotationSpec":
         """
         Recursively parses AST nodes into TypeAnnotationSpec.
