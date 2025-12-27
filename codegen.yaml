@@ -50,6 +50,7 @@ contexts:
           attributes:
             - { name: name, type: str }
             - { name: description, type: str, optional: true }
+            - { name: attributes, type: "list[Attribute]", optional: true }
             - { name: operations, type: "list[MethodSpec]", optional: true }
 
         - name: MetaDomainPort
@@ -224,7 +225,38 @@ contexts:
       services:
         - name: DependencyResolver
           description: "Resolves dependencies between modules."
-
+        - name: PythonSyntaxTranslator
+          description: "Bidirectional translator between Python source code and PackageSpec."
+          attributes:
+            - { name: template_port, type: TemplatePort }
+          operations:
+            - name: to_spec
+              description: "Parses source code into a ModuleSpec."
+              inputs:
+                - { name: source_code, type: str }
+                - { name: module_name, type: str }
+              output: { type: ModuleSpec }
+            - name: to_code
+              description: "Generates source code from a ModuleSpec."
+              inputs:
+                - { name: module_spec, type: ModuleSpec }
+                - { name: imports, type: "Iterable[ImportFromSpec]" }
+              output: { type: str }
+            - name: generate_source_tree
+              description: "Generates a virtual file tree from a PackageSpec. returns: { Path('relative/path/to/file.py'): 'source code content' }"
+              inputs:
+                - { name: package_spec, type: PackageSpec }
+                - { name: target_node, type: str | None, optional: true }
+              output: { type: "dict[Path, str]" }
+            - name: _collect_files_recursively
+              description: "Recursively collects all files in a directory tree."
+              inputs:
+                - { name: current_spec, type: PackageSpec }
+                - { name: resolver, type: DependencyResolver }
+                - { name: output_dict, type: "dict[Path, str]" }
+                - { name: current_path, type: Path }
+                - { name: target_node, type: str | None, optional: true }
+              output: { type: None }
     application:
       use_cases:
         - name: GeneratePackage
@@ -242,16 +274,6 @@ contexts:
           attributes:
             - { name: template_port, type: TemplatePort }
             - { name: file_system_port, type: FileSystemPort }
-
-#    infrastructure:
-#      acl:
-#        - name: BlueprintTranslator
-#          description: "Translate blueprint into Python code."
-#          operations:
-#            - name: to_package_spec
-#              inputs:
-#                - { name: blueprint, type: Blueprint }
-#              output: { type: PackageSpec }
 
   - name: shared
     description: "Shared between contexts."
@@ -301,8 +323,7 @@ contexts:
 #  workflows:
 #    - name: GenerateProject
 #  translators:
-#    - from: Blueprint
-#      to: PackageSpec
+#    - name: BlueprintToPackageSpec
 
 bootstrap:
   bindings:
