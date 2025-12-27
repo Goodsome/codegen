@@ -104,9 +104,12 @@ def _translate_value_object(vo: MetaValueObject) -> ClassSpec:
 
 def _translate_service(service: MetaService) -> ClassSpec:
     methods = _translate_methods(service.operations)
+    attributes = _translate_attributes(service.attributes)
     return ClassSpec(
         name=service.name,
         description=service.description,
+        decorators=["dataclass"],
+        attributes=attributes,
         methods=methods,
     )
 
