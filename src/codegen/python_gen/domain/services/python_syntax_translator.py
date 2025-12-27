@@ -1,11 +1,12 @@
 from dataclasses import dataclass
-from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
-from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
 from pathlib import Path
-from typing import Union, Iterable
+from typing import Iterable
+
 from codegen.python_gen.domain.services.dependency_resolver import DependencyResolver
-from codegen.shared.domain.ports.template_port import TemplatePort
+from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
+from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
+from codegen.shared.domain.ports.template_port import TemplatePort
 
 
 @dataclass
@@ -14,9 +15,16 @@ class PythonSyntaxTranslator:
 
     template_port: TemplatePort
 
-    def to_spec(self, source_code: str, module_name: str) -> ModuleSpec: ...
+    def to_module_spec(self, source_code: str, module_name: str) -> ModuleSpec:
+        return ModuleSpec.parse_code(source_code, module_name)
 
-    def to_code(self, module_spec: ModuleSpec, imports: Iterable[ImportFromSpec]) -> str:
+    def to_package_spec(
+        self, source_code_tree: dict[Path, str], package_name: str
+    ) -> PackageSpec: ...
+
+    def to_code(
+        self, module_spec: ModuleSpec, imports: Iterable[ImportFromSpec]
+    ) -> str:
         context = {"module_spec": module_spec, "imports": imports}
         content = self.template_port.render("module.j2", context)
         return content

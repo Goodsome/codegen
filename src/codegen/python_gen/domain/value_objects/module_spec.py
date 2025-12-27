@@ -4,6 +4,7 @@ Name: ModuleSpec
 Description: Represents a Python module.
 """
 
+import ast
 import re
 
 from pydantic.fields import Field
@@ -11,6 +12,7 @@ from pydantic.fields import Field
 from codegen.shared.models import ValueObject
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
+from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
 
 
 class ModuleSpec(ValueObject):
@@ -19,6 +21,7 @@ class ModuleSpec(ValueObject):
     name: str
     functions: list[FunctionSpec] = Field(default_factory=list)
     classes: list[ClassSpec] = Field(default_factory=list)
+    imports: list[ImportFromSpec] = Field(default_factory=list)
 
     @classmethod
     def create(
@@ -26,17 +29,39 @@ class ModuleSpec(ValueObject):
         name: str,
         functions: list[FunctionSpec] | None = None,
         classes: list[ClassSpec] | None = None,
+        imports: list[ImportFromSpec] | None = None,
     ) -> "ModuleSpec":
         name = cls._to_snake_case(name)
         return cls(
             name=name,
             functions=functions or [],
             classes=classes or [],
+            imports=imports or [],
         )
 
     @classmethod
     def get_init_module(cls) -> "ModuleSpec":
         return cls.create(name="__init__")
+
+    @classmethod
+    def parse_code(cls, source_code: str, module_name: str) -> "ModuleSpec":
+        tree = ast.parse(source_code)
+        classes: list[ClassSpec] = []
+        functions: list[FunctionSpec] = []
+        imports: list[ImportFromSpec] = []
+        for node in tree.body:
+            if isinstance(node, ast.ClassDef):
+                classes.append(ClassSpec.parse_ast(node, source_code))
+            elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                functions.append(FunctionSpec.parse_ast(node, source_code))
+            elif isinstance(node, (ast.Import, ast.ImportFrom)):
+                imports.append(ImportFromSpec.parse_ast(node))
+        return cls.create(
+            name=module_name,
+            classes=classes,
+            functions=functions,
+            imports=imports,
+        )
 
     @property
     def filename(self) -> str:

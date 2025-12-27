@@ -4,6 +4,8 @@ Name: ClassSpec
 Description: Represents a class in a Python module.
 """
 
+import ast
+
 from pydantic.fields import Field
 from codegen.shared.models import ValueObject
 
@@ -20,6 +22,46 @@ class ClassSpec(ValueObject):
     inheritance: list[str] = Field(default_factory=list)
     attributes: list[ParameterSpec] = Field(default_factory=list)
     methods: list[FunctionSpec] = Field(default_factory=list)
+
+    @classmethod
+    def create(
+        cls,
+        name: str,
+        description: str = "",
+        decorators: list[str] | None = None,
+        inheritance: list[str] | None = None,
+        attributes: list[ParameterSpec] | None = None,
+        methods: list[FunctionSpec] | None = None,
+    ):
+        return cls(
+            name=name,
+            description=description,
+            decorators=decorators or [],
+            inheritance=inheritance or [],
+            attributes=attributes or [],
+            methods=methods or [],
+        )
+
+    @classmethod
+    def parse_ast(cls, node: ast.ClassDef, source_code: str):
+        methods: list[FunctionSpec] = []
+        inheritance: list[str] = [ast.unparse(base) for base in node.bases]
+        decorators: list[str] = [
+            ast.unparse(decorator) for decorator in node.decorator_list
+        ]
+        description: str = ast.get_docstring(node) or ""
+
+        for item in node.body:
+            if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                methods.append(FunctionSpec.parse_ast(item, source_code))
+
+        return cls.create(
+            name=node.name,
+            description=description,
+            inheritance=inheritance,
+            decorators=decorators,
+            methods=methods,
+        )
 
     def get_required_types(self) -> set[str]:
         types: set[str] = set()
