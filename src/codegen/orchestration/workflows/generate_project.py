@@ -1,11 +1,11 @@
+from codegen.python_gen.application.translators.blueprint_trans import (
+    BlueprintTranslator,
+)
 from codegen.python_gen.application.use_cases.generate_package import (
     GeneratePackage,
     GeneratePackageCommand,
 )
-from codegen.orchestration.translators.blueprint_to_package_spec import (
-    BlueprintToPackageSpecTranslator,
-)
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from codegen.domain_definition.application.use_cases.load_blueprint import (
     LoadBlueprint,
@@ -31,8 +31,8 @@ class GenerateCodeResult:
 @dataclass
 class GenerateProject:
     loader: LoadBlueprint
-    translator: BlueprintToPackageSpecTranslator
     generator: GeneratePackage
+    translator: BlueprintTranslator
 
     def execute(self, cmd: GenerateCodeCommand) -> GenerateCodeResult:
         """Orchestrates blueprint loading and module generation"""
@@ -40,7 +40,7 @@ class GenerateProject:
         if load_result.blueprint is None:
             return GenerateCodeResult(files_written=[])
 
-        package_spec = self.translator.execute(load_result.blueprint)
+        package_spec = self.translator.translate_blueprint(load_result.blueprint)
         self.generator.execute(
             GeneratePackageCommand(
                 package_spec=package_spec,

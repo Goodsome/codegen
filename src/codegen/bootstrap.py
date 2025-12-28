@@ -1,12 +1,12 @@
+from codegen.python_gen.application.translators.blueprint_trans import (
+    BlueprintTranslator,
+)
 from dependency_injector import containers, providers
 from dependency_injector.providers import Singleton, Factory
 
 from codegen.domain_definition.application.use_cases.load_blueprint import LoadBlueprint
 from codegen.domain_definition.infrastructure.adapters.yaml_blueprint_loader import (
     YamlBlueprintLoader,
-)
-from codegen.orchestration.translators.blueprint_to_package_spec import (
-    BlueprintToPackageSpecTranslator,
 )
 from codegen.orchestration.workflows.generate_project import GenerateProject
 from codegen.python_gen.application.use_cases.generate_package import (
@@ -30,6 +30,8 @@ class Container(containers.DeclarativeContainer):
     template_port_provider = Singleton(JinjaAdapter, config=config)
 
     blueprint_loader_provider = Singleton(YamlBlueprintLoader, config=config)
+
+    blueprint_translator_provider = Singleton(BlueprintTranslator)
 
     python_syntax_translator_provider = Singleton(
         PythonSyntaxTranslator,
@@ -57,5 +59,5 @@ class Container(containers.DeclarativeContainer):
         GenerateProject,
         loader=load_blueprint_use_case,
         generator=generate_package_use_case,
-        translator=BlueprintToPackageSpecTranslator,
+        translator=blueprint_translator_provider,
     )
