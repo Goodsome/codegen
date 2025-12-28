@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Tuple, Iterator
 
 
 class FileSystemPort(ABC):
@@ -8,7 +9,22 @@ class FileSystemPort(ABC):
     """
 
     @abstractmethod
-    def read_file(self, path: str) -> str: ...
+    def read_file(self, path: Path) -> str: ...
 
     @abstractmethod
     def write_file(self, path: Path, content: str, overwrite: bool = False) -> None: ...
+
+    @abstractmethod
+    def list_directory_recursively(self, path: Path) -> Iterator[Path]: ...
+
+    @abstractmethod
+    def list_directory_flat(self, path: Path) -> Iterator[Path]: ...
+
+    @abstractmethod
+    def is_directory(self, path: Path) -> bool: ...
+
+    @abstractmethod
+    def is_file(self, path: Path) -> bool: ...
+
+    @abstractmethod
+    def exists(self, path: Path) -> bool: ...

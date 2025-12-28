@@ -125,12 +125,33 @@ def _translate_port(port: MetaDomainPort) -> ClassSpec:
 
 
 def _translate_use_case(use_case: MetaUseCase) -> list[ClassSpec]:
-    command_name = f"{use_case.name}Command"
-    command_class = ClassSpec(
-        name=command_name,
-        decorators=["dataclass(frozen=True)"],
-        attributes=_translate_attributes(use_case.command.attributes),
-    )
+    result: list[ClassSpec] = []
+    if use_case.kind == "command":
+        command_name = f"{use_case.name}Command"
+        command_class = ClassSpec(
+            name=command_name,
+            decorators=["dataclass(frozen=True)"],
+            attributes=_translate_attributes(use_case.command.attributes),
+        )
+        param = ParameterSpec(
+            name="cmd",
+            annotation=TypeAnnotationSpec.parse(command_name),
+        )
+        result.append(command_class)
+    elif use_case.kind == "query":
+        query_name = f"{use_case.name}Query"
+        query_class = ClassSpec(
+            name=query_name,
+            decorators=["dataclass(frozen=True)"],
+            attributes=_translate_attributes(use_case.query.attributes),
+        )
+        param = ParameterSpec(
+            name="query",
+            annotation=TypeAnnotationSpec.parse(query_name),
+        )
+        result.append(query_class)
+    else:
+        raise ValueError(f"Unknown use case kind: {use_case.kind}")
 
     result_name = f"{use_case.name}Result"
     result_class = ClassSpec(
@@ -138,6 +159,7 @@ def _translate_use_case(use_case: MetaUseCase) -> list[ClassSpec]:
         decorators=["dataclass(frozen=True)"],
         attributes=_translate_attributes(use_case.result.attributes),
     )
+    result.append(result_class)
 
     use_case_class = ClassSpec(
         name=use_case.name,
@@ -147,18 +169,14 @@ def _translate_use_case(use_case: MetaUseCase) -> list[ClassSpec]:
         methods=[
             FunctionSpec(
                 name="execute",
-                parameters=[
-                    ParameterSpec(
-                        name="cmd",
-                        annotation=TypeAnnotationSpec.parse(command_name),
-                    )
-                ],
+                parameters=[param],
                 return_annotation=TypeAnnotationSpec.parse(result_name),
                 function_type=FunctionType.INSTANCE_METHOD,
             )
         ],
     )
-    return [command_class, result_class, use_case_class]
+    result.append(use_case_class)
+    return result
 
 
 def _translate_adapter(adapter: MetaInfrastructureAdapter) -> ClassSpec:
