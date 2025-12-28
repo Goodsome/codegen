@@ -15,7 +15,7 @@ class LoadBlueprintCommand:
 @dataclass(frozen=True)
 class LoadBlueprintResult:
 
-    blueprint: Blueprint | None
+    blueprint: Blueprint
 
 
 @dataclass
@@ -26,4 +26,6 @@ class LoadBlueprint:
 
     def execute(self, cmd: LoadBlueprintCommand) -> LoadBlueprintResult:
         blueprint = self.blueprint_loader.load("codegen.yaml")
+        if blueprint is None:
+            raise ValueError("Failed to load blueprint")
         return LoadBlueprintResult(blueprint=blueprint)
