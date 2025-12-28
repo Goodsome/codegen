@@ -1,0 +1,15 @@
+from codegen.domain_definition.domain.value_objects.attribute import Attribute
+from codegen.shared.models import ValueObject
+from pydantic import Field
+
+
+
+
+class MetaUseCaseQuery(ValueObject):
+    """Specification of a use case command to be generated."""
+    
+    name: str = Field(default_factory=str)
+    attributes: list[Attribute] = Field(default_factory=list)
+    
+      
+
