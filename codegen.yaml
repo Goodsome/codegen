@@ -72,24 +72,31 @@ contexts:
         - name: MetaUseCaseCommand
           description: "Specification of a use case command to be generated."
           attributes:
-            - { name: name, type: str }
+            - { name: name, type: str, optional: true }
+            - { name: attributes, type: "list[Attribute]", optional: true }
+
+        - name: MetaUseCaseQuery
+          description: "Specification of a use case command to be generated."
+          attributes:
+            - { name: name, type: str, optional: true }
             - { name: attributes, type: "list[Attribute]", optional: true }
 
         - name: MetaUseCaseResult
           description: "Specification of a use case result to be generated."
           attributes:
-            - { name: name, type: str }
+            - { name: name, type: str, optional: true }
             - { name: attributes, type: "list[Attribute]", optional: true }
 
         - name: MetaUseCase
           description: "Specification of a use case to be generated."
           attributes:
             - { name: name, type: str }
-            - { name: attributes, type: "list[Attribute]", optional: true }
             - { name: kind, type: str }
+            - { name: attributes, type: "list[Attribute]", optional: true }
             - { name: description, type: str, optional: true }
-            - { name: command, type: MetaUseCaseCommand }
-            - { name: result, type: MetaUseCaseResult }
+            - { name: command, type: MetaUseCaseCommand, optional: true }
+            - { name: query, type: MetaUseCaseQuery, optional: true }
+            - { name: result, type: MetaUseCaseResult, optional: true }
 
         - name: MetaApplication
           description: "Specification of an application to be generated."
@@ -149,11 +156,9 @@ contexts:
           kind: command
           description: "Loads the blueprint from a file."
           command:
-            name: LoadBlueprintCommand
             attributes:
               - { name: node, type: str, optional: true }
           result:
-            name: LoadBlueprintResult
             attributes:
               - { name: blueprint, type: "Blueprint | None", optional: true }
           attributes:
@@ -272,8 +277,20 @@ contexts:
             attributes:
               - { name: result, type: str }
           attributes:
-            - { name: template_port, type: TemplatePort }
+            - { name: translator, type: PythonSyntaxTranslator }
             - { name: file_system_port, type: FileSystemPort }
+        - name: ParsePackage
+          kind: query
+          description: "Parses Python package to PackageSpec."
+          attributes:
+            - { name: translator, type: PythonSyntaxTranslator }
+            - { name: file_system_port, type: FileSystemPort }
+          query:
+            attributes:
+              - { name: package_path, type: Path }
+          result:
+            attributes:
+              - { name: package_spec, type: PackageSpec }
 
   - name: shared
     description: "Shared between contexts."
