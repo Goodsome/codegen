@@ -12,6 +12,12 @@ from codegen.orchestration.workflows.generate_project import GenerateProject
 from codegen.python_gen.application.use_cases.generate_package import (
     GeneratePackage,
 )
+from codegen.python_gen.application.use_cases.parse_package import (
+    ParsePackage,
+)
+from codegen.python_gen.domain.services.python_syntax_translator import (
+    PythonSyntaxTranslator,
+)
 from codegen.shared.infrastructure.adapters.jinja_adapter import JinjaAdapter
 from codegen.shared.infrastructure.adapters.os_file_system import OSFileSystem
 
@@ -23,7 +29,13 @@ class Container(containers.DeclarativeContainer):
     os_file_port = Singleton(OSFileSystem, config=config)
     template_port_provider = Singleton(JinjaAdapter, config=config)
 
-    blueprint_loader_provider = Singleton(YamlBlueprintLoader)
+    blueprint_loader_provider = Singleton(YamlBlueprintLoader, config=config)
+
+    python_syntax_translator_provider = Singleton(
+        PythonSyntaxTranslator,
+        template_port=template_port_provider,
+        file_system_port=os_file_port,
+    )
 
     load_blueprint_use_case: Factory[LoadBlueprint] = Factory(
         LoadBlueprint,
@@ -32,8 +44,13 @@ class Container(containers.DeclarativeContainer):
 
     generate_package_use_case: Factory[GeneratePackage] = Factory(
         GeneratePackage,
-        template_port=template_port_provider,
+        translator=python_syntax_translator_provider,
         file_system_port=os_file_port,
+    )
+
+    parse_package_use_case: Factory[ParsePackage] = Factory(
+        ParsePackage,
+        translator=python_syntax_translator_provider,
     )
 
     generate_code_workflow: Factory[GenerateProject] = Factory(

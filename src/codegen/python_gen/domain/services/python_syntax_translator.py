@@ -6,6 +6,7 @@ from codegen.python_gen.domain.services.dependency_resolver import DependencyRes
 from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
+from codegen.shared.domain.ports.file_system_port import FileSystemPort
 from codegen.shared.domain.ports.template_port import TemplatePort
 
 
@@ -14,35 +15,24 @@ class PythonSyntaxTranslator:
     """Bidirectional translator between Python source code and PackageSpec."""
 
     template_port: TemplatePort
+    file_system_port: FileSystemPort
 
-    def to_package_spec(
-        self, source_code_tree: dict[Path, str], package_name: str
-    ) -> PackageSpec:
+    def to_package_spec(self, package_path: Path) -> PackageSpec:
         """
         Reconstruct a PackageSpec from a dictionary of file paths and their contents.
         """
+
+        if not self.file_system_port.is_directory(package_path):
+            raise ValueError(f"Expected a directory, got {package_path}")
+        package_name = package_path.stem
         modules: list[ModuleSpec] = []
-        sub_packages_data: dict[str, dict[Path, str]] = {}
-
-        for path, code in source_code_tree.items():
-            parts = path.parts
-            if len(parts) == 1:
-                # Top-level module in this package
-                if path.suffix == ".py":
-                    modules.append(ModuleSpec.parse_code(code, path.stem))
-            else:
-                # Sub-package
-                sub_pkg_name = parts[0]
-                if sub_pkg_name not in sub_packages_data:
-                    sub_packages_data[sub_pkg_name] = {}
-
-                # Relative path within the sub-package
-                sub_path = Path(*parts[1:])
-                sub_packages_data[sub_pkg_name][sub_path] = code
-
-        sub_packages = [
-            self.to_package_spec(data, name) for name, data in sub_packages_data.items()
-        ]
+        sub_packages: list[PackageSpec] = []
+        for filepath in self.file_system_port.list_directory_flat(package_path):
+            if self.file_system_port.is_file(filepath) and filepath.suffix == ".py":
+                source_code = self.file_system_port.read_file(filepath)
+                modules.append(ModuleSpec.parse_code(source_code, filepath.stem))
+            elif self.file_system_port.is_directory(filepath):
+                sub_packages.append(self.to_package_spec(filepath))
 
         return PackageSpec.create(
             name=package_name,

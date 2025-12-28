@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 
+from codegen.python_gen.domain.services.python_syntax_translator import (
+    PythonSyntaxTranslator,
+)
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.ports.file_system_port import FileSystemPort
-from codegen.shared.domain.ports.template_port import TemplatePort
 
 
 @dataclass(frozen=True)
@@ -18,23 +20,18 @@ class GeneratePackageCommand:
 class GeneratePackageResult:
     """Result of GeneratePackage."""
 
-    result: str  #
+    result: str
 
 
 @dataclass
 class GeneratePackage:
     """Generate Python package."""
 
-    template_port: TemplatePort
     file_system_port: FileSystemPort
+    translator: PythonSyntaxTranslator
 
     def execute(self, cmd: GeneratePackageCommand) -> GeneratePackageResult:
-        from codegen.python_gen.domain.services.python_syntax_translator import (
-            PythonSyntaxTranslator,
-        )
-
-        translator = PythonSyntaxTranslator(template_port=self.template_port)
-        source_tree = translator.generate_source_tree(
+        source_tree = self.translator.generate_source_tree(
             package_spec=cmd.package_spec,
             target_node=cmd.node,
         )
