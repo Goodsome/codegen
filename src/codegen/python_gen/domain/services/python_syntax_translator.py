@@ -84,7 +84,7 @@ class PythonSyntaxTranslator:
             # 过滤逻辑下沉到这里
             if (
                 target_node
-                and target_node != module.name
+                and not module.is_match_name(target_node)
                 and not module.is_init_module()
             ):
                 continue

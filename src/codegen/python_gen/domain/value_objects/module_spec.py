@@ -70,6 +70,9 @@ class ModuleSpec(ValueObject):
     def is_init_module(self) -> bool:
         return self.name == "__init__"
 
+    def is_match_name(self, name: str) -> bool:
+        return self.name == self._to_snake_case(name)
+
     @staticmethod
     def _to_snake_case(name: str) -> str:
         """内部工具：将字符串转换为 snake_case"""
@@ -96,3 +99,6 @@ class ModuleSpec(ValueObject):
 
     def has_class_or_function(self, name: str) -> bool:
         return self.has_class(name) or self.has_function(name)
+
+    def collect_class_spec(self) -> dict[str, ClassSpec]:
+        return {c.name: c for c in self.classes}

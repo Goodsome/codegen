@@ -21,13 +21,12 @@ from .base import BaseTranslator
 class AppTranslator(BaseTranslator):
 
     def translate_application(self, application: MetaApplication) -> PackageSpec:
-        sub_packages = [
-            self.translate_use_cases(application.use_cases),
-        ]
-        return PackageSpec.create(
-            name="application",
-            sub_packages=sub_packages,
+        pkg_use_cases = self.translate_use_cases(application.use_cases)
+        pkg_ports = self.translate_ports(application.ports)
+        pkg_application = PackageSpec.create(
+            name="application", sub_packages=[pkg_use_cases, pkg_ports]
         )
+        return pkg_application
 
     def translate_use_case(self, use_case: MetaUseCase) -> List[ClassSpec]:
         result: List[ClassSpec] = []
