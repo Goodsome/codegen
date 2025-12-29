@@ -8,6 +8,7 @@ from pathlib import Path
 
 from pydantic import Field
 
+from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.shared.models import ValueObject
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 
@@ -59,3 +60,11 @@ class PackageSpec(ValueObject):
 
         for pkg in self.sub_packages:
             pkg._build_symbol_table(current_path, table)
+
+    def collect_class_spec(self) -> dict[str, ClassSpec]:
+        result: dict[str, ClassSpec] = {}
+        for mod in self.modules:
+            result.update(mod.collect_class_spec())
+        for pkg in self.sub_packages:
+            result.update(pkg.collect_class_spec())
+        return result

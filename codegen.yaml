@@ -53,7 +53,7 @@ contexts:
             - { name: attributes, type: "list[Attribute]", optional: true }
             - { name: operations, type: "list[MethodSpec]", optional: true }
 
-        - name: MetaDomainPort
+        - name: MetaPort
           description: "Specification of a domain port to be generated."
           attributes:
             - { name: name, type: str }
@@ -67,7 +67,7 @@ contexts:
             - { name: aggregates, type: "list[MetaAggregate]", optional: true }
             - { name: value_objects, type: "list[MetaValueObject]", optional: true }
             - { name: services, type: "list[MetaService]", optional: true }
-            - { name: ports, type: "list[MetaDomainPort]", optional: true }
+            - { name: ports, type: "list[MetaPort]", optional: true }
 
         - name: MetaUseCaseCommand
           description: "Specification of a use case command to be generated."
@@ -102,6 +102,7 @@ contexts:
           description: "Specification of an application to be generated."
           attributes:
             - { name: use_cases, type: "list[MetaUseCase]", optional: true }
+            - { name: ports, type: "list[MetaPort]", optional: true }
 
         - name: MetaInfrastructureAdapter
           description: "Specification of an infrastructure adapter to be generated."
@@ -110,10 +111,21 @@ contexts:
             - { name: description, type: str, optional: true }
             - { name: implements, type: str}
             - { name: config, type: "dict[str, Any]", optional: true }
+
+        - name: MetaImplementation
+          description: "Specification of an implementation to be generated."
+          attributes:
+            - { name: name, type: str }
+            - { name: implements, type: str }
+            - { name: description, type: str, optional: true }
+            - { name: attributes, type: "list[Attribute]", optional: true }
+
         - name: MetaInfrastructure
           description: "Specification of an infrastructure to be generated."
           attributes:
             - { name: adapters, type: "list[MetaInfrastructureAdapter]", optional: true }
+            - { name: acl, type: "list[MetaImplementation]", optional: true }
+
         - name: BoundedContext
           description: "A logical boundary within the system."
           attributes:
@@ -291,6 +303,24 @@ contexts:
           result:
             attributes:
               - { name: package_spec, type: PackageSpec }
+      ports:
+        - name: BlueprintMapperPort
+          description: "Maps a blueprint to a package."
+          kind: gateway
+          operations:
+            - name: to_package_spec
+              inputs:
+                - { name: blueprint, type: Blueprint }
+              output: { type: PackageSpec }
+            - name: to_blueprint
+              inputs:
+                - { name: package_spec, type: PackageSpec }
+              output: { type: Blueprint }
+    infrastructure:
+      acl:
+        - name: BlueprintPythonMapper
+          implements: BlueprintMapperPort
+          description: "Maps a blueprint to a Python package."
 
   - name: shared
     description: "Shared between contexts."
@@ -336,11 +366,176 @@ contexts:
             output_root: "out"
             encoding: "utf-8"
 
-#orchestration:
-#  workflows:
-#    - name: GenerateProject
-#  translators:
-#    - name: BlueprintToPackageSpec
+  - name: orchestration
+    description: "Orchestrates the generation process."
+    domain:
+      services:
+        - name: BlueprintMapper
+          attributes:
+            - { name: ContextMapper, type: ContextMapper }
+          operations:
+            - name: to_package_spec
+              inputs:
+                - { name: blueprint, type: Blueprint }
+              output: { type: PackageSpec }
+            - name: to_blueprint
+              inputs:
+                - { name: package_spec, type: PackageSpec }
+              output: { type: Blueprint }
+        - name: ContextMapper
+          attributes:
+            - { name: DomainMapper, type: DomainMapper }
+            - { name: ApplicationMapper, type: ApplicationMapper }
+            - { name: InfrastructureMapper, type: InfrastructureMapper }
+          operations:
+            - name: to_package_spec
+              inputs:
+                - { name: context, type: Context }
+              output: { type: PackageSpec }
+            - name: to_context
+              inputs:
+                - { name: package_spec, type: PackageSpec }
+              output: { type: Context }
+        - name: DomainMapper
+          attributes:
+            - { name: AggregateMapper, type: AggregateMapper }
+            - { name: ValueObjectMapper, type: ValueObjectMapper }
+            - { name: ServiceMapper, type: ServiceMapper }
+            - { name: PortMapper, type: PortMapper }
+          operations:
+            - name: to_package_spec
+              inputs:
+                - { name: domain, type: MetaDomain }
+              output: { type: PackageSpec }
+            - name: to_domain
+              inputs:
+                - { name: package_spec, type: PackageSpec }
+              output: { type: MetaDomain }
+        - name: ApplicationMapper
+          attributes:
+            - { name: UseCaseMapper, type: UseCaseMapper }
+          operations:
+            - name: to_package_spec
+              inputs:
+                - { name: application, type: MetaApplication }
+              output: { type: PackageSpec }
+            - name: to_application
+              inputs:
+                - { name: package_spec, type: PackageSpec }
+              output: { type: MetaApplication }
+        - name: InfrastructureMapper
+          attributes:
+            - { name: ImplementationMapper, type: ImplementationMapper }
+          operations:
+            - name: to_package_spec
+              inputs:
+                - { name: infrastructure, type: MetaInfrastructure }
+              output: { type: PackageSpec }
+            - name: to_infrastructure
+              inputs:
+                - { name: package_spec, type: PackageSpec }
+              output: { type: MetaInfrastructure }
+        - name: AggregateMapper
+          attributes:
+            - { name: AttributeMapper, type: AttributeMapper }
+            - { name: MethodMapper, type: MethodMapper }
+          operations:
+            - name: to_module_spec
+              inputs:
+                - { name: aggregate, type: MetaAggregate }
+              output: { type: ModuleSpec }
+            - name: to_aggregate
+              inputs:
+                - { name: package_spec, type: PackageSpec }
+              output: { type: MetaAggregate }
+        - name: ValueObjectMapper
+          attributes:
+            - { name: AttributeMapper, type: AttributeMapper }
+            - { name: MethodMapper, type: MethodMapper }
+          operations:
+            - name: to_module_spec
+              inputs:
+                - { name: value_object, type: MetaValueObject }
+              output: { type: ModuleSpec }
+            - name: to_value_object
+              inputs:
+                - { name: module_spec, type: ModuleSpec }
+              output: { type: MetaValueObject }
+        - name: ServiceMapper
+          attributes:
+            - { name: AttributeMapper, type: AttributeMapper }
+            - { name: MethodMapper, type: MethodMapper }
+          operations:
+            - name: to_module_spec
+              inputs:
+                - { name: service, type: MetaService }
+              output: { type: ModuleSpec }
+            - name: to_service
+              inputs:
+                - { name: module_spec, type: ModuleSpec }
+              output: { type: MetaService }
+        - name: PortMapper
+          attributes:
+            - { name: AttributeMapper, type: AttributeMapper }
+            - { name: MethodMapper, type: MethodMapper }
+          operations:
+            - name: to_module_spec
+              inputs:
+                - { name: port, type: MetaPort }
+              output: { type: ModuleSpec }
+            - name: to_port
+              inputs:
+                - { name: module_spec, type: ModuleSpec }
+              output: { type: MetaPort }
+        - name: UseCaseMapper
+          attributes:
+            - { name: AttributeMapper, type: AttributeMapper }
+            - { name: MethodMapper, type: MethodMapper }
+          operations:
+            - name: to_module_spec
+              inputs:
+                - { name: use_case, type: MetaUseCase }
+              output: { type: ModuleSpec }
+            - name: to_use_case
+              inputs:
+                - { name: module_spec, type: ModuleSpec }
+              output: { type: MetaUseCase }
+        - name: ImplementationMapper
+          attributes:
+            - { name: AttributeMapper, type: AttributeMapper }
+            - { name: MethodMapper, type: MethodMapper }
+          operations:
+            - name: to_module_spec
+              inputs:
+                - { name: implementation, type: MetaImplementation }
+              output: { type: ModuleSpec }
+            - name: to_implementation
+              inputs:
+                - { name: module_spec, type: ModuleSpec }
+              output: { type: MetaImplementation }
+        - name: MethodMapper
+          attributes:
+            - { name: AttributeMapper, type: AttributeMapper }
+          operations:
+            - name: to_function_spec
+              inputs:
+                - { name: method, type: MethodSpec }
+              output: { type: FunctionSpec }
+            - name: to_method
+              inputs:
+                - { name: function_spec, type: FunctionSpec }
+              output: { type: MethodSpec }
+        - name: AttributeMapper
+          operations:
+            - name: to_parameter_spec
+              inputs:
+                - { name: attribute, type: Attribute }
+              output: { type: ParameterSpec }
+            - name: to_attribute
+              inputs:
+                - { name: parameter_spec, type: ParameterSpec }
+              output: { type: Attribute }
+
 
 bootstrap:
   bindings:

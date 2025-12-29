@@ -5,9 +5,6 @@ from codegen.domain_definition.domain.value_objects.meta_value_object import (
     MetaValueObject,
 )
 from codegen.domain_definition.domain.value_objects.meta_service import MetaService
-from codegen.domain_definition.domain.value_objects.meta_domain_port import (
-    MetaDomainPort,
-)
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
@@ -61,15 +58,6 @@ class DomainTranslator(BaseTranslator):
             methods=methods,
         )
 
-    def translate_port(self, port: MetaDomainPort) -> ClassSpec:
-        methods = self._translate_methods(port.operations, is_abstract=True)
-        return ClassSpec(
-            name=port.name,
-            inheritance=["ABC"],
-            description=port.description,
-            methods=methods,
-        )
-
     def translate_aggregates(self, aggregates: List[MetaAggregate]) -> PackageSpec:
         modules = []
         for aggregate in aggregates:
@@ -111,19 +99,5 @@ class DomainTranslator(BaseTranslator):
             modules.append(module_spec)
         return PackageSpec.create(
             name="services",
-            modules=modules,
-        )
-
-    def translate_ports(self, ports: List[MetaDomainPort]) -> PackageSpec:
-        modules = []
-        for port in ports:
-            class_spec = self.translate_port(port)
-            module_spec = ModuleSpec.create(
-                name=port.name,
-                classes=[class_spec],
-            )
-            modules.append(module_spec)
-        return PackageSpec.create(
-            name="ports",
             modules=modules,
         )
