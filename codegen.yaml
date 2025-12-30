@@ -145,8 +145,8 @@ contexts:
             - { name: bootstrap, type: MetaBootstrap, optional: true }
 
       ports:
-        - name: BlueprintLoaderPort
-          description: "Loads the blueprint from a file."
+        - name: BlueprintStorage
+          description: "Storage for blueprint definitions."
           kind: repository
           operations:
             - name: load
@@ -166,13 +166,13 @@ contexts:
             attributes:
               - { name: blueprint, type: "Blueprint | None", optional: true }
           attributes:
-            - { name: blueprint_loader, type: BlueprintLoaderPort }
+            - { name: blueprint_loader, type: BlueprintStorage }
 
     infrastructure:
       adapters:
-        - name: YamlBlueprintLoader
-          implements: BlueprintLoaderPort
-          description: "Blueprint loader that reads from a YAML file."
+        - name: YamlBlueprintStorage
+          implements: BlueprintStorage
+          description: "YAML-based blueprint storage."
 
   - name: python_gen
     description: "Models the structure of Python code."
@@ -547,6 +547,18 @@ contexts:
           attributes:
             - { name: loader, type: LoadBlueprint }
             - { name: generator, type: GeneratePackage }
+            - { name: mapper, type: BlueprintMapper, optional: true }
+        - name: UpdateBlueprint
+          kind: command
+          command:
+            attributes:
+              - { name: path, type: Path }
+          result:
+            attributes:
+              - { name: result, type: str }
+          attributes:
+            - { name: parser, type: ParsePackage }
+            - { name: storage, type: BlueprintStorage }
             - { name: mapper, type: BlueprintMapper, optional: true }
 
 
