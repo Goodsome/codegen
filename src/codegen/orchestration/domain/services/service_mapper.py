@@ -1,3 +1,4 @@
+from codegen.python_gen.domain.value_objects.parameter_spec import FieldFlavor
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from typing import Iterable
 from codegen.orchestration.domain.services.attribute_mapper import AttributeMapper
@@ -17,7 +18,11 @@ class ServiceMapper:
 
     def to_module_spec(self, service: MetaService) -> ModuleSpec:
         attributes = [
-            self.attribute_mapper.to_parameter_spec(attr) for attr in service.attributes
+            self.attribute_mapper.to_parameter_spec(
+                attr,
+                default_field_flavor=FieldFlavor.DATACLASS,
+            )
+            for attr in service.attributes
         ]
         methods = [
             self.method_mapper.to_function_spec(

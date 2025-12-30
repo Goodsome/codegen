@@ -33,7 +33,7 @@ class PackageSpec(ValueObject):
         if sub_packages is None:
             sub_packages = []
         has_init_module = any(mod.is_init_module() for mod in modules)
-        if not has_init_module:
+        if not has_init_module and len(modules + sub_packages) > 0:
             modules.append(ModuleSpec.get_init_module())
         name = NamingService().to_snake_case(name)
         return cls(

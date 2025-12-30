@@ -18,8 +18,12 @@ class ValueObjectMapper:
     method_mapper: MethodMapper = field(default_factory=MethodMapper)
 
     def to_module_spec(self, value_object: MetaValueObject) -> ModuleSpec:
+        from codegen.python_gen.domain.value_objects.parameter_spec import FieldFlavor
+
         attributes = [
-            self.attribute_mapper.to_parameter_spec(attr, in_pydantic_model=True)
+            self.attribute_mapper.to_parameter_spec(
+                attr, default_field_flavor=FieldFlavor.PYDANTIC
+            )
             for attr in value_object.attributes
         ]
         class_spec = ClassSpec.create(

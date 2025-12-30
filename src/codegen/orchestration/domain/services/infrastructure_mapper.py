@@ -5,6 +5,8 @@ from codegen.domain_definition.domain.value_objects.meta_infrastructure import (
     MetaInfrastructure,
 )
 from dataclasses import dataclass, field
+
+from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.domain_definition.domain.value_objects.meta_implementation import (
     MetaImplementation,
@@ -14,26 +16,32 @@ from codegen.domain_definition.domain.value_objects.meta_implementation import (
 @dataclass
 class InfrastructureMapper:
 
-    implementation_mapper: ImplementationMapper = field(default_factory=ImplementationMapper)
+    implementation_mapper: ImplementationMapper = field(
+        default_factory=ImplementationMapper
+    )
 
-    def to_package_spec(self, infrastructure: MetaInfrastructure) -> PackageSpec:
+    def to_package_spec(
+        self,
+        infrastructure: MetaInfrastructure,
+        ports_class_specs: dict[str, ClassSpec],
+    ) -> PackageSpec:
         acl_modules = [
-            self.implementation_mapper.to_module_spec(impl)
+            self.implementation_mapper.to_module_spec(impl, ports_class_specs)
             for impl in infrastructure.acl
         ]
         # 对于 adapters，由于 MetaInfrastructureAdapter 结构类似 MetaImplementation，我们可以复用逻辑
-        adapter_modules = []
-        for adapter in infrastructure.adapters:
-            impl = MetaImplementation(
-                name=adapter.name,
-                implements=adapter.implements,
-                description=adapter.description,
-                attributes=[],  # Config 转换逻辑视需求而定，这里简化
-            )
-            adapter_modules.append(self.implementation_mapper.to_module_spec(impl))
-
-        acl_pkg = PackageSpec.create(name="acl", modules=acl_modules)
-        adapters_pkg = PackageSpec.create(name="adapters", modules=adapter_modules)
+        adapter_modules = [
+            self.implementation_mapper.to_module_spec(impl, ports_class_specs)
+            for impl in infrastructure.adapters
+        ]
+        acl_pkg = PackageSpec.create(
+            name="acl",
+            modules=acl_modules,
+        )
+        adapters_pkg = PackageSpec.create(
+            name="adapters",
+            modules=adapter_modules,
+        )
 
         return PackageSpec.create(
             name="infrastructure", sub_packages=[acl_pkg, adapters_pkg]

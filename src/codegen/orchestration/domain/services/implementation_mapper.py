@@ -1,6 +1,7 @@
 from dataclasses import field
 from codegen.orchestration.domain.services.attribute_mapper import AttributeMapper
 from codegen.orchestration.domain.services.method_mapper import MethodMapper
+from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.domain_definition.domain.value_objects.meta_implementation import (
     MetaImplementation,
@@ -15,7 +16,17 @@ class ImplementationMapper:
     attribute_mapper: AttributeMapper = field(default_factory=AttributeMapper)
     method_mapper: MethodMapper = field(default_factory=MethodMapper)
 
-    def to_module_spec(self, implementation: MetaImplementation) -> ModuleSpec:
+    def to_module_spec(
+        self,
+        implementation: MetaImplementation,
+        ports_class_specs: dict[str, ClassSpec],
+    ) -> ModuleSpec:
+        if implementation.implements not in ports_class_specs:
+            raise ValueError(
+                f"Could not find port class spec for {implementation.implements}"
+            )
+        port_cls = ports_class_specs[implementation.implements]
+        methods = [self.remove_abstract_method(f) for f in port_cls.methods]
         attributes = [
             self.attribute_mapper.to_parameter_spec(attr)
             for attr in implementation.attributes
@@ -25,6 +36,7 @@ class ImplementationMapper:
             description=implementation.description,
             inheritance=[implementation.implements],
             attributes=attributes,
+            methods=methods,
         )
         return ModuleSpec.create(name=implementation.name, classes=[class_spec])
 
@@ -41,3 +53,14 @@ class ImplementationMapper:
                     attributes=attributes,
                 )
         raise ValueError("No Implementation found in module")
+
+    def remove_abstract_method(self, function_spec: FunctionSpec) -> FunctionSpec:
+        decorators = [d for d in function_spec.decorators if d != "abstractmethod"]
+        return FunctionSpec.create(
+            name=function_spec.name,
+            decorators=decorators,
+            parameters=function_spec.parameters,
+            suite=function_spec.suite,
+            return_annotation=function_spec.return_annotation,
+            function_type=function_spec.function_type,
+        )
