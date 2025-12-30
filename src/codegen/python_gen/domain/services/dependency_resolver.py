@@ -28,6 +28,7 @@ GLOBAL_REGISTRY = {
     "Union": "typing",
     "Iterable": "typing",
     "dataclass": "dataclasses",
+    "field": "dataclasses",
     "ValueObject": "codegen.shared.models",
     "ABC": "abc",
     "abstractmethod": "abc",

@@ -104,14 +104,6 @@ contexts:
             - { name: use_cases, type: "list[MetaUseCase]", optional: true }
             - { name: ports, type: "list[MetaPort]", optional: true }
 
-        - name: MetaInfrastructureAdapter
-          description: "Specification of an infrastructure adapter to be generated."
-          attributes:
-            - { name: name, type: str }
-            - { name: description, type: str, optional: true }
-            - { name: implements, type: str}
-            - { name: config, type: "dict[str, Any]", optional: true }
-
         - name: MetaImplementation
           description: "Specification of an implementation to be generated."
           attributes:
@@ -123,7 +115,7 @@ contexts:
         - name: MetaInfrastructure
           description: "Specification of an infrastructure to be generated."
           attributes:
-            - { name: adapters, type: "list[MetaInfrastructureAdapter]", optional: true }
+            - { name: adapters, type: "list[MetaImplementation]", optional: true }
             - { name: acl, type: "list[MetaImplementation]", optional: true }
 
         - name: BoundedContext
@@ -363,16 +355,14 @@ contexts:
         - name: JinjaAdapter
           implements: TemplatePort
           description: "Jinja-based template rendering adapter."
-          config:
-            template_root: "src/codegen/templates"
-            autoescape: false
+          attributes:
+            - { name: config, type: "dict[str, Any]" }
 
         - name: OSFileSystem
           implements: FileSystemPort
           description: "OS file system adapter for reading/writing files."
-          config:
-            output_root: "out"
-            encoding: "utf-8"
+          attributes:
+            - { name: config, type: "dict[str, Any]" }
 
   - name: orchestration
     description: "Orchestrates the generation process."

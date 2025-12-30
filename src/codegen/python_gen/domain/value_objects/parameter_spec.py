@@ -4,7 +4,10 @@ Name: ParameterSpec
 Description: Represents a parameter in a Python function.
 """
 
+from pydantic.fields import computed_field
 import ast
+from enum import StrEnum
+
 from pydantic.fields import Field
 from codegen.shared.models import ValueObject
 
@@ -13,24 +16,44 @@ from codegen.python_gen.domain.value_objects.type_annotation_spec import (
 )
 
 
-class PydanticField(ValueObject):
+class FieldFlavor(StrEnum):
+    PYDANTIC = "pydantic"
+    DATACLASS = "dataclass"
+
+
+class FieldSpec(ValueObject):
     default: str = Field(default="")
     default_factory: str = Field(default="")
+    flavor: FieldFlavor = Field(default=FieldFlavor.PYDANTIC)
 
     @classmethod
-    def create_from_annotation(cls, annotation: TypeAnnotationSpec) -> "PydanticField":
-        """Parses a Pydantic field annotation into a PydanticField object."""
+    def create_from_annotation(
+        cls,
+        annotation: TypeAnnotationSpec,
+        flavor: FieldFlavor = FieldFlavor.PYDANTIC,
+    ) -> "FieldSpec":
         if annotation.is_nullable():
-            return cls(default="None")
-        return cls(default_factory=annotation.name)
+            return cls(
+                default="None",
+                flavor=flavor,
+            )
+        return cls(
+            default_factory=annotation.name,
+            flavor=flavor,
+        )
+
+    @property
+    def func_name(self):
+        return "Field" if self.flavor == FieldFlavor.PYDANTIC else "field"
 
     def render(self) -> str:
+        args: list[str] = []
         if self.default:
-            return f"Field(default={self.default})"
+            args.append(f"default={self.default}")
         elif self.default_factory:
-            return f"Field(default_factory={self.default_factory})"
-        else:
-            return "Field()"
+            args.append(f"default_factory={self.default_factory}")
+
+        return f"{self.func_name}({', '.join(args)})"
 
 
 class ParameterSpec(ValueObject):
@@ -38,7 +61,7 @@ class ParameterSpec(ValueObject):
 
     name: str
     annotation: TypeAnnotationSpec
-    default: PydanticField | None = Field(default=None)
+    default: FieldSpec | None = Field(default=None)
     optional: bool = Field(default=False)
 
     @classmethod
@@ -47,14 +70,17 @@ class ParameterSpec(ValueObject):
         name: str,
         annotation: str | TypeAnnotationSpec,
         optional: bool = False,
-        in_pydantic_model: bool = False,
+        default_field_flavor: FieldFlavor | None = None,
     ):
         if isinstance(annotation, str):
             annotation_spec = TypeAnnotationSpec.parse(annotation)
         else:
             annotation_spec = annotation
-        if in_pydantic_model and optional:
-            default = PydanticField.create_from_annotation(annotation_spec)
+        if default_field_flavor and optional:
+            default = FieldSpec.create_from_annotation(
+                annotation_spec,
+                flavor=default_field_flavor,
+            )
         else:
             default = None
         return cls(
@@ -72,15 +98,19 @@ class ParameterSpec(ValueObject):
     ) -> list["ParameterSpec"]:
         """Parses an AST node into a list of ParameterSpec objects."""
         attributes: list[ParameterSpec] = []
+        default_field_flavor = None
+        if in_pydantic_model:
+            default_field_flavor = FieldFlavor.PYDANTIC
         if isinstance(node, ast.AnnAssign):
             optional = node.value is not None
             if isinstance(node.target, ast.Name):
+
                 attributes.append(
                     cls.create(
                         name=node.target.id,
                         annotation=TypeAnnotationSpec.parse_ast(node.annotation),
-                        in_pydantic_model=in_pydantic_model,
                         optional=optional,
+                        default_field_flavor=default_field_flavor,
                     )
                 )
         elif isinstance(node, ast.Assign):
@@ -90,15 +120,15 @@ class ParameterSpec(ValueObject):
                         cls.create(
                             name=target.id,
                             annotation=TypeAnnotationSpec(name="Any"),
-                            in_pydantic_model=in_pydantic_model,
+                            default_field_flavor=default_field_flavor,
                         )
                     )
         return attributes
 
     def get_required_types(self) -> set[str]:
         types = self.annotation.get_all_referenced_names()
-        if isinstance(self.default, PydanticField):
-            types.add("Field")
+        if isinstance(self.default, FieldSpec):
+            types.add(self.default.func_name)
         return types
 
     def render_default(self) -> str:

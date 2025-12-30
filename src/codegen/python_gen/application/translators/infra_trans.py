@@ -23,7 +23,9 @@ class InfraTranslator(BaseTranslator):
         infrastructure: MetaInfrastructure,
         ports_class_specs: dict[str, ClassSpec],
     ) -> PackageSpec:
-        pkg_adapters = self.translate_adapters(infrastructure.adapters)
+        pkg_adapters = self.translate_adapters(
+            infrastructure.adapters, ports_class_specs
+        )
         pkg_acl = self.translate_acl(infrastructure.acl, ports_class_specs)
         return PackageSpec.create(
             name="infrastructure",
@@ -83,16 +85,13 @@ class InfraTranslator(BaseTranslator):
         )
 
     def translate_adapters(
-        self, adapters: List[MetaInfrastructureAdapter]
+        self,
+        adapters: List[MetaImplementation],
+        ports_class_specs: dict[str, ClassSpec],
     ) -> PackageSpec:
-        modules: List[ModuleSpec] = []
-        for adapter in adapters:
-            class_spec = self.translate_adapter(adapter)
-            module_spec = ModuleSpec.create(
-                name=adapter.name,
-                classes=[class_spec],
-            )
-            modules.append(module_spec)
+        modules = [
+            self.translate_implementation(i, ports_class_specs) for i in adapters
+        ]
         return PackageSpec.create(
             name="adapters",
             modules=modules,

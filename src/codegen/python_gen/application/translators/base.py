@@ -37,7 +37,6 @@ class BaseTranslator:
             name=name,
             annotation=attribute.type,
             optional=attribute.optional,
-            in_pydantic_model=in_pydantic_model,
         )
 
     def _translate_attributes(

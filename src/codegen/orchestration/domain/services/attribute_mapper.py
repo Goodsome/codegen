@@ -1,22 +1,24 @@
 from dataclasses import dataclass
-from codegen.python_gen.domain.value_objects.parameter_spec import ParameterSpec
-from codegen.domain_definition.domain.value_objects.attribute import Attribute
-from codegen.python_gen.domain.value_objects.type_annotation_spec import (
-    TypeAnnotationSpec,
+from codegen.python_gen.domain.value_objects.parameter_spec import (
+    ParameterSpec,
+    FieldFlavor,
 )
+from codegen.domain_definition.domain.value_objects.attribute import Attribute
 
 
 @dataclass
 class AttributeMapper:
 
     def to_parameter_spec(
-        self, attribute: Attribute, in_pydantic_model: bool = False
+        self,
+        attribute: Attribute,
+        default_field_flavor: FieldFlavor | None = None,
     ) -> ParameterSpec:
         return ParameterSpec.create(
             name=attribute.name,
             annotation=attribute.type,
             optional=attribute.optional,
-            in_pydantic_model=in_pydantic_model,
+            default_field_flavor=default_field_flavor,
         )
 
     def to_attribute(self, parameter_spec: ParameterSpec) -> Attribute:

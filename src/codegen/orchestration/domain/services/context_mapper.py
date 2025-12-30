@@ -1,6 +1,7 @@
 from dataclasses import field
 from codegen.orchestration.domain.services.domain_mapper import DomainMapper
 from codegen.orchestration.domain.services.application_mapper import ApplicationMapper
+from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from dataclasses import dataclass
 from codegen.domain_definition.domain.value_objects.bounded_context import (
@@ -23,8 +24,12 @@ class ContextMapper:
     def to_package_spec(self, context: BoundedContext) -> PackageSpec:
         domain_pkg = self.domain_mapper.to_package_spec(context.domain)
         application_pkg = self.application_mapper.to_package_spec(context.application)
+        class_specs: dict[str, ClassSpec] = {}
+        self._collect_class_specs_in_ports(class_specs, domain_pkg)
+        self._collect_class_specs_in_ports(class_specs, application_pkg)
         infrastructure_pkg = self.infrastructure_mapper.to_package_spec(
-            context.infrastructure
+            context.infrastructure,
+            class_specs,
         )
         return PackageSpec.create(
             name=context.name,
@@ -48,3 +53,12 @@ class ContextMapper:
             application=application,
             infrastructure=infrastructure,
         )
+
+    def _collect_class_specs_in_ports(
+        self, class_specs: dict[str, ClassSpec], package_spec: PackageSpec
+    ) -> None:
+        if package_spec.name == "ports":
+            class_specs.update(package_spec.collect_class_spec())
+        else:
+            for pkg in package_spec.sub_packages:
+                self._collect_class_specs_in_ports(class_specs, pkg)
