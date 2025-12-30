@@ -142,15 +142,15 @@ contexts:
         - name: MetaBootstrap
           description: "Specification of the bootstrap configuration."
           attributes:
-            - { name: bindings, type: "list[PortBinding]" }
+            - { name: bindings, type: "list[PortBinding]", optional: true }
         - name: Blueprint
           description: "Root of the generation model. Represents the entire project definition."
           attributes:
             - { name: name, type: str, description: "Project Name" }
             - { name: description, type: str }
             - { name: layout, type: str, description: "Layout strategy name" }
-            - { name: contexts, type: "list[BoundedContext]" }
-            - { name: bootstrap, type: MetaBootstrap }
+            - { name: contexts, type: "list[BoundedContext]", optional: true }
+            - { name: bootstrap, type: MetaBootstrap, optional: true }
 
       ports:
         - name: BlueprintLoaderPort
@@ -325,6 +325,14 @@ contexts:
   - name: shared
     description: "Shared between contexts."
     domain:
+      services:
+        - name: NamingService
+          description: "Provides naming conventions for generated artifacts."
+          operations:
+            - name: to_snake_case
+              inputs:
+                - { name: name, type: str }
+              output: { type: str }
       ports:
         - name: TemplatePort
           description: "Port for generating templates."
@@ -390,12 +398,12 @@ contexts:
           operations:
             - name: to_package_spec
               inputs:
-                - { name: context, type: Context }
+                - { name: context, type: BoundedContext }
               output: { type: PackageSpec }
             - name: to_context
               inputs:
                 - { name: package_spec, type: PackageSpec }
-              output: { type: Context }
+              output: { type: BoundedContext }
         - name: DomainMapper
           attributes:
             - { name: AggregateMapper, type: AggregateMapper }

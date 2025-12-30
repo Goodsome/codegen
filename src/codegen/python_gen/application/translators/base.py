@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Optional
 from codegen.domain_definition.domain.value_objects.attribute import Attribute
 from codegen.domain_definition.domain.value_objects.meta_port import MetaPort
@@ -14,6 +14,7 @@ from codegen.python_gen.domain.value_objects.function_spec import (
 from codegen.python_gen.domain.value_objects.type_annotation_spec import (
     TypeAnnotationSpec,
 )
+from codegen.shared.domain.services.naming_service import NamingService
 
 
 @dataclass
@@ -26,12 +27,14 @@ class TranslationContext:
 
 @dataclass
 class BaseTranslator:
+    naming_service: NamingService = field(default_factory=NamingService)
 
     def _translate_attribute(
         self, attribute: Attribute, in_pydantic_model: bool
     ) -> ParameterSpec:
+        name = self.naming_service.to_snake_case(attribute.name)
         return ParameterSpec.create(
-            name=attribute.name,
+            name=name,
             annotation=attribute.type,
             optional=attribute.optional,
             in_pydantic_model=in_pydantic_model,
