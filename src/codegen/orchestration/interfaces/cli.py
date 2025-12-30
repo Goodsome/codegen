@@ -1,8 +1,10 @@
+from codegen.orchestration.application.use_cases.generate_project import (
+    GenerateProjectCommand,
+)
 import typer
 from pathlib import Path
 from typing import Optional
 from codegen.bootstrap import Container
-from codegen.orchestration.workflows.generate_project import GenerateCodeCommand
 
 # 创建 Typer 应用实例
 app = typer.Typer(
@@ -33,9 +35,9 @@ def generate(
         "encoding": "utf-8",
     }
     container = Container(config=config)
-    workflow = container.generate_code_workflow()
-    cmd = GenerateCodeCommand(overwrite=overwrite, node=node)
-    workflow.execute(cmd)
+    use_case = container.generate_project_use_case()
+    cmd = GenerateProjectCommand(overwrite=overwrite, node=node)
+    use_case.execute(cmd)
 
 
 if __name__ == "__main__":

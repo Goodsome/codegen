@@ -1,6 +1,3 @@
-from codegen.python_gen.application.translators.blueprint_trans import (
-    BlueprintTranslator,
-)
 from dependency_injector import containers, providers
 from dependency_injector.providers import Singleton, Factory
 
@@ -31,8 +28,6 @@ class Container(containers.DeclarativeContainer):
 
     blueprint_loader_provider = Singleton(YamlBlueprintLoader, config=config)
 
-    blueprint_translator_provider = Singleton(BlueprintTranslator)
-
     python_syntax_translator_provider = Singleton(
         PythonSyntaxTranslator,
         template_port=template_port_provider,
@@ -55,7 +50,7 @@ class Container(containers.DeclarativeContainer):
         translator=python_syntax_translator_provider,
     )
 
-    generate_code_workflow: Factory[GenerateProject] = Factory(
+    generate_project_use_case: Factory[GenerateProject] = Factory(
         GenerateProject,
         loader=load_blueprint_use_case,
         generator=generate_package_use_case,
