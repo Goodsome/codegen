@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from codegen.orchestration.domain.services.context_mapper import ContextMapper
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.domain_definition.domain.value_objects.blueprint import Blueprint
@@ -7,7 +7,7 @@ from codegen.domain_definition.domain.value_objects.blueprint import Blueprint
 @dataclass
 class BlueprintMapper:
 
-    context_mapper: ContextMapper
+    context_mapper: ContextMapper = field(default_factory=ContextMapper)
 
     def to_package_spec(self, blueprint: Blueprint) -> PackageSpec:
         sub_packages = [

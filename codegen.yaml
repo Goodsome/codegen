@@ -380,7 +380,7 @@ contexts:
       services:
         - name: BlueprintMapper
           attributes:
-            - { name: ContextMapper, type: ContextMapper }
+            - { name: ContextMapper, type: ContextMapper, optional: true }
           operations:
             - name: to_package_spec
               inputs:
@@ -392,9 +392,9 @@ contexts:
               output: { type: Blueprint }
         - name: ContextMapper
           attributes:
-            - { name: DomainMapper, type: DomainMapper }
-            - { name: ApplicationMapper, type: ApplicationMapper }
-            - { name: InfrastructureMapper, type: InfrastructureMapper }
+            - { name: DomainMapper, type: DomainMapper, optional: true }
+            - { name: ApplicationMapper, type: ApplicationMapper, optional: true }
+            - { name: InfrastructureMapper, type: InfrastructureMapper, optional: true }
           operations:
             - name: to_package_spec
               inputs:
@@ -406,10 +406,10 @@ contexts:
               output: { type: BoundedContext }
         - name: DomainMapper
           attributes:
-            - { name: AggregateMapper, type: AggregateMapper }
-            - { name: ValueObjectMapper, type: ValueObjectMapper }
-            - { name: ServiceMapper, type: ServiceMapper }
-            - { name: PortMapper, type: PortMapper }
+            - { name: AggregateMapper, type: AggregateMapper, optional: true }
+            - { name: ValueObjectMapper, type: ValueObjectMapper, optional: true }
+            - { name: ServiceMapper, type: ServiceMapper, optional: true }
+            - { name: PortMapper, type: PortMapper, optional: true }
           operations:
             - name: to_package_spec
               inputs:
@@ -421,7 +421,7 @@ contexts:
               output: { type: MetaDomain }
         - name: ApplicationMapper
           attributes:
-            - { name: UseCaseMapper, type: UseCaseMapper }
+            - { name: UseCaseMapper, type: UseCaseMapper, optional: true }
           operations:
             - name: to_package_spec
               inputs:
@@ -433,7 +433,7 @@ contexts:
               output: { type: MetaApplication }
         - name: InfrastructureMapper
           attributes:
-            - { name: ImplementationMapper, type: ImplementationMapper }
+            - { name: ImplementationMapper, type: ImplementationMapper, optional: true }
           operations:
             - name: to_package_spec
               inputs:
@@ -445,8 +445,8 @@ contexts:
               output: { type: MetaInfrastructure }
         - name: AggregateMapper
           attributes:
-            - { name: AttributeMapper, type: AttributeMapper }
-            - { name: MethodMapper, type: MethodMapper }
+            - { name: AttributeMapper, type: AttributeMapper, optional: true }
+            - { name: MethodMapper, type: MethodMapper, optional: true }
           operations:
             - name: to_module_spec
               inputs:
@@ -458,8 +458,8 @@ contexts:
               output: { type: MetaAggregate }
         - name: ValueObjectMapper
           attributes:
-            - { name: AttributeMapper, type: AttributeMapper }
-            - { name: MethodMapper, type: MethodMapper }
+            - { name: AttributeMapper, type: AttributeMapper, optional: true }
+            - { name: MethodMapper, type: MethodMapper, optional: true }
           operations:
             - name: to_module_spec
               inputs:
@@ -471,8 +471,8 @@ contexts:
               output: { type: MetaValueObject }
         - name: ServiceMapper
           attributes:
-            - { name: AttributeMapper, type: AttributeMapper }
-            - { name: MethodMapper, type: MethodMapper }
+            - { name: AttributeMapper, type: AttributeMapper, optional: true }
+            - { name: MethodMapper, type: MethodMapper, optional: true }
           operations:
             - name: to_module_spec
               inputs:
@@ -484,8 +484,8 @@ contexts:
               output: { type: MetaService }
         - name: PortMapper
           attributes:
-            - { name: AttributeMapper, type: AttributeMapper }
-            - { name: MethodMapper, type: MethodMapper }
+            - { name: AttributeMapper, type: AttributeMapper, optional: true }
+            - { name: MethodMapper, type: MethodMapper, optional: true }
           operations:
             - name: to_module_spec
               inputs:
@@ -497,8 +497,8 @@ contexts:
               output: { type: MetaPort }
         - name: UseCaseMapper
           attributes:
-            - { name: AttributeMapper, type: AttributeMapper }
-            - { name: MethodMapper, type: MethodMapper }
+            - { name: AttributeMapper, type: AttributeMapper, optional: true }
+            - { name: MethodMapper, type: MethodMapper, optional: true }
           operations:
             - name: to_module_spec
               inputs:
@@ -510,8 +510,8 @@ contexts:
               output: { type: MetaUseCase }
         - name: ImplementationMapper
           attributes:
-            - { name: AttributeMapper, type: AttributeMapper }
-            - { name: MethodMapper, type: MethodMapper }
+            - { name: AttributeMapper, type: AttributeMapper, optional: true }
+            - { name: MethodMapper, type: MethodMapper, optional: true }
           operations:
             - name: to_module_spec
               inputs:
@@ -523,7 +523,7 @@ contexts:
               output: { type: MetaImplementation }
         - name: MethodMapper
           attributes:
-            - { name: AttributeMapper, type: AttributeMapper }
+            - { name: AttributeMapper, type: AttributeMapper, optional: true }
           operations:
             - name: to_function_spec
               inputs:
@@ -543,6 +543,21 @@ contexts:
               inputs:
                 - { name: parameter_spec, type: ParameterSpec }
               output: { type: Attribute }
+    application:
+      use_cases:
+        - name: GenerateProject
+          kind: command
+          command:
+            attributes:
+              - { name: overwrite, type: bool, optional: true }
+              - { name: node, type: str | None, optional: true}
+          result:
+            attributes:
+              - { name: result, type: str }
+          attributes:
+            - { name: loader, type: LoadBlueprint }
+            - { name: generator, type: GeneratePackage }
+            - { name: mapper, type: BlueprintMapper, optional: true }
 
 
 bootstrap:

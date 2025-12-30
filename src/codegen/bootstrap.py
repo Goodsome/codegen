@@ -8,7 +8,7 @@ from codegen.domain_definition.application.use_cases.load_blueprint import LoadB
 from codegen.domain_definition.infrastructure.adapters.yaml_blueprint_loader import (
     YamlBlueprintLoader,
 )
-from codegen.orchestration.workflows.generate_project import GenerateProject
+from codegen.orchestration.application.use_cases.generate_project import GenerateProject
 from codegen.python_gen.application.use_cases.generate_package import (
     GeneratePackage,
 )
@@ -59,5 +59,4 @@ class Container(containers.DeclarativeContainer):
         GenerateProject,
         loader=load_blueprint_use_case,
         generator=generate_package_use_case,
-        translator=blueprint_translator_provider,
     )
