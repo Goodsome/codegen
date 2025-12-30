@@ -1,4 +1,4 @@
-from codegen.interfaces.cli import app
+from codegen.orchestration.interfaces.cli import app
 
 if __name__ == "__main__":
     app()
