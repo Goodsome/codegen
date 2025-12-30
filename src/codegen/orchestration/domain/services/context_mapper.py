@@ -1,3 +1,4 @@
+from dataclasses import field
 from codegen.orchestration.domain.services.domain_mapper import DomainMapper
 from codegen.orchestration.domain.services.application_mapper import ApplicationMapper
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
@@ -13,9 +14,11 @@ from codegen.orchestration.domain.services.infrastructure_mapper import (
 @dataclass
 class ContextMapper:
 
-    domain_mapper: DomainMapper
-    application_mapper: ApplicationMapper
-    infrastructure_mapper: InfrastructureMapper
+    domain_mapper: DomainMapper = field(default_factory=DomainMapper)
+    application_mapper: ApplicationMapper = field(default_factory=ApplicationMapper)
+    infrastructure_mapper: InfrastructureMapper = field(
+        default_factory=InfrastructureMapper
+    )
 
     def to_package_spec(self, context: BoundedContext) -> PackageSpec:
         domain_pkg = self.domain_mapper.to_package_spec(context.domain)
