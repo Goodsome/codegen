@@ -4,6 +4,7 @@ Name: PackageSpec
 Description: Represents a Python package.
 """
 
+from codegen.shared.domain.services.naming_service import NamingService
 from pathlib import Path
 
 from pydantic import Field
@@ -34,6 +35,7 @@ class PackageSpec(ValueObject):
         has_init_module = any(mod.is_init_module() for mod in modules)
         if not has_init_module:
             modules.append(ModuleSpec.get_init_module())
+        name = NamingService().to_snake_case(name)
         return cls(
             name=name,
             modules=modules,
