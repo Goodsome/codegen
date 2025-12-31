@@ -22,7 +22,7 @@ class YamlBlueprintStorage(BlueprintStorage):
         else:
             raise ValueError("Invalid config_path value")
 
-    def load(self, source: str) -> Blueprint | None:
+    def load(self) -> Blueprint | None:
         if not os.path.exists(self.config_path):
             return None
 
@@ -37,8 +37,8 @@ class YamlBlueprintStorage(BlueprintStorage):
             print(f"Error loading yaml spec: {e}")
             raise e
 
-    def save(self, blueprint: Blueprint, source: str) -> None:
-        yaml_path = self.project_root / source
+    def save(self, blueprint: Blueprint) -> None:
+        yaml_path = self.config_path
         try:
             # 确保目录存在
             yaml_path.parent.mkdir(parents=True, exist_ok=True)
