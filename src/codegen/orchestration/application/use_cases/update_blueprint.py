@@ -32,5 +32,5 @@ class UpdateBlueprint:
             ParsePackageQuery(package_path=cmd.path)
         ).package_spec
         blueprint = self.mapper.to_blueprint(project_pkg)
-        self.storage.save(blueprint, "target/codegen.yaml")
+        self.storage.save(blueprint)
         return UpdateBlueprintResult(result="Updated blueprint.")

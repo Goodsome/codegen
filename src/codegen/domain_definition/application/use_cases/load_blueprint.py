@@ -25,7 +25,7 @@ class LoadBlueprint:
     blueprint_loader: BlueprintStorage
 
     def execute(self, cmd: LoadBlueprintCommand) -> LoadBlueprintResult:
-        blueprint = self.blueprint_loader.load("codegen.yaml")
+        blueprint = self.blueprint_loader.load()
         if blueprint is None:
             raise ValueError("Failed to load blueprint")
         return LoadBlueprintResult(blueprint=blueprint)
