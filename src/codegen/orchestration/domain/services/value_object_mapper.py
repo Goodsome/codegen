@@ -42,6 +42,8 @@ class ValueObjectMapper:
         )
 
     def to_value_object(self, module_spec: ModuleSpec) -> MetaValueObject:
+        if len(module_spec.classes) != 1:
+            return MetaValueObject(name=module_spec.name)
         cls = module_spec.classes[0]
         attributes = [
             self.attribute_mapper.to_attribute(attr) for attr in cls.attributes

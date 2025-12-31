@@ -50,6 +50,8 @@ class AggregateMapper:
         )
 
     def to_aggregate(self, module: ModuleSpec) -> MetaAggregate:
+        if len(module.classes) != 1:
+            return MetaAggregate(name=module.name)
         cls = module.classes[0]
         attributes = [
             self.attribute_mapper.to_attribute(attr) for attr in cls.attributes

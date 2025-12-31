@@ -42,6 +42,8 @@ class PortMapper:
         )
 
     def to_port(self, module_spec: ModuleSpec) -> MetaPort:
+        if len(module_spec.classes) != 1:
+            return MetaPort(name=module_spec.name, kind="Repository")
         cls = module_spec.classes[0]
         operations = [self.method_mapper.to_method(method) for method in cls.methods]
         return MetaPort(

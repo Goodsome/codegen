@@ -4,13 +4,13 @@ from typing import cast, Any
 
 import yaml
 
-from codegen.domain_definition.domain.ports.blueprint_loader_port import (
-    BlueprintLoaderPort,
+from codegen.domain_definition.domain.ports.blueprint_storage import (
+    BlueprintStorage,
 )
 from codegen.domain_definition.domain.value_objects.blueprint import Blueprint
 
 
-class YamlBlueprintLoader(BlueprintLoaderPort):
+class YamlBlueprintStorage(BlueprintStorage):
     """Blueprint loader that reads from a YAML file."""
 
     def __init__(self, config: dict[str, Any]) -> None:
@@ -35,4 +35,17 @@ class YamlBlueprintLoader(BlueprintLoaderPort):
         except Exception as e:
             # 在实际工程中，这里应该记录日志或抛出自定义异常
             print(f"Error loading yaml spec: {e}")
+            raise e
+
+    def save(self, blueprint: Blueprint, source: str) -> None:
+        yaml_path = self.project_root / source
+        try:
+            # 确保目录存在
+            yaml_path.parent.mkdir(parents=True, exist_ok=True)
+
+            data = blueprint.model_dump(exclude_none=True)
+            with open(yaml_path, "w", encoding="utf-8") as f:
+                yaml.safe_dump(data, f, sort_keys=False, allow_unicode=True)
+        except Exception as e:
+            print(f"Error saving yaml spec: {e}")
             raise e
