@@ -50,8 +50,6 @@ class AggregateMapper:
         )
 
     def to_aggregate(self, module: ModuleSpec) -> MetaAggregate:
-        if len(module.classes) != 1:
-            return MetaAggregate(name=module.name)
         cls = module.classes[0]
         attributes = [
             self.attribute_mapper.to_attribute(attr) for attr in cls.attributes
@@ -65,6 +63,11 @@ class AggregateMapper:
         )
 
     def to_aggregates(self, package: PackageSpec) -> list[MetaAggregate]:
+        aggregates: list[MetaAggregate] = []
         if package.name != "aggregates":
-            return []
-        return [self.to_aggregate(module) for module in package.modules]
+            return aggregates
+        for module in package.modules:
+            if module.is_init_module():
+                continue
+            aggregates.append(self.to_aggregate(module))
+        return aggregates

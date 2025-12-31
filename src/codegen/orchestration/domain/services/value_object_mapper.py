@@ -42,8 +42,6 @@ class ValueObjectMapper:
         )
 
     def to_value_object(self, module_spec: ModuleSpec) -> MetaValueObject:
-        if len(module_spec.classes) != 1:
-            return MetaValueObject(name=module_spec.name)
         cls = module_spec.classes[0]
         attributes = [
             self.attribute_mapper.to_attribute(attr) for attr in cls.attributes
@@ -55,6 +53,11 @@ class ValueObjectMapper:
         )
 
     def to_value_objects(self, package_spec: PackageSpec) -> list[MetaValueObject]:
+        value_objects: list[MetaValueObject] = []
         if package_spec.name != "value_objects":
             return []
-        return [self.to_value_object(module) for module in package_spec.modules]
+        for module in package_spec.modules:
+            if module.is_init_module():
+                continue
+            value_objects.append(self.to_value_object(module))
+        return value_objects
