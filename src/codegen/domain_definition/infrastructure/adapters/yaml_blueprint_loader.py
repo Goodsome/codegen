@@ -14,21 +14,20 @@ class YamlBlueprintLoader(BlueprintLoaderPort):
     """Blueprint loader that reads from a YAML file."""
 
     def __init__(self, config: dict[str, Any]) -> None:
-        project_root = config.get("project_root", ".")
-        if isinstance(project_root, str):
-            self.project_root = Path(project_root)
-        elif isinstance(project_root, Path):
-            self.project_root = project_root
+        config_path = config["config_path"]
+        if isinstance(config_path, str):
+            self.config_path = Path(config_path)
+        elif isinstance(config_path, Path):
+            self.config_path = config_path
         else:
-            raise ValueError("Invalid project_root value")
+            raise ValueError("Invalid config_path value")
 
     def load(self, source: str) -> Blueprint | None:
-        yaml_path = self.project_root / source
-        if not os.path.exists(yaml_path):
+        if not os.path.exists(self.config_path):
             return None
 
         try:
-            with open(yaml_path, "r", encoding="utf-8") as f:
+            with open(self.config_path, "r", encoding="utf-8") as f:
                 data = cast(dict[str, object], yaml.safe_load(f))
 
             return Blueprint.model_validate(data)

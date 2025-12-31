@@ -24,3 +24,4 @@ uv.lock
 Thumbs.db
 /backup/
 /target/
+/src/codegen.egg-info/
