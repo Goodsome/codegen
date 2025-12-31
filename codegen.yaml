@@ -1,568 +1,857 @@
-# yaml-language-server: $schema=codegen.schema.json
 name: Codegen
+description: DDD-based Code Generator that generates itself.
 layout: ddd_standard
-description: "DDD-based Code Generator that generates itself."
-
 contexts:
-  - name: domain_definition
-    description: "Parses the codegen.yaml blueprint."
-
-    domain:
-      value_objects:
-        - name: Attribute
-          description: "Standard specification for a class attribute."
-          attributes:
-            - { name: name, type: str }
-            - { name: type, type: str }
-            - { name: description, type: str, optional: true }
-            - { name: optional, type: bool, optional: true }
-
-        - name: MethodOutput
-          description: "Specification of the output of a method."
-          attributes:
-            - { name: type, type: str }
-
-        - name: MethodSpec
-          description: "Standard specification for a class method."
-          attributes:
-            - { name: name, type: str }
-            - { name: description, type: str, optional: true }
-            - { name: inputs, type: "list[Attribute]" }
-            - { name: output, type: MethodOutput }
-
-        - name: MetaAggregate
-          description: "Specification of a domain aggregate to be generated."
-          attributes:
-            - { name: name, type: str }
-            - { name: description, type: str, optional: true }
-            - { name: attributes, type: "list[Attribute]", optional: true }
-            - { name: behaviors, type: "list[MethodSpec]", optional: true }
-
-        - name: MetaValueObject
-          description: "Specification of a value object to be generated."
-          attributes:
-            - { name: name, type: str }
-            - { name: description, type: str, optional: true }
-            - { name: attributes, type: "list[Attribute]", optional: true }
-
-        - name: MetaService
-          description: "Specification of a domain service to be generated."
-          attributes:
-            - { name: name, type: str }
-            - { name: description, type: str, optional: true }
-            - { name: attributes, type: "list[Attribute]", optional: true }
-            - { name: operations, type: "list[MethodSpec]", optional: true }
-
-        - name: MetaPort
-          description: "Specification of a domain port to be generated."
-          attributes:
-            - { name: name, type: str }
-            - { name: description, type: str, optional: true }
-            - { name: kind, type: str }
-            - { name: operations, type: "list[MethodSpec]", optional: true }
-
-        - name: MetaDomain
-          description: "Specification of a domain to be generated."
-          attributes:
-            - { name: aggregates, type: "list[MetaAggregate]", optional: true }
-            - { name: value_objects, type: "list[MetaValueObject]", optional: true }
-            - { name: services, type: "list[MetaService]", optional: true }
-            - { name: ports, type: "list[MetaPort]", optional: true }
-
-        - name: MetaUseCaseCommand
-          description: "Specification of a use case command to be generated."
-          attributes:
-            - { name: name, type: str, optional: true }
-            - { name: attributes, type: "list[Attribute]", optional: true }
-
-        - name: MetaUseCaseQuery
-          description: "Specification of a use case command to be generated."
-          attributes:
-            - { name: name, type: str, optional: true }
-            - { name: attributes, type: "list[Attribute]", optional: true }
-
-        - name: MetaUseCaseResult
-          description: "Specification of a use case result to be generated."
-          attributes:
-            - { name: name, type: str, optional: true }
-            - { name: attributes, type: "list[Attribute]", optional: true }
-
-        - name: MetaUseCase
-          description: "Specification of a use case to be generated."
-          attributes:
-            - { name: name, type: str }
-            - { name: kind, type: str }
-            - { name: attributes, type: "list[Attribute]", optional: true }
-            - { name: description, type: str, optional: true }
-            - { name: command, type: MetaUseCaseCommand, optional: true }
-            - { name: query, type: MetaUseCaseQuery, optional: true }
-            - { name: result, type: MetaUseCaseResult, optional: true }
-
-        - name: MetaApplication
-          description: "Specification of an application to be generated."
-          attributes:
-            - { name: use_cases, type: "list[MetaUseCase]", optional: true }
-            - { name: ports, type: "list[MetaPort]", optional: true }
-
-        - name: MetaImplementation
-          description: "Specification of an implementation to be generated."
-          attributes:
-            - { name: name, type: str }
-            - { name: implements, type: str }
-            - { name: description, type: str, optional: true }
-            - { name: attributes, type: "list[Attribute]", optional: true }
-
-        - name: MetaInfrastructure
-          description: "Specification of an infrastructure to be generated."
-          attributes:
-            - { name: adapters, type: "list[MetaImplementation]", optional: true }
-            - { name: acl, type: "list[MetaImplementation]", optional: true }
-
-        - name: BoundedContext
-          description: "A logical boundary within the system."
-          attributes:
-            - { name: name, type: str }
-            - { name: description, type: str, optional: true }
-            - { name: domain, type: MetaDomain, optional: true }
-            - { name: application, type: MetaApplication, optional: true }
-            - { name: infrastructure, type: MetaInfrastructure, optional: true }
-        - name: PortBinding
-          description: "Binding between a port and an adapter."
-          attributes:
-            - { name: port, type: str }
-            - { name: implementation, type: str }
-        - name: MetaBootstrap
-          description: "Specification of the bootstrap configuration."
-          attributes:
-            - { name: bindings, type: "list[PortBinding]", optional: true }
-        - name: Blueprint
-          description: "Root of the generation model. Represents the entire project definition."
-          attributes:
-            - { name: name, type: str, description: "Project Name" }
-            - { name: description, type: str }
-            - { name: layout, type: str, description: "Layout strategy name" }
-            - { name: contexts, type: "list[BoundedContext]", optional: true }
-            - { name: bootstrap, type: MetaBootstrap, optional: true }
-
-      ports:
-        - name: BlueprintStorage
-          description: "Storage for blueprint definitions."
-          kind: repository
-          operations:
-            - name: load
-              inputs:
-                - { name: source, type: str }
-              output: { type: Blueprint | None }
-
-    application:
-      use_cases:
-        - name: LoadBlueprint
-          kind: command
-          description: "Loads the blueprint from a file."
-          command:
-            attributes:
-              - { name: node, type: str, optional: true }
-          result:
-            attributes:
-              - { name: blueprint, type: "Blueprint | None", optional: true }
-          attributes:
-            - { name: blueprint_loader, type: BlueprintStorage }
-
-    infrastructure:
-      adapters:
-        - name: YamlBlueprintStorage
-          implements: BlueprintStorage
-          description: "YAML-based blueprint storage."
-
-  - name: python_gen
-    description: "Models the structure of Python code."
-    domain:
-      value_objects:
-        - name: ImportedName
-          description: "Represents a name imported from another module."
-          attributes:
-            - { name: name, type: str }
-            - { name: alias, type: str | None, optional: true }
-        - name: ImportFromSpec
-          description: "Represents an import statement from another module."
-          attributes:
-            - { name: module, type: str }
-            - { name: names, type: "list[ImportedName]" }
-        - name: TypeAnnotationSpec
-          description: "Represents a type annotation."
-          attributes:
-          - { name: name, type: str }
-          - { name: sub_annotations, type: "list[TypeAnnotationSpec]", optional: true }
-        - name: ParameterSpec
-          description: "Represents a parameter in a Python function."
-          attributes:
-            - { name: name, type: str }
-            - { name: annotation, type: TypeAnnotationSpec }
-            - { name: default, type: str, optional: true }
-            - { name: optional, type: bool, optional: true}
-        - name: FunctionSpec
-          description: "Represents a function in a Python module."
-          attributes:
-            - { name: decorators, type: "list[str]", optional: true }
-            - { name: name, type: str }
-            - { name: parameters, type: "list[ParameterSpec]", optional: true }
-            - { name: return_annotation, type: TypeAnnotationSpec }
-            - { name: suite, type: str }
-        - name: ClassSpec
-          description: "Represents a class in a Python module."
-          attributes:
-            - { name: name, type: str }
-            - { name: description, type: str, optional: true }
-            - { name: decorators, type: "list[str]", optional: true }
-            - { name: inheritance, type: "list[str]", optional: true }
-            - { name: attributes, type: "list[ParameterSpec]", optional: true }
-            - { name: methods, type: "list[FunctionSpec]", optional: true }
-        - name: ModuleSpec
-          description: "Represents a Python module."
-          attributes:
-            - { name: name, type: str }
-            - { name: directory, type: Path }
-            - { name: functions, type: "list[FunctionSpec]", optional: true }
-            - { name: classes, type: "list[ClassSpec]", optional: true }
-            - { name: imports, type: "list[ImportFromSpec]", optional: true }
-        - name: PackageSpec
-          description: "Represents a Python package."
-          attributes:
-            - { name: path, type: Path }
-            - { name: modules, type: "list[ModuleSpec]" }
-            - { name: sub_packages, type: "list[PackageSpec]"}
-      services:
-        - name: DependencyResolver
-          description: "Resolves dependencies between modules."
-        - name: PythonSyntaxTranslator
-          description: "Bidirectional translator between Python source code and PackageSpec."
-          attributes:
-            - { name: template_port, type: TemplatePort }
-          operations:
-            - name: to_spec
-              description: "Parses source code into a ModuleSpec."
-              inputs:
-                - { name: source_code, type: str }
-                - { name: module_name, type: str }
-              output: { type: ModuleSpec }
-            - name: to_code
-              description: "Generates source code from a ModuleSpec."
-              inputs:
-                - { name: module_spec, type: ModuleSpec }
-                - { name: imports, type: "Iterable[ImportFromSpec]" }
-              output: { type: str }
-            - name: generate_source_tree
-              description: "Generates a virtual file tree from a PackageSpec. returns: { Path('relative/path/to/file.py'): 'source code content' }"
-              inputs:
-                - { name: package_spec, type: PackageSpec }
-                - { name: target_node, type: str | None, optional: true }
-              output: { type: "dict[Path, str]" }
-            - name: _collect_files_recursively
-              description: "Recursively collects all files in a directory tree."
-              inputs:
-                - { name: current_spec, type: PackageSpec }
-                - { name: resolver, type: DependencyResolver }
-                - { name: output_dict, type: "dict[Path, str]" }
-                - { name: current_path, type: Path }
-                - { name: target_node, type: str | None, optional: true }
-              output: { type: None }
-    application:
-      use_cases:
-        - name: GeneratePackage
-          kind: command
-          description: "Generate Python package."
-          command:
-            name: GeneratePackageCommand
-            attributes:
-              - { name: package_spec, type: PackageSpec }
-              - { name: overwrite, type: bool, optional: true }
-          result:
-            name: GeneratePackageResult
-            attributes:
-              - { name: result, type: str }
-          attributes:
-            - { name: translator, type: PythonSyntaxTranslator }
-            - { name: file_system_port, type: FileSystemPort }
-        - name: ParsePackage
-          kind: query
-          description: "Parses Python package to PackageSpec."
-          attributes:
-            - { name: translator, type: PythonSyntaxTranslator }
-            - { name: file_system_port, type: FileSystemPort }
-          query:
-            attributes:
-              - { name: package_path, type: Path }
-          result:
-            attributes:
-              - { name: package_spec, type: PackageSpec }
-      ports:
-        - name: BlueprintMapperPort
-          description: "Maps a blueprint to a package."
-          kind: gateway
-          operations:
-            - name: to_package_spec
-              inputs:
-                - { name: blueprint, type: Blueprint }
-              output: { type: PackageSpec }
-            - name: to_blueprint
-              inputs:
-                - { name: package_spec, type: PackageSpec }
-              output: { type: Blueprint }
-    infrastructure:
-      acl:
-        - name: BlueprintPythonMapper
-          implements: BlueprintMapperPort
-          description: "Maps a blueprint to a Python package."
-
-  - name: shared
-    description: "Shared between contexts."
-    domain:
-      services:
-        - name: NamingService
-          description: "Provides naming conventions for generated artifacts."
-          operations:
-            - name: to_snake_case
-              inputs:
-                - { name: name, type: str }
-              output: { type: str }
-      ports:
-        - name: TemplatePort
-          description: "Port for generating templates."
-          kind: gateway
-          operations:
-            - name: render
-              inputs:
-                - { name: template_path, type: str }
-                - { name: context, type: "Dict[str, Any]" }
-              output: { type: str }
-        - name: FileSystemPort
-          description: "Port for interacting with the file system."
-          kind: repository
-          operations:
-            - name: read_file
-              inputs:
-                - { name: path, type: str }
-              output: { type: str }
-            - name: write_file
-              inputs:
-                - { name: path, type: str }
-                - { name: content, type: str }
-                - { name: overwrite, type: bool, optional: true }
-              output: { type: None }
-
-    infrastructure:
-      adapters:
-        - name: JinjaAdapter
-          implements: TemplatePort
-          description: "Jinja-based template rendering adapter."
-          attributes:
-            - { name: config, type: "dict[str, Any]" }
-
-        - name: OSFileSystem
-          implements: FileSystemPort
-          description: "OS file system adapter for reading/writing files."
-          attributes:
-            - { name: config, type: "dict[str, Any]" }
-
-  - name: orchestration
-    description: "Orchestrates the generation process."
-    domain:
-      services:
-        - name: BlueprintMapper
-          attributes:
-            - { name: ContextMapper, type: ContextMapper, optional: true }
-          operations:
-            - name: to_package_spec
-              inputs:
-                - { name: blueprint, type: Blueprint }
-              output: { type: PackageSpec }
-            - name: to_blueprint
-              inputs:
-                - { name: package_spec, type: PackageSpec }
-              output: { type: Blueprint }
-        - name: ContextMapper
-          attributes:
-            - { name: DomainMapper, type: DomainMapper, optional: true }
-            - { name: ApplicationMapper, type: ApplicationMapper, optional: true }
-            - { name: InfrastructureMapper, type: InfrastructureMapper, optional: true }
-          operations:
-            - name: to_package_spec
-              inputs:
-                - { name: context, type: BoundedContext }
-              output: { type: PackageSpec }
-            - name: to_context
-              inputs:
-                - { name: package_spec, type: PackageSpec }
-              output: { type: BoundedContext }
-        - name: DomainMapper
-          attributes:
-            - { name: AggregateMapper, type: AggregateMapper, optional: true }
-            - { name: ValueObjectMapper, type: ValueObjectMapper, optional: true }
-            - { name: ServiceMapper, type: ServiceMapper, optional: true }
-            - { name: PortMapper, type: PortMapper, optional: true }
-          operations:
-            - name: to_package_spec
-              inputs:
-                - { name: domain, type: MetaDomain }
-              output: { type: PackageSpec }
-            - name: to_domain
-              inputs:
-                - { name: package_spec, type: PackageSpec }
-              output: { type: MetaDomain }
-        - name: ApplicationMapper
-          attributes:
-            - { name: UseCaseMapper, type: UseCaseMapper, optional: true }
-          operations:
-            - name: to_package_spec
-              inputs:
-                - { name: application, type: MetaApplication }
-              output: { type: PackageSpec }
-            - name: to_application
-              inputs:
-                - { name: package_spec, type: PackageSpec }
-              output: { type: MetaApplication }
-        - name: InfrastructureMapper
-          attributes:
-            - { name: ImplementationMapper, type: ImplementationMapper, optional: true }
-          operations:
-            - name: to_package_spec
-              inputs:
-                - { name: infrastructure, type: MetaInfrastructure }
-              output: { type: PackageSpec }
-            - name: to_infrastructure
-              inputs:
-                - { name: package_spec, type: PackageSpec }
-              output: { type: MetaInfrastructure }
-        - name: AggregateMapper
-          attributes:
-            - { name: AttributeMapper, type: AttributeMapper, optional: true }
-            - { name: MethodMapper, type: MethodMapper, optional: true }
-          operations:
-            - name: to_module_spec
-              inputs:
-                - { name: aggregate, type: MetaAggregate }
-              output: { type: ModuleSpec }
-            - name: to_aggregate
-              inputs:
-                - { name: package_spec, type: PackageSpec }
-              output: { type: MetaAggregate }
-        - name: ValueObjectMapper
-          attributes:
-            - { name: AttributeMapper, type: AttributeMapper, optional: true }
-            - { name: MethodMapper, type: MethodMapper, optional: true }
-          operations:
-            - name: to_module_spec
-              inputs:
-                - { name: value_object, type: MetaValueObject }
-              output: { type: ModuleSpec }
-            - name: to_value_object
-              inputs:
-                - { name: module_spec, type: ModuleSpec }
-              output: { type: MetaValueObject }
-        - name: ServiceMapper
-          attributes:
-            - { name: AttributeMapper, type: AttributeMapper, optional: true }
-            - { name: MethodMapper, type: MethodMapper, optional: true }
-          operations:
-            - name: to_module_spec
-              inputs:
-                - { name: service, type: MetaService }
-              output: { type: ModuleSpec }
-            - name: to_service
-              inputs:
-                - { name: module_spec, type: ModuleSpec }
-              output: { type: MetaService }
-        - name: PortMapper
-          attributes:
-            - { name: AttributeMapper, type: AttributeMapper, optional: true }
-            - { name: MethodMapper, type: MethodMapper, optional: true }
-          operations:
-            - name: to_module_spec
-              inputs:
-                - { name: port, type: MetaPort }
-              output: { type: ModuleSpec }
-            - name: to_port
-              inputs:
-                - { name: module_spec, type: ModuleSpec }
-              output: { type: MetaPort }
-        - name: UseCaseMapper
-          attributes:
-            - { name: AttributeMapper, type: AttributeMapper, optional: true }
-            - { name: MethodMapper, type: MethodMapper, optional: true }
-          operations:
-            - name: to_module_spec
-              inputs:
-                - { name: use_case, type: MetaUseCase }
-              output: { type: ModuleSpec }
-            - name: to_use_case
-              inputs:
-                - { name: module_spec, type: ModuleSpec }
-              output: { type: MetaUseCase }
-        - name: ImplementationMapper
-          attributes:
-            - { name: AttributeMapper, type: AttributeMapper, optional: true }
-            - { name: MethodMapper, type: MethodMapper, optional: true }
-          operations:
-            - name: to_module_spec
-              inputs:
-                - { name: implementation, type: MetaImplementation }
-              output: { type: ModuleSpec }
-            - name: to_implementation
-              inputs:
-                - { name: module_spec, type: ModuleSpec }
-              output: { type: MetaImplementation }
-        - name: MethodMapper
-          attributes:
-            - { name: AttributeMapper, type: AttributeMapper, optional: true }
-          operations:
-            - name: to_function_spec
-              inputs:
-                - { name: method, type: MethodSpec }
-              output: { type: FunctionSpec }
-            - name: to_method
-              inputs:
-                - { name: function_spec, type: FunctionSpec }
-              output: { type: MethodSpec }
-        - name: AttributeMapper
-          operations:
-            - name: to_parameter_spec
-              inputs:
-                - { name: attribute, type: Attribute }
-              output: { type: ParameterSpec }
-            - name: to_attribute
-              inputs:
-                - { name: parameter_spec, type: ParameterSpec }
-              output: { type: Attribute }
-    application:
-      use_cases:
-        - name: GenerateProject
-          kind: command
-          command:
-            attributes:
-              - { name: overwrite, type: bool, optional: true }
-              - { name: node, type: str | None, optional: true}
-          result:
-            attributes:
-              - { name: result, type: str }
-          attributes:
-            - { name: loader, type: LoadBlueprint }
-            - { name: generator, type: GeneratePackage }
-            - { name: mapper, type: BlueprintMapper, optional: true }
-        - name: UpdateBlueprint
-          kind: command
-          command:
-            attributes:
-              - { name: path, type: Path }
-          result:
-            attributes:
-              - { name: result, type: str }
-          attributes:
-            - { name: parser, type: ParsePackage }
-            - { name: storage, type: BlueprintStorage }
-            - { name: mapper, type: BlueprintMapper, optional: true }
-
-
+- name: domain_definition
+  description: Parses the codegen.yaml blueprint.
+  domain:
+    value_objects:
+    - name: Attribute
+      description: Standard specification for a class attribute.
+      attributes:
+      - name: name
+        type: str
+      - name: type
+        type: str
+      - name: description
+        type: str
+        optional: true
+      - name: optional
+        type: bool
+        optional: true
+    - name: MethodOutput
+      description: Specification of the output of a method.
+      attributes:
+      - name: type
+        type: str
+    - name: MethodSpec
+      description: Standard specification for a class method.
+      attributes:
+      - name: name
+        type: str
+      - name: description
+        type: str
+        optional: true
+      - name: inputs
+        type: list[Attribute]
+      - name: output
+        type: MethodOutput
+    - name: MetaAggregate
+      description: Specification of a domain aggregate to be generated.
+      attributes:
+      - name: name
+        type: str
+      - name: description
+        type: str
+        optional: true
+      - name: attributes
+        type: list[Attribute]
+        optional: true
+      - name: behaviors
+        type: list[MethodSpec]
+        optional: true
+    - name: MetaValueObject
+      description: Specification of a value object to be generated.
+      attributes:
+      - name: name
+        type: str
+      - name: description
+        type: str
+        optional: true
+      - name: attributes
+        type: list[Attribute]
+        optional: true
+    - name: MetaService
+      description: Specification of a domain service to be generated.
+      attributes:
+      - name: name
+        type: str
+      - name: description
+        type: str
+        optional: true
+      - name: attributes
+        type: list[Attribute]
+        optional: true
+      - name: operations
+        type: list[MethodSpec]
+        optional: true
+    - name: MetaPort
+      description: Specification of a domain port to be generated.
+      attributes:
+      - name: name
+        type: str
+      - name: description
+        type: str
+        optional: true
+      - name: kind
+        type: str
+      - name: operations
+        type: list[MethodSpec]
+        optional: true
+    - name: MetaDomain
+      description: Specification of a domain to be generated.
+      attributes:
+      - name: aggregates
+        type: list[MetaAggregate]
+        optional: true
+      - name: value_objects
+        type: list[MetaValueObject]
+        optional: true
+      - name: services
+        type: list[MetaService]
+        optional: true
+      - name: ports
+        type: list[MetaPort]
+        optional: true
+    - name: MetaUseCaseCommand
+      description: Specification of a use case command to be generated.
+      attributes:
+      - name: name
+        type: str
+        optional: true
+      - name: attributes
+        type: list[Attribute]
+        optional: true
+    - name: MetaUseCaseQuery
+      description: Specification of a use case command to be generated.
+      attributes:
+      - name: name
+        type: str
+        optional: true
+      - name: attributes
+        type: list[Attribute]
+        optional: true
+    - name: MetaUseCaseResult
+      description: Specification of a use case result to be generated.
+      attributes:
+      - name: name
+        type: str
+        optional: true
+      - name: attributes
+        type: list[Attribute]
+        optional: true
+    - name: MetaUseCase
+      description: Specification of a use case to be generated.
+      attributes:
+      - name: name
+        type: str
+      - name: kind
+        type: str
+      - name: attributes
+        type: list[Attribute]
+        optional: true
+      - name: description
+        type: str
+        optional: true
+      - name: command
+        type: MetaUseCaseCommand
+        optional: true
+      - name: query
+        type: MetaUseCaseQuery
+        optional: true
+      - name: result
+        type: MetaUseCaseResult
+        optional: true
+    - name: MetaApplication
+      description: Specification of an application to be generated.
+      attributes:
+      - name: use_cases
+        type: list[MetaUseCase]
+        optional: true
+      - name: ports
+        type: list[MetaPort]
+        optional: true
+    - name: MetaImplementation
+      description: Specification of an implementation to be generated.
+      attributes:
+      - name: name
+        type: str
+      - name: implements
+        type: str
+      - name: description
+        type: str
+        optional: true
+      - name: attributes
+        type: list[Attribute]
+        optional: true
+    - name: MetaInfrastructure
+      description: Specification of an infrastructure to be generated.
+      attributes:
+      - name: adapters
+        type: list[MetaImplementation]
+        optional: true
+      - name: acl
+        type: list[MetaImplementation]
+        optional: true
+    - name: BoundedContext
+      description: A logical boundary within the system.
+      attributes:
+      - name: name
+        type: str
+      - name: description
+        type: str
+        optional: true
+      - name: domain
+        type: MetaDomain
+        optional: true
+      - name: application
+        type: MetaApplication
+        optional: true
+      - name: infrastructure
+        type: MetaInfrastructure
+        optional: true
+    - name: PortBinding
+      description: Binding between a port and an adapter.
+      attributes:
+      - name: port
+        type: str
+      - name: implementation
+        type: str
+    - name: MetaBootstrap
+      description: Specification of the bootstrap configuration.
+      attributes:
+      - name: bindings
+        type: list[PortBinding]
+        optional: true
+    - name: Blueprint
+      description: Root of the generation model. Represents the entire project definition.
+      attributes:
+      - name: name
+        type: str
+        description: Project Name
+      - name: description
+        type: str
+      - name: layout
+        type: str
+        description: Layout strategy name
+      - name: contexts
+        type: list[BoundedContext]
+        optional: true
+      - name: bootstrap
+        type: MetaBootstrap
+        optional: true
+    ports:
+    - name: BlueprintStorage
+      description: Storage for blueprint definitions.
+      kind: repository
+      operations:
+      - name: load
+        inputs:
+        - name: source
+          type: str
+        output:
+          type: Blueprint | None
+  application:
+    use_cases:
+    - name: LoadBlueprint
+      kind: command
+      attributes:
+      - name: blueprint_loader
+        type: BlueprintStorage
+      description: Loads the blueprint from a file.
+      command:
+        attributes:
+        - name: node
+          type: str
+          optional: true
+      result:
+        attributes:
+        - name: blueprint
+          type: Blueprint | None
+          optional: true
+  infrastructure:
+    adapters:
+    - name: YamlBlueprintStorage
+      implements: BlueprintStorage
+      description: YAML-based blueprint storage.
+- name: python_gen
+  description: Models the structure of Python code.
+  domain:
+    value_objects:
+    - name: ImportedName
+      description: Represents a name imported from another module.
+      attributes:
+      - name: name
+        type: str
+      - name: alias
+        type: str | None
+        optional: true
+    - name: ImportFromSpec
+      description: Represents an import statement from another module.
+      attributes:
+      - name: module
+        type: str
+      - name: names
+        type: list[ImportedName]
+    - name: TypeAnnotationSpec
+      description: Represents a type annotation.
+      attributes:
+      - name: name
+        type: str
+      - name: sub_annotations
+        type: list[TypeAnnotationSpec]
+        optional: true
+    - name: ParameterSpec
+      description: Represents a parameter in a Python function.
+      attributes:
+      - name: name
+        type: str
+      - name: annotation
+        type: TypeAnnotationSpec
+      - name: default
+        type: str
+        optional: true
+      - name: optional
+        type: bool
+        optional: true
+    - name: FunctionSpec
+      description: Represents a function in a Python module.
+      attributes:
+      - name: decorators
+        type: list[str]
+        optional: true
+      - name: name
+        type: str
+      - name: parameters
+        type: list[ParameterSpec]
+        optional: true
+      - name: return_annotation
+        type: TypeAnnotationSpec
+      - name: suite
+        type: str
+    - name: ClassSpec
+      description: Represents a class in a Python module.
+      attributes:
+      - name: name
+        type: str
+      - name: description
+        type: str
+        optional: true
+      - name: decorators
+        type: list[str]
+        optional: true
+      - name: inheritance
+        type: list[str]
+        optional: true
+      - name: attributes
+        type: list[ParameterSpec]
+        optional: true
+      - name: methods
+        type: list[FunctionSpec]
+        optional: true
+    - name: ModuleSpec
+      description: Represents a Python module.
+      attributes:
+      - name: name
+        type: str
+      - name: directory
+        type: Path
+      - name: functions
+        type: list[FunctionSpec]
+        optional: true
+      - name: classes
+        type: list[ClassSpec]
+        optional: true
+      - name: imports
+        type: list[ImportFromSpec]
+        optional: true
+    - name: PackageSpec
+      description: Represents a Python package.
+      attributes:
+      - name: path
+        type: Path
+      - name: modules
+        type: list[ModuleSpec]
+      - name: sub_packages
+        type: list[PackageSpec]
+    services:
+    - name: DependencyResolver
+      description: Resolves dependencies between modules.
+    - name: PythonSyntaxTranslator
+      description: Bidirectional translator between Python source code and PackageSpec.
+      attributes:
+      - name: template_port
+        type: TemplatePort
+      operations:
+      - name: to_spec
+        description: Parses source code into a ModuleSpec.
+        inputs:
+        - name: source_code
+          type: str
+        - name: module_name
+          type: str
+        output:
+          type: ModuleSpec
+      - name: to_code
+        description: Generates source code from a ModuleSpec.
+        inputs:
+        - name: module_spec
+          type: ModuleSpec
+        - name: imports
+          type: Iterable[ImportFromSpec]
+        output:
+          type: str
+      - name: generate_source_tree
+        description: 'Generates a virtual file tree from a PackageSpec. returns: {
+          Path(''relative/path/to/file.py''): ''source code content'' }'
+        inputs:
+        - name: package_spec
+          type: PackageSpec
+        - name: target_node
+          type: str | None
+          optional: true
+        output:
+          type: dict[Path, str]
+      - name: _collect_files_recursively
+        description: Recursively collects all files in a directory tree.
+        inputs:
+        - name: current_spec
+          type: PackageSpec
+        - name: resolver
+          type: DependencyResolver
+        - name: output_dict
+          type: dict[Path, str]
+        - name: current_path
+          type: Path
+        - name: target_node
+          type: str | None
+          optional: true
+        output:
+          type: None
+  application:
+    use_cases:
+    - name: GeneratePackage
+      kind: command
+      attributes:
+      - name: translator
+        type: PythonSyntaxTranslator
+      - name: file_system_port
+        type: FileSystemPort
+      description: Generate Python package.
+      command:
+        name: GeneratePackageCommand
+        attributes:
+        - name: package_spec
+          type: PackageSpec
+        - name: overwrite
+          type: bool
+          optional: true
+      result:
+        name: GeneratePackageResult
+        attributes:
+        - name: result
+          type: str
+    - name: ParsePackage
+      kind: query
+      attributes:
+      - name: translator
+        type: PythonSyntaxTranslator
+      - name: file_system_port
+        type: FileSystemPort
+      description: Parses Python package to PackageSpec.
+      query:
+        attributes:
+        - name: package_path
+          type: Path
+      result:
+        attributes:
+        - name: package_spec
+          type: PackageSpec
+    ports:
+    - name: BlueprintMapperPort
+      description: Maps a blueprint to a package.
+      kind: gateway
+      operations:
+      - name: to_package_spec
+        inputs:
+        - name: blueprint
+          type: Blueprint
+        output:
+          type: PackageSpec
+      - name: to_blueprint
+        inputs:
+        - name: package_spec
+          type: PackageSpec
+        output:
+          type: Blueprint
+  infrastructure:
+    acl:
+    - name: BlueprintPythonMapper
+      implements: BlueprintMapperPort
+      description: Maps a blueprint to a Python package.
+- name: shared
+  description: Shared between contexts.
+  domain:
+    services:
+    - name: NamingService
+      description: Provides naming conventions for generated artifacts.
+      operations:
+      - name: to_snake_case
+        inputs:
+        - name: name
+          type: str
+        output:
+          type: str
+    ports:
+    - name: TemplatePort
+      description: Port for generating templates.
+      kind: gateway
+      operations:
+      - name: render
+        inputs:
+        - name: template_path
+          type: str
+        - name: context
+          type: Dict[str, Any]
+        output:
+          type: str
+    - name: FileSystemPort
+      description: Port for interacting with the file system.
+      kind: repository
+      operations:
+      - name: read_file
+        inputs:
+        - name: path
+          type: str
+        output:
+          type: str
+      - name: write_file
+        inputs:
+        - name: path
+          type: str
+        - name: content
+          type: str
+        - name: overwrite
+          type: bool
+          optional: true
+        output:
+          type: None
+  infrastructure:
+    adapters:
+    - name: JinjaAdapter
+      implements: TemplatePort
+      description: Jinja-based template rendering adapter.
+      attributes:
+      - name: config
+        type: dict[str, Any]
+    - name: OSFileSystem
+      implements: FileSystemPort
+      description: OS file system adapter for reading/writing files.
+      attributes:
+      - name: config
+        type: dict[str, Any]
+- name: orchestration
+  description: Orchestrates the generation process.
+  domain:
+    services:
+    - name: BlueprintMapper
+      attributes:
+      - name: ContextMapper
+        type: ContextMapper
+        optional: true
+      operations:
+      - name: to_package_spec
+        inputs:
+        - name: blueprint
+          type: Blueprint
+        output:
+          type: PackageSpec
+      - name: to_blueprint
+        inputs:
+        - name: package_spec
+          type: PackageSpec
+        output:
+          type: Blueprint
+    - name: ContextMapper
+      attributes:
+      - name: DomainMapper
+        type: DomainMapper
+        optional: true
+      - name: ApplicationMapper
+        type: ApplicationMapper
+        optional: true
+      - name: InfrastructureMapper
+        type: InfrastructureMapper
+        optional: true
+      operations:
+      - name: to_package_spec
+        inputs:
+        - name: context
+          type: BoundedContext
+        output:
+          type: PackageSpec
+      - name: to_context
+        inputs:
+        - name: package_spec
+          type: PackageSpec
+        output:
+          type: BoundedContext
+    - name: DomainMapper
+      attributes:
+      - name: AggregateMapper
+        type: AggregateMapper
+        optional: true
+      - name: ValueObjectMapper
+        type: ValueObjectMapper
+        optional: true
+      - name: ServiceMapper
+        type: ServiceMapper
+        optional: true
+      - name: PortMapper
+        type: PortMapper
+        optional: true
+      operations:
+      - name: to_package_spec
+        inputs:
+        - name: domain
+          type: MetaDomain
+        output:
+          type: PackageSpec
+      - name: to_domain
+        inputs:
+        - name: package_spec
+          type: PackageSpec
+        output:
+          type: MetaDomain
+    - name: ApplicationMapper
+      attributes:
+      - name: UseCaseMapper
+        type: UseCaseMapper
+        optional: true
+      operations:
+      - name: to_package_spec
+        inputs:
+        - name: application
+          type: MetaApplication
+        output:
+          type: PackageSpec
+      - name: to_application
+        inputs:
+        - name: package_spec
+          type: PackageSpec
+        output:
+          type: MetaApplication
+    - name: InfrastructureMapper
+      attributes:
+      - name: ImplementationMapper
+        type: ImplementationMapper
+        optional: true
+      operations:
+      - name: to_package_spec
+        inputs:
+        - name: infrastructure
+          type: MetaInfrastructure
+        output:
+          type: PackageSpec
+      - name: to_infrastructure
+        inputs:
+        - name: package_spec
+          type: PackageSpec
+        output:
+          type: MetaInfrastructure
+    - name: AggregateMapper
+      attributes:
+      - name: AttributeMapper
+        type: AttributeMapper
+        optional: true
+      - name: MethodMapper
+        type: MethodMapper
+        optional: true
+      operations:
+      - name: to_module_spec
+        inputs:
+        - name: aggregate
+          type: MetaAggregate
+        output:
+          type: ModuleSpec
+      - name: to_aggregate
+        inputs:
+        - name: package_spec
+          type: PackageSpec
+        output:
+          type: MetaAggregate
+    - name: ValueObjectMapper
+      attributes:
+      - name: AttributeMapper
+        type: AttributeMapper
+        optional: true
+      - name: MethodMapper
+        type: MethodMapper
+        optional: true
+      operations:
+      - name: to_module_spec
+        inputs:
+        - name: value_object
+          type: MetaValueObject
+        output:
+          type: ModuleSpec
+      - name: to_value_object
+        inputs:
+        - name: module_spec
+          type: ModuleSpec
+        output:
+          type: MetaValueObject
+    - name: ServiceMapper
+      attributes:
+      - name: AttributeMapper
+        type: AttributeMapper
+        optional: true
+      - name: MethodMapper
+        type: MethodMapper
+        optional: true
+      operations:
+      - name: to_module_spec
+        inputs:
+        - name: service
+          type: MetaService
+        output:
+          type: ModuleSpec
+      - name: to_service
+        inputs:
+        - name: module_spec
+          type: ModuleSpec
+        output:
+          type: MetaService
+    - name: PortMapper
+      attributes:
+      - name: AttributeMapper
+        type: AttributeMapper
+        optional: true
+      - name: MethodMapper
+        type: MethodMapper
+        optional: true
+      operations:
+      - name: to_module_spec
+        inputs:
+        - name: port
+          type: MetaPort
+        output:
+          type: ModuleSpec
+      - name: to_port
+        inputs:
+        - name: module_spec
+          type: ModuleSpec
+        output:
+          type: MetaPort
+    - name: UseCaseMapper
+      attributes:
+      - name: AttributeMapper
+        type: AttributeMapper
+        optional: true
+      - name: MethodMapper
+        type: MethodMapper
+        optional: true
+      operations:
+      - name: to_module_spec
+        inputs:
+        - name: use_case
+          type: MetaUseCase
+        output:
+          type: ModuleSpec
+      - name: to_use_case
+        inputs:
+        - name: module_spec
+          type: ModuleSpec
+        output:
+          type: MetaUseCase
+    - name: ImplementationMapper
+      attributes:
+      - name: AttributeMapper
+        type: AttributeMapper
+        optional: true
+      - name: MethodMapper
+        type: MethodMapper
+        optional: true
+      operations:
+      - name: to_module_spec
+        inputs:
+        - name: implementation
+          type: MetaImplementation
+        output:
+          type: ModuleSpec
+      - name: to_implementation
+        inputs:
+        - name: module_spec
+          type: ModuleSpec
+        output:
+          type: MetaImplementation
+    - name: MethodMapper
+      attributes:
+      - name: AttributeMapper
+        type: AttributeMapper
+        optional: true
+      operations:
+      - name: to_function_spec
+        inputs:
+        - name: method
+          type: MethodSpec
+        output:
+          type: FunctionSpec
+      - name: to_method
+        inputs:
+        - name: function_spec
+          type: FunctionSpec
+        output:
+          type: MethodSpec
+    - name: AttributeMapper
+      operations:
+      - name: to_parameter_spec
+        inputs:
+        - name: attribute
+          type: Attribute
+        output:
+          type: ParameterSpec
+      - name: to_attribute
+        inputs:
+        - name: parameter_spec
+          type: ParameterSpec
+        output:
+          type: Attribute
+  application:
+    use_cases:
+    - name: GenerateProject
+      kind: command
+      attributes:
+      - name: loader
+        type: LoadBlueprint
+      - name: generator
+        type: GeneratePackage
+      - name: mapper
+        type: BlueprintMapper
+        optional: true
+      command:
+        attributes:
+        - name: overwrite
+          type: bool
+          optional: true
+        - name: node
+          type: str | None
+          optional: true
+      result:
+        attributes:
+        - name: result
+          type: str
+    - name: UpdateBlueprint
+      kind: command
+      attributes:
+      - name: parser
+        type: ParsePackage
+      - name: storage
+        type: BlueprintStorage
+      - name: mapper
+        type: BlueprintMapper
+        optional: true
+      command:
+        attributes:
+        - name: path
+          type: Path
+      result:
+        attributes:
+        - name: result
+          type: str
 bootstrap:
   bindings:
-    - { port: TemplatePort, implementation: JinjaAdapter }
-    - { port: FileSystemPort, implementation: OSFileSystem }
+  - port: TemplatePort
+    implementation: JinjaAdapter
+  - port: FileSystemPort
+    implementation: OSFileSystem
