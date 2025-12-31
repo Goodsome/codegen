@@ -1,3 +1,6 @@
+from codegen.orchestration.application.use_cases.update_blueprint import (
+    UpdateBlueprintCommand,
+)
 from codegen.orchestration.application.use_cases.generate_project import (
     GenerateProjectCommand,
 )
@@ -43,6 +46,22 @@ def generate(
     container = Container(config=config)
     use_case = container.generate_project_use_case()
     cmd = GenerateProjectCommand(overwrite=overwrite, node=node)
+    use_case.execute(cmd)
+
+
+@app.command(name="update-blueprint")
+def update_blueprint():
+    target = "src"
+    current_dir = Path(__file__).parent.parent.parent  # src/codegen
+    config = {
+        "template_root": current_dir / "python_gen" / "templates",
+        "output_root": current_dir.parent.parent / target,
+        "project_root": current_dir.parent.parent,
+        "encoding": "utf-8",
+    }
+    container = Container(config=config)
+    use_case = container.update_blueprint_user_case()
+    cmd = UpdateBlueprintCommand(path=Path("codegen"))
     use_case.execute(cmd)
 
 

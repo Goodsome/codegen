@@ -47,6 +47,8 @@ class ServiceMapper:
         )
 
     def to_service(self, module_spec: ModuleSpec) -> MetaService:
+        if len(module_spec.classes) != 1:
+            return MetaService(name=module_spec.name)
         cls = module_spec.classes[0]
         attributes = [
             self.attribute_mapper.to_attribute(attr) for attr in cls.attributes

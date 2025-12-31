@@ -2,10 +2,11 @@ from dependency_injector import containers, providers
 from dependency_injector.providers import Singleton, Factory
 
 from codegen.domain_definition.application.use_cases.load_blueprint import LoadBlueprint
-from codegen.domain_definition.infrastructure.adapters.yaml_blueprint_loader import (
-    YamlBlueprintLoader,
+from codegen.domain_definition.infrastructure.adapters.yaml_blueprint_storage import (
+    YamlBlueprintStorage,
 )
 from codegen.orchestration.application.use_cases.generate_project import GenerateProject
+from codegen.orchestration.application.use_cases.update_blueprint import UpdateBlueprint
 from codegen.python_gen.application.use_cases.generate_package import (
     GeneratePackage,
 )
@@ -26,7 +27,7 @@ class Container(containers.DeclarativeContainer):
     os_file_port = Singleton(OSFileSystem, config=config)
     template_port_provider = Singleton(JinjaAdapter, config=config)
 
-    blueprint_loader_provider = Singleton(YamlBlueprintLoader, config=config)
+    blueprint_loader_provider = Singleton(YamlBlueprintStorage, config=config)
 
     python_syntax_translator_provider = Singleton(
         PythonSyntaxTranslator,
@@ -54,4 +55,10 @@ class Container(containers.DeclarativeContainer):
         GenerateProject,
         loader=load_blueprint_use_case,
         generator=generate_package_use_case,
+    )
+
+    update_blueprint_user_case: Factory[UpdateBlueprint] = Factory(
+        UpdateBlueprint,
+        parser=parse_package_use_case,
+        storage=blueprint_loader_provider,
     )

@@ -28,8 +28,14 @@ class AttributeMapper:
             optional=parameter_spec.optional,
         )
 
-    def to_parameter_specs(self, attributes: list[Attribute]) -> list[ParameterSpec]:
-        return [self.to_parameter_spec(attr) for attr in attributes]
+    def to_parameter_specs(
+        self,
+        attributes: list[Attribute],
+        default_field_flavor: FieldFlavor | None = None,
+    ) -> list[ParameterSpec]:
+        return [
+            self.to_parameter_spec(attr, default_field_flavor) for attr in attributes
+        ]
 
     def to_attributes(self, parameter_specs: list[ParameterSpec]) -> list[Attribute]:
         return [self.to_attribute(spec) for spec in parameter_specs]
