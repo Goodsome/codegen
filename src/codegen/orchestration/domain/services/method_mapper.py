@@ -1,3 +1,4 @@
+from codegen.domain_definition.domain.value_objects.attribute import Attribute
 from codegen.orchestration.domain.services.attribute_mapper import AttributeMapper
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
 from codegen.python_gen.domain.value_objects.function_spec import (
@@ -31,10 +32,14 @@ class MethodMapper:
         )
 
     def to_method(self, function_spec: FunctionSpec) -> MethodSpec:
-        inputs = [
-            self.attribute_mapper.to_attribute(param)
-            for param in function_spec.parameters
-        ]
+        inputs: list[Attribute] = []
+        for param in function_spec.parameters:
+            if (
+                function_spec.function_type is FunctionType.INSTANCE_METHOD
+                and param.name == "self"
+            ):
+                continue
+            inputs.append(self.attribute_mapper.to_attribute(param))
         return MethodSpec(
             name=function_spec.name,
             inputs=inputs,

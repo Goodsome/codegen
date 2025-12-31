@@ -68,12 +68,23 @@ class FunctionSpec(ValueObject):
             suite_code = full_source[node.body[0].lineno - 1 : node.body[-1].lineno]
         decorators = [ast.unparse(decorator) for decorator in node.decorator_list]
 
+        # Determine function type
+        function_type = FunctionType.FUNCTION
+        if "classmethod" in decorators:
+            function_type = FunctionType.CLASS_METHOD
+        elif "staticmethod" in decorators:
+            function_type = FunctionType.STATIC_METHOD
+        elif params and params[0].name == "self":
+            function_type = FunctionType.INSTANCE_METHOD
+            params = params[1:]
+
         return cls.create(
             name=node.name,
             return_annotation=return_anno,
             decorators=decorators,
             parameters=params,
             suite=suite_code,
+            function_type=function_type,
         )
 
     def get_required_types(self) -> set[str]:

@@ -42,10 +42,20 @@ class YamlBlueprintStorage(BlueprintStorage):
         try:
             # 确保目录存在
             yaml_path.parent.mkdir(parents=True, exist_ok=True)
+            cleaned_data = blueprint.model_dump(
+                exclude_defaults=True,
+                exclude_none=True,
+            )
 
-            data = blueprint.model_dump(exclude_none=True)
             with open(yaml_path, "w", encoding="utf-8") as f:
-                yaml.safe_dump(data, f, sort_keys=False, allow_unicode=True)
+                yaml.safe_dump(
+                    cleaned_data,
+                    f,
+                    sort_keys=False,
+                    allow_unicode=True,
+                    indent=2,
+                    default_flow_style=False,
+                )
         except Exception as e:
             print(f"Error saving yaml spec: {e}")
             raise e

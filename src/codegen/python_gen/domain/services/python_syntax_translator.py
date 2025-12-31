@@ -31,7 +31,10 @@ class PythonSyntaxTranslator:
             if self.file_system_port.is_file(filepath) and filepath.suffix == ".py":
                 source_code = self.file_system_port.read_file(filepath)
                 modules.append(ModuleSpec.parse_code(source_code, filepath.stem))
-            elif self.file_system_port.is_directory(filepath):
+            elif (
+                self.file_system_port.is_directory(filepath)
+                and filepath.name != "__pycache__"
+            ):
                 sub_packages.append(self.to_package_spec(filepath))
 
         return PackageSpec.create(
