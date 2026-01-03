@@ -6,8 +6,8 @@ Description: Represents a function in a Python module.
 
 import ast
 
+from codegen.python_gen.domain.enums import FunctionType
 from pydantic import Field
-from enum import StrEnum
 
 from codegen.shared.models import ValueObject
 
@@ -15,13 +15,6 @@ from codegen.python_gen.domain.value_objects.parameter_spec import ParameterSpec
 from codegen.python_gen.domain.value_objects.type_annotation_spec import (
     TypeAnnotationSpec,
 )
-
-
-class FunctionType(StrEnum):
-    CLASS_METHOD = "class_method"
-    STATIC_METHOD = "static_method"
-    INSTANCE_METHOD = "instance_method"
-    FUNCTION = "function"
 
 
 class FunctionSpec(ValueObject):

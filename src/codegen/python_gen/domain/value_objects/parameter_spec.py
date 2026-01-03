@@ -5,19 +5,14 @@ Description: Represents a parameter in a Python function.
 """
 
 import ast
-from enum import StrEnum
 
+from codegen.python_gen.domain.enums import FieldFlavor
 from pydantic.fields import Field
 from codegen.shared.models import ValueObject
 
 from codegen.python_gen.domain.value_objects.type_annotation_spec import (
     TypeAnnotationSpec,
 )
-
-
-class FieldFlavor(StrEnum):
-    PYDANTIC = "pydantic"
-    DATACLASS = "dataclass"
 
 
 class FieldSpec(ValueObject):

@@ -3,8 +3,8 @@ from codegen.orchestration.domain.services.attribute_mapper import AttributeMapp
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
 from codegen.python_gen.domain.value_objects.function_spec import (
     FunctionSpec,
-    FunctionType,
 )
+from codegen.python_gen.domain.enums import FunctionType
 from codegen.python_gen.domain.value_objects.type_annotation_spec import (
     TypeAnnotationSpec,
 )

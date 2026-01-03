@@ -8,7 +8,7 @@ from codegen.orchestration.domain.services.method_mapper import MethodMapper
 from dataclasses import dataclass
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
-from codegen.python_gen.domain.value_objects.function_spec import FunctionType
+from codegen.python_gen.domain.enums import FunctionType, FieldFlavor
 
 
 @dataclass
@@ -18,7 +18,6 @@ class AggregateMapper:
     method_mapper: MethodMapper = field(default_factory=MethodMapper)
 
     def to_module_spec(self, aggregate: MetaAggregate) -> ModuleSpec:
-        from codegen.python_gen.domain.value_objects.parameter_spec import FieldFlavor
 
         attributes = [
             self.attribute_mapper.to_parameter_spec(

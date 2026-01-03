@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from codegen.python_gen.domain.value_objects.parameter_spec import (
     ParameterSpec,
-    FieldFlavor,
 )
+from codegen.python_gen.domain.enums import FieldFlavor
 from codegen.domain_definition.domain.value_objects.attribute import Attribute
 
 
