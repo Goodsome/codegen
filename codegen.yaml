@@ -719,6 +719,23 @@ contexts:
           type: str
 - name: PythonGen
   domain:
+    enums:
+    - name: FunctionType
+      members:
+      - name: CLASS_METHOD
+        value: class_method
+      - name: STATIC_METHOD
+        value: static_method
+      - name: INSTANCE_METHOD
+        value: instance_method
+      - name: FUNCTION
+        value: function
+    - name: FieldFlavor
+      members:
+      - name: PYDANTIC
+        value: pydantic
+      - name: DATACLASS
+        value: dataclass
     value_objects:
     - name: ClassSpec
       description: Represents a class in a Python module.
