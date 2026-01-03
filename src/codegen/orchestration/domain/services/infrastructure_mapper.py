@@ -29,7 +29,6 @@ class InfrastructureMapper:
             self.implementation_mapper.to_module_spec(impl, ports_class_specs)
             for impl in infrastructure.acl
         ]
-        # 对于 adapters，由于 MetaInfrastructureAdapter 结构类似 MetaImplementation，我们可以复用逻辑
         adapter_modules = [
             self.implementation_mapper.to_module_spec(impl, ports_class_specs)
             for impl in infrastructure.adapters

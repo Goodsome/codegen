@@ -104,6 +104,7 @@ class UseCaseMapper:
         command = None
         query = None
         result = None
+        uc_name = module_spec.name
         uc_attributes = []
         for cls in module_spec.classes:
             if cls.name.endswith("Command"):
@@ -126,10 +127,11 @@ class UseCaseMapper:
 
                 result = MetaUseCaseResult(attributes=result_attributes)
             else:
+                uc_name = cls.name
                 uc_attributes = self.attribute_mapper.to_attributes(cls.attributes)
 
         return MetaUseCase.create(
-            name=module_spec.name,
+            name=uc_name,
             kind=kind,
             attributes=uc_attributes,
             command=command,
