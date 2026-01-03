@@ -27,6 +27,7 @@ GLOBAL_REGISTRY = {
     "Dict": "typing",
     "Union": "typing",
     "Iterable": "typing",
+    "Iterator": "typing",
     "dataclass": "dataclasses",
     "field": "dataclasses",
     "ValueObject": "codegen.shared.models",

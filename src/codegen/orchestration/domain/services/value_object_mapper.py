@@ -41,16 +41,21 @@ class ValueObjectMapper:
             modules=modules,
         )
 
-    def to_value_object(self, module_spec: ModuleSpec) -> MetaValueObject:
-        cls = module_spec.classes[0]
-        attributes = [
-            self.attribute_mapper.to_attribute(attr) for attr in cls.attributes
-        ]
-        return MetaValueObject(
-            name=cls.name,
-            description=cls.description,
-            attributes=attributes,
-        )
+    def module_spec_to_value_objects(
+        self, module_spec: ModuleSpec
+    ) -> list[MetaValueObject]:
+        value_objects: list[MetaValueObject] = []
+        for cls in module_spec.classes:
+            attributes = [
+                self.attribute_mapper.to_attribute(attr) for attr in cls.attributes
+            ]
+            vo = MetaValueObject(
+                name=cls.name,
+                description=cls.description,
+                attributes=attributes,
+            )
+            value_objects.append(vo)
+        return value_objects
 
     def to_value_objects(self, package_spec: PackageSpec) -> list[MetaValueObject]:
         value_objects: list[MetaValueObject] = []
@@ -59,5 +64,5 @@ class ValueObjectMapper:
         for module in package_spec.modules:
             if module.is_init_module():
                 continue
-            value_objects.append(self.to_value_object(module))
+            value_objects.extend(self.module_spec_to_value_objects(module))
         return value_objects

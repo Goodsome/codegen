@@ -4,7 +4,6 @@ Name: ParameterSpec
 Description: Represents a parameter in a Python function.
 """
 
-from pydantic.fields import computed_field
 import ast
 from enum import StrEnum
 
