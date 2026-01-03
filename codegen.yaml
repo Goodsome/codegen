@@ -970,6 +970,8 @@ contexts:
         type: FileSystemPort
       - name: translator
         type: PythonSyntaxTranslator
+      - name: code_formatter
+        type: CodeFormatter
       command:
         attributes:
         - name: package_spec

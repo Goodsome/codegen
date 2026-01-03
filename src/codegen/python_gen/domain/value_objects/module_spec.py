@@ -117,10 +117,8 @@ class ModuleSpec(ValueObject):
             return self
         other_functions = {f.name: f for f in other.functions}
         other_classes = {c.name: c for c in other.classes}
-        other_imports = {i.module: i for i in other.imports}
         functions: list[FunctionSpec] = []
         classes: list[ClassSpec] = []
-        imports: list[ImportFromSpec] = []
         for f in self.functions:
             if f.name in other_functions:
                 functions.append(f.merge(other_functions[f.name]))
@@ -131,11 +129,19 @@ class ModuleSpec(ValueObject):
                 classes.append(c.merge(other_classes[c.name]))
             else:
                 classes.append(c)
+
+        imports_bag: dict[str, ImportFromSpec] = {}
         for i in self.imports:
-            if i.module in other_imports:
-                imports.append(i.merge(other_imports[i.module]))
+            if i.module in imports_bag:
+                imports_bag[i.module].names.extend(i.names)
             else:
-                imports.append(i)
+                imports_bag[i.module] = i
+        for i in other.imports:
+            if i.module in imports_bag:
+                imports_bag[i.module].names.extend(i.names)
+            else:
+                imports_bag[i.module] = i
+        imports = list(imports_bag.values())
         return ModuleSpec.create(
             name=self.name,
             functions=functions,
