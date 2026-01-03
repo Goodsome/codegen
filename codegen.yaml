@@ -446,6 +446,9 @@ contexts:
       - name: port_mapper
         type: PortMapper
         optional: true
+      - name: enum_mapper
+        type: EnumMapper
+        optional: true
       operations:
       - name: to_package_spec
         inputs:
@@ -461,12 +464,6 @@ contexts:
           type: MetaDomain
     - name: EnumMapper
       operations:
-      - name: to_module_spec
-        inputs:
-        - name: enums
-          type: Iterable[MetaEnum]
-        output:
-          type: ModuleSpec
       - name: to_enum_spec
         inputs:
         - name: meta_enum
@@ -479,6 +476,18 @@ contexts:
           type: EnumSpec
         output:
           type: MetaEnum
+      - name: to_module_spec
+        inputs:
+        - name: enums
+          type: Iterable[MetaEnum]
+        output:
+          type: ModuleSpec
+      - name: to_meta_enums
+        inputs:
+        - name: module_spec
+          type: ModuleSpec
+        output:
+          type: Iterable[MetaEnum]
     - name: ImplementationMapper
       attributes:
       - name: attribute_mapper
@@ -731,6 +740,17 @@ contexts:
       - name: methods
         type: list[FunctionSpec]
         optional: true
+    - name: EnumMemberSpec
+      description: Represents an enum member in a Python module.
+      attributes:
+      - name: name
+        type: str
+      - name: value
+        type: str | int | None
+        optional: true
+      - name: description
+        type: str
+        optional: true
     - name: EnumSpec
       description: Represents an enum in a Python module.
       attributes:
@@ -748,27 +768,6 @@ contexts:
       - name: members
         type: list[EnumMemberSpec]
         optional: true
-    - name: EnumMemberSpec
-      description: Represents an enum member in a Python module.
-      attributes:
-      - name: name
-        type: str
-      - name: value
-        type: str | int | None
-        optional: true
-      - name: description
-        type: str
-        optional: true
-    - name: FunctionType
-      attributes:
-      - name: CLASS_METHOD
-        type: Any
-      - name: STATIC_METHOD
-        type: Any
-      - name: INSTANCE_METHOD
-        type: Any
-      - name: FUNCTION
-        type: Any
     - name: FunctionSpec
       description: Represents a function in a Python module.
       attributes:
@@ -814,11 +813,11 @@ contexts:
       - name: classes
         type: list[ClassSpec]
         optional: true
-      - name: enums
-        type: list[EnumSpec]
-        optional: true
       - name: imports
         type: list[ImportFromSpec]
+        optional: true
+      - name: enums
+        type: list[EnumSpec]
         optional: true
     - name: PackageSpec
       description: Represents a Python package.
@@ -831,12 +830,6 @@ contexts:
       - name: sub_packages
         type: list[PackageSpec]
         optional: true
-    - name: FieldFlavor
-      attributes:
-      - name: PYDANTIC
-        type: Any
-      - name: DATACLASS
-        type: Any
     - name: FieldSpec
       attributes:
       - name: default
