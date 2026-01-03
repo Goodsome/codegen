@@ -32,6 +32,7 @@ class ModuleSpec(ValueObject):
         functions: list[FunctionSpec] | None = None,
         classes: list[ClassSpec] | None = None,
         imports: list[ImportFromSpec] | None = None,
+        enums: list[EnumSpec] | None = None,
     ) -> "ModuleSpec":
         name = cls._to_snake_case(name)
         return cls(
@@ -39,6 +40,7 @@ class ModuleSpec(ValueObject):
             functions=functions or [],
             classes=classes or [],
             imports=imports or [],
+            enums=enums or [],
         )
 
     @classmethod
@@ -51,9 +53,13 @@ class ModuleSpec(ValueObject):
         classes: list[ClassSpec] = []
         functions: list[FunctionSpec] = []
         imports: list[ImportFromSpec] = []
+        enums: list[EnumSpec] = []
         for node in tree.body:
             if isinstance(node, ast.ClassDef):
-                classes.append(ClassSpec.parse_ast(node, source_code))
+                if module_name == "enums":
+                    enums.append(EnumSpec.parse_ast(node))
+                else:
+                    classes.append(ClassSpec.parse_ast(node, source_code))
             elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 functions.append(FunctionSpec.parse_ast(node, source_code))
             elif isinstance(node, (ast.Import, ast.ImportFrom)):
@@ -63,6 +69,7 @@ class ModuleSpec(ValueObject):
             classes=classes,
             functions=functions,
             imports=imports,
+            enums=enums,
         )
 
     @property
