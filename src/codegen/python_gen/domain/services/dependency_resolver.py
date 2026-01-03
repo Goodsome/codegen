@@ -52,6 +52,8 @@ class DependencyResolver:
     def resolve_module(self, module_spec: ModuleSpec) -> Iterable[ImportFromSpec]:
         required_types = module_spec.get_required_types()
         import_spec_bags: dict[str, ImportFromSpec] = {}
+        for import_spec in module_spec.imports:
+            import_spec_bags[import_spec.module] = import_spec
         for rt in required_types:
             if module_spec.has_class_or_function(rt):
                 continue

@@ -1,3 +1,6 @@
+from codegen.python_gen.infrastructure.adapters.black_code_formatter import (
+    BlackCodeFormatter,
+)
 from dependency_injector import containers, providers
 from dependency_injector.providers import Singleton, Factory
 
@@ -35,6 +38,8 @@ class Container(containers.DeclarativeContainer):
         file_system_port=os_file_port,
     )
 
+    code_formatter_provider = Singleton(BlackCodeFormatter)
+
     load_blueprint_use_case: Factory[LoadBlueprint] = Factory(
         LoadBlueprint,
         blueprint_loader=blueprint_loader_provider,
@@ -44,6 +49,7 @@ class Container(containers.DeclarativeContainer):
         GeneratePackage,
         translator=python_syntax_translator_provider,
         file_system_port=os_file_port,
+        code_formatter=code_formatter_provider,
     )
 
     parse_package_use_case: Factory[ParsePackage] = Factory(
