@@ -85,11 +85,7 @@ class PythonSyntaxTranslator:
         # 处理当前包下的 Modules
         for module in current_spec.modules:
             # 过滤逻辑下沉到这里
-            if (
-                target_node
-                and not module.is_match_name(target_node)
-                and not module.is_init_module()
-            ):
+            if target_node and not module.is_match_name(target_node):
                 continue
 
             # 解析导入依赖
