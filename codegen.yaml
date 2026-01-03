@@ -2,7 +2,7 @@ name: codegen
 description: ''
 layout: ''
 contexts:
-- name: domain_definition
+- name: DomainDefinition
   domain:
     value_objects:
     - name: Attribute
@@ -271,7 +271,7 @@ contexts:
         attributes:
         - name: blueprint
           type: Blueprint
-- name: orchestration
+- name: Orchestration
   domain:
     services:
     - name: AggregateMapper
@@ -664,7 +664,7 @@ contexts:
         attributes:
         - name: result
           type: str
-- name: python_gen
+- name: PythonGen
   domain:
     value_objects:
     - name: ClassSpec
@@ -893,13 +893,19 @@ contexts:
         attributes:
         - name: package_spec
           type: PackageSpec
-- name: shared
+- name: Shared
   domain:
     services:
     - name: NamingService
       description: Provides naming conventions for generated artifacts.
       operations:
       - name: to_snake_case
+        inputs:
+        - name: name
+          type: str
+        output:
+          type: str
+      - name: to_camel_case
         inputs:
         - name: name
           type: str
