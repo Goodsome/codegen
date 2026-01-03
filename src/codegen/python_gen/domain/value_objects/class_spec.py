@@ -91,3 +91,22 @@ class ClassSpec(ValueObject):
         for method in self.methods:
             types.update(method.get_required_types())
         return types
+
+    def merge(self, other: "ClassSpec") -> "ClassSpec":
+        if self.name != other.name:
+            return self
+        other_methods = {m.name: m for m in other.methods}
+        methods: list[FunctionSpec] = []
+        for m in self.methods:
+            if m.name in other_methods:
+                methods.append(m.merge(other_methods[m.name]))
+            else:
+                methods.append(m)
+        return self.__class__.create(
+            name=self.name,
+            description=self.description,
+            inheritance=self.inheritance,
+            decorators=self.decorators,
+            attributes=self.attributes,
+            methods=methods,
+        )
