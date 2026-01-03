@@ -93,10 +93,14 @@ class FunctionSpec(ValueObject):
     def merge(self, other: "FunctionSpec") -> "FunctionSpec":
         if self.name != other.name:
             return self
+        suite = self.suite
+        if not suite or suite == "...":
+            suite = other.suite
         return self.__class__.create(
             name=self.name,
             decorators=self.decorators,
             parameters=self.parameters,
-            suite=self.suite or other.suite,
+            suite=suite,
             return_annotation=self.return_annotation,
+            function_type=self.function_type,
         )

@@ -19,7 +19,9 @@ class PortMapper:
     def to_module_spec(self, port: MetaPort) -> ModuleSpec:
         methods = [
             self.method_mapper.to_function_spec(
-                method, function_type=FunctionType.INSTANCE_METHOD
+                method,
+                function_type=FunctionType.INSTANCE_METHOD,
+                is_abstract=True,
             )
             for method in port.operations
         ]
