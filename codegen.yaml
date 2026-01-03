@@ -295,6 +295,11 @@ contexts:
         attributes:
         - name: blueprint
           type: Blueprint
+  infrastructure:
+    adapters:
+    - name: YamlBlueprintStorage
+      implements: BlueprintStorage
+      description: Blueprint loader that reads from a YAML file.
 - name: Orchestration
   domain:
     services:
@@ -549,6 +554,8 @@ contexts:
           type: MethodSpec
         - name: function_type
           type: FunctionType
+        - name: is_abstract
+          type: bool
         output:
           type: FunctionSpec
       - name: to_method
@@ -785,6 +792,17 @@ contexts:
       - name: members
         type: list[EnumMemberSpec]
         optional: true
+    - name: FieldSpec
+      attributes:
+      - name: default
+        type: str
+        optional: true
+      - name: default_factory
+        type: str
+        optional: true
+      - name: flavor
+        type: FieldFlavor
+        optional: true
     - name: FunctionSpec
       description: Represents a function in a Python module.
       attributes:
@@ -846,17 +864,6 @@ contexts:
         optional: true
       - name: sub_packages
         type: list[PackageSpec]
-        optional: true
-    - name: FieldSpec
-      attributes:
-      - name: default
-        type: str
-        optional: true
-      - name: default_factory
-        type: str
-        optional: true
-      - name: flavor
-        type: FieldFlavor
         optional: true
     - name: ParameterSpec
       description: Represents a parameter in a Python function.
@@ -943,6 +950,17 @@ contexts:
           type: str | None
         output:
           type: None
+    ports:
+    - name: CodeFormatter
+      description: Formats Python source code.
+      kind: Service
+      operations:
+      - name: format_code
+        inputs:
+        - name: code
+          type: str
+        output:
+          type: str
   application:
     use_cases:
     - name: GeneratePackage
@@ -978,6 +996,10 @@ contexts:
         attributes:
         - name: package_spec
           type: PackageSpec
+  infrastructure:
+    adapters:
+    - name: BlackCodeFormatter
+      implements: CodeFormatter
 - name: Shared
   domain:
     services:
@@ -1059,3 +1081,11 @@ contexts:
           type: Dict[str, Any]
         output:
           type: str
+  infrastructure:
+    adapters:
+    - name: JinjaAdapter
+      implements: TemplatePort
+      description: Jinja-based template rendering adapter.
+    - name: OSFileSystem
+      implements: FileSystemPort
+      description: OS file system adapter for reading/writing files.

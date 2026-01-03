@@ -48,11 +48,17 @@ class InfrastructureMapper:
 
     def to_infrastructure(self, package_spec: PackageSpec) -> MetaInfrastructure:
         acl = []
-        # adapters 转换略
+        adapters = []
         for sub_pkg in package_spec.sub_packages:
             if sub_pkg.name == "acl":
                 for mod in sub_pkg.modules:
                     if not mod.is_init_module():
                         acl.append(self.implementation_mapper.to_implementation(mod))
+            elif sub_pkg.name == "adapters":
+                for mod in sub_pkg.modules:
+                    if not mod.is_init_module():
+                        adapters.append(
+                            self.implementation_mapper.to_implementation(mod)
+                        )
 
-        return MetaInfrastructure(acl=acl)
+        return MetaInfrastructure(acl=acl, adapters=adapters)

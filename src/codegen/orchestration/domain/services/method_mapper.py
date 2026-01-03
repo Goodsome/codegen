@@ -18,14 +18,19 @@ class MethodMapper:
     attribute_mapper: AttributeMapper = field(default_factory=AttributeMapper)
 
     def to_function_spec(
-        self, method: MethodSpec, function_type: FunctionType = FunctionType.FUNCTION
+        self,
+        method: MethodSpec,
+        function_type: FunctionType = FunctionType.FUNCTION,
+        is_abstract: bool = False,
     ) -> FunctionSpec:
         parameters = [
             self.attribute_mapper.to_parameter_spec(attr) for attr in method.inputs
         ]
+        decorators = ["abstractmethod"] if is_abstract else []
         return FunctionSpec.create(
             name=method.name,
             parameters=parameters,
+            decorators=decorators,
             return_annotation=TypeAnnotationSpec.parse(method.output.type),
             function_type=function_type,
             suite="...",
