@@ -1,3 +1,6 @@
+from codegen.orchestration.domain.services.enum_mapper import EnumMapper
+from codegen.domain_definition.domain.value_objects.meta_enum import MetaEnum
+from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from dataclasses import field
 from codegen.domain_definition.domain.value_objects.meta_domain import MetaDomain
 from codegen.orchestration.domain.services.port_mapper import PortMapper
@@ -15,6 +18,7 @@ class DomainMapper:
     value_object_mapper: ValueObjectMapper = field(default_factory=ValueObjectMapper)
     service_mapper: ServiceMapper = field(default_factory=ServiceMapper)
     port_mapper: PortMapper = field(default_factory=PortMapper)
+    enum_mapper: EnumMapper = field(default_factory=EnumMapper)
 
     def to_package_spec(self, domain: MetaDomain) -> PackageSpec:
         aggregate_pkg = self.aggregate_mapper.to_package_spec(domain.aggregates)
@@ -29,9 +33,13 @@ class DomainMapper:
             services_pkg,
             ports_pkg,
         ]
+        modules: list[ModuleSpec] = []
+        if domain.enums:
+            modules.append(self.enum_mapper.to_module_spec(domain.enums))
         return PackageSpec.create(
             name="domain",
             sub_packages=sub_packages,
+            modules=modules,
         )
 
     def to_domain(self, package_spec: PackageSpec) -> MetaDomain:
@@ -39,6 +47,7 @@ class DomainMapper:
         value_objects = []
         services = []
         ports = []
+        enums: list[MetaEnum] = []
 
         for pkg in package_spec.sub_packages:
             if pkg.name == "aggregates":
@@ -49,10 +58,14 @@ class DomainMapper:
                 services = self.service_mapper.to_services(pkg)
             elif pkg.name == "ports":
                 ports = self.port_mapper.to_ports(pkg)
+        for module in package_spec.modules:
+            if module.name == "enums":
+                enums = list(self.enum_mapper.to_meta_enums(module))
 
         return MetaDomain(
             aggregates=aggregates,
             value_objects=value_objects,
             services=services,
             ports=ports,
+            enums=enums,
         )

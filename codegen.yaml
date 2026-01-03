@@ -85,6 +85,9 @@ contexts:
       - name: aggregates
         type: list[MetaAggregate]
         optional: true
+      - name: enums
+        type: list[MetaEnum]
+        optional: true
       - name: value_objects
         type: list[MetaValueObject]
         optional: true
@@ -93,6 +96,27 @@ contexts:
         optional: true
       - name: ports
         type: list[MetaPort]
+        optional: true
+    - name: MetaEnum
+      description: Specification of an enum to be generated.
+      attributes:
+      - name: name
+        type: str
+      - name: description
+        type: str
+        optional: true
+      - name: members
+        type: list[MetaEnumMember]
+    - name: MetaEnumMember
+      description: Specification of an enum member to be generated.
+      attributes:
+      - name: name
+        type: str
+      - name: value
+        type: str | int | None
+        optional: true
+      - name: description
+        type: str
         optional: true
     - name: MetaImplementation
       description: Specification of an implementation to be generated.
@@ -435,6 +459,26 @@ contexts:
           type: PackageSpec
         output:
           type: MetaDomain
+    - name: EnumMapper
+      operations:
+      - name: to_module_spec
+        inputs:
+        - name: enums
+          type: Iterable[MetaEnum]
+        output:
+          type: ModuleSpec
+      - name: to_enum_spec
+        inputs:
+        - name: meta_enum
+          type: MetaEnum
+        output:
+          type: EnumSpec
+      - name: to_meta_enum
+        inputs:
+        - name: enum_spec
+          type: EnumSpec
+        output:
+          type: MetaEnum
     - name: ImplementationMapper
       attributes:
       - name: attribute_mapper
@@ -687,6 +731,34 @@ contexts:
       - name: methods
         type: list[FunctionSpec]
         optional: true
+    - name: EnumSpec
+      description: Represents an enum in a Python module.
+      attributes:
+      - name: name
+        type: str
+      - name: description
+        type: str
+        optional: true
+      - name: decorators
+        type: list[str]
+        optional: true
+      - name: base_class
+        type: str
+        optional: true
+      - name: members
+        type: list[EnumMemberSpec]
+        optional: true
+    - name: EnumMemberSpec
+      description: Represents an enum member in a Python module.
+      attributes:
+      - name: name
+        type: str
+      - name: value
+        type: str | int | None
+        optional: true
+      - name: description
+        type: str
+        optional: true
     - name: FunctionType
       attributes:
       - name: CLASS_METHOD
@@ -741,6 +813,9 @@ contexts:
         optional: true
       - name: classes
         type: list[ClassSpec]
+        optional: true
+      - name: enums
+        type: list[EnumSpec]
         optional: true
       - name: imports
         type: list[ImportFromSpec]
