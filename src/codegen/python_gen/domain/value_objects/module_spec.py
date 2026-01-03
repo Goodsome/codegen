@@ -141,4 +141,5 @@ class ModuleSpec(ValueObject):
             functions=functions,
             classes=classes,
             imports=imports,
+            enums=self.enums,
         )
