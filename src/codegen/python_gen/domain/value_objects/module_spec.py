@@ -4,6 +4,7 @@ Name: ModuleSpec
 Description: Represents a Python module.
 """
 
+from codegen.python_gen.domain.value_objects.enum_spec import EnumSpec
 import ast
 import re
 
@@ -22,6 +23,7 @@ class ModuleSpec(ValueObject):
     functions: list[FunctionSpec] = Field(default_factory=list)
     classes: list[ClassSpec] = Field(default_factory=list)
     imports: list[ImportFromSpec] = Field(default_factory=list)
+    enums: list[EnumSpec] = Field(default_factory=list)
 
     @classmethod
     def create(
