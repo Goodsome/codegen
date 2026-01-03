@@ -5,5 +5,9 @@
 {% for cls in module_spec.classes %}
 {% set class_spec = cls %}{% include 'class.j2' %} {% endfor %}
 
+{% for enm in module_spec.enums %}
+{% set enum_spec = enm %}{% include 'enum.j2' %}
+{% endfor %}
+
 {% for func in module_spec.functions %}
 {% set function_spec = func %} {% include 'function.j2' %} {% endfor %}
