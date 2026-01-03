@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pathlib import Path
 
 from codegen.python_gen.domain.services.python_syntax_translator import (
     PythonSyntaxTranslator,
@@ -31,8 +32,16 @@ class GeneratePackage:
     translator: PythonSyntaxTranslator
 
     def execute(self, cmd: GeneratePackageCommand) -> GeneratePackageResult:
+        current_pkg_path = Path(cmd.package_spec.name)
+        if self.file_system_port.is_directory(current_pkg_path):
+            current_pkg = self.translator.to_package_spec(
+                package_path=Path(cmd.package_spec.name)
+            )
+            pkg = cmd.package_spec.merge(current_pkg)
+        else:
+            pkg = cmd.package_spec
         source_tree = self.translator.generate_source_tree(
-            package_spec=cmd.package_spec,
+            package_spec=pkg,
             target_node=cmd.node,
         )
         for rel_path, content in source_tree.items():
