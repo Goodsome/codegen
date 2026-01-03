@@ -72,3 +72,26 @@ class PackageSpec(ValueObject):
         for pkg in self.sub_packages:
             result.update(pkg.collect_class_spec())
         return result
+
+    def merge(self, other: "PackageSpec") -> "PackageSpec":
+        if self.name != other.name:
+            return self
+        other_modules = {m.name: m for m in other.modules}
+        other_sub_packages = {p.name: p for p in other.sub_packages}
+        modules: list[ModuleSpec] = []
+        sub_packages: list["PackageSpec"] = []
+        for mod in self.modules:
+            if mod.name in other_modules:
+                new_mod = mod.merge(other_modules[mod.name])
+                modules.append(new_mod)
+            else:
+                modules.append(mod)
+        for pkg in self.sub_packages:
+            if pkg.name in other_sub_packages:
+                new_pkg = pkg.merge(other_sub_packages[pkg.name])
+                sub_packages.append(new_pkg)
+            else:
+                sub_packages.append(pkg)
+        return PackageSpec.create(
+            name=self.name, modules=modules, sub_packages=sub_packages
+        )

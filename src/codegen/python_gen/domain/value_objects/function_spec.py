@@ -90,3 +90,14 @@ class FunctionSpec(ValueObject):
 
     def is_instance_method(self) -> bool:
         return self.function_type == FunctionType.INSTANCE_METHOD
+
+    def merge(self, other: "FunctionSpec") -> "FunctionSpec":
+        if self.name != other.name:
+            return self
+        return self.__class__.create(
+            name=self.name,
+            decorators=self.decorators,
+            parameters=self.parameters,
+            suite=self.suite or other.suite,
+            return_annotation=self.return_annotation,
+        )

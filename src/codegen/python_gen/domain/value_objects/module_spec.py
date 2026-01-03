@@ -111,3 +111,34 @@ class ModuleSpec(ValueObject):
 
     def collect_class_spec(self) -> dict[str, ClassSpec]:
         return {c.name: c for c in self.classes}
+
+    def merge(self, other: "ModuleSpec") -> "ModuleSpec":
+        if self.name != other.name:
+            return self
+        other_functions = {f.name: f for f in other.functions}
+        other_classes = {c.name: c for c in other.classes}
+        other_imports = {i.module: i for i in other.imports}
+        functions: list[FunctionSpec] = []
+        classes: list[ClassSpec] = []
+        imports: list[ImportFromSpec] = []
+        for f in self.functions:
+            if f.name in other_functions:
+                functions.append(f.merge(other_functions[f.name]))
+            else:
+                functions.append(f)
+        for c in self.classes:
+            if c.name in other_classes:
+                classes.append(c.merge(other_classes[c.name]))
+            else:
+                classes.append(c)
+        for i in self.imports:
+            if i.module in other_imports:
+                imports.append(i.merge(other_imports[i.module]))
+            else:
+                imports.append(i)
+        return ModuleSpec.create(
+            name=self.name,
+            functions=functions,
+            classes=classes,
+            imports=imports,
+        )

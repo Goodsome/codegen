@@ -61,3 +61,11 @@ class ImportFromSpec(ValueObject):
         else:
             names = ", ".join(name.render() for name in self.names)
             return f"({names})"
+
+    def merge(self, other: "ImportFromSpec") -> "ImportFromSpec":
+        if self.module != other.module:
+            return self
+        return self.__class__(
+            module=self.module,
+            names=self.names + other.names,
+        )
