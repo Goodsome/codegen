@@ -54,11 +54,10 @@ class FunctionSpec(ValueObject):
             params.append(ParameterSpec(name=arg.arg, annotation=anno))
 
         return_anno = TypeAnnotationSpec.parse_ast(node.returns)
-        full_source = ast.get_source_segment(source_code, node)
-        if full_source is None:
-            suite_code = "..."
+        if node.body:
+            suite_code = "\n".join([ast.unparse(b) for b in node.body])
         else:
-            suite_code = full_source[node.body[0].lineno - 1 : node.body[-1].lineno]
+            suite_code = ""
         decorators = [ast.unparse(decorator) for decorator in node.decorator_list]
 
         # Determine function type
