@@ -1,4 +1,3 @@
-from codegen.python_gen.domain.value_objects.parameter_spec import FieldFlavor
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from typing import Iterable
 from codegen.orchestration.domain.services.attribute_mapper import AttributeMapper
@@ -7,7 +6,7 @@ from codegen.domain_definition.domain.value_objects.meta_service import MetaServ
 from dataclasses import dataclass, field
 from codegen.orchestration.domain.services.method_mapper import MethodMapper
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
-from codegen.python_gen.domain.value_objects.function_spec import FunctionType
+from codegen.python_gen.domain.enums import FunctionType, FieldFlavor
 
 
 @dataclass

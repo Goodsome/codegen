@@ -9,11 +9,10 @@ from codegen.domain_definition.domain.value_objects.meta_use_case import MetaUse
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.function_spec import (
     FunctionSpec,
-    FunctionType,
 )
+from codegen.python_gen.domain.enums import FunctionType, FieldFlavor
 from codegen.python_gen.domain.value_objects.parameter_spec import (
     ParameterSpec,
-    FieldFlavor,
 )
 from codegen.python_gen.domain.value_objects.type_annotation_spec import (
     TypeAnnotationSpec,
