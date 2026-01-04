@@ -10,12 +10,21 @@ from pydantic import Field
 
 from codegen.shared.models import ValueObject
 
+_TYPE_NAME_MAPPING: dict[str, str] = {
+    "string": "str",
+    "String": "str",
+    "List": "list",
+    "Dict": "dict",
+    "Set": "set",
+    "Tuple": "tuple",
+}
 
 class TypeAnnotationSpec(ValueObject):
     """Represents a type annotation."""
 
     name: str
     args: list["TypeAnnotationSpec"] = Field(default_factory=list)
+
 
     @classmethod
     def parse(cls, annotation: str) -> "TypeAnnotationSpec":
@@ -50,7 +59,10 @@ class TypeAnnotationSpec(ValueObject):
         """
         # 1. 处理基础名称 (例如: int, str, List, Any)
         if isinstance(node, ast.Name):
-            return cls(name=node.id)
+            # 应用类型名转换映射
+            type_name = node.id
+            mapped_name = _TYPE_NAME_MAPPING.get(type_name, type_name)
+            return cls(name=mapped_name)
 
         # 2. 处理常量 (例如: None)
         # Python 3.8+ 使用 Constant, 旧版可能使用 NameConstant
