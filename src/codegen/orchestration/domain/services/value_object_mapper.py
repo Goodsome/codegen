@@ -46,13 +46,15 @@ class ValueObjectMapper:
     ) -> list[MetaValueObject]:
         value_objects: list[MetaValueObject] = []
         for cls in module_spec.classes:
-            attributes = [
+            attrs = [
                 self.attribute_mapper.to_attribute(attr) for attr in cls.attributes
             ]
+            behaviors = [self.method_mapper.to_method(m) for m in cls.methods]
             vo = MetaValueObject(
                 name=cls.name,
                 description=cls.description,
-                attributes=attributes,
+                attributes=attrs,
+                behaviors=behaviors,
             )
             value_objects.append(vo)
         return value_objects

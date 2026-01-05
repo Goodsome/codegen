@@ -33,7 +33,7 @@ class PackageSpec(ValueObject):
         if sub_packages is None:
             sub_packages = []
         has_init_module = any(mod.is_init_module() for mod in modules)
-        if not has_init_module and len(modules + sub_packages) > 0:
+        if not has_init_module:
             modules.append(ModuleSpec.get_init_module())
         name = NamingService().to_snake_case(name)
         return cls(
@@ -41,6 +41,15 @@ class PackageSpec(ValueObject):
             modules=modules,
             sub_packages=sub_packages,
         )
+
+    def is_empty(self) -> bool:
+        for pkg in self.sub_packages:
+            if not pkg.is_empty():
+                return False
+        for mod in self.modules:
+            if not mod.is_init_module():
+                return False
+        return True
 
     def get_global_registry(self, root_name: str = "") -> dict[str, str]:
         symbol_table: dict[str, str] = {}

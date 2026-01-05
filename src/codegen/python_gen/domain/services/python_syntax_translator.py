@@ -82,6 +82,8 @@ class PythonSyntaxTranslator:
         current_path: Path,
         target_node: str | None,
     ) -> None:
+        if current_spec.is_empty():
+            return
         # 处理当前包下的 Modules
         for module in current_spec.modules:
             # 过滤逻辑下沉到这里
