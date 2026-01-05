@@ -35,7 +35,7 @@ class AggregateMapper:
         class_spec = ClassSpec.create(
             name=aggregate.name,
             description=aggregate.description,
-            inheritance=["AggregateRoot"],
+            inheritance=["Aggregate"],
             attributes=attributes,
             methods=methods,
         )
