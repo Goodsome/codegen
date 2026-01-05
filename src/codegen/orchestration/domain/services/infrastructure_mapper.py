@@ -25,40 +25,25 @@ class InfrastructureMapper:
         infrastructure: MetaInfrastructure,
         ports_class_specs: dict[str, ClassSpec],
     ) -> PackageSpec:
-        acl_modules = [
-            self.implementation_mapper.to_module_spec(impl, ports_class_specs)
-            for impl in infrastructure.acl
-        ]
         adapter_modules = [
             self.implementation_mapper.to_module_spec(impl, ports_class_specs)
             for impl in infrastructure.adapters
         ]
-        acl_pkg = PackageSpec.create(
-            name="acl",
-            modules=acl_modules,
-        )
         adapters_pkg = PackageSpec.create(
             name="adapters",
             modules=adapter_modules,
         )
 
-        return PackageSpec.create(
-            name="infrastructure", sub_packages=[acl_pkg, adapters_pkg]
-        )
+        return PackageSpec.create(name="infrastructure", sub_packages=[adapters_pkg])
 
     def to_infrastructure(self, package_spec: PackageSpec) -> MetaInfrastructure:
-        acl = []
         adapters = []
         for sub_pkg in package_spec.sub_packages:
-            if sub_pkg.name == "acl":
-                for mod in sub_pkg.modules:
-                    if not mod.is_init_module():
-                        acl.append(self.implementation_mapper.to_implementation(mod))
-            elif sub_pkg.name == "adapters":
+            if sub_pkg.name == "adapters":
                 for mod in sub_pkg.modules:
                     if not mod.is_init_module():
                         adapters.append(
                             self.implementation_mapper.to_implementation(mod)
                         )
 
-        return MetaInfrastructure(acl=acl, adapters=adapters)
+        return MetaInfrastructure(adapters=adapters)
