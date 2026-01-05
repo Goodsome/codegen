@@ -4,9 +4,9 @@ Name: ModuleSpec
 Description: Represents a Python module.
 """
 
+from codegen.shared.domain.services.naming_service import NamingService
 from codegen.python_gen.domain.value_objects.enum_spec import EnumSpec
 import ast
-import re
 
 from pydantic.fields import Field
 
@@ -34,7 +34,7 @@ class ModuleSpec(ValueObject):
         imports: list[ImportFromSpec] | None = None,
         enums: list[EnumSpec] | None = None,
     ) -> "ModuleSpec":
-        name = cls._to_snake_case(name)
+        name = NamingService().to_snake_case(name)
         return cls(
             name=name,
             functions=functions or [],
@@ -42,6 +42,15 @@ class ModuleSpec(ValueObject):
             imports=imports or [],
             enums=enums or [],
         )
+
+    @classmethod
+    def create_shared_models(cls) -> "ModuleSpec":
+        name = "models"
+        classes = [
+            ClassSpec.create_value_object(),
+            ClassSpec.create_aggregate(),
+        ]
+        return cls.create(name=name, classes=classes)
 
     @classmethod
     def get_init_module(cls) -> "ModuleSpec":
@@ -80,14 +89,7 @@ class ModuleSpec(ValueObject):
         return self.name == "__init__"
 
     def is_match_name(self, name: str) -> bool:
-        return self.name == self._to_snake_case(name)
-
-    @staticmethod
-    def _to_snake_case(name: str) -> str:
-        """内部工具：将字符串转换为 snake_case"""
-        # 处理 CamelCase 或已有空格/横杠的情况
-        s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
-        return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower().replace("-", "_")
+        return self.name == NamingService().to_snake_case(name)
 
     def get_required_types(self) -> set[str]:
         """收集本模块所有需要的类型名称"""

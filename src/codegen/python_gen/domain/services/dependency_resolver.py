@@ -22,6 +22,7 @@ BUILTIN_TYPES = {
 
 GLOBAL_REGISTRY = {
     "Field": "pydantic",
+    "BaseModel": "pydantic",
     "Path": "pathlib",
     "Any": "typing",
     "Dict": "typing",
@@ -30,7 +31,6 @@ GLOBAL_REGISTRY = {
     "Iterator": "typing",
     "dataclass": "dataclasses",
     "field": "dataclasses",
-    "ValueObject": "codegen.shared.models",
     "ABC": "abc",
     "abstractmethod": "abc",
 }
