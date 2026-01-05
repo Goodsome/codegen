@@ -33,6 +33,23 @@ contexts:
       - name: bootstrap
         type: MetaBootstrap
         optional: true
+      behaviors:
+      - name: create
+        inputs:
+        - name: cls
+          type: Any
+        - name: name
+          type: str
+        - name: description
+          type: str
+        - name: layout
+          type: str
+        - name: contexts
+          type: list[BoundedContext] | None
+        - name: bootstrap
+          type: MetaBootstrap | None
+        output:
+          type: Any
     - name: BoundedContext
       description: A logical boundary within the system.
       attributes:
@@ -50,6 +67,23 @@ contexts:
       - name: infrastructure
         type: MetaInfrastructure
         optional: true
+      behaviors:
+      - name: create
+        inputs:
+        - name: cls
+          type: Any
+        - name: name
+          type: str
+        - name: description
+          type: str
+        - name: domain
+          type: MetaDomain | None
+        - name: application
+          type: MetaApplication | None
+        - name: infrastructure
+          type: MetaInfrastructure | None
+        output:
+          type: Any
     - name: MetaAggregate
       description: Specification of a domain aggregate to be generated.
       attributes:
@@ -202,6 +236,27 @@ contexts:
       - name: result
         type: MetaUseCaseResult
         optional: true
+      behaviors:
+      - name: create
+        inputs:
+        - name: cls
+          type: Any
+        - name: name
+          type: str
+        - name: kind
+          type: str
+        - name: attributes
+          type: list[Attribute] | None
+        - name: description
+          type: str
+        - name: command
+          type: MetaUseCaseCommand | None
+        - name: query
+          type: MetaUseCaseQuery | None
+        - name: result
+          type: MetaUseCaseResult | None
+        output:
+          type: Any
     - name: MetaUseCaseCommand
       description: Specification of a use case command to be generated.
       attributes:
@@ -239,6 +294,9 @@ contexts:
         optional: true
       - name: attributes
         type: list[Attribute]
+        optional: true
+      - name: behaviors
+        type: list[MethodSpec]
         optional: true
     - name: MethodOutput
       description: Specification of the output of a method.
@@ -764,6 +822,45 @@ contexts:
       - name: methods
         type: list[FunctionSpec]
         optional: true
+      behaviors:
+      - name: create
+        inputs:
+        - name: cls
+          type: Any
+        - name: name
+          type: str
+        - name: description
+          type: str
+        - name: decorators
+          type: list[str] | None
+        - name: inheritance
+          type: list[str] | None
+        - name: attributes
+          type: list[ParameterSpec] | None
+        - name: methods
+          type: list[FunctionSpec] | None
+        output:
+          type: Any
+      - name: parse_ast
+        inputs:
+        - name: cls
+          type: Any
+        - name: node
+          type: ast.ClassDef
+        - name: source_code
+          type: str
+        output:
+          type: Any
+      - name: get_required_types
+        inputs: []
+        output:
+          type: set[str]
+      - name: merge
+        inputs:
+        - name: other
+          type: ClassSpec
+        output:
+          type: ClassSpec
     - name: EnumMemberSpec
       description: Represents an enum member in a Python module.
       attributes:
@@ -775,6 +872,33 @@ contexts:
       - name: description
         type: str
         optional: true
+      behaviors:
+      - name: create
+        inputs:
+        - name: cls
+          type: Any
+        - name: name
+          type: str
+        - name: value
+          type: str | int | None
+        - name: description
+          type: str
+        output:
+          type: EnumMemberSpec
+      - name: parse_ast
+        inputs:
+        - name: cls
+          type: Any
+        - name: node
+          type: Union[ast.Assign, ast.AnnAssign]
+        output:
+          type: EnumMemberSpec
+      - name: _parse_value
+        inputs:
+        - name: node
+          type: ast.AST
+        output:
+          type: str | int | None
     - name: EnumSpec
       description: Represents an enum in a Python module.
       attributes:
@@ -792,6 +916,31 @@ contexts:
       - name: members
         type: list[EnumMemberSpec]
         optional: true
+      behaviors:
+      - name: create
+        inputs:
+        - name: cls
+          type: Any
+        - name: name
+          type: str
+        - name: description
+          type: str
+        - name: decorators
+          type: list[str] | None
+        - name: base_class
+          type: str
+        - name: members
+          type: list[EnumMemberSpec] | None
+        output:
+          type: EnumSpec
+      - name: parse_ast
+        inputs:
+        - name: cls
+          type: Any
+        - name: node
+          type: ast.ClassDef
+        output:
+          type: EnumSpec
     - name: FieldSpec
       attributes:
       - name: default
@@ -803,6 +952,25 @@ contexts:
       - name: flavor
         type: FieldFlavor
         optional: true
+      behaviors:
+      - name: create_from_annotation
+        inputs:
+        - name: cls
+          type: Any
+        - name: annotation
+          type: TypeAnnotationSpec
+        - name: flavor
+          type: FieldFlavor
+        output:
+          type: FieldSpec
+      - name: func_name
+        inputs: []
+        output:
+          type: Any
+      - name: render
+        inputs: []
+        output:
+          type: str
     - name: FunctionSpec
       description: Represents a function in a Python module.
       attributes:
@@ -822,6 +990,49 @@ contexts:
       - name: function_type
         type: FunctionType
         optional: true
+      behaviors:
+      - name: create
+        inputs:
+        - name: cls
+          type: Any
+        - name: name
+          type: str
+        - name: return_annotation
+          type: TypeAnnotationSpec
+        - name: decorators
+          type: list[str] | None
+        - name: parameters
+          type: list[ParameterSpec] | None
+        - name: suite
+          type: str
+        - name: function_type
+          type: FunctionType
+        output:
+          type: Any
+      - name: parse_ast
+        inputs:
+        - name: cls
+          type: Any
+        - name: node
+          type: Union[ast.FunctionDef, ast.AsyncFunctionDef]
+        - name: source_code
+          type: str
+        output:
+          type: Any
+      - name: get_required_types
+        inputs: []
+        output:
+          type: set[str]
+      - name: is_instance_method
+        inputs: []
+        output:
+          type: bool
+      - name: merge
+        inputs:
+        - name: other
+          type: FunctionSpec
+        output:
+          type: FunctionSpec
     - name: ImportedName
       description: Represents a name imported from another module.
       attributes:
@@ -830,6 +1041,11 @@ contexts:
       - name: alias
         type: str | None
         optional: true
+      behaviors:
+      - name: render
+        inputs: []
+        output:
+          type: str
     - name: ImportFromSpec
       description: Represents an import statement from another module.
       attributes:
@@ -837,6 +1053,55 @@ contexts:
         type: str
       - name: names
         type: list[ImportedName]
+      behaviors:
+      - name: create
+        inputs:
+        - name: cls
+          type: Any
+        - name: module
+          type: str
+        - name: names
+          type: Union[list[str], list[ast.alias]]
+        output:
+          type: ImportFromSpec
+      - name: parse_ast
+        inputs:
+        - name: cls
+          type: Any
+        - name: node
+          type: Union[ast.Import, ast.ImportFrom]
+        output:
+          type: Any
+      - name: has_name
+        inputs:
+        - name: name
+          type: str
+        output:
+          type: bool
+      - name: add_name
+        inputs:
+        - name: name
+          type: str
+        output:
+          type: ImportFromSpec
+      - name: render
+        inputs: []
+        output:
+          type: str
+      - name: render_from_expression
+        inputs: []
+        output:
+          type: str
+      - name: render_names
+        inputs: []
+        output:
+          type: str
+      - name: merge
+        inputs:
+        - name: other
+          type: ImportFromSpec
+        output:
+          type: ImportFromSpec
     - name: ModuleSpec
       description: Represents a Python module.
       attributes:
@@ -854,6 +1119,91 @@ contexts:
       - name: enums
         type: list[EnumSpec]
         optional: true
+      behaviors:
+      - name: create
+        inputs:
+        - name: cls
+          type: Any
+        - name: name
+          type: str
+        - name: functions
+          type: list[FunctionSpec] | None
+        - name: classes
+          type: list[ClassSpec] | None
+        - name: imports
+          type: list[ImportFromSpec] | None
+        - name: enums
+          type: list[EnumSpec] | None
+        output:
+          type: ModuleSpec
+      - name: get_init_module
+        inputs:
+        - name: cls
+          type: Any
+        output:
+          type: ModuleSpec
+      - name: parse_code
+        inputs:
+        - name: cls
+          type: Any
+        - name: source_code
+          type: str
+        - name: module_name
+          type: str
+        output:
+          type: ModuleSpec
+      - name: filename
+        inputs: []
+        output:
+          type: str
+      - name: is_init_module
+        inputs: []
+        output:
+          type: bool
+      - name: is_match_name
+        inputs:
+        - name: name
+          type: str
+        output:
+          type: bool
+      - name: _to_snake_case
+        inputs:
+        - name: name
+          type: str
+        output:
+          type: str
+      - name: get_required_types
+        inputs: []
+        output:
+          type: set[str]
+      - name: has_class
+        inputs:
+        - name: class_name
+          type: str
+        output:
+          type: bool
+      - name: has_function
+        inputs:
+        - name: function_name
+          type: str
+        output:
+          type: bool
+      - name: has_class_or_function
+        inputs:
+        - name: name
+          type: str
+        output:
+          type: bool
+      - name: collect_class_spec
+        inputs: []
+        output:
+          type: dict[str, ClassSpec]
+      - name: merge
+        inputs:
+        - name: other
+          type: ModuleSpec
+        output:
+          type: ModuleSpec
     - name: PackageSpec
       description: Represents a Python package.
       attributes:
@@ -865,6 +1215,47 @@ contexts:
       - name: sub_packages
         type: list[PackageSpec]
         optional: true
+      behaviors:
+      - name: create
+        inputs:
+        - name: cls
+          type: Any
+        - name: name
+          type: str
+        - name: modules
+          type: list[ModuleSpec] | None
+        - name: sub_packages
+          type: list[PackageSpec] | None
+        output:
+          type: Any
+      - name: is_empty
+        inputs: []
+        output:
+          type: bool
+      - name: get_global_registry
+        inputs:
+        - name: root_name
+          type: str
+        output:
+          type: dict[str, str]
+      - name: _build_symbol_table
+        inputs:
+        - name: root_path
+          type: str
+        - name: table
+          type: dict[str, str]
+        output:
+          type: Any
+      - name: collect_class_spec
+        inputs: []
+        output:
+          type: dict[str, ClassSpec]
+      - name: merge
+        inputs:
+        - name: other
+          type: PackageSpec
+        output:
+          type: PackageSpec
     - name: ParameterSpec
       description: Represents a parameter in a Python function.
       attributes:
@@ -878,6 +1269,39 @@ contexts:
       - name: optional
         type: bool
         optional: true
+      behaviors:
+      - name: create
+        inputs:
+        - name: cls
+          type: Any
+        - name: name
+          type: str
+        - name: annotation
+          type: Union[str, TypeAnnotationSpec]
+        - name: optional
+          type: bool
+        - name: default_field_flavor
+          type: FieldFlavor | None
+        output:
+          type: Any
+      - name: parse_ast
+        inputs:
+        - name: cls
+          type: Any
+        - name: node
+          type: Union[ast.AnnAssign, ast.Assign]
+        - name: in_pydantic_model
+          type: bool
+        output:
+          type: list[ParameterSpec]
+      - name: get_required_types
+        inputs: []
+        output:
+          type: set[str]
+      - name: render_default
+        inputs: []
+        output:
+          type: str
     - name: TypeAnnotationSpec
       description: Represents a type annotation.
       attributes:
@@ -886,6 +1310,43 @@ contexts:
       - name: args
         type: list[TypeAnnotationSpec]
         optional: true
+      behaviors:
+      - name: parse
+        inputs:
+        - name: cls
+          type: Any
+        - name: annotation
+          type: str
+        output:
+          type: TypeAnnotationSpec
+      - name: parse_ast
+        inputs:
+        - name: cls
+          type: Any
+        - name: node
+          type: ast.AST | None
+        output:
+          type: TypeAnnotationSpec
+      - name: _parse_node
+        inputs:
+        - name: cls
+          type: Any
+        - name: node
+          type: ast.AST
+        output:
+          type: TypeAnnotationSpec
+      - name: render
+        inputs: []
+        output:
+          type: str
+      - name: get_all_referenced_names
+        inputs: []
+        output:
+          type: set[str]
+      - name: is_nullable
+        inputs: []
+        output:
+          type: bool
     services:
     - name: DependencyResolver
       attributes:
@@ -1080,7 +1541,7 @@ contexts:
         - name: template_path
           type: str
         - name: context
-          type: Dict[str, Any]
+          type: dict[str, Any]
         output:
           type: str
   infrastructure:
