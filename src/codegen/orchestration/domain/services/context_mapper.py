@@ -1,3 +1,4 @@
+from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.shared.domain.services.naming_service import NamingService
 from dataclasses import field
 from codegen.orchestration.domain.services.domain_mapper import DomainMapper
@@ -32,9 +33,15 @@ class ContextMapper:
             context.infrastructure,
             class_specs,
         )
+        if NamingService().to_snake_case(context.name) == "shared":
+            modules = [ModuleSpec.create_shared_models()]
+        else:
+            modules = []
+
         return PackageSpec.create(
             name=context.name,
             sub_packages=[domain_pkg, application_pkg, infrastructure_pkg],
+            modules=modules,
         )
 
     def to_context(self, package_spec: PackageSpec) -> BoundedContext:

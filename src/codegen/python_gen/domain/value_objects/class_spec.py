@@ -7,13 +7,10 @@ Description: Represents a class in a Python module.
 import ast
 
 from pydantic.fields import Field
-from codegen.shared.models import ValueObject
 
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.parameter_spec import ParameterSpec
-from codegen.python_gen.domain.value_objects.type_annotation_spec import (
-    TypeAnnotationSpec,
-)
+from codegen.shared.models import ValueObject
 
 
 class ClassSpec(ValueObject):
@@ -35,7 +32,7 @@ class ClassSpec(ValueObject):
         inheritance: list[str] | None = None,
         attributes: list[ParameterSpec] | None = None,
         methods: list[FunctionSpec] | None = None,
-    ):
+    ) -> "ClassSpec":
         return cls(
             name=name,
             description=description,
@@ -43,6 +40,20 @@ class ClassSpec(ValueObject):
             inheritance=inheritance or [],
             attributes=attributes or [],
             methods=methods or [],
+        )
+
+    @classmethod
+    def create_value_object(cls) -> "ClassSpec":
+        return cls.create(
+            name="ValueObject",
+            inheritance=["BaseModel"],
+        )
+
+    @classmethod
+    def create_aggregate(cls) -> "ClassSpec":
+        return cls.create(
+            name="Aggregate",
+            inheritance=["BaseModel"],
         )
 
     @classmethod
