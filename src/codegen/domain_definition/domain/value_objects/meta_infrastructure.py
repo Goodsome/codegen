@@ -9,4 +9,3 @@ class MetaInfrastructure(ValueObject):
     """Specification of an infrastructure to be generated."""
 
     adapters: list[MetaImplementation] = Field(default_factory=list)
-    acl: list[MetaImplementation] = Field(default_factory=list)

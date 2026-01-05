@@ -171,22 +171,6 @@ contexts:
       - name: adapters
         type: list[MetaImplementation]
         optional: true
-      - name: acl
-        type: list[MetaImplementation]
-        optional: true
-    - name: MetaInfrastructureAdapter
-      description: Specification of an infrastructure adapter to be generated.
-      attributes:
-      - name: name
-        type: str
-      - name: description
-        type: str
-        optional: true
-      - name: implements
-        type: str
-      - name: config
-        type: dict[str, Any]
-        optional: true
     - name: MetaPort
       description: Specification of a domain port to be generated.
       attributes:
@@ -840,7 +824,19 @@ contexts:
         - name: methods
           type: list[FunctionSpec] | None
         output:
+          type: ClassSpec
+      - name: create_value_object
+        inputs:
+        - name: cls
           type: Any
+        output:
+          type: ClassSpec
+      - name: create_aggregate
+        inputs:
+        - name: cls
+          type: Any
+        output:
+          type: ClassSpec
       - name: parse_ast
         inputs:
         - name: cls
@@ -1136,6 +1132,12 @@ contexts:
           type: list[EnumSpec] | None
         output:
           type: ModuleSpec
+      - name: create_shared_models
+        inputs:
+        - name: cls
+          type: Any
+        output:
+          type: ModuleSpec
       - name: get_init_module
         inputs:
         - name: cls
@@ -1166,12 +1168,6 @@ contexts:
           type: str
         output:
           type: bool
-      - name: _to_snake_case
-        inputs:
-        - name: name
-          type: str
-        output:
-          type: str
       - name: get_required_types
         inputs: []
         output:

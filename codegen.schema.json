@@ -36,6 +36,7 @@
     },
     "DomainSpec": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "aggregates": {
           "type": "array",
@@ -52,6 +53,10 @@
         "ports": {
           "type": "array",
           "items": { "$ref": "#/definitions/PortSpec" }
+        },
+        "enums": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/EnumSpec" }
         }
       }
     },
@@ -64,24 +69,10 @@
         }
       }
     },
-    "InfrastructureAdapterSpec": {
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "description": { "type": "string" },
-        "implements": { "type": "string" },
-        "config": { "type": "object" }
-      },
-      "required": ["name", "implements"]
-    },
     "InfrastructureSpec": {
       "type": "object",
       "properties": {
         "adapters": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/InfrastructureAdapterSpec" }
-        },
-        "acl": {
           "type": "array",
           "items": { "$ref": "#/definitions/ClassSpec" }
         }
@@ -182,6 +173,26 @@
           "type": "array",
           "items": { "$ref": "#/definitions/MethodSpec" }
         }
+      },
+      "required": ["name"]
+    },
+    "EnumSpec": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "members": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/EnumMemberSpec" }
+        }
+      },
+      "required": ["name"]
+    },
+    "EnumMemberSpec": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "value": { "type": "string" }
       },
       "required": ["name"]
     },
