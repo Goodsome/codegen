@@ -39,6 +39,15 @@ def get_container(
         }
         yield Container(config=config)
 
+def get_default_package_path() -> Path:
+    cwd = Path.cwd()
+    src_dir = cwd / "src"
+    if src_dir.exists():
+        pkgs = [p for p in src_dir.iterdir() if p.is_dir() and not p.name.startswith(".")] 
+        path = pkgs[0] if pkgs else src_dir
+    else:
+        path = cwd
+    return path
 
 @app.command()
 def generate(
@@ -68,10 +77,13 @@ def update_blueprint(
     config_file: Path = typer.Option(
         Path("codegen.yaml"), "--config", "-c", help="Path to codegen.yaml"
     ),
+    package_path: Path | None = typer.Option(None, "--package", help="Package path"),
 ):
     with get_container(config_file=config_file, build=True) as container:
+        if package_path is None:
+            package_path = get_default_package_path()
         use_case = container.update_blueprint_user_case()
-        cmd = UpdateBlueprintCommand(path=Path("codegen"))
+        cmd = UpdateBlueprintCommand(path=package_path)
         use_case.execute(cmd)
 
 
