@@ -2,7 +2,6 @@ from codegen.domain_definition.domain.ports.blueprint_storage import (
     BlueprintStorage,
 )
 from dataclasses import dataclass
-from typing import Union
 from codegen.domain_definition.domain.value_objects.blueprint import Blueprint
 
 

@@ -84,8 +84,7 @@
         "bindings": {
           "type": "array",
           "items": { "$ref": "#/definitions/BindingSpec" }
-        },
-        "options": { "$ref": "#/definitions/BootstrapOptions" }
+        }
       }
     },
     "BindingSpec": {
@@ -93,13 +92,6 @@
       "properties": {
         "port": { "type": "string" },
         "implementation": { "type": "string" }
-      }
-    },
-    "BootstrapOptions": {
-      "type": "object",
-      "properties": {
-        "dry_run": { "type": "boolean" },
-        "overwrite": { "type": "boolean" }
       }
     },
     "Attribute": {

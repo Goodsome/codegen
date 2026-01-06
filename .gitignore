@@ -25,3 +25,5 @@ Thumbs.db
 /backup/
 /target/
 /src/codegen.egg-info/
+/build/
+/dist/
