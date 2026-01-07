@@ -45,6 +45,7 @@ class YamlBlueprintStorage(BlueprintStorage):
             cleaned_data = blueprint.model_dump(
                 exclude_defaults=True,
                 exclude_none=True,
+                mode="json",
             )
 
             with open(yaml_path, "w", encoding="utf-8") as f:
