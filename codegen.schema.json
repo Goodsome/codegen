@@ -72,11 +72,35 @@
     "InfrastructureSpec": {
       "type": "object",
       "properties": {
-        "adapters": {
+        "implementations": {
           "type": "array",
-          "items": { "$ref": "#/definitions/ClassSpec" }
+          "items": { "$ref": "#/definitions/ImplementationSpec" }
         }
       }
+    },
+    "ImplementationSpec": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["repository", "adapter", "client", "provider", "publisher"],
+          "default": "基础设施的类型分类"
+        },
+        "implements": {
+          "type": "string",
+          "description": "实现的DomainPort名称"
+        },
+        "technology": {
+          "type": "string",
+          "description": "实现的技术栈"
+        },
+        "description": { "type": "string" },
+        "attributes": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Attribute" }
+        }
+      },
+      "required": ["kind", "implements", "technology"]
     },
     "BootstrapSpec": {
       "type": "object",

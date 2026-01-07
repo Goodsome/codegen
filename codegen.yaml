@@ -4,6 +4,17 @@ layout: ''
 contexts:
 - name: DomainDefinition
   domain:
+    enums:
+    - name: ImplementationType
+      members:
+      - name: ADAPTER
+        value: adapter
+      - name: REPOSITORY
+        value: repository
+      - name: CLIENT
+        value: client
+      - name: PROVIDER
+        value: provider
     value_objects:
     - name: Attribute
       description: Standard specification for a class attribute.
@@ -155,9 +166,11 @@ contexts:
     - name: MetaImplementation
       description: Specification of an implementation to be generated.
       attributes:
-      - name: name
-        type: str
       - name: implements
+        type: str
+      - name: kind
+        type: ImplementationType
+      - name: technology
         type: str
       - name: description
         type: str
@@ -165,10 +178,31 @@ contexts:
       - name: attributes
         type: list[Attribute]
         optional: true
+      behaviors:
+      - name: create
+        inputs:
+        - name: cls
+          type: Any
+        - name: implements
+          type: str
+        - name: kind
+          type: Union[ImplementationType, str]
+        - name: technology
+          type: str
+        - name: description
+          type: str
+        - name: attributes
+          type: list[Attribute] | None
+        output:
+          type: Any
+      - name: to_class_name
+        inputs: []
+        output:
+          type: str
     - name: MetaInfrastructure
       description: Specification of an infrastructure to be generated.
       attributes:
-      - name: adapters
+      - name: implementations
         type: list[MetaImplementation]
         optional: true
     - name: MetaPort
@@ -338,9 +372,10 @@ contexts:
         - name: blueprint
           type: Blueprint
   infrastructure:
-    adapters:
-    - name: YamlBlueprintStorage
-      implements: BlueprintStorage
+    implementations:
+    - implements: BlueprintStorage
+      kind: adapter
+      technology: yaml
       description: Blueprint loader that reads from a YAML file.
 - name: Orchestration
   domain:
@@ -543,6 +578,9 @@ contexts:
       - name: method_mapper
         type: MethodMapper
         optional: true
+      - name: naming_service
+        type: NamingService
+        optional: true
       operations:
       - name: to_module_spec
         inputs:
@@ -556,6 +594,10 @@ contexts:
         inputs:
         - name: module_spec
           type: ModuleSpec
+        - name: kind
+          type: str
+        - name: technology
+          type: str
         output:
           type: MetaImplementation
       - name: remove_abstract_method
@@ -568,6 +610,9 @@ contexts:
       attributes:
       - name: implementation_mapper
         type: ImplementationMapper
+        optional: true
+      - name: naming_service
+        type: NamingService
         optional: true
       operations:
       - name: to_package_spec
@@ -1456,9 +1501,10 @@ contexts:
         - name: package_spec
           type: PackageSpec
   infrastructure:
-    adapters:
-    - name: BlackCodeFormatter
-      implements: CodeFormatter
+    implementations:
+    - implements: CodeFormatter
+      kind: adapter
+      technology: black
 - name: Shared
   domain:
     services:
@@ -1541,10 +1587,12 @@ contexts:
         output:
           type: str
   infrastructure:
-    adapters:
-    - name: JinjaAdapter
-      implements: TemplatePort
+    implementations:
+    - implements: TemplatePort
+      kind: adapter
+      technology: jinja
       description: Jinja-based template rendering adapter.
-    - name: OSFileSystem
-      implements: FileSystemPort
+    - implements: FileSystemPort
+      kind: adapter
+      technology: os
       description: OS file system adapter for reading/writing files.
