@@ -1,18 +1,18 @@
 from pydantic import Field
-from codegen.domain_definition.domain.value_objects.attribute import Attribute
+from codegen.domain_definition.domain.value_objects.attribute import AttributeSpec
 from codegen.shared.domain.services.naming_service import NamingService
 from codegen.shared.models import ValueObject
 from codegen.domain_definition.domain.enums import ImplementationType
 
 
-class MetaImplementation(ValueObject):
+class ImplementationSpec(ValueObject):
     """Specification of an implementation to be generated."""
 
     implements: str
     kind: ImplementationType
     technology: str
     description: str = Field(default_factory=str)
-    attributes: list[Attribute] = Field(default_factory=list)
+    attributes: list[AttributeSpec] = Field(default_factory=list)
 
     @classmethod
     def create(
@@ -21,7 +21,7 @@ class MetaImplementation(ValueObject):
         kind: ImplementationType | str,
         technology: str,
         description: str = "",
-        attributes: list[Attribute] | None = None,
+        attributes: list[AttributeSpec] | None = None,
     ):
         if isinstance(kind, str):
             kind = ImplementationType(kind)

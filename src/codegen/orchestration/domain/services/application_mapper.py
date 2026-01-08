@@ -1,7 +1,7 @@
 from codegen.orchestration.domain.services.use_case_mapper import UseCaseMapper
 from codegen.orchestration.domain.services.port_mapper import PortMapper
 from codegen.domain_definition.domain.value_objects.meta_application import (
-    MetaApplication,
+    ApplicationSpec,
 )
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from dataclasses import dataclass, field
@@ -13,7 +13,7 @@ class ApplicationMapper:
     use_case_mapper: UseCaseMapper = field(default_factory=UseCaseMapper)
     port_mapper: PortMapper = field(default_factory=PortMapper)
 
-    def to_package_spec(self, application: MetaApplication) -> PackageSpec:
+    def to_package_spec(self, application: ApplicationSpec) -> PackageSpec:
         use_case_modules = [
             self.use_case_mapper.to_module_spec(uc) for uc in application.use_cases
         ]
@@ -26,7 +26,7 @@ class ApplicationMapper:
             name="application", sub_packages=[use_cases_pkg, ports_pkg]
         )
 
-    def to_application(self, package_spec: PackageSpec) -> MetaApplication:
+    def to_application(self, package_spec: PackageSpec) -> ApplicationSpec:
         use_cases = []
         ports = []
 
@@ -40,4 +40,4 @@ class ApplicationMapper:
                     if not mod.is_init_module():
                         ports.append(self.port_mapper.to_port(mod))
 
-        return MetaApplication(use_cases=use_cases, ports=ports)
+        return ApplicationSpec(use_cases=use_cases, ports=ports)

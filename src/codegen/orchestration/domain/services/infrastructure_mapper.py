@@ -3,7 +3,7 @@ from codegen.orchestration.domain.services.implementation_mapper import (
     ImplementationMapper,
 )
 from codegen.domain_definition.domain.value_objects.meta_infrastructure import (
-    MetaInfrastructure,
+    InfrastructureSpec,
 )
 from dataclasses import dataclass, field
 
@@ -23,7 +23,7 @@ class InfrastructureMapper:
 
     def to_package_spec(
         self,
-        infrastructure: MetaInfrastructure,
+        infrastructure: InfrastructureSpec,
         ports_class_specs: dict[str, ClassSpec],
     ) -> PackageSpec:
         module_bags: dict[ImplementationType, list[ModuleSpec]] = {}
@@ -39,7 +39,7 @@ class InfrastructureMapper:
 
         return PackageSpec.create(name="infrastructure", sub_packages=kind_packages)
 
-    def to_infrastructure(self, package_spec: PackageSpec) -> MetaInfrastructure:
+    def to_infrastructure(self, package_spec: PackageSpec) -> InfrastructureSpec:
         implementations = []
         for kind_pkg in package_spec.sub_packages:
             kind_name = kind_pkg.name
@@ -58,4 +58,4 @@ class InfrastructureMapper:
                     )
                 )
 
-        return MetaInfrastructure(implementations=implementations)
+        return InfrastructureSpec(implementations=implementations)

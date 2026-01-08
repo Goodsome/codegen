@@ -2,7 +2,7 @@ from codegen.domain_definition.domain.value_objects.bounded_context import (
     BoundedContext,
 )
 from codegen.shared.models import ValueObject
-from codegen.domain_definition.domain.value_objects.meta_bootstrap import MetaBootstrap
+from codegen.domain_definition.domain.value_objects.meta_bootstrap import BootstrapSpec
 from pydantic import Field
 
 
@@ -13,7 +13,7 @@ class Blueprint(ValueObject):
     description: str
     layout: str
     contexts: list[BoundedContext] = Field(default_factory=list)
-    bootstrap: MetaBootstrap = Field(default_factory=MetaBootstrap)
+    bootstrap: BootstrapSpec = Field(default_factory=BootstrapSpec)
 
     @classmethod
     def create(
@@ -22,12 +22,12 @@ class Blueprint(ValueObject):
         description: str = "",
         layout: str = "",
         contexts: list[BoundedContext] | None = None,
-        bootstrap: MetaBootstrap | None = None,
+        bootstrap: BootstrapSpec | None = None,
     ):
         if contexts is None:
             contexts = []
         if bootstrap is None:
-            bootstrap = MetaBootstrap()
+            bootstrap = BootstrapSpec()
         return cls(
             name=name,
             description=description,

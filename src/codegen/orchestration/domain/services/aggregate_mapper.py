@@ -1,7 +1,7 @@
 from dataclasses import field
 from typing import Iterable
 
-from codegen.domain_definition.domain.value_objects.meta_aggregate import MetaAggregate
+from codegen.domain_definition.domain.value_objects.meta_aggregate import AggregateSpec
 from codegen.orchestration.domain.services.attribute_mapper import AttributeMapper
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.orchestration.domain.services.method_mapper import MethodMapper
@@ -17,7 +17,7 @@ class AggregateMapper:
     attribute_mapper: AttributeMapper = field(default_factory=AttributeMapper)
     method_mapper: MethodMapper = field(default_factory=MethodMapper)
 
-    def to_module_spec(self, aggregate: MetaAggregate) -> ModuleSpec:
+    def to_module_spec(self, aggregate: AggregateSpec) -> ModuleSpec:
 
         attributes = [
             self.attribute_mapper.to_parameter_spec(
@@ -41,28 +41,28 @@ class AggregateMapper:
         )
         return ModuleSpec.create(name=aggregate.name, classes=[class_spec])
 
-    def to_package_spec(self, aggregates: Iterable[MetaAggregate]) -> PackageSpec:
+    def to_package_spec(self, aggregates: Iterable[AggregateSpec]) -> PackageSpec:
         modules = [self.to_module_spec(agg) for agg in aggregates]
         return PackageSpec.create(
             name="aggregates",
             modules=modules,
         )
 
-    def to_aggregate(self, module: ModuleSpec) -> MetaAggregate:
+    def to_aggregate(self, module: ModuleSpec) -> AggregateSpec:
         cls = module.classes[0]
         attributes = [
             self.attribute_mapper.to_attribute(attr) for attr in cls.attributes
         ]
         behaviors = [self.method_mapper.to_method(method) for method in cls.methods]
-        return MetaAggregate(
+        return AggregateSpec(
             name=cls.name,
             description=cls.description,
             attributes=attributes,
             behaviors=behaviors,
         )
 
-    def to_aggregates(self, package: PackageSpec) -> list[MetaAggregate]:
-        aggregates: list[MetaAggregate] = []
+    def to_aggregates(self, package: PackageSpec) -> list[AggregateSpec]:
+        aggregates: list[AggregateSpec] = []
         if package.name != "aggregates":
             return aggregates
         for module in package.modules:
