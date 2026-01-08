@@ -1,12 +1,16 @@
-from codegen.shared.models import ValueObject
+from functools import cached_property
+
+from pydantic import Field
+
 from codegen.domain_definition.domain.value_objects.meta_application import (
     ApplicationSpec,
 )
+from codegen.domain_definition.domain.value_objects.meta_domain import DomainSpec
 from codegen.domain_definition.domain.value_objects.meta_infrastructure import (
     InfrastructureSpec,
 )
-from codegen.domain_definition.domain.value_objects.meta_domain import DomainSpec
-from pydantic import Field
+from codegen.domain_definition.domain.value_objects.meta_port import PortSpec
+from codegen.shared.models import ValueObject
 
 
 class BoundedContext(ValueObject):
@@ -40,3 +44,12 @@ class BoundedContext(ValueObject):
             application=application,
             infrastructure=infrastructure,
         )
+
+    @cached_property
+    def port_index(self) -> dict[str, PortSpec]:
+        return {port.name: port for port in self.domain.ports + self.application.ports}
+
+    def get_port_spec(self, port_name: str) -> PortSpec:
+        if port_name not in self.port_index:
+            raise ValueError(f"Port {port_name} not found in {self.name}")
+        return self.port_index[port_name]

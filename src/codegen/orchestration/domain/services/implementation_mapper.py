@@ -1,6 +1,10 @@
+from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
 from dataclasses import field
+
+from codegen.domain_definition.domain.value_objects.meta_port import PortSpec
 from codegen.orchestration.domain.services.attribute_mapper import AttributeMapper
 from codegen.orchestration.domain.services.method_mapper import MethodMapper
+from codegen.python_gen.domain.enums import FunctionType
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.domain_definition.domain.value_objects.meta_implementation import (
@@ -21,20 +25,29 @@ class ImplementationMapper:
     def to_module_spec(
         self,
         implementation: ImplementationSpec,
-        ports_class_specs: dict[str, ClassSpec],
+        port: PortSpec,
     ) -> ModuleSpec:
-        if implementation.implements not in ports_class_specs:
-            raise ValueError(
-                f"Could not find port class spec for {implementation.implements}"
+        methods = [
+            self.method_mapper.to_function_spec(
+                f, function_type=FunctionType.INSTANCE_METHOD
             )
-        port_cls = ports_class_specs[implementation.implements]
-        methods = [self.remove_abstract_method(f) for f in port_cls.methods]
+            for f in port.operations
+        ]
+        methods += [
+            self.method_mapper.to_function_spec(
+                f,
+                function_type=FunctionType.INSTANCE_METHOD,
+                is_private=True,
+            )
+            for f in implementation.private_methods
+        ]
         attributes = [
             self.attribute_mapper.to_parameter_spec(attr)
             for attr in implementation.attributes
         ]
+        class_name = self._get_class_name(implementation)
         class_spec = ClassSpec.create(
-            name=implementation.to_class_name(),
+            name=class_name,
             description=implementation.description,
             inheritance=[implementation.implements],
             attributes=attributes,
@@ -44,29 +57,31 @@ class ImplementationMapper:
         return ModuleSpec.create(name=module_name, classes=[class_spec])
 
     def to_implementation(
-        self, module_spec: ModuleSpec, kind: str, technology: str
+        self, module_spec: ModuleSpec, technology: str
     ) -> ImplementationSpec:
         for cls in module_spec.classes:
             if cls.inheritance:
                 attributes = [
                     self.attribute_mapper.to_attribute(attr) for attr in cls.attributes
                 ]
+                private_methods: list[MethodSpec] = []
+                for function in cls.methods:
+                    if function.is_init_method():
+                        continue
+                    if function.is_private:
+                        private_methods.append(self.method_mapper.to_method(function))
                 return ImplementationSpec.create(
                     implements=cls.inheritance[0],
-                    kind=kind,
                     technology=technology,
                     description=cls.description,
                     attributes=attributes,
+                    private_methods=private_methods,
                 )
         raise ValueError("No Implementation found in module")
 
-    def remove_abstract_method(self, function_spec: FunctionSpec) -> FunctionSpec:
-        decorators = [d for d in function_spec.decorators if d != "abstractmethod"]
-        return FunctionSpec.create(
-            name=function_spec.name,
-            decorators=decorators,
-            parameters=function_spec.parameters,
-            suite=function_spec.suite,
-            return_annotation=function_spec.return_annotation,
-            function_type=function_spec.function_type,
-        )
+    def _get_class_name(self, implementation: ImplementationSpec) -> str:
+        parts = [
+            self.naming_service.to_camel_case(implementation.technology),
+            self.naming_service.to_camel_case(implementation.implements),
+        ]
+        return "".join(parts)

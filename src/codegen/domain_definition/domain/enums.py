@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class ImplementationType(Enum):
+class PortType(Enum):
     ADAPTER = "adapter"
     REPOSITORY = "repository"
     CLIENT = "client"
