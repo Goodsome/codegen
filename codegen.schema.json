@@ -249,8 +249,12 @@
           "title":"Implements",
           "type":"string"
         },
-        "kind":{
-          "$ref":"#/$defs/ImplementationType"
+        "private_methods":{
+          "items":{
+            "$ref":"#/$defs/MethodSpec"
+          },
+          "title":"Private Methods",
+          "type":"array"
         },
         "technology":{
           "title":"Technology",
@@ -259,21 +263,10 @@
       },
       "required":[
         "implements",
-        "kind",
         "technology"
       ],
       "title":"ImplementationSpec",
       "type":"object"
-    },
-    "ImplementationType":{
-      "enum":[
-        "adapter",
-        "repository",
-        "client",
-        "provider"
-      ],
-      "title":"ImplementationType",
-      "type":"string"
     },
     "InfrastructureSpec":{
       "additionalProperties":false,
@@ -365,8 +358,7 @@
           "type":"string"
         },
         "kind":{
-          "title":"Kind",
-          "type":"string"
+          "$ref":"#/$defs/PortType"
         },
         "name":{
           "title":"Name",
@@ -386,6 +378,16 @@
       ],
       "title":"PortSpec",
       "type":"object"
+    },
+    "PortType":{
+      "enum":[
+        "adapter",
+        "repository",
+        "client",
+        "provider"
+      ],
+      "title":"PortType",
+      "type":"string"
     },
     "ServiceSpec":{
       "additionalProperties":false,

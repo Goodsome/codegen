@@ -46,10 +46,10 @@ class PortMapper:
     def to_port(self, module_spec: ModuleSpec) -> PortSpec:
         cls = module_spec.classes[0]
         operations = [self.method_mapper.to_method(method) for method in cls.methods]
-        return PortSpec(
+        return PortSpec.create(
             name=cls.name,
+            kind="repository" if "Repository" in cls.name else "adapter",
             description=cls.description,
-            kind="Repository" if "Repository" in cls.name else "Service",
             operations=operations,
         )
 

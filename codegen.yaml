@@ -1,11 +1,10 @@
 name: codegen
 description: ''
-layout: ''
 contexts:
 - name: DomainDefinition
   domain:
     enums:
-    - name: ImplementationType
+    - name: PortType
       members:
       - name: ADAPTER
         value: adapter
@@ -38,6 +37,7 @@ contexts:
         type: str
       - name: layout
         type: str
+        optional: true
       - name: contexts
         type: list[BoundedContext]
         optional: true
@@ -95,6 +95,16 @@ contexts:
           type: InfrastructureSpec | None
         output:
           type: Any
+      - name: port_index
+        inputs: []
+        output:
+          type: dict[str, PortSpec]
+      - name: get_port_spec
+        inputs:
+        - name: port_name
+          type: str
+        output:
+          type: PortSpec
     - name: AggregateSpec
       description: Specification of a domain aggregate to be generated.
       attributes:
@@ -168,8 +178,6 @@ contexts:
       attributes:
       - name: implements
         type: str
-      - name: kind
-        type: ImplementationType
       - name: technology
         type: str
       - name: description
@@ -178,6 +186,9 @@ contexts:
       - name: attributes
         type: list[AttributeSpec]
         optional: true
+      - name: private_methods
+        type: list[MethodSpec]
+        optional: true
       behaviors:
       - name: create
         inputs:
@@ -185,20 +196,16 @@ contexts:
           type: Any
         - name: implements
           type: str
-        - name: kind
-          type: Union[ImplementationType, str]
         - name: technology
           type: str
         - name: description
           type: str
         - name: attributes
           type: list[AttributeSpec] | None
+        - name: private_methods
+          type: list[MethodSpec] | None
         output:
           type: Any
-      - name: to_class_name
-        inputs: []
-        output:
-          type: str
     - name: InfrastructureSpec
       description: Specification of an infrastructure to be generated.
       attributes:
@@ -214,10 +221,25 @@ contexts:
         type: str
         optional: true
       - name: kind
-        type: str
+        type: PortType
       - name: operations
         type: list[MethodSpec]
         optional: true
+      behaviors:
+      - name: create
+        inputs:
+        - name: cls
+          type: Any
+        - name: name
+          type: str
+        - name: kind
+          type: Union[PortType, str]
+        - name: description
+          type: str
+        - name: operations
+          type: list[MethodSpec] | None
+        output:
+          type: PortSpec
     - name: ServiceSpec
       description: Specification of a domain service to be generated.
       attributes:
@@ -343,7 +365,7 @@ contexts:
     ports:
     - name: BlueprintStorage
       description: Loads the blueprint from a file.
-      kind: Service
+      kind: adapter
       operations:
       - name: load
         inputs: []
@@ -374,7 +396,6 @@ contexts:
   infrastructure:
     implementations:
     - implements: BlueprintStorage
-      kind: adapter
       technology: yaml
       description: Blueprint loader that reads from a YAML file.
 - name: Orchestration
@@ -586,26 +607,24 @@ contexts:
         inputs:
         - name: implementation
           type: ImplementationSpec
-        - name: ports_class_specs
-          type: dict[str, ClassSpec]
+        - name: port
+          type: PortSpec
         output:
           type: ModuleSpec
       - name: to_implementation
         inputs:
         - name: module_spec
           type: ModuleSpec
-        - name: kind
-          type: str
         - name: technology
           type: str
         output:
           type: ImplementationSpec
-      - name: remove_abstract_method
+      - name: _get_class_name
         inputs:
-        - name: function_spec
-          type: FunctionSpec
+        - name: implementation
+          type: ImplementationSpec
         output:
-          type: FunctionSpec
+          type: str
     - name: InfrastructureMapper
       attributes:
       - name: implementation_mapper
@@ -619,8 +638,8 @@ contexts:
         inputs:
         - name: infrastructure
           type: InfrastructureSpec
-        - name: ports_class_specs
-          type: dict[str, ClassSpec]
+        - name: port_finder
+          type: Callable[[str], PortSpec]
         output:
           type: PackageSpec
       - name: to_infrastructure
@@ -642,6 +661,8 @@ contexts:
         - name: function_type
           type: FunctionType
         - name: is_abstract
+          type: bool
+        - name: is_private
           type: bool
         output:
           type: FunctionSpec
@@ -1031,6 +1052,9 @@ contexts:
       - name: function_type
         type: FunctionType
         optional: true
+      - name: is_private
+        type: bool
+        optional: true
       behaviors:
       - name: create
         inputs:
@@ -1048,6 +1072,8 @@ contexts:
           type: str
         - name: function_type
           type: FunctionType
+        - name: is_private
+          type: bool
         output:
           type: Any
       - name: parse_ast
@@ -1074,6 +1100,10 @@ contexts:
           type: FunctionSpec
         output:
           type: FunctionSpec
+      - name: is_init_method
+        inputs: []
+        output:
+          type: bool
     - name: ImportedName
       description: Represents a name imported from another module.
       attributes:
@@ -1455,7 +1485,7 @@ contexts:
     ports:
     - name: CodeFormatter
       description: Formats Python source code.
-      kind: Service
+      kind: adapter
       operations:
       - name: format_code
         inputs:
@@ -1487,6 +1517,11 @@ contexts:
         attributes:
         - name: result
           type: str
+    - name: GenerateSchemaJsonUseCase
+      kind: command
+      attributes:
+      - name: file_system_port
+        type: FileSystemPort
     - name: ParsePackage
       kind: query
       attributes:
@@ -1503,7 +1538,6 @@ contexts:
   infrastructure:
     implementations:
     - implements: CodeFormatter
-      kind: adapter
       technology: black
 - name: Shared
   domain:
@@ -1526,7 +1560,7 @@ contexts:
     ports:
     - name: FileSystemPort
       description: Port for interacting with the file system.
-      kind: Service
+      kind: adapter
       operations:
       - name: read_file
         inputs:
@@ -1576,7 +1610,7 @@ contexts:
           type: bool
     - name: TemplatePort
       description: Port for generating templates.
-      kind: Service
+      kind: adapter
       operations:
       - name: render
         inputs:
@@ -1589,10 +1623,8 @@ contexts:
   infrastructure:
     implementations:
     - implements: TemplatePort
-      kind: adapter
       technology: jinja
       description: Jinja-based template rendering adapter.
     - implements: FileSystemPort
-      kind: adapter
       technology: os
       description: OS file system adapter for reading/writing files.

@@ -19,12 +19,12 @@ _TYPE_NAME_MAPPING: dict[str, str] = {
     "Tuple": "tuple",
 }
 
+
 class TypeAnnotationSpec(ValueObject):
     """Represents a type annotation."""
 
     name: str
     args: list["TypeAnnotationSpec"] = Field(default_factory=list)
-
 
     @classmethod
     def parse(cls, annotation: str) -> "TypeAnnotationSpec":
@@ -115,7 +115,9 @@ class TypeAnnotationSpec(ValueObject):
             value_spec = cls._parse_node(node.value)
             return cls(name=f"{value_spec.name}.{node.attr}")
 
-        raise ValueError(f"Unsupported AST node type: {type(node)}")
+        return cls(
+            name=ast.unparse(node),
+        )
 
     def render(self) -> str:
         """递归渲染类型字符串"""
