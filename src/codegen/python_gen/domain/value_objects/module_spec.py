@@ -5,7 +5,7 @@ Description: Represents a Python module.
 """
 
 from codegen.shared.domain.services.naming_service import NamingService
-from codegen.python_gen.domain.value_objects.enum_spec import EnumSpec
+from codegen.python_gen.domain.value_objects.enum_spec import PythonEnumSpec
 import ast
 
 from pydantic.fields import Field
@@ -23,7 +23,7 @@ class ModuleSpec(ValueObject):
     functions: list[FunctionSpec] = Field(default_factory=list)
     classes: list[ClassSpec] = Field(default_factory=list)
     imports: list[ImportFromSpec] = Field(default_factory=list)
-    enums: list[EnumSpec] = Field(default_factory=list)
+    enums: list[PythonEnumSpec] = Field(default_factory=list)
 
     @classmethod
     def create(
@@ -32,7 +32,7 @@ class ModuleSpec(ValueObject):
         functions: list[FunctionSpec] | None = None,
         classes: list[ClassSpec] | None = None,
         imports: list[ImportFromSpec] | None = None,
-        enums: list[EnumSpec] | None = None,
+        enums: list[PythonEnumSpec] | None = None,
     ) -> "ModuleSpec":
         name = NamingService().to_snake_case(name)
         return cls(
@@ -62,11 +62,11 @@ class ModuleSpec(ValueObject):
         classes: list[ClassSpec] = []
         functions: list[FunctionSpec] = []
         imports: list[ImportFromSpec] = []
-        enums: list[EnumSpec] = []
+        enums: list[PythonEnumSpec] = []
         for node in tree.body:
             if isinstance(node, ast.ClassDef):
                 if module_name == "enums":
-                    enums.append(EnumSpec.parse_ast(node))
+                    enums.append(PythonEnumSpec.parse_ast(node))
                 else:
                     classes.append(ClassSpec.parse_ast(node, source_code))
             elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):

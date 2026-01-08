@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Iterable
 
-from codegen.domain_definition.domain.value_objects.meta_port import MetaPort
+from codegen.domain_definition.domain.value_objects.meta_port import PortSpec
 from codegen.orchestration.domain.services.attribute_mapper import AttributeMapper
 from codegen.orchestration.domain.services.method_mapper import MethodMapper
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
@@ -16,7 +16,7 @@ class PortMapper:
     attribute_mapper: AttributeMapper = field(default_factory=AttributeMapper)
     method_mapper: MethodMapper = field(default_factory=MethodMapper)
 
-    def to_module_spec(self, port: MetaPort) -> ModuleSpec:
+    def to_module_spec(self, port: PortSpec) -> ModuleSpec:
         methods = [
             self.method_mapper.to_function_spec(
                 method,
@@ -34,7 +34,7 @@ class PortMapper:
         )
         return ModuleSpec.create(name=port.name, classes=[class_spec])
 
-    def to_package_spec(self, ports: Iterable[MetaPort]) -> PackageSpec:
+    def to_package_spec(self, ports: Iterable[PortSpec]) -> PackageSpec:
         modules = []
         for port in ports:
             modules.append(self.to_module_spec(port))
@@ -43,18 +43,18 @@ class PortMapper:
             modules=modules,
         )
 
-    def to_port(self, module_spec: ModuleSpec) -> MetaPort:
+    def to_port(self, module_spec: ModuleSpec) -> PortSpec:
         cls = module_spec.classes[0]
         operations = [self.method_mapper.to_method(method) for method in cls.methods]
-        return MetaPort(
+        return PortSpec(
             name=cls.name,
             description=cls.description,
             kind="Repository" if "Repository" in cls.name else "Service",
             operations=operations,
         )
 
-    def to_ports(self, package_spec: PackageSpec) -> list[MetaPort]:
-        ports: list[MetaPort] = []
+    def to_ports(self, package_spec: PackageSpec) -> list[PortSpec]:
+        ports: list[PortSpec] = []
         if package_spec.name != "ports":
             return ports
         for module in package_spec.modules:

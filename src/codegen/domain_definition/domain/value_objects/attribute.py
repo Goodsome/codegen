@@ -2,7 +2,7 @@ from pydantic import Field
 from codegen.shared.models import ValueObject
 
 
-class Attribute(ValueObject):
+class AttributeSpec(ValueObject):
     """Standard specification for a class attribute."""
 
     name: str

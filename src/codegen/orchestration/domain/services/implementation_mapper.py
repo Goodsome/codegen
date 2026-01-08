@@ -4,7 +4,7 @@ from codegen.orchestration.domain.services.method_mapper import MethodMapper
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.domain_definition.domain.value_objects.meta_implementation import (
-    MetaImplementation,
+    ImplementationSpec,
 )
 from dataclasses import dataclass
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
@@ -20,7 +20,7 @@ class ImplementationMapper:
 
     def to_module_spec(
         self,
-        implementation: MetaImplementation,
+        implementation: ImplementationSpec,
         ports_class_specs: dict[str, ClassSpec],
     ) -> ModuleSpec:
         if implementation.implements not in ports_class_specs:
@@ -45,13 +45,13 @@ class ImplementationMapper:
 
     def to_implementation(
         self, module_spec: ModuleSpec, kind: str, technology: str
-    ) -> MetaImplementation:
+    ) -> ImplementationSpec:
         for cls in module_spec.classes:
             if cls.inheritance:
                 attributes = [
                     self.attribute_mapper.to_attribute(attr) for attr in cls.attributes
                 ]
-                return MetaImplementation.create(
+                return ImplementationSpec.create(
                     implements=cls.inheritance[0],
                     kind=kind,
                     technology=technology,

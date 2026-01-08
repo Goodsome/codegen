@@ -1,4 +1,4 @@
-from codegen.domain_definition.domain.value_objects.attribute import Attribute
+from codegen.domain_definition.domain.value_objects.attribute import AttributeSpec
 from codegen.orchestration.domain.services.attribute_mapper import AttributeMapper
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
 from codegen.python_gen.domain.value_objects.function_spec import (
@@ -37,7 +37,7 @@ class MethodMapper:
         )
 
     def to_method(self, function_spec: FunctionSpec) -> MethodSpec:
-        inputs: list[Attribute] = []
+        inputs: list[AttributeSpec] = []
         for param in function_spec.parameters:
             if (
                 function_spec.function_type is FunctionType.INSTANCE_METHOD
