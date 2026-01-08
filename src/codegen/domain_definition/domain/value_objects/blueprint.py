@@ -11,7 +11,7 @@ class Blueprint(ValueObject):
 
     name: str
     description: str
-    layout: str
+    layout: str = Field(default="")
     contexts: list[BoundedContext] = Field(default_factory=list)
     bootstrap: BootstrapSpec = Field(default_factory=BootstrapSpec)
 
