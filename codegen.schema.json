@@ -1,245 +1,587 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Codegen Configuration Schema",
-  "type": "object",
-  "properties": {
-    "name": {
-      "type": "string",
-      "description": "The name of the project."
-    },
-    "layout": {
-      "type": "string",
-      "description": "The layout strategy to use for file generation."
-    },
-    "description": {
-      "type": "string",
-      "description": "A description of the project."
-    },
-    "contexts": {
-      "type": "array",
-      "items": { "$ref": "#/definitions/ContextSpec" }
-    },
-    "bootstrap": { "$ref": "#/definitions/BootstrapSpec" }
-  },
-  "required": ["name", "contexts"],
-  "definitions": {
-    "ContextSpec": {
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "description": { "type": "string" },
-        "domain": { "$ref": "#/definitions/DomainSpec" },
-        "application": { "$ref": "#/definitions/ApplicationSpec" },
-        "infrastructure": { "$ref": "#/definitions/InfrastructureSpec" }
-      },
-      "required": ["name"]
-    },
-    "DomainSpec": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "aggregates": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/ClassSpec" }
-        },
-        "value_objects": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/ClassSpec" }
-        },
-        "services": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/ServiceSpec" }
-        },
-        "ports": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/PortSpec" }
-        },
-        "enums": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/EnumSpec" }
-        }
-      }
-    },
-    "ApplicationSpec": {
-      "type": "object",
-      "properties": {
-        "use_cases": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/UseCase" }
-        }
-      }
-    },
-    "InfrastructureSpec": {
-      "type": "object",
-      "properties": {
-        "implementations": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/ImplementationSpec" }
-        }
-      }
-    },
-    "ImplementationSpec": {
-      "type": "object",
-      "properties": {
-        "kind": {
-          "type": "string",
-          "enum": ["repository", "adapter", "client", "provider", "publisher"],
-          "default": "基础设施的类型分类"
-        },
-        "implements": {
-          "type": "string",
-          "description": "实现的DomainPort名称"
-        },
-        "technology": {
-          "type": "string",
-          "description": "实现的技术栈"
-        },
-        "description": { "type": "string" },
-        "attributes": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/Attribute" }
-        }
-      },
-      "required": ["kind", "implements", "technology"]
-    },
-    "BootstrapSpec": {
-      "type": "object",
-      "properties": {
-        "bindings": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/BindingSpec" }
-        }
-      }
-    },
-    "BindingSpec": {
-      "type": "object",
-      "properties": {
-        "port": { "type": "string" },
-        "implementation": { "type": "string" }
-      }
-    },
-    "Attribute": {
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "type": { "type": "string" },
-        "description": { "type": "string" }
-      },
-      "required": ["name", "type"]
-    },
-    "MethodSpec": {
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "description": { "type": "string" },
-        "inputs": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/Attribute" }
-        },
-        "output": {
-          "type": "object",
-          "properties": {
-            "type": { "type": "string" }
+  "$defs":{
+    "AggregateSpec":{
+      "additionalProperties":false,
+      "description":"Specification of a domain aggregate to be generated.",
+      "properties":{
+        "attributes":{
+          "items":{
+            "$ref":"#/$defs/AttributeSpec"
           },
-          "required": ["type"]
-        }
-      },
-      "required": ["name"]
-    },
-    "ClassSpec": {
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "description": { "type": "string" },
-        "implements": { "type": "string" },
-        "attributes": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/Attribute" }
+          "title":"Attributes",
+          "type":"array"
         },
-        "behaviors": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/MethodSpec" }
+        "behaviors":{
+          "items":{
+            "$ref":"#/$defs/MethodSpec"
+          },
+          "title":"Behaviors",
+          "type":"array"
         },
-        "operations": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/MethodSpec" }
+        "description":{
+          "title":"Description",
+          "type":"string"
+        },
+        "name":{
+          "title":"Name",
+          "type":"string"
         }
       },
-      "required": ["name"]
+      "required":[
+        "name"
+      ],
+      "title":"AggregateSpec",
+      "type":"object"
     },
-    "ServiceSpec": {
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "description": { "type": "string" },
-        "operations": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/MethodSpec" }
+    "ApplicationSpec":{
+      "additionalProperties":false,
+      "description":"Specification of an application to be generated.",
+      "properties":{
+        "ports":{
+          "items":{
+            "$ref":"#/$defs/PortSpec"
+          },
+          "title":"Ports",
+          "type":"array"
+        },
+        "use_cases":{
+          "items":{
+            "$ref":"#/$defs/UseCaseSpec"
+          },
+          "title":"Use Cases",
+          "type":"array"
         }
       },
-      "required": ["name"]
+      "title":"ApplicationSpec",
+      "type":"object"
     },
-    "PortSpec": {
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "description": { "type": "string" },
-        "kind": { "type": "string" },
-        "operations": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/MethodSpec" }
+    "AttributeSpec":{
+      "additionalProperties":false,
+      "description":"Standard specification for a class attribute.",
+      "properties":{
+        "description":{
+          "title":"Description",
+          "type":"string"
+        },
+        "name":{
+          "title":"Name",
+          "type":"string"
+        },
+        "optional":{
+          "title":"Optional",
+          "type":"boolean"
+        },
+        "type":{
+          "title":"Type",
+          "type":"string"
         }
       },
-      "required": ["name"]
+      "required":[
+        "name",
+        "type"
+      ],
+      "title":"AttributeSpec",
+      "type":"object"
     },
-    "EnumSpec": {
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "description": { "type": "string" },
-        "members": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/EnumMemberSpec" }
+    "BootstrapSpec":{
+      "additionalProperties":false,
+      "description":"Specification of the bootstrap configuration.",
+      "properties":{
+        "bindings":{
+          "items":{
+            "$ref":"#/$defs/PortBinding"
+          },
+          "title":"Bindings",
+          "type":"array"
         }
       },
-      "required": ["name"]
+      "title":"BootstrapSpec",
+      "type":"object"
     },
-    "EnumMemberSpec": {
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "value": { "type": "string" }
+    "BoundedContext":{
+      "additionalProperties":false,
+      "description":"A logical boundary within the system.",
+      "properties":{
+        "application":{
+          "$ref":"#/$defs/ApplicationSpec"
+        },
+        "description":{
+          "title":"Description",
+          "type":"string"
+        },
+        "domain":{
+          "$ref":"#/$defs/DomainSpec"
+        },
+        "infrastructure":{
+          "$ref":"#/$defs/InfrastructureSpec"
+        },
+        "name":{
+          "title":"Name",
+          "type":"string"
+        }
       },
-      "required": ["name"]
+      "required":[
+        "name"
+      ],
+      "title":"BoundedContext",
+      "type":"object"
     },
-    "UseCase": {
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "kind": { "type": "string", "enum": ["command", "query"] },
-        "description": { "type": "string" },
-        "command": {
-          "type": "object",
-          "properties": {
-            "name": { "type": "string" },
-            "attributes": {
-              "type": "array",
-              "items": { "$ref": "#/definitions/Attribute" }
+    "DomainSpec":{
+      "additionalProperties":false,
+      "description":"Specification of a domain to be generated.",
+      "properties":{
+        "aggregates":{
+          "items":{
+            "$ref":"#/$defs/AggregateSpec"
+          },
+          "title":"Aggregates",
+          "type":"array"
+        },
+        "enums":{
+          "items":{
+            "$ref":"#/$defs/EnumSpec"
+          },
+          "title":"Enums",
+          "type":"array"
+        },
+        "ports":{
+          "items":{
+            "$ref":"#/$defs/PortSpec"
+          },
+          "title":"Ports",
+          "type":"array"
+        },
+        "services":{
+          "items":{
+            "$ref":"#/$defs/ServiceSpec"
+          },
+          "title":"Services",
+          "type":"array"
+        },
+        "value_objects":{
+          "items":{
+            "$ref":"#/$defs/ValueObjectSpec"
+          },
+          "title":"Value Objects",
+          "type":"array"
+        }
+      },
+      "title":"DomainSpec",
+      "type":"object"
+    },
+    "EnumMemberSpec":{
+      "additionalProperties":false,
+      "description":"Specification of an enum member to be generated.",
+      "properties":{
+        "description":{
+          "title":"Description",
+          "type":"string"
+        },
+        "name":{
+          "title":"Name",
+          "type":"string"
+        },
+        "value":{
+          "anyOf":[
+            {
+              "type":"string"
+            },
+            {
+              "type":"integer"
+            },
+            {
+              "type":"null"
             }
-          }
-        },
-        "result": {
-          "type": "object",
-          "properties": {
-            "name": { "type": "string" },
-            "attributes": {
-              "type": "array",
-              "items": { "$ref": "#/definitions/Attribute" }
-            }
-          }
+          ],
+          "default":null,
+          "title":"Value"
         }
       },
-      "required": ["name"]
+      "required":[
+        "name"
+      ],
+      "title":"EnumMemberSpec",
+      "type":"object"
+    },
+    "EnumSpec":{
+      "additionalProperties":false,
+      "description":"Specification of an enum to be generated.",
+      "properties":{
+        "description":{
+          "title":"Description",
+          "type":"string"
+        },
+        "members":{
+          "items":{
+            "$ref":"#/$defs/EnumMemberSpec"
+          },
+          "title":"Members",
+          "type":"array"
+        },
+        "name":{
+          "title":"Name",
+          "type":"string"
+        }
+      },
+      "required":[
+        "name",
+        "members"
+      ],
+      "title":"EnumSpec",
+      "type":"object"
+    },
+    "ImplementationSpec":{
+      "additionalProperties":false,
+      "description":"Specification of an implementation to be generated.",
+      "properties":{
+        "attributes":{
+          "items":{
+            "$ref":"#/$defs/AttributeSpec"
+          },
+          "title":"Attributes",
+          "type":"array"
+        },
+        "description":{
+          "title":"Description",
+          "type":"string"
+        },
+        "implements":{
+          "title":"Implements",
+          "type":"string"
+        },
+        "kind":{
+          "$ref":"#/$defs/ImplementationType"
+        },
+        "technology":{
+          "title":"Technology",
+          "type":"string"
+        }
+      },
+      "required":[
+        "implements",
+        "kind",
+        "technology"
+      ],
+      "title":"ImplementationSpec",
+      "type":"object"
+    },
+    "ImplementationType":{
+      "enum":[
+        "adapter",
+        "repository",
+        "client",
+        "provider"
+      ],
+      "title":"ImplementationType",
+      "type":"string"
+    },
+    "InfrastructureSpec":{
+      "additionalProperties":false,
+      "description":"Specification of an infrastructure to be generated.",
+      "properties":{
+        "implementations":{
+          "items":{
+            "$ref":"#/$defs/ImplementationSpec"
+          },
+          "title":"Implementations",
+          "type":"array"
+        }
+      },
+      "title":"InfrastructureSpec",
+      "type":"object"
+    },
+    "MethodOutput":{
+      "additionalProperties":false,
+      "description":"Specification of the output of a method.",
+      "properties":{
+        "type":{
+          "title":"Type",
+          "type":"string"
+        }
+      },
+      "required":[
+        "type"
+      ],
+      "title":"MethodOutput",
+      "type":"object"
+    },
+    "MethodSpec":{
+      "additionalProperties":false,
+      "description":"Standard specification for a class method.",
+      "properties":{
+        "description":{
+          "title":"Description",
+          "type":"string"
+        },
+        "inputs":{
+          "items":{
+            "$ref":"#/$defs/AttributeSpec"
+          },
+          "title":"Inputs",
+          "type":"array"
+        },
+        "name":{
+          "title":"Name",
+          "type":"string"
+        },
+        "output":{
+          "$ref":"#/$defs/MethodOutput"
+        }
+      },
+      "required":[
+        "name",
+        "inputs",
+        "output"
+      ],
+      "title":"MethodSpec",
+      "type":"object"
+    },
+    "PortBinding":{
+      "additionalProperties":false,
+      "description":"Binding between a port and an adapter.",
+      "properties":{
+        "implementation":{
+          "title":"Implementation",
+          "type":"string"
+        },
+        "port":{
+          "title":"Port",
+          "type":"string"
+        }
+      },
+      "required":[
+        "port",
+        "implementation"
+      ],
+      "title":"PortBinding",
+      "type":"object"
+    },
+    "PortSpec":{
+      "additionalProperties":false,
+      "description":"Specification of a domain port to be generated.",
+      "properties":{
+        "description":{
+          "title":"Description",
+          "type":"string"
+        },
+        "kind":{
+          "title":"Kind",
+          "type":"string"
+        },
+        "name":{
+          "title":"Name",
+          "type":"string"
+        },
+        "operations":{
+          "items":{
+            "$ref":"#/$defs/MethodSpec"
+          },
+          "title":"Operations",
+          "type":"array"
+        }
+      },
+      "required":[
+        "name",
+        "kind"
+      ],
+      "title":"PortSpec",
+      "type":"object"
+    },
+    "ServiceSpec":{
+      "additionalProperties":false,
+      "description":"Specification of a domain service to be generated.",
+      "properties":{
+        "attributes":{
+          "items":{
+            "$ref":"#/$defs/AttributeSpec"
+          },
+          "title":"Attributes",
+          "type":"array"
+        },
+        "description":{
+          "title":"Description",
+          "type":"string"
+        },
+        "name":{
+          "title":"Name",
+          "type":"string"
+        },
+        "operations":{
+          "items":{
+            "$ref":"#/$defs/MethodSpec"
+          },
+          "title":"Operations",
+          "type":"array"
+        }
+      },
+      "required":[
+        "name"
+      ],
+      "title":"ServiceSpec",
+      "type":"object"
+    },
+    "UseCaseCommandSpec":{
+      "additionalProperties":false,
+      "description":"Specification of a use case command to be generated.",
+      "properties":{
+        "attributes":{
+          "items":{
+            "$ref":"#/$defs/AttributeSpec"
+          },
+          "title":"Attributes",
+          "type":"array"
+        },
+        "name":{
+          "title":"Name",
+          "type":"string"
+        }
+      },
+      "title":"UseCaseCommandSpec",
+      "type":"object"
+    },
+    "UseCaseQuerySpec":{
+      "additionalProperties":false,
+      "description":"Specification of a use case command to be generated.",
+      "properties":{
+        "attributes":{
+          "items":{
+            "$ref":"#/$defs/AttributeSpec"
+          },
+          "title":"Attributes",
+          "type":"array"
+        },
+        "name":{
+          "title":"Name",
+          "type":"string"
+        }
+      },
+      "title":"UseCaseQuerySpec",
+      "type":"object"
+    },
+    "UseCaseResultSpec":{
+      "additionalProperties":false,
+      "description":"Specification of a use case result to be generated.",
+      "properties":{
+        "attributes":{
+          "items":{
+            "$ref":"#/$defs/AttributeSpec"
+          },
+          "title":"Attributes",
+          "type":"array"
+        },
+        "name":{
+          "title":"Name",
+          "type":"string"
+        }
+      },
+      "title":"UseCaseResultSpec",
+      "type":"object"
+    },
+    "UseCaseSpec":{
+      "additionalProperties":false,
+      "description":"Specification of a use case to be generated.",
+      "properties":{
+        "attributes":{
+          "items":{
+            "$ref":"#/$defs/AttributeSpec"
+          },
+          "title":"Attributes",
+          "type":"array"
+        },
+        "command":{
+          "$ref":"#/$defs/UseCaseCommandSpec"
+        },
+        "description":{
+          "title":"Description",
+          "type":"string"
+        },
+        "kind":{
+          "title":"Kind",
+          "type":"string"
+        },
+        "name":{
+          "title":"Name",
+          "type":"string"
+        },
+        "query":{
+          "$ref":"#/$defs/UseCaseQuerySpec"
+        },
+        "result":{
+          "$ref":"#/$defs/UseCaseResultSpec"
+        }
+      },
+      "required":[
+        "name",
+        "kind"
+      ],
+      "title":"UseCaseSpec",
+      "type":"object"
+    },
+    "ValueObjectSpec":{
+      "additionalProperties":false,
+      "description":"Specification of a value object to be generated.",
+      "properties":{
+        "attributes":{
+          "items":{
+            "$ref":"#/$defs/AttributeSpec"
+          },
+          "title":"Attributes",
+          "type":"array"
+        },
+        "behaviors":{
+          "items":{
+            "$ref":"#/$defs/MethodSpec"
+          },
+          "title":"Behaviors",
+          "type":"array"
+        },
+        "description":{
+          "title":"Description",
+          "type":"string"
+        },
+        "name":{
+          "title":"Name",
+          "type":"string"
+        }
+      },
+      "required":[
+        "name"
+      ],
+      "title":"ValueObjectSpec",
+      "type":"object"
     }
-  }
+  },
+  "additionalProperties":false,
+  "description":"Root of the generation model. Represents the entire project definition.",
+  "properties":{
+    "bootstrap":{
+      "$ref":"#/$defs/BootstrapSpec"
+    },
+    "contexts":{
+      "items":{
+        "$ref":"#/$defs/BoundedContext"
+      },
+      "title":"Contexts",
+      "type":"array"
+    },
+    "description":{
+      "title":"Description",
+      "type":"string"
+    },
+    "layout":{
+      "default":"",
+      "title":"Layout",
+      "type":"string"
+    },
+    "name":{
+      "title":"Name",
+      "type":"string"
+    }
+  },
+  "required":[
+    "name",
+    "description"
+  ],
+  "title":"Blueprint",
+  "type":"object"
 }
