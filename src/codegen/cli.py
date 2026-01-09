@@ -1,21 +1,50 @@
-from codegen.orchestration.application.use_cases.update_blueprint import (
-    UpdateBlueprintCommand,
-)
+from contextlib import contextmanager
+from importlib import resources
+from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
+from typing import Optional
+
+import typer
+
+from codegen.bootstrap import Container
 from codegen.orchestration.application.use_cases.generate_project import (
     GenerateProjectCommand,
 )
-import typer
-from pathlib import Path
-from typing import Optional
-from codegen.bootstrap import Container
-from importlib import resources
-
-from contextlib import contextmanager
+from codegen.orchestration.application.use_cases.update_blueprint import (
+    UpdateBlueprintCommand,
+)
 
 # 创建 Typer 应用实例
 app = typer.Typer(
     name="codegen", help="DDD Project Scaffolding Tool", add_completion=False
 )
+
+
+def _get_version() -> str:
+    try:
+        return version("codegen")
+    except PackageNotFoundError:
+        return "0.0.0+local"
+
+
+def version_callback(value: bool):
+    if value:
+        typer.echo(_get_version())
+        raise typer.Exit()
+
+
+@app.callback()
+def main(
+    version: bool = typer.Option(
+        False,
+        "--version",
+        "-V",
+        callback=version_callback,
+        is_eager=True,
+        help="Show version and exit",
+    ),
+):
+    pass
 
 
 @contextmanager
@@ -39,15 +68,19 @@ def get_container(
         }
         yield Container(config=config)
 
+
 def get_default_package_path() -> Path:
     cwd = Path.cwd()
     src_dir = cwd / "src"
     if src_dir.exists():
-        pkgs = [p for p in src_dir.iterdir() if p.is_dir() and not p.name.startswith(".")] 
+        pkgs = [
+            p for p in src_dir.iterdir() if p.is_dir() and not p.name.startswith(".")
+        ]
         path = pkgs[0] if pkgs else src_dir
     else:
         path = cwd
     return path
+
 
 @app.command()
 def generate(
