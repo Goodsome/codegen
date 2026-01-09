@@ -1,6 +1,6 @@
 from typing import Iterable
 
-from codegen.domain_definition.domain.value_objects.meta_value_object import (
+from codegen.domain_definition.domain.value_objects.value_object_spec import (
     ValueObjectSpec,
 )
 from dataclasses import dataclass, field

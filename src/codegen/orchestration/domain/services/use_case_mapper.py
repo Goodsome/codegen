@@ -1,11 +1,11 @@
-from codegen.domain_definition.domain.value_objects.meta_use_case_command import (
+from codegen.domain_definition.domain.value_objects.use_case_command_spec import (
     UseCaseCommandSpec,
 )
 from codegen.orchestration.domain.services.method_mapper import MethodMapper
 from dataclasses import dataclass, field
 from codegen.orchestration.domain.services.attribute_mapper import AttributeMapper
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
-from codegen.domain_definition.domain.value_objects.meta_use_case import UseCaseSpec
+from codegen.domain_definition.domain.value_objects.use_case_spec import UseCaseSpec
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.function_spec import (
     FunctionSpec,
@@ -113,14 +113,14 @@ class UseCaseMapper:
             elif cls.name.endswith("Query"):
                 kind = "query"
                 query_attributes = self.attribute_mapper.to_attributes(cls.attributes)
-                from codegen.domain_definition.domain.value_objects.meta_use_case_query import (
+                from codegen.domain_definition.domain.value_objects.use_case_query_spec import (
                     UseCaseQuerySpec,
                 )
 
                 query = UseCaseQuerySpec(attributes=query_attributes)
             elif cls.name.endswith("Result"):
                 result_attributes = self.attribute_mapper.to_attributes(cls.attributes)
-                from codegen.domain_definition.domain.value_objects.meta_use_case_result import (
+                from codegen.domain_definition.domain.value_objects.use_case_result_spec import (
                     UseCaseResultSpec,
                 )
 

@@ -1,11 +1,11 @@
 from typing import Callable
 
 from codegen.domain_definition.domain.enums import PortType
-from codegen.domain_definition.domain.value_objects.meta_port import PortSpec
+from codegen.domain_definition.domain.value_objects.port_spec import PortSpec
 from codegen.orchestration.domain.services.implementation_mapper import (
     ImplementationMapper,
 )
-from codegen.domain_definition.domain.value_objects.meta_infrastructure import (
+from codegen.domain_definition.domain.value_objects.infrastructure_spec import (
     InfrastructureSpec,
 )
 from dataclasses import dataclass, field

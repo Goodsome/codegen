@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Iterable
 
-from codegen.domain_definition.domain.value_objects.meta_port import PortSpec
+from codegen.domain_definition.domain.value_objects.port_spec import PortSpec
 from codegen.orchestration.domain.services.attribute_mapper import AttributeMapper
 from codegen.orchestration.domain.services.method_mapper import MethodMapper
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec

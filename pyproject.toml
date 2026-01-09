@@ -38,9 +38,3 @@ packages = ["src/codegen"]
 include = [
     "/src/codegen/python_gen/templates",
 ]
-
-[tool.basedpyright]
-include = ["src"]  # 替换为你源代码所在的文件夹
-executionEnvironments = [
-  { root = "." }
-]

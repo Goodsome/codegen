@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from codegen.domain_definition.domain.value_objects.meta_enum import EnumSpec
-from codegen.domain_definition.domain.value_objects.meta_enum_member import (
+from codegen.domain_definition.domain.value_objects.enum_spec import EnumSpec
+from codegen.domain_definition.domain.value_objects.enum_member_spec import (
     EnumMemberSpec,
 )
 from codegen.python_gen.domain.value_objects.enum_spec import PythonEnumSpec

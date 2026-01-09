@@ -1,7 +1,7 @@
 from dataclasses import field
 from typing import Iterable
 
-from codegen.domain_definition.domain.value_objects.meta_aggregate import AggregateSpec
+from codegen.domain_definition.domain.value_objects.aggregate_spec import AggregateSpec
 from codegen.orchestration.domain.services.attribute_mapper import AttributeMapper
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.orchestration.domain.services.method_mapper import MethodMapper

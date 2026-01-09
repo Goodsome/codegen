@@ -1,6 +1,6 @@
 from codegen.domain_definition.domain.value_objects.method_output import MethodOutput
 from pydantic import Field
-from codegen.domain_definition.domain.value_objects.attribute import AttributeSpec
+from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
 from codegen.shared.models import ValueObject
 
 

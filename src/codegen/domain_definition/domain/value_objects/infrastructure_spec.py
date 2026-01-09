@@ -1,6 +1,6 @@
 from pydantic import Field
 from codegen.shared.models import ValueObject
-from codegen.domain_definition.domain.value_objects.meta_implementation import (
+from codegen.domain_definition.domain.value_objects.implementation_spec import (
     ImplementationSpec,
 )
 
