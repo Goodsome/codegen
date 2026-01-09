@@ -2,7 +2,7 @@ from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from typing import Iterable
 from codegen.orchestration.domain.services.attribute_mapper import AttributeMapper
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
-from codegen.domain_definition.domain.value_objects.meta_service import ServiceSpec
+from codegen.domain_definition.domain.value_objects.service_spec import ServiceSpec
 from dataclasses import dataclass, field
 from codegen.orchestration.domain.services.method_mapper import MethodMapper
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec

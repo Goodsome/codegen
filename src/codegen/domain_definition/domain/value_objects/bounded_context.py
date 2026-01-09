@@ -2,14 +2,14 @@ from functools import cached_property
 
 from pydantic import Field
 
-from codegen.domain_definition.domain.value_objects.meta_application import (
+from codegen.domain_definition.domain.value_objects.application_spec import (
     ApplicationSpec,
 )
-from codegen.domain_definition.domain.value_objects.meta_domain import DomainSpec
-from codegen.domain_definition.domain.value_objects.meta_infrastructure import (
+from codegen.domain_definition.domain.value_objects.domain_spec import DomainSpec
+from codegen.domain_definition.domain.value_objects.infrastructure_spec import (
     InfrastructureSpec,
 )
-from codegen.domain_definition.domain.value_objects.meta_port import PortSpec
+from codegen.domain_definition.domain.value_objects.port_spec import PortSpec
 from codegen.shared.models import ValueObject
 
 

@@ -2,7 +2,7 @@ from codegen.domain_definition.domain.value_objects.bounded_context import (
     BoundedContext,
 )
 from codegen.shared.models import ValueObject
-from codegen.domain_definition.domain.value_objects.meta_bootstrap import BootstrapSpec
+from codegen.domain_definition.domain.value_objects.bootstrap_spec import BootstrapSpec
 from pydantic import Field
 
 

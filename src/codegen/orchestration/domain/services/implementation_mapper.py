@@ -1,13 +1,13 @@
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
 from dataclasses import field
 
-from codegen.domain_definition.domain.value_objects.meta_port import PortSpec
+from codegen.domain_definition.domain.value_objects.port_spec import PortSpec
 from codegen.orchestration.domain.services.attribute_mapper import AttributeMapper
 from codegen.orchestration.domain.services.method_mapper import MethodMapper
 from codegen.python_gen.domain.enums import FunctionType
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
-from codegen.domain_definition.domain.value_objects.meta_implementation import (
+from codegen.domain_definition.domain.value_objects.implementation_spec import (
     ImplementationSpec,
 )
 from dataclasses import dataclass

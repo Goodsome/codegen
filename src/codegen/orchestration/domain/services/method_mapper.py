@@ -1,4 +1,4 @@
-from codegen.domain_definition.domain.value_objects.attribute import AttributeSpec
+from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
 from codegen.orchestration.domain.services.attribute_mapper import AttributeMapper
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
 from codegen.python_gen.domain.value_objects.function_spec import (

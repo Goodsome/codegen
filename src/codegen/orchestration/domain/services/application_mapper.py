@@ -1,6 +1,6 @@
 from codegen.orchestration.domain.services.use_case_mapper import UseCaseMapper
 from codegen.orchestration.domain.services.port_mapper import PortMapper
-from codegen.domain_definition.domain.value_objects.meta_application import (
+from codegen.domain_definition.domain.value_objects.application_spec import (
     ApplicationSpec,
 )
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec

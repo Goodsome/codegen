@@ -1,13 +1,13 @@
-from codegen.domain_definition.domain.value_objects.meta_use_case_result import (
+from codegen.domain_definition.domain.value_objects.use_case_result_spec import (
     UseCaseResultSpec,
 )
 from pydantic import Field
 from codegen.shared.models import ValueObject
-from codegen.domain_definition.domain.value_objects.attribute import AttributeSpec
-from codegen.domain_definition.domain.value_objects.meta_use_case_query import (
+from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
+from codegen.domain_definition.domain.value_objects.use_case_query_spec import (
     UseCaseQuerySpec,
 )
-from codegen.domain_definition.domain.value_objects.meta_use_case_command import (
+from codegen.domain_definition.domain.value_objects.use_case_command_spec import (
     UseCaseCommandSpec,
 )
 

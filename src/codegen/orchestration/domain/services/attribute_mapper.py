@@ -3,7 +3,7 @@ from codegen.python_gen.domain.value_objects.parameter_spec import (
     ParameterSpec,
 )
 from codegen.python_gen.domain.enums import FieldFlavor
-from codegen.domain_definition.domain.value_objects.attribute import AttributeSpec
+from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
 
 
 @dataclass

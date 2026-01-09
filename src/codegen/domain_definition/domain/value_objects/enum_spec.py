@@ -1,6 +1,6 @@
 from codegen.shared.models import ValueObject
 from pydantic import Field
-from codegen.domain_definition.domain.value_objects.meta_enum_member import (
+from codegen.domain_definition.domain.value_objects.enum_member_spec import (
     EnumMemberSpec,
 )
 
