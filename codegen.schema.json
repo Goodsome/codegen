@@ -126,6 +126,29 @@
       "title":"BoundedContext",
       "type":"object"
     },
+    "DataContractSpec":{
+      "additionalProperties":false,
+      "description":"Generic data contract specification for use case command/query/result.",
+      "properties":{
+        "attributes":{
+          "items":{
+            "$ref":"#/$defs/AttributeSpec"
+          },
+          "title":"Attributes",
+          "type":"array"
+        },
+        "description":{
+          "title":"Description",
+          "type":"string"
+        },
+        "name":{
+          "title":"Name",
+          "type":"string"
+        }
+      },
+      "title":"DataContractSpec",
+      "type":"object"
+    },
     "DomainSpec":{
       "additionalProperties":false,
       "description":"Specification of a domain to be generated.",
@@ -422,63 +445,6 @@
       "title":"ServiceSpec",
       "type":"object"
     },
-    "UseCaseCommandSpec":{
-      "additionalProperties":false,
-      "description":"Specification of a use case command to be generated.",
-      "properties":{
-        "attributes":{
-          "items":{
-            "$ref":"#/$defs/AttributeSpec"
-          },
-          "title":"Attributes",
-          "type":"array"
-        },
-        "name":{
-          "title":"Name",
-          "type":"string"
-        }
-      },
-      "title":"UseCaseCommandSpec",
-      "type":"object"
-    },
-    "UseCaseQuerySpec":{
-      "additionalProperties":false,
-      "description":"Specification of a use case command to be generated.",
-      "properties":{
-        "attributes":{
-          "items":{
-            "$ref":"#/$defs/AttributeSpec"
-          },
-          "title":"Attributes",
-          "type":"array"
-        },
-        "name":{
-          "title":"Name",
-          "type":"string"
-        }
-      },
-      "title":"UseCaseQuerySpec",
-      "type":"object"
-    },
-    "UseCaseResultSpec":{
-      "additionalProperties":false,
-      "description":"Specification of a use case result to be generated.",
-      "properties":{
-        "attributes":{
-          "items":{
-            "$ref":"#/$defs/AttributeSpec"
-          },
-          "title":"Attributes",
-          "type":"array"
-        },
-        "name":{
-          "title":"Name",
-          "type":"string"
-        }
-      },
-      "title":"UseCaseResultSpec",
-      "type":"object"
-    },
     "UseCaseSpec":{
       "additionalProperties":false,
       "description":"Specification of a use case to be generated.",
@@ -491,7 +457,7 @@
           "type":"array"
         },
         "command":{
-          "$ref":"#/$defs/UseCaseCommandSpec"
+          "$ref":"#/$defs/DataContractSpec"
         },
         "description":{
           "title":"Description",
@@ -506,10 +472,10 @@
           "type":"string"
         },
         "query":{
-          "$ref":"#/$defs/UseCaseQuerySpec"
+          "$ref":"#/$defs/DataContractSpec"
         },
         "result":{
-          "$ref":"#/$defs/UseCaseResultSpec"
+          "$ref":"#/$defs/DataContractSpec"
         }
       },
       "required":[

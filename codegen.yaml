@@ -134,6 +134,18 @@ contexts:
           type: str
         output:
           type: PortSpec
+    - name: DataContractSpec
+      description: Generic data contract specification for use case command/query/result.
+      attributes:
+      - name: name
+        type: str
+        optional: true
+      - name: description
+        type: str
+        optional: true
+      - name: attributes
+        type: list[AttributeSpec]
+        optional: true
     - name: DomainSpec
       description: Specification of a domain to be generated.
       attributes:
@@ -278,33 +290,6 @@ contexts:
       - name: operations
         type: list[MethodSpec]
         optional: true
-    - name: UseCaseCommandSpec
-      description: Specification of a use case command to be generated.
-      attributes:
-      - name: name
-        type: str
-        optional: true
-      - name: attributes
-        type: list[AttributeSpec]
-        optional: true
-    - name: UseCaseQuerySpec
-      description: Specification of a use case command to be generated.
-      attributes:
-      - name: name
-        type: str
-        optional: true
-      - name: attributes
-        type: list[AttributeSpec]
-        optional: true
-    - name: UseCaseResultSpec
-      description: Specification of a use case result to be generated.
-      attributes:
-      - name: name
-        type: str
-        optional: true
-      - name: attributes
-        type: list[AttributeSpec]
-        optional: true
     - name: UseCaseSpec
       description: Specification of a use case to be generated.
       attributes:
@@ -319,13 +304,13 @@ contexts:
         type: str
         optional: true
       - name: command
-        type: UseCaseCommandSpec
+        type: DataContractSpec
         optional: true
       - name: query
-        type: UseCaseQuerySpec
+        type: DataContractSpec
         optional: true
       - name: result
-        type: UseCaseResultSpec
+        type: DataContractSpec
         optional: true
       behaviors:
       - name: create
@@ -341,11 +326,11 @@ contexts:
         - name: description
           type: str
         - name: command
-          type: UseCaseCommandSpec | None
+          type: DataContractSpec | None
         - name: query
-          type: UseCaseQuerySpec | None
+          type: DataContractSpec | None
         - name: result
-          type: UseCaseResultSpec | None
+          type: DataContractSpec | None
         output:
           type: Any
     - name: ValueObjectSpec

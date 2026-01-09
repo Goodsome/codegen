@@ -1,11 +1,11 @@
-from codegen.domain_definition.domain.value_objects.use_case_command_spec import (
-    UseCaseCommandSpec,
-)
 from codegen.orchestration.domain.services.method_mapper import MethodMapper
 from dataclasses import dataclass, field
 from codegen.orchestration.domain.services.attribute_mapper import AttributeMapper
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.domain_definition.domain.value_objects.use_case_spec import UseCaseSpec
+from codegen.domain_definition.domain.value_objects.data_contract_spec import (
+    DataContractSpec,
+)
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.function_spec import (
     FunctionSpec,
@@ -109,22 +109,14 @@ class UseCaseMapper:
             if cls.name.endswith("Command"):
                 kind = "command"
                 command_attributes = self.attribute_mapper.to_attributes(cls.attributes)
-                command = UseCaseCommandSpec(attributes=command_attributes)
+                command = DataContractSpec(attributes=command_attributes)
             elif cls.name.endswith("Query"):
                 kind = "query"
                 query_attributes = self.attribute_mapper.to_attributes(cls.attributes)
-                from codegen.domain_definition.domain.value_objects.use_case_query_spec import (
-                    UseCaseQuerySpec,
-                )
-
-                query = UseCaseQuerySpec(attributes=query_attributes)
+                query = DataContractSpec(attributes=query_attributes)
             elif cls.name.endswith("Result"):
                 result_attributes = self.attribute_mapper.to_attributes(cls.attributes)
-                from codegen.domain_definition.domain.value_objects.use_case_result_spec import (
-                    UseCaseResultSpec,
-                )
-
-                result = UseCaseResultSpec(attributes=result_attributes)
+                result = DataContractSpec(attributes=result_attributes)
             else:
                 uc_name = cls.name
                 uc_attributes = self.attribute_mapper.to_attributes(cls.attributes)
