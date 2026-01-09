@@ -1,6 +1,6 @@
 [project]
 name = "codegen"
-version = "0.1.5"
+version = "0.1.6"
 description = "Add your description here"
 requires-python = ">=3.13"
 dependencies = [
@@ -37,4 +37,10 @@ packages = ["src/codegen"]
 [tool.hatch.build.targets.sdist]
 include = [
     "/src/codegen/python_gen/templates",
+]
+
+[tool.basedpyright]
+include = ["src"]  # 替换为你源代码所在的文件夹
+executionEnvironments = [
+  { root = "." }
 ]

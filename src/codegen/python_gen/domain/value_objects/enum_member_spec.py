@@ -4,7 +4,7 @@ from codegen.shared.models import ValueObject
 from pydantic import Field
 
 
-class EnumMemberSpec(ValueObject):
+class PythonEnumMemberSpec(ValueObject):
     """Represents an enum member in a Python module."""
 
     name: str
@@ -14,11 +14,11 @@ class EnumMemberSpec(ValueObject):
     @classmethod
     def create(
         cls, name: str, value: str | int | None = None, description: str = ""
-    ) -> "EnumMemberSpec":
+    ) -> "PythonEnumMemberSpec":
         return cls(name=name, value=value, description=description)
 
     @classmethod
-    def parse_ast(cls, node: ast.Assign | ast.AnnAssign) -> "EnumMemberSpec":
+    def parse_ast(cls, node: ast.Assign | ast.AnnAssign) -> "PythonEnumMemberSpec":
         description = ""
         # 尝试获取紧跟在成员定义后的文档字符串（通常在 body 中的下一个节点）
         # 但在普通的 Assignment 中，ast 不会直接把后面的字符串作为 docstring

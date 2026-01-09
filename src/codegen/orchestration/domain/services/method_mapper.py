@@ -1,4 +1,4 @@
-from codegen.domain_definition.domain.value_objects.attribute import Attribute
+from codegen.domain_definition.domain.value_objects.attribute import AttributeSpec
 from codegen.orchestration.domain.services.attribute_mapper import AttributeMapper
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
 from codegen.python_gen.domain.value_objects.function_spec import (
@@ -22,22 +22,27 @@ class MethodMapper:
         method: MethodSpec,
         function_type: FunctionType = FunctionType.FUNCTION,
         is_abstract: bool = False,
+        is_private: bool = False,
     ) -> FunctionSpec:
         parameters = [
             self.attribute_mapper.to_parameter_spec(attr) for attr in method.inputs
         ]
         decorators = ["abstractmethod"] if is_abstract else []
+        function_name = method.name
+        if is_private and not function_name.startswith("_"):
+            function_name = "_" + function_name
         return FunctionSpec.create(
-            name=method.name,
+            name=function_name,
             parameters=parameters,
             decorators=decorators,
             return_annotation=TypeAnnotationSpec.parse(method.output.type),
             function_type=function_type,
             suite="...",
+            is_private=is_private,
         )
 
     def to_method(self, function_spec: FunctionSpec) -> MethodSpec:
-        inputs: list[Attribute] = []
+        inputs: list[AttributeSpec] = []
         for param in function_spec.parameters:
             if (
                 function_spec.function_type is FunctionType.INSTANCE_METHOD

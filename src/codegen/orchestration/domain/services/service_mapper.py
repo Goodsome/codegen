@@ -2,7 +2,7 @@ from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from typing import Iterable
 from codegen.orchestration.domain.services.attribute_mapper import AttributeMapper
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
-from codegen.domain_definition.domain.value_objects.meta_service import MetaService
+from codegen.domain_definition.domain.value_objects.meta_service import ServiceSpec
 from dataclasses import dataclass, field
 from codegen.orchestration.domain.services.method_mapper import MethodMapper
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
@@ -15,7 +15,7 @@ class ServiceMapper:
     attribute_mapper: AttributeMapper = field(default_factory=AttributeMapper)
     method_mapper: MethodMapper = field(default_factory=MethodMapper)
 
-    def to_module_spec(self, service: MetaService) -> ModuleSpec:
+    def to_module_spec(self, service: ServiceSpec) -> ModuleSpec:
         attributes = [
             self.attribute_mapper.to_parameter_spec(
                 attr,
@@ -38,28 +38,28 @@ class ServiceMapper:
         )
         return ModuleSpec.create(name=service.name, classes=[class_spec])
 
-    def to_package_spec(self, services: Iterable[MetaService]) -> PackageSpec:
+    def to_package_spec(self, services: Iterable[ServiceSpec]) -> PackageSpec:
         modules = [self.to_module_spec(s) for s in services]
         return PackageSpec.create(
             name="services",
             modules=modules,
         )
 
-    def to_service(self, module_spec: ModuleSpec) -> MetaService:
+    def to_service(self, module_spec: ModuleSpec) -> ServiceSpec:
         cls = module_spec.classes[0]
         attributes = [
             self.attribute_mapper.to_attribute(attr) for attr in cls.attributes
         ]
         operations = [self.method_mapper.to_method(method) for method in cls.methods]
-        return MetaService(
+        return ServiceSpec(
             name=cls.name,
             description=cls.description,
             attributes=attributes,
             operations=operations,
         )
 
-    def to_services(self, package_spec: PackageSpec) -> list[MetaService]:
-        services: list[MetaService] = []
+    def to_services(self, package_spec: PackageSpec) -> list[ServiceSpec]:
+        services: list[ServiceSpec] = []
         if package_spec.name != "services":
             return services
         for module in package_spec.modules:

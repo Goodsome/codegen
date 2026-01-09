@@ -26,6 +26,7 @@ class FunctionSpec(ValueObject):
     return_annotation: TypeAnnotationSpec
     suite: str = Field(default="")
     function_type: FunctionType = Field(default=FunctionType.FUNCTION)
+    is_private: bool = False
 
     @classmethod
     def create(
@@ -36,6 +37,7 @@ class FunctionSpec(ValueObject):
         parameters: list[ParameterSpec] | None = None,
         suite: str = "",
         function_type: FunctionType = FunctionType.FUNCTION,
+        is_private: bool = False,
     ):
         return cls(
             name=name,
@@ -44,6 +46,7 @@ class FunctionSpec(ValueObject):
             suite=suite,
             return_annotation=return_annotation,
             function_type=function_type,
+            is_private=is_private,
         )
 
     @classmethod
@@ -70,6 +73,8 @@ class FunctionSpec(ValueObject):
             function_type = FunctionType.INSTANCE_METHOD
             params = params[1:]
 
+        is_private = node.name.startswith("_")
+
         return cls.create(
             name=node.name,
             return_annotation=return_anno,
@@ -77,6 +82,7 @@ class FunctionSpec(ValueObject):
             parameters=params,
             suite=suite_code,
             function_type=function_type,
+            is_private=is_private,
         )
 
     def get_required_types(self) -> set[str]:
@@ -103,4 +109,8 @@ class FunctionSpec(ValueObject):
             suite=suite,
             return_annotation=self.return_annotation,
             function_type=self.function_type,
+            is_private=self.is_private,
         )
+
+    def is_init_method(self) -> bool:
+        return self.name == "__init__"

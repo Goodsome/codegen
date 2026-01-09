@@ -1,14 +1,16 @@
 import ast
 import pytest
-from codegen.python_gen.domain.value_objects.enum_spec import EnumSpec
-from codegen.python_gen.domain.value_objects.enum_member_spec import EnumMemberSpec
+from codegen.python_gen.domain.value_objects.enum_spec import PythonEnumSpec
+from codegen.python_gen.domain.value_objects.enum_member_spec import (
+    PythonEnumMemberSpec,
+)
 
 
 def test_enum_member_spec_parse_ast_assign():
     code = "A = 1"
     tree = ast.parse(code)
     node = tree.body[0]
-    spec = EnumMemberSpec.parse_ast(node)
+    spec = PythonEnumMemberSpec.parse_ast(node)
     assert spec.name == "A"
     assert spec.value == 1
 
@@ -17,7 +19,7 @@ def test_enum_member_spec_parse_ast_ann_assign():
     code = "A: int = 1"
     tree = ast.parse(code)
     node = tree.body[0]
-    spec = EnumMemberSpec.parse_ast(node)
+    spec = PythonEnumMemberSpec.parse_ast(node)
     assert spec.name == "A"
     assert spec.value == 1
 
@@ -36,7 +38,7 @@ class MyEnum(Enum):
     node = tree.body[0]
     assert isinstance(node, ast.ClassDef)
 
-    spec = EnumSpec.parse_ast(node)
+    spec = PythonEnumSpec.parse_ast(node)
     assert spec.name == "MyEnum"
     assert spec.description == "My Doc"
     assert spec.decorators == ["decorator"]
@@ -51,8 +53,8 @@ class MyEnum(Enum):
 
 
 def test_enum_spec_create():
-    member = EnumMemberSpec.create(name="A", value=1)
-    spec = EnumSpec.create(name="MyEnum", members=[member])
+    member = PythonEnumMemberSpec.create(name="A", value=1)
+    spec = PythonEnumSpec.create(name="MyEnum", members=[member])
     assert spec.name == "MyEnum"
     assert len(spec.members) == 1
     assert spec.members[0].name == "A"

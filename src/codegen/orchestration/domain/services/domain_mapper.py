@@ -1,8 +1,8 @@
 from codegen.orchestration.domain.services.enum_mapper import EnumMapper
-from codegen.domain_definition.domain.value_objects.meta_enum import MetaEnum
+from codegen.domain_definition.domain.value_objects.meta_enum import EnumSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from dataclasses import field
-from codegen.domain_definition.domain.value_objects.meta_domain import MetaDomain
+from codegen.domain_definition.domain.value_objects.meta_domain import DomainSpec
 from codegen.orchestration.domain.services.port_mapper import PortMapper
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from dataclasses import dataclass
@@ -20,7 +20,7 @@ class DomainMapper:
     port_mapper: PortMapper = field(default_factory=PortMapper)
     enum_mapper: EnumMapper = field(default_factory=EnumMapper)
 
-    def to_package_spec(self, domain: MetaDomain) -> PackageSpec:
+    def to_package_spec(self, domain: DomainSpec) -> PackageSpec:
         aggregate_pkg = self.aggregate_mapper.to_package_spec(domain.aggregates)
         value_objects_pkg = self.value_object_mapper.to_package_spec(
             domain.value_objects
@@ -42,12 +42,12 @@ class DomainMapper:
             modules=modules,
         )
 
-    def to_domain(self, package_spec: PackageSpec) -> MetaDomain:
+    def to_domain(self, package_spec: PackageSpec) -> DomainSpec:
         aggregates = []
         value_objects = []
         services = []
         ports = []
-        enums: list[MetaEnum] = []
+        enums: list[EnumSpec] = []
 
         for pkg in package_spec.sub_packages:
             if pkg.name == "aggregates":
@@ -62,7 +62,7 @@ class DomainMapper:
             if module.name == "enums":
                 enums = list(self.enum_mapper.to_meta_enums(module))
 
-        return MetaDomain(
+        return DomainSpec(
             aggregates=aggregates,
             value_objects=value_objects,
             services=services,

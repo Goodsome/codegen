@@ -1,22 +1,19 @@
-from codegen.domain_definition.domain.value_objects.meta_value_object import MetaValueObject
-from codegen.domain_definition.domain.value_objects.meta_port import MetaPort
-from codegen.domain_definition.domain.value_objects.meta_service import MetaService
-from codegen.domain_definition.domain.value_objects.meta_aggregate import MetaAggregate
-from codegen.domain_definition.domain.value_objects.meta_enum import MetaEnum
+from codegen.domain_definition.domain.value_objects.meta_value_object import (
+    ValueObjectSpec,
+)
+from codegen.domain_definition.domain.value_objects.meta_port import PortSpec
+from codegen.domain_definition.domain.value_objects.meta_service import ServiceSpec
+from codegen.domain_definition.domain.value_objects.meta_aggregate import AggregateSpec
+from codegen.domain_definition.domain.value_objects.meta_enum import EnumSpec
 from pydantic import Field
 from codegen.shared.models import ValueObject
 
 
-
-
-class MetaDomain(ValueObject):
+class DomainSpec(ValueObject):
     """Specification of a domain to be generated."""
-    
-    aggregates: list[MetaAggregate] = Field(default_factory=list)
-    enums: list[MetaEnum] = Field(default_factory=list)
-    value_objects: list[MetaValueObject] = Field(default_factory=list)
-    services: list[MetaService] = Field(default_factory=list)
-    ports: list[MetaPort] = Field(default_factory=list)
-    
-      
 
+    aggregates: list[AggregateSpec] = Field(default_factory=list)
+    enums: list[EnumSpec] = Field(default_factory=list)
+    value_objects: list[ValueObjectSpec] = Field(default_factory=list)
+    services: list[ServiceSpec] = Field(default_factory=list)
+    ports: list[PortSpec] = Field(default_factory=list)

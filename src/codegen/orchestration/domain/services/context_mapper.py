@@ -30,8 +30,8 @@ class ContextMapper:
         self._collect_class_specs_in_ports(class_specs, domain_pkg)
         self._collect_class_specs_in_ports(class_specs, application_pkg)
         infrastructure_pkg = self.infrastructure_mapper.to_package_spec(
-            context.infrastructure,
-            class_specs,
+            infrastructure=context.infrastructure,
+            port_finder=context.get_port_spec,
         )
         if NamingService().to_snake_case(context.name) == "shared":
             modules = [ModuleSpec.create_shared_models()]
