@@ -1,14 +1,8 @@
-from codegen.domain_definition.domain.value_objects.use_case_result_spec import (
-    UseCaseResultSpec,
-)
 from pydantic import Field
 from codegen.shared.models import ValueObject
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
-from codegen.domain_definition.domain.value_objects.use_case_query_spec import (
-    UseCaseQuerySpec,
-)
-from codegen.domain_definition.domain.value_objects.use_case_command_spec import (
-    UseCaseCommandSpec,
+from codegen.domain_definition.domain.value_objects.data_contract_spec import (
+    DataContractSpec,
 )
 
 
@@ -19,9 +13,9 @@ class UseCaseSpec(ValueObject):
     kind: str
     attributes: list[AttributeSpec] = Field(default_factory=list)
     description: str = Field(default_factory=str)
-    command: UseCaseCommandSpec = Field(default_factory=UseCaseCommandSpec)
-    query: UseCaseQuerySpec = Field(default_factory=UseCaseQuerySpec)
-    result: UseCaseResultSpec = Field(default_factory=UseCaseResultSpec)
+    command: DataContractSpec = Field(default_factory=DataContractSpec)
+    query: DataContractSpec = Field(default_factory=DataContractSpec)
+    result: DataContractSpec = Field(default_factory=DataContractSpec)
 
     @classmethod
     def create(
@@ -30,18 +24,18 @@ class UseCaseSpec(ValueObject):
         kind: str,
         attributes: list[AttributeSpec] | None = None,
         description: str = "",
-        command: UseCaseCommandSpec | None = None,
-        query: UseCaseQuerySpec | None = None,
-        result: UseCaseResultSpec | None = None,
+        command: DataContractSpec | None = None,
+        query: DataContractSpec | None = None,
+        result: DataContractSpec | None = None,
     ):
         if attributes is None:
             attributes = []
         if command is None:
-            command = UseCaseCommandSpec()
+            command = DataContractSpec()
         if query is None:
-            query = UseCaseQuerySpec()
+            query = DataContractSpec()
         if result is None:
-            result = UseCaseResultSpec()
+            result = DataContractSpec()
         return cls(
             name=name,
             kind=kind,

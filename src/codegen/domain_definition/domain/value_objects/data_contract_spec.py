@@ -3,8 +3,9 @@ from codegen.domain_definition.domain.value_objects.attribute_spec import Attrib
 from codegen.shared.models import ValueObject
 
 
-class UseCaseResultSpec(ValueObject):
-    """Specification of a use case result to be generated."""
+class DataContractSpec(ValueObject):
+    """Generic data contract specification for use case command/query/result."""
 
     name: str = Field(default_factory=str)
+    description: str = Field(default_factory=str)
     attributes: list[AttributeSpec] = Field(default_factory=list)
