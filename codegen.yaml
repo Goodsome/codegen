@@ -1,11 +1,10 @@
 name: codegen
 description: ''
-layout: ''
 contexts:
 - name: DomainDefinition
   domain:
     enums:
-    - name: ImplementationType
+    - name: PortType
       members:
       - name: ADAPTER
         value: adapter
@@ -16,7 +15,7 @@ contexts:
       - name: PROVIDER
         value: provider
     value_objects:
-    - name: Attribute
+    - name: AttributeSpec
       description: Standard specification for a class attribute.
       attributes:
       - name: name
@@ -38,11 +37,12 @@ contexts:
         type: str
       - name: layout
         type: str
+        optional: true
       - name: contexts
         type: list[BoundedContext]
         optional: true
       - name: bootstrap
-        type: MetaBootstrap
+        type: BootstrapSpec
         optional: true
       behaviors:
       - name: create
@@ -58,7 +58,7 @@ contexts:
         - name: contexts
           type: list[BoundedContext] | None
         - name: bootstrap
-          type: MetaBootstrap | None
+          type: BootstrapSpec | None
         output:
           type: Any
     - name: BoundedContext
@@ -70,13 +70,13 @@ contexts:
         type: str
         optional: true
       - name: domain
-        type: MetaDomain
+        type: DomainSpec
         optional: true
       - name: application
-        type: MetaApplication
+        type: ApplicationSpec
         optional: true
       - name: infrastructure
-        type: MetaInfrastructure
+        type: InfrastructureSpec
         optional: true
       behaviors:
       - name: create
@@ -88,14 +88,24 @@ contexts:
         - name: description
           type: str
         - name: domain
-          type: MetaDomain | None
+          type: DomainSpec | None
         - name: application
-          type: MetaApplication | None
+          type: ApplicationSpec | None
         - name: infrastructure
-          type: MetaInfrastructure | None
+          type: InfrastructureSpec | None
         output:
           type: Any
-    - name: MetaAggregate
+      - name: port_index
+        inputs: []
+        output:
+          type: dict[str, PortSpec]
+      - name: get_port_spec
+        inputs:
+        - name: port_name
+          type: str
+        output:
+          type: PortSpec
+    - name: AggregateSpec
       description: Specification of a domain aggregate to be generated.
       attributes:
       - name: name
@@ -104,45 +114,45 @@ contexts:
         type: str
         optional: true
       - name: attributes
-        type: list[Attribute]
+        type: list[AttributeSpec]
         optional: true
       - name: behaviors
         type: list[MethodSpec]
         optional: true
-    - name: MetaApplication
+    - name: ApplicationSpec
       description: Specification of an application to be generated.
       attributes:
       - name: use_cases
-        type: list[MetaUseCase]
+        type: list[UseCaseSpec]
         optional: true
       - name: ports
-        type: list[MetaPort]
+        type: list[PortSpec]
         optional: true
-    - name: MetaBootstrap
+    - name: BootstrapSpec
       description: Specification of the bootstrap configuration.
       attributes:
       - name: bindings
         type: list[PortBinding]
         optional: true
-    - name: MetaDomain
+    - name: DomainSpec
       description: Specification of a domain to be generated.
       attributes:
       - name: aggregates
-        type: list[MetaAggregate]
+        type: list[AggregateSpec]
         optional: true
       - name: enums
-        type: list[MetaEnum]
+        type: list[EnumSpec]
         optional: true
       - name: value_objects
-        type: list[MetaValueObject]
+        type: list[ValueObjectSpec]
         optional: true
       - name: services
-        type: list[MetaService]
+        type: list[ServiceSpec]
         optional: true
       - name: ports
-        type: list[MetaPort]
+        type: list[PortSpec]
         optional: true
-    - name: MetaEnum
+    - name: EnumSpec
       description: Specification of an enum to be generated.
       attributes:
       - name: name
@@ -151,8 +161,8 @@ contexts:
         type: str
         optional: true
       - name: members
-        type: list[MetaEnumMember]
-    - name: MetaEnumMember
+        type: list[EnumMemberSpec]
+    - name: EnumMemberSpec
       description: Specification of an enum member to be generated.
       attributes:
       - name: name
@@ -163,20 +173,21 @@ contexts:
       - name: description
         type: str
         optional: true
-    - name: MetaImplementation
+    - name: ImplementationSpec
       description: Specification of an implementation to be generated.
       attributes:
       - name: implements
         type: str
-      - name: kind
-        type: ImplementationType
       - name: technology
         type: str
       - name: description
         type: str
         optional: true
       - name: attributes
-        type: list[Attribute]
+        type: list[AttributeSpec]
+        optional: true
+      - name: private_methods
+        type: list[MethodSpec]
         optional: true
       behaviors:
       - name: create
@@ -185,27 +196,23 @@ contexts:
           type: Any
         - name: implements
           type: str
-        - name: kind
-          type: Union[ImplementationType, str]
         - name: technology
           type: str
         - name: description
           type: str
         - name: attributes
-          type: list[Attribute] | None
+          type: list[AttributeSpec] | None
+        - name: private_methods
+          type: list[MethodSpec] | None
         output:
           type: Any
-      - name: to_class_name
-        inputs: []
-        output:
-          type: str
-    - name: MetaInfrastructure
+    - name: InfrastructureSpec
       description: Specification of an infrastructure to be generated.
       attributes:
       - name: implementations
-        type: list[MetaImplementation]
+        type: list[ImplementationSpec]
         optional: true
-    - name: MetaPort
+    - name: PortSpec
       description: Specification of a domain port to be generated.
       attributes:
       - name: name
@@ -214,11 +221,26 @@ contexts:
         type: str
         optional: true
       - name: kind
-        type: str
+        type: PortType
       - name: operations
         type: list[MethodSpec]
         optional: true
-    - name: MetaService
+      behaviors:
+      - name: create
+        inputs:
+        - name: cls
+          type: Any
+        - name: name
+          type: str
+        - name: kind
+          type: Union[PortType, str]
+        - name: description
+          type: str
+        - name: operations
+          type: list[MethodSpec] | None
+        output:
+          type: PortSpec
+    - name: ServiceSpec
       description: Specification of a domain service to be generated.
       attributes:
       - name: name
@@ -227,12 +249,12 @@ contexts:
         type: str
         optional: true
       - name: attributes
-        type: list[Attribute]
+        type: list[AttributeSpec]
         optional: true
       - name: operations
         type: list[MethodSpec]
         optional: true
-    - name: MetaUseCase
+    - name: UseCaseSpec
       description: Specification of a use case to be generated.
       attributes:
       - name: name
@@ -240,19 +262,19 @@ contexts:
       - name: kind
         type: str
       - name: attributes
-        type: list[Attribute]
+        type: list[AttributeSpec]
         optional: true
       - name: description
         type: str
         optional: true
       - name: command
-        type: MetaUseCaseCommand
+        type: UseCaseCommandSpec
         optional: true
       - name: query
-        type: MetaUseCaseQuery
+        type: UseCaseQuerySpec
         optional: true
       - name: result
-        type: MetaUseCaseResult
+        type: UseCaseResultSpec
         optional: true
       behaviors:
       - name: create
@@ -264,45 +286,45 @@ contexts:
         - name: kind
           type: str
         - name: attributes
-          type: list[Attribute] | None
+          type: list[AttributeSpec] | None
         - name: description
           type: str
         - name: command
-          type: MetaUseCaseCommand | None
+          type: UseCaseCommandSpec | None
         - name: query
-          type: MetaUseCaseQuery | None
+          type: UseCaseQuerySpec | None
         - name: result
-          type: MetaUseCaseResult | None
+          type: UseCaseResultSpec | None
         output:
           type: Any
-    - name: MetaUseCaseCommand
+    - name: UseCaseCommandSpec
       description: Specification of a use case command to be generated.
       attributes:
       - name: name
         type: str
         optional: true
       - name: attributes
-        type: list[Attribute]
+        type: list[AttributeSpec]
         optional: true
-    - name: MetaUseCaseQuery
+    - name: UseCaseQuerySpec
       description: Specification of a use case command to be generated.
       attributes:
       - name: name
         type: str
         optional: true
       - name: attributes
-        type: list[Attribute]
+        type: list[AttributeSpec]
         optional: true
-    - name: MetaUseCaseResult
+    - name: UseCaseResultSpec
       description: Specification of a use case result to be generated.
       attributes:
       - name: name
         type: str
         optional: true
       - name: attributes
-        type: list[Attribute]
+        type: list[AttributeSpec]
         optional: true
-    - name: MetaValueObject
+    - name: ValueObjectSpec
       description: Specification of a value object to be generated.
       attributes:
       - name: name
@@ -311,7 +333,7 @@ contexts:
         type: str
         optional: true
       - name: attributes
-        type: list[Attribute]
+        type: list[AttributeSpec]
         optional: true
       - name: behaviors
         type: list[MethodSpec]
@@ -330,7 +352,7 @@ contexts:
         type: str
         optional: true
       - name: inputs
-        type: list[Attribute]
+        type: list[AttributeSpec]
       - name: output
         type: MethodOutput
     - name: PortBinding
@@ -343,7 +365,7 @@ contexts:
     ports:
     - name: BlueprintStorage
       description: Loads the blueprint from a file.
-      kind: Service
+      kind: adapter
       operations:
       - name: load
         inputs: []
@@ -374,7 +396,6 @@ contexts:
   infrastructure:
     implementations:
     - implements: BlueprintStorage
-      kind: adapter
       technology: yaml
       description: Blueprint loader that reads from a YAML file.
 - name: Orchestration
@@ -392,13 +413,13 @@ contexts:
       - name: to_module_spec
         inputs:
         - name: aggregate
-          type: MetaAggregate
+          type: AggregateSpec
         output:
           type: ModuleSpec
       - name: to_package_spec
         inputs:
         - name: aggregates
-          type: Iterable[MetaAggregate]
+          type: Iterable[AggregateSpec]
         output:
           type: PackageSpec
       - name: to_aggregate
@@ -406,13 +427,13 @@ contexts:
         - name: module
           type: ModuleSpec
         output:
-          type: MetaAggregate
+          type: AggregateSpec
       - name: to_aggregates
         inputs:
         - name: package
           type: PackageSpec
         output:
-          type: list[MetaAggregate]
+          type: list[AggregateSpec]
     - name: ApplicationMapper
       attributes:
       - name: use_case_mapper
@@ -425,7 +446,7 @@ contexts:
       - name: to_package_spec
         inputs:
         - name: application
-          type: MetaApplication
+          type: ApplicationSpec
         output:
           type: PackageSpec
       - name: to_application
@@ -433,13 +454,13 @@ contexts:
         - name: package_spec
           type: PackageSpec
         output:
-          type: MetaApplication
+          type: ApplicationSpec
     - name: AttributeMapper
       operations:
       - name: to_parameter_spec
         inputs:
         - name: attribute
-          type: Attribute
+          type: AttributeSpec
         - name: default_field_flavor
           type: FieldFlavor | None
         output:
@@ -449,11 +470,11 @@ contexts:
         - name: parameter_spec
           type: ParameterSpec
         output:
-          type: Attribute
+          type: AttributeSpec
       - name: to_parameter_specs
         inputs:
         - name: attributes
-          type: list[Attribute]
+          type: list[AttributeSpec]
         - name: default_field_flavor
           type: FieldFlavor | None
         output:
@@ -463,7 +484,7 @@ contexts:
         - name: parameter_specs
           type: list[ParameterSpec]
         output:
-          type: list[Attribute]
+          type: list[AttributeSpec]
     - name: BlueprintMapper
       attributes:
       - name: context_mapper
@@ -535,7 +556,7 @@ contexts:
       - name: to_package_spec
         inputs:
         - name: domain
-          type: MetaDomain
+          type: DomainSpec
         output:
           type: PackageSpec
       - name: to_domain
@@ -543,25 +564,25 @@ contexts:
         - name: package_spec
           type: PackageSpec
         output:
-          type: MetaDomain
+          type: DomainSpec
     - name: EnumMapper
       operations:
-      - name: to_enum_spec
+      - name: to_python_enum_spec
         inputs:
         - name: meta_enum
-          type: MetaEnum
-        output:
           type: EnumSpec
-      - name: to_meta_enum
+        output:
+          type: PythonEnumSpec
+      - name: to_enum_spec
         inputs:
         - name: enum_spec
-          type: EnumSpec
+          type: PythonEnumSpec
         output:
-          type: MetaEnum
+          type: EnumSpec
       - name: to_module_spec
         inputs:
         - name: enums
-          type: Iterable[MetaEnum]
+          type: Iterable[EnumSpec]
         output:
           type: ModuleSpec
       - name: to_meta_enums
@@ -569,7 +590,7 @@ contexts:
         - name: module_spec
           type: ModuleSpec
         output:
-          type: Iterable[MetaEnum]
+          type: Iterable[EnumSpec]
     - name: ImplementationMapper
       attributes:
       - name: attribute_mapper
@@ -585,27 +606,25 @@ contexts:
       - name: to_module_spec
         inputs:
         - name: implementation
-          type: MetaImplementation
-        - name: ports_class_specs
-          type: dict[str, ClassSpec]
+          type: ImplementationSpec
+        - name: port
+          type: PortSpec
         output:
           type: ModuleSpec
       - name: to_implementation
         inputs:
         - name: module_spec
           type: ModuleSpec
-        - name: kind
-          type: str
         - name: technology
           type: str
         output:
-          type: MetaImplementation
-      - name: remove_abstract_method
+          type: ImplementationSpec
+      - name: _get_class_name
         inputs:
-        - name: function_spec
-          type: FunctionSpec
+        - name: implementation
+          type: ImplementationSpec
         output:
-          type: FunctionSpec
+          type: str
     - name: InfrastructureMapper
       attributes:
       - name: implementation_mapper
@@ -618,9 +637,9 @@ contexts:
       - name: to_package_spec
         inputs:
         - name: infrastructure
-          type: MetaInfrastructure
-        - name: ports_class_specs
-          type: dict[str, ClassSpec]
+          type: InfrastructureSpec
+        - name: port_finder
+          type: Callable[[str], PortSpec]
         output:
           type: PackageSpec
       - name: to_infrastructure
@@ -628,7 +647,7 @@ contexts:
         - name: package_spec
           type: PackageSpec
         output:
-          type: MetaInfrastructure
+          type: InfrastructureSpec
     - name: MethodMapper
       attributes:
       - name: attribute_mapper
@@ -642,6 +661,8 @@ contexts:
         - name: function_type
           type: FunctionType
         - name: is_abstract
+          type: bool
+        - name: is_private
           type: bool
         output:
           type: FunctionSpec
@@ -663,13 +684,13 @@ contexts:
       - name: to_module_spec
         inputs:
         - name: port
-          type: MetaPort
+          type: PortSpec
         output:
           type: ModuleSpec
       - name: to_package_spec
         inputs:
         - name: ports
-          type: Iterable[MetaPort]
+          type: Iterable[PortSpec]
         output:
           type: PackageSpec
       - name: to_port
@@ -677,13 +698,13 @@ contexts:
         - name: module_spec
           type: ModuleSpec
         output:
-          type: MetaPort
+          type: PortSpec
       - name: to_ports
         inputs:
         - name: package_spec
           type: PackageSpec
         output:
-          type: list[MetaPort]
+          type: list[PortSpec]
     - name: ServiceMapper
       attributes:
       - name: attribute_mapper
@@ -696,13 +717,13 @@ contexts:
       - name: to_module_spec
         inputs:
         - name: service
-          type: MetaService
+          type: ServiceSpec
         output:
           type: ModuleSpec
       - name: to_package_spec
         inputs:
         - name: services
-          type: Iterable[MetaService]
+          type: Iterable[ServiceSpec]
         output:
           type: PackageSpec
       - name: to_service
@@ -710,13 +731,13 @@ contexts:
         - name: module_spec
           type: ModuleSpec
         output:
-          type: MetaService
+          type: ServiceSpec
       - name: to_services
         inputs:
         - name: package_spec
           type: PackageSpec
         output:
-          type: list[MetaService]
+          type: list[ServiceSpec]
     - name: UseCaseMapper
       attributes:
       - name: attribute_mapper
@@ -729,7 +750,7 @@ contexts:
       - name: to_module_spec
         inputs:
         - name: use_case
-          type: MetaUseCase
+          type: UseCaseSpec
         output:
           type: ModuleSpec
       - name: to_use_case
@@ -737,7 +758,7 @@ contexts:
         - name: module_spec
           type: ModuleSpec
         output:
-          type: MetaUseCase
+          type: UseCaseSpec
     - name: ValueObjectMapper
       attributes:
       - name: attribute_mapper
@@ -750,13 +771,13 @@ contexts:
       - name: to_module_spec
         inputs:
         - name: value_object
-          type: MetaValueObject
+          type: ValueObjectSpec
         output:
           type: ModuleSpec
       - name: to_package_spec
         inputs:
         - name: value_objects
-          type: Iterable[MetaValueObject]
+          type: Iterable[ValueObjectSpec]
         output:
           type: PackageSpec
       - name: module_spec_to_value_objects
@@ -764,13 +785,13 @@ contexts:
         - name: module_spec
           type: ModuleSpec
         output:
-          type: list[MetaValueObject]
+          type: list[ValueObjectSpec]
       - name: to_value_objects
         inputs:
         - name: package_spec
           type: PackageSpec
         output:
-          type: list[MetaValueObject]
+          type: list[ValueObjectSpec]
   application:
     use_cases:
     - name: GenerateProject
@@ -902,7 +923,7 @@ contexts:
           type: ClassSpec
         output:
           type: ClassSpec
-    - name: EnumMemberSpec
+    - name: PythonEnumMemberSpec
       description: Represents an enum member in a Python module.
       attributes:
       - name: name
@@ -925,7 +946,7 @@ contexts:
         - name: description
           type: str
         output:
-          type: EnumMemberSpec
+          type: PythonEnumMemberSpec
       - name: parse_ast
         inputs:
         - name: cls
@@ -933,14 +954,14 @@ contexts:
         - name: node
           type: Union[ast.Assign, ast.AnnAssign]
         output:
-          type: EnumMemberSpec
+          type: PythonEnumMemberSpec
       - name: _parse_value
         inputs:
         - name: node
           type: ast.AST
         output:
           type: str | int | None
-    - name: EnumSpec
+    - name: PythonEnumSpec
       description: Represents an enum in a Python module.
       attributes:
       - name: name
@@ -955,7 +976,7 @@ contexts:
         type: str
         optional: true
       - name: members
-        type: list[EnumMemberSpec]
+        type: list[PythonEnumMemberSpec]
         optional: true
       behaviors:
       - name: create
@@ -971,9 +992,9 @@ contexts:
         - name: base_class
           type: str
         - name: members
-          type: list[EnumMemberSpec] | None
+          type: list[PythonEnumMemberSpec] | None
         output:
-          type: EnumSpec
+          type: PythonEnumSpec
       - name: parse_ast
         inputs:
         - name: cls
@@ -981,7 +1002,7 @@ contexts:
         - name: node
           type: ast.ClassDef
         output:
-          type: EnumSpec
+          type: PythonEnumSpec
     - name: FieldSpec
       attributes:
       - name: default
@@ -1031,6 +1052,9 @@ contexts:
       - name: function_type
         type: FunctionType
         optional: true
+      - name: is_private
+        type: bool
+        optional: true
       behaviors:
       - name: create
         inputs:
@@ -1048,6 +1072,8 @@ contexts:
           type: str
         - name: function_type
           type: FunctionType
+        - name: is_private
+          type: bool
         output:
           type: Any
       - name: parse_ast
@@ -1074,6 +1100,10 @@ contexts:
           type: FunctionSpec
         output:
           type: FunctionSpec
+      - name: is_init_method
+        inputs: []
+        output:
+          type: bool
     - name: ImportedName
       description: Represents a name imported from another module.
       attributes:
@@ -1158,7 +1188,7 @@ contexts:
         type: list[ImportFromSpec]
         optional: true
       - name: enums
-        type: list[EnumSpec]
+        type: list[PythonEnumSpec]
         optional: true
       behaviors:
       - name: create
@@ -1174,7 +1204,7 @@ contexts:
         - name: imports
           type: list[ImportFromSpec] | None
         - name: enums
-          type: list[EnumSpec] | None
+          type: list[PythonEnumSpec] | None
         output:
           type: ModuleSpec
       - name: create_shared_models
@@ -1455,7 +1485,7 @@ contexts:
     ports:
     - name: CodeFormatter
       description: Formats Python source code.
-      kind: Service
+      kind: adapter
       operations:
       - name: format_code
         inputs:
@@ -1487,6 +1517,11 @@ contexts:
         attributes:
         - name: result
           type: str
+    - name: GenerateSchemaJsonUseCase
+      kind: command
+      attributes:
+      - name: file_system_port
+        type: FileSystemPort
     - name: ParsePackage
       kind: query
       attributes:
@@ -1503,7 +1538,6 @@ contexts:
   infrastructure:
     implementations:
     - implements: CodeFormatter
-      kind: adapter
       technology: black
 - name: Shared
   domain:
@@ -1526,7 +1560,7 @@ contexts:
     ports:
     - name: FileSystemPort
       description: Port for interacting with the file system.
-      kind: Service
+      kind: adapter
       operations:
       - name: read_file
         inputs:
@@ -1576,7 +1610,7 @@ contexts:
           type: bool
     - name: TemplatePort
       description: Port for generating templates.
-      kind: Service
+      kind: adapter
       operations:
       - name: render
         inputs:
@@ -1589,10 +1623,8 @@ contexts:
   infrastructure:
     implementations:
     - implements: TemplatePort
-      kind: adapter
       technology: jinja
       description: Jinja-based template rendering adapter.
     - implements: FileSystemPort
-      kind: adapter
       technology: os
       description: OS file system adapter for reading/writing files.

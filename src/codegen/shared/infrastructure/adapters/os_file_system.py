@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, Any, Iterator
+from typing import Any, Dict, Iterator, override
 
 from codegen.shared.domain.ports.file_system_port import FileSystemPort
 
@@ -30,7 +30,7 @@ class OSFileSystem(FileSystemPort):
         full_path.parent.mkdir(parents=True, exist_ok=True)
         if full_path.exists() and not overwrite:
             return
-        full_path.write_text(content, encoding=self.encoding)
+        _ = full_path.write_text(content, encoding=self.encoding)
 
     def list_directory_recursively(self, path: Path) -> Iterator[Path]:
         return self.root.glob(str(path / "**" / "*"))

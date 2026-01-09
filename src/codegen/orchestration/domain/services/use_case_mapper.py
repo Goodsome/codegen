@@ -1,11 +1,11 @@
 from codegen.domain_definition.domain.value_objects.meta_use_case_command import (
-    MetaUseCaseCommand,
+    UseCaseCommandSpec,
 )
 from codegen.orchestration.domain.services.method_mapper import MethodMapper
 from dataclasses import dataclass, field
 from codegen.orchestration.domain.services.attribute_mapper import AttributeMapper
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
-from codegen.domain_definition.domain.value_objects.meta_use_case import MetaUseCase
+from codegen.domain_definition.domain.value_objects.meta_use_case import UseCaseSpec
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.function_spec import (
     FunctionSpec,
@@ -25,7 +25,7 @@ class UseCaseMapper:
     attribute_mapper: AttributeMapper = field(default_factory=AttributeMapper)
     method_mapper: MethodMapper = field(default_factory=MethodMapper)
 
-    def to_module_spec(self, use_case: MetaUseCase) -> ModuleSpec:
+    def to_module_spec(self, use_case: UseCaseSpec) -> ModuleSpec:
         classes: list[ClassSpec] = []
         if use_case.kind == "command":
             command_name = f"{use_case.name}Command"
@@ -97,7 +97,7 @@ class UseCaseMapper:
             classes=classes,
         )
 
-    def to_use_case(self, module_spec: ModuleSpec) -> MetaUseCase:
+    def to_use_case(self, module_spec: ModuleSpec) -> UseCaseSpec:
         kind = "command"
 
         command = None
@@ -109,27 +109,27 @@ class UseCaseMapper:
             if cls.name.endswith("Command"):
                 kind = "command"
                 command_attributes = self.attribute_mapper.to_attributes(cls.attributes)
-                command = MetaUseCaseCommand(attributes=command_attributes)
+                command = UseCaseCommandSpec(attributes=command_attributes)
             elif cls.name.endswith("Query"):
                 kind = "query"
                 query_attributes = self.attribute_mapper.to_attributes(cls.attributes)
                 from codegen.domain_definition.domain.value_objects.meta_use_case_query import (
-                    MetaUseCaseQuery,
+                    UseCaseQuerySpec,
                 )
 
-                query = MetaUseCaseQuery(attributes=query_attributes)
+                query = UseCaseQuerySpec(attributes=query_attributes)
             elif cls.name.endswith("Result"):
                 result_attributes = self.attribute_mapper.to_attributes(cls.attributes)
                 from codegen.domain_definition.domain.value_objects.meta_use_case_result import (
-                    MetaUseCaseResult,
+                    UseCaseResultSpec,
                 )
 
-                result = MetaUseCaseResult(attributes=result_attributes)
+                result = UseCaseResultSpec(attributes=result_attributes)
             else:
                 uc_name = cls.name
                 uc_attributes = self.attribute_mapper.to_attributes(cls.attributes)
 
-        return MetaUseCase.create(
+        return UseCaseSpec.create(
             name=uc_name,
             kind=kind,
             attributes=uc_attributes,

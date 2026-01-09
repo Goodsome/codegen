@@ -1,9 +1,12 @@
-from codegen.domain_definition.domain.enums import ImplementationType
+from typing import Callable
+
+from codegen.domain_definition.domain.enums import PortType
+from codegen.domain_definition.domain.value_objects.meta_port import PortSpec
 from codegen.orchestration.domain.services.implementation_mapper import (
     ImplementationMapper,
 )
 from codegen.domain_definition.domain.value_objects.meta_infrastructure import (
-    MetaInfrastructure,
+    InfrastructureSpec,
 )
 from dataclasses import dataclass, field
 
@@ -11,6 +14,11 @@ from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.services.naming_service import NamingService
+
+from logging import getLogger
+
+
+logger = getLogger(__name__)
 
 
 @dataclass
@@ -23,13 +31,14 @@ class InfrastructureMapper:
 
     def to_package_spec(
         self,
-        infrastructure: MetaInfrastructure,
-        ports_class_specs: dict[str, ClassSpec],
+        infrastructure: InfrastructureSpec,
+        port_finder: Callable[[str], PortSpec],
     ) -> PackageSpec:
-        module_bags: dict[ImplementationType, list[ModuleSpec]] = {}
+        module_bags: dict[PortType, list[ModuleSpec]] = {}
         for impl in infrastructure.implementations:
-            module = self.implementation_mapper.to_module_spec(impl, ports_class_specs)
-            module_bags.setdefault(impl.kind, []).append(module)
+            port = port_finder(impl.implements)
+            module = self.implementation_mapper.to_module_spec(impl, port)
+            module_bags.setdefault(port.kind, []).append(module)
 
         kind_packages: list[PackageSpec] = []
         for kind, tech_modules in module_bags.items():
@@ -39,13 +48,9 @@ class InfrastructureMapper:
 
         return PackageSpec.create(name="infrastructure", sub_packages=kind_packages)
 
-    def to_infrastructure(self, package_spec: PackageSpec) -> MetaInfrastructure:
+    def to_infrastructure(self, package_spec: PackageSpec) -> InfrastructureSpec:
         implementations = []
         for kind_pkg in package_spec.sub_packages:
-            kind_name = kind_pkg.name
-            if kind_name.endswith("s"):
-                kind_name = kind_name[:-1]
-
             for tech_model in kind_pkg.modules:
                 if tech_model.is_init_module():
                     continue
@@ -53,9 +58,8 @@ class InfrastructureMapper:
                 implementations.append(
                     self.implementation_mapper.to_implementation(
                         module_spec=tech_model,
-                        kind=kind_name,
                         technology=technology,
                     )
                 )
 
-        return MetaInfrastructure(implementations=implementations)
+        return InfrastructureSpec(implementations=implementations)

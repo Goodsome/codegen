@@ -1,17 +1,19 @@
 import ast
 from codegen.shared.models import ValueObject
 from pydantic import Field
-from codegen.python_gen.domain.value_objects.enum_member_spec import EnumMemberSpec
+from codegen.python_gen.domain.value_objects.enum_member_spec import (
+    PythonEnumMemberSpec,
+)
 
 
-class EnumSpec(ValueObject):
+class PythonEnumSpec(ValueObject):
     """Represents an enum in a Python module."""
 
     name: str
     description: str = Field(default_factory=str)
     decorators: list[str] = Field(default_factory=list)
     base_class: str = Field(default_factory=str)
-    members: list[EnumMemberSpec] = Field(default_factory=list)
+    members: list[PythonEnumMemberSpec] = Field(default_factory=list)
 
     @classmethod
     def create(
@@ -20,8 +22,8 @@ class EnumSpec(ValueObject):
         description: str = "",
         decorators: list[str] | None = None,
         base_class: str = "Enum",
-        members: list[EnumMemberSpec] | None = None,
-    ) -> "EnumSpec":
+        members: list[PythonEnumMemberSpec] | None = None,
+    ) -> "PythonEnumSpec":
         return cls(
             name=name,
             description=description,
@@ -31,7 +33,7 @@ class EnumSpec(ValueObject):
         )
 
     @classmethod
-    def parse_ast(cls, node: ast.ClassDef) -> "EnumSpec":
+    def parse_ast(cls, node: ast.ClassDef) -> "PythonEnumSpec":
         name = node.name
         description = ast.get_docstring(node) or ""
         decorators = [ast.unparse(decorator) for decorator in node.decorator_list]
@@ -57,7 +59,7 @@ class EnumSpec(ValueObject):
                         break
 
                 if is_member:
-                    members.append(EnumMemberSpec.parse_ast(item))
+                    members.append(PythonEnumMemberSpec.parse_ast(item))
 
         return cls.create(
             name=name,
