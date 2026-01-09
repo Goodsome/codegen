@@ -15,6 +15,29 @@ contexts:
       - name: PROVIDER
         value: provider
     value_objects:
+    - name: AggregateSpec
+      description: Specification of a domain aggregate to be generated.
+      attributes:
+      - name: name
+        type: str
+      - name: description
+        type: str
+        optional: true
+      - name: attributes
+        type: list[AttributeSpec]
+        optional: true
+      - name: behaviors
+        type: list[MethodSpec]
+        optional: true
+    - name: ApplicationSpec
+      description: Specification of an application to be generated.
+      attributes:
+      - name: use_cases
+        type: list[UseCaseSpec]
+        optional: true
+      - name: ports
+        type: list[PortSpec]
+        optional: true
     - name: AttributeSpec
       description: Standard specification for a class attribute.
       attributes:
@@ -61,6 +84,12 @@ contexts:
           type: BootstrapSpec | None
         output:
           type: Any
+    - name: BootstrapSpec
+      description: Specification of the bootstrap configuration.
+      attributes:
+      - name: bindings
+        type: list[PortBinding]
+        optional: true
     - name: BoundedContext
       description: A logical boundary within the system.
       attributes:
@@ -105,35 +134,6 @@ contexts:
           type: str
         output:
           type: PortSpec
-    - name: AggregateSpec
-      description: Specification of a domain aggregate to be generated.
-      attributes:
-      - name: name
-        type: str
-      - name: description
-        type: str
-        optional: true
-      - name: attributes
-        type: list[AttributeSpec]
-        optional: true
-      - name: behaviors
-        type: list[MethodSpec]
-        optional: true
-    - name: ApplicationSpec
-      description: Specification of an application to be generated.
-      attributes:
-      - name: use_cases
-        type: list[UseCaseSpec]
-        optional: true
-      - name: ports
-        type: list[PortSpec]
-        optional: true
-    - name: BootstrapSpec
-      description: Specification of the bootstrap configuration.
-      attributes:
-      - name: bindings
-        type: list[PortBinding]
-        optional: true
     - name: DomainSpec
       description: Specification of a domain to be generated.
       attributes:
@@ -152,16 +152,6 @@ contexts:
       - name: ports
         type: list[PortSpec]
         optional: true
-    - name: EnumSpec
-      description: Specification of an enum to be generated.
-      attributes:
-      - name: name
-        type: str
-      - name: description
-        type: str
-        optional: true
-      - name: members
-        type: list[EnumMemberSpec]
     - name: EnumMemberSpec
       description: Specification of an enum member to be generated.
       attributes:
@@ -173,6 +163,16 @@ contexts:
       - name: description
         type: str
         optional: true
+    - name: EnumSpec
+      description: Specification of an enum to be generated.
+      attributes:
+      - name: name
+        type: str
+      - name: description
+        type: str
+        optional: true
+      - name: members
+        type: list[EnumMemberSpec]
     - name: ImplementationSpec
       description: Specification of an implementation to be generated.
       attributes:
@@ -212,6 +212,30 @@ contexts:
       - name: implementations
         type: list[ImplementationSpec]
         optional: true
+    - name: MethodOutput
+      description: Specification of the output of a method.
+      attributes:
+      - name: type
+        type: str
+    - name: MethodSpec
+      description: Standard specification for a class method.
+      attributes:
+      - name: name
+        type: str
+      - name: description
+        type: str
+        optional: true
+      - name: inputs
+        type: list[AttributeSpec]
+      - name: output
+        type: MethodOutput
+    - name: PortBinding
+      description: Binding between a port and an adapter.
+      attributes:
+      - name: port
+        type: str
+      - name: implementation
+        type: str
     - name: PortSpec
       description: Specification of a domain port to be generated.
       attributes:
@@ -253,6 +277,33 @@ contexts:
         optional: true
       - name: operations
         type: list[MethodSpec]
+        optional: true
+    - name: UseCaseCommandSpec
+      description: Specification of a use case command to be generated.
+      attributes:
+      - name: name
+        type: str
+        optional: true
+      - name: attributes
+        type: list[AttributeSpec]
+        optional: true
+    - name: UseCaseQuerySpec
+      description: Specification of a use case command to be generated.
+      attributes:
+      - name: name
+        type: str
+        optional: true
+      - name: attributes
+        type: list[AttributeSpec]
+        optional: true
+    - name: UseCaseResultSpec
+      description: Specification of a use case result to be generated.
+      attributes:
+      - name: name
+        type: str
+        optional: true
+      - name: attributes
+        type: list[AttributeSpec]
         optional: true
     - name: UseCaseSpec
       description: Specification of a use case to be generated.
@@ -297,33 +348,6 @@ contexts:
           type: UseCaseResultSpec | None
         output:
           type: Any
-    - name: UseCaseCommandSpec
-      description: Specification of a use case command to be generated.
-      attributes:
-      - name: name
-        type: str
-        optional: true
-      - name: attributes
-        type: list[AttributeSpec]
-        optional: true
-    - name: UseCaseQuerySpec
-      description: Specification of a use case command to be generated.
-      attributes:
-      - name: name
-        type: str
-        optional: true
-      - name: attributes
-        type: list[AttributeSpec]
-        optional: true
-    - name: UseCaseResultSpec
-      description: Specification of a use case result to be generated.
-      attributes:
-      - name: name
-        type: str
-        optional: true
-      - name: attributes
-        type: list[AttributeSpec]
-        optional: true
     - name: ValueObjectSpec
       description: Specification of a value object to be generated.
       attributes:
@@ -338,30 +362,6 @@ contexts:
       - name: behaviors
         type: list[MethodSpec]
         optional: true
-    - name: MethodOutput
-      description: Specification of the output of a method.
-      attributes:
-      - name: type
-        type: str
-    - name: MethodSpec
-      description: Standard specification for a class method.
-      attributes:
-      - name: name
-        type: str
-      - name: description
-        type: str
-        optional: true
-      - name: inputs
-        type: list[AttributeSpec]
-      - name: output
-        type: MethodOutput
-    - name: PortBinding
-      description: Binding between a port and an adapter.
-      attributes:
-      - name: port
-        type: str
-      - name: implementation
-        type: str
     ports:
     - name: BlueprintStorage
       description: Loads the blueprint from a file.
