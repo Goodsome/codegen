@@ -55,17 +55,17 @@ def main(
 def get_container(
     config_file: Path = Path("codegen.yaml"),
     out: Path | None = None,
-    build: bool = False,
+    subdir: str | None = None,
 ):
     cwd = Path.cwd()
     yaml_path = config_file if config_file.is_absolute() else (cwd / config_file)
-    target_dir = out or (cwd / ("src" if build else "target"))
+    output_dir = out or (cwd / subdir if subdir else cwd)
     template_root = resources.files("codegen") / "python_gen" / "templates"
 
     with resources.as_file(template_root) as path:
         config = {
             "template_root": path,
-            "output_root": target_dir,
+            "output_root": output_dir,
             "project_root": cwd,
             "encoding": "utf-8",
             "config_path": yaml_path,
@@ -91,7 +91,7 @@ def generate(
     overwrite: bool = typer.Option(
         False, "--overwrite", help="Overwrite existing files"
     ),
-    build: bool = typer.Option(False, "--build", help="Build project"),
+    build: bool = typer.Option(False, "--build", help="Output to src directory"),
     node: Optional[str] = typer.Option(
         None, "--node", help="Specific node name to generate"
     ),
@@ -103,7 +103,8 @@ def generate(
     """
     Generate code based on the blueprint.
     """
-    with get_container(config_file=config_file, out=out, build=build) as container:
+    subdir = "src" if build else None
+    with get_container(config_file=config_file, out=out, subdir=subdir) as container:
         use_case = container.generate_project_use_case()
         cmd = GenerateProjectCommand(overwrite=overwrite, node=node)
         use_case.execute(cmd)
@@ -111,12 +112,13 @@ def generate(
 
 @app.command(name="generate-blueprint")
 def generate_blueprint(
-    config_file: Path = typer.Option(
-        Path("codegen.yaml"), "--config", "-c", help="Path to codegen.yaml"
+    config_file: str = typer.Option(
+        "codegen.yaml", "--config", "-c", help="Path to codegen.yaml"
     ),
     package_path: Path | None = typer.Option(None, "--package", help="Package path"),
 ):
-    with get_container(config_file=config_file, build=True) as container:
+    config_file_path = Path(config_file)
+    with get_container(config_file=config_file_path) as container:
         if package_path is None:
             package_path = get_default_package_path()
         use_case = container.update_blueprint_user_case()
@@ -129,10 +131,8 @@ def generate_blueprint_schema():
     """
     Generate blueprint schema JSON file.
     """
-    with get_container(config_file=Path("codegen.yaml"), build=True) as container:
-        use_case = GenerateSchemaJsonUseCase(
-            file_system_port=container.os_file_port()
-        )
+    with get_container() as container:
+        use_case = GenerateSchemaJsonUseCase(file_system_port=container.os_file_port())
         cmd = GenerateSchemaJsonCommand()
         use_case.execute(cmd)
 
