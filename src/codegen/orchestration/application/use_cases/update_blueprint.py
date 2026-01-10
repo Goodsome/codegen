@@ -9,28 +9,28 @@ from codegen.domain_definition.domain.ports.blueprint_storage import BlueprintSt
 
 
 @dataclass(frozen=True)
-class UpdateBlueprintCommand:
+class GenerateBlueprintCommand:
 
     path: Path
 
 
 @dataclass(frozen=True)
-class UpdateBlueprintResult:
+class GenerateBlueprintResult:
 
     result: str
 
 
 @dataclass
-class UpdateBlueprint:
+class GenerateBlueprint:
 
     parser: ParsePackage
     storage: BlueprintStorage
     mapper: BlueprintMapper = field(default_factory=BlueprintMapper)
 
-    def execute(self, cmd: UpdateBlueprintCommand) -> UpdateBlueprintResult:
+    def execute(self, cmd: GenerateBlueprintCommand) -> GenerateBlueprintResult:
         project_pkg = self.parser.execute(
             ParsePackageQuery(package_path=cmd.path)
         ).package_spec
         blueprint = self.mapper.to_blueprint(project_pkg)
         self.storage.save(blueprint)
-        return UpdateBlueprintResult(result="Updated blueprint.")
+        return GenerateBlueprintResult(result="Generated blueprint.")

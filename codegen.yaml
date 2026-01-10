@@ -799,7 +799,7 @@ contexts:
         attributes:
         - name: result
           type: str
-    - name: UpdateBlueprint
+    - name: GenerateBlueprint
       kind: command
       attributes:
       - name: parser
