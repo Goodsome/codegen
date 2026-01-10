@@ -11,7 +11,11 @@ from codegen.orchestration.application.use_cases.generate_project import (
     GenerateProjectCommand,
 )
 from codegen.orchestration.application.use_cases.update_blueprint import (
-    UpdateBlueprintCommand,
+    GenerateBlueprintCommand,
+)
+from codegen.python_gen.application.use_cases.generate_schem_json import (
+    GenerateSchemaJsonCommand,
+    GenerateSchemaJsonUseCase,
 )
 
 # 创建 Typer 应用实例
@@ -105,8 +109,8 @@ def generate(
         use_case.execute(cmd)
 
 
-@app.command(name="update-blueprint")
-def update_blueprint(
+@app.command(name="generate-blueprint")
+def generate_blueprint(
     config_file: Path = typer.Option(
         Path("codegen.yaml"), "--config", "-c", help="Path to codegen.yaml"
     ),
@@ -116,7 +120,20 @@ def update_blueprint(
         if package_path is None:
             package_path = get_default_package_path()
         use_case = container.update_blueprint_user_case()
-        cmd = UpdateBlueprintCommand(path=package_path)
+        cmd = GenerateBlueprintCommand(path=package_path)
+        use_case.execute(cmd)
+
+
+@app.command(name="generate-blueprint-schema")
+def generate_blueprint_schema():
+    """
+    Generate blueprint schema JSON file.
+    """
+    with get_container(config_file=Path("codegen.yaml"), build=True) as container:
+        use_case = GenerateSchemaJsonUseCase(
+            file_system_port=container.os_file_port()
+        )
+        cmd = GenerateSchemaJsonCommand()
         use_case.execute(cmd)
 
 
