@@ -1,4 +1,6 @@
 import ast
+
+from codegen.shared.domain.value_objects.naming_string import PascalString
 from codegen.shared.models import ValueObject
 from pydantic import Field
 from codegen.python_gen.domain.value_objects.enum_member_spec import (
@@ -9,7 +11,7 @@ from codegen.python_gen.domain.value_objects.enum_member_spec import (
 class PythonEnumSpec(ValueObject):
     """Represents an enum in a Python module."""
 
-    name: str
+    name: PascalString
     description: str = Field(default_factory=str)
     decorators: list[str] = Field(default_factory=list)
     base_class: str = Field(default_factory=str)
@@ -25,7 +27,7 @@ class PythonEnumSpec(ValueObject):
         members: list[PythonEnumMemberSpec] | None = None,
     ) -> "PythonEnumSpec":
         return cls(
-            name=name,
+            name=PascalString(name),
             description=description,
             decorators=decorators or [],
             base_class=base_class,

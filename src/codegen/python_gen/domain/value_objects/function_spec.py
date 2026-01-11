@@ -4,6 +4,7 @@ Name: FunctionSpec
 Description: Represents a function in a Python module.
 """
 
+from codegen.shared.domain.value_objects.naming_string import SnakeString
 import ast
 
 from codegen.python_gen.domain.enums import FunctionType
@@ -20,7 +21,7 @@ from codegen.python_gen.domain.value_objects.type_annotation_spec import (
 class FunctionSpec(ValueObject):
     """Represents a function in a Python module."""
 
-    name: str
+    name: SnakeString
     decorators: list[str] = Field(default_factory=list)
     parameters: list[ParameterSpec] = Field(default_factory=list)
     return_annotation: TypeAnnotationSpec
@@ -40,7 +41,7 @@ class FunctionSpec(ValueObject):
         is_private: bool = False,
     ):
         return cls(
-            name=name,
+            name=SnakeString(name),
             decorators=decorators or [],
             parameters=parameters or [],
             suite=suite,

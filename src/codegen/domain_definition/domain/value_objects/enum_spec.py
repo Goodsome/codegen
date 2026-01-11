@@ -1,3 +1,4 @@
+from codegen.shared.domain.value_objects.naming_string import PascalString
 from codegen.shared.models import ValueObject
 from pydantic import Field
 from codegen.domain_definition.domain.value_objects.enum_member_spec import (
@@ -8,6 +9,6 @@ from codegen.domain_definition.domain.value_objects.enum_member_spec import (
 class EnumSpec(ValueObject):
     """Specification of an enum to be generated."""
 
-    name: str
+    name: PascalString
     description: str = Field(default_factory=str)
     members: list[EnumMemberSpec]

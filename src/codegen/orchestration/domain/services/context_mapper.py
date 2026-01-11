@@ -1,5 +1,4 @@
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
-from codegen.shared.domain.services.naming_service import NamingService
 from dataclasses import field
 from codegen.orchestration.domain.services.domain_mapper import DomainMapper
 from codegen.orchestration.domain.services.application_mapper import ApplicationMapper
@@ -33,7 +32,7 @@ class ContextMapper:
             infrastructure=context.infrastructure,
             port_finder=context.get_port_spec,
         )
-        if NamingService().to_snake_case(context.name) == "shared":
+        if context.name == "Shared":
             modules = [ModuleSpec.create_shared_models()]
         else:
             modules = []
@@ -55,9 +54,8 @@ class ContextMapper:
                 application = self.application_mapper.to_application(pkg)
             elif pkg.name == "infrastructure":
                 infrastructure = self.infrastructure_mapper.to_infrastructure(pkg)
-        context_name = NamingService().to_camel_case(package_spec.name)
         return BoundedContext.create(
-            name=context_name,
+            name=package_spec.name,
             domain=domain,
             application=application,
             infrastructure=infrastructure,

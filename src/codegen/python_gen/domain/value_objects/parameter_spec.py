@@ -4,6 +4,7 @@ Name: ParameterSpec
 Description: Represents a parameter in a Python function.
 """
 
+from codegen.shared.domain.value_objects.naming_string import SnakeString
 import ast
 
 from codegen.python_gen.domain.enums import FieldFlavor
@@ -19,7 +20,7 @@ from codegen.python_gen.domain.value_objects.type_annotation_spec import (
 class ParameterSpec(ValueObject):
     """Represents a parameter in a Python function."""
 
-    name: str
+    name: SnakeString
     annotation: TypeAnnotationSpec
     default: FieldSpec | None = Field(default=None)
     optional: bool = Field(default=False)
@@ -44,7 +45,7 @@ class ParameterSpec(ValueObject):
         else:
             default = None
         return cls(
-            name=name,
+            name=SnakeString(name),
             annotation=annotation_spec,
             default=default,
             optional=optional,

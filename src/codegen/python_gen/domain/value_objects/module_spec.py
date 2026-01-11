@@ -4,7 +4,7 @@ Name: ModuleSpec
 Description: Represents a Python module.
 """
 
-from codegen.shared.domain.services.naming_service import NamingService
+from codegen.shared.domain.value_objects.naming_string import SnakeString
 from codegen.python_gen.domain.value_objects.enum_spec import PythonEnumSpec
 import ast
 
@@ -19,7 +19,7 @@ from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromS
 class ModuleSpec(ValueObject):
     """Represents a Python module."""
 
-    name: str
+    name: SnakeString
     functions: list[FunctionSpec] = Field(default_factory=list)
     classes: list[ClassSpec] = Field(default_factory=list)
     imports: list[ImportFromSpec] = Field(default_factory=list)
@@ -34,9 +34,8 @@ class ModuleSpec(ValueObject):
         imports: list[ImportFromSpec] | None = None,
         enums: list[PythonEnumSpec] | None = None,
     ) -> "ModuleSpec":
-        name = NamingService().to_snake_case(name)
         return cls(
-            name=name,
+            name=SnakeString(name),
             functions=functions or [],
             classes=classes or [],
             imports=imports or [],
@@ -89,7 +88,7 @@ class ModuleSpec(ValueObject):
         return self.name == "__init__"
 
     def is_match_name(self, name: str) -> bool:
-        return self.name == NamingService().to_snake_case(name)
+        return self.name == SnakeString(name)
 
     def get_required_types(self) -> set[str]:
         """收集本模块所有需要的类型名称"""

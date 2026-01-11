@@ -91,7 +91,7 @@ def generate(
     overwrite: bool = typer.Option(
         False, "--overwrite", help="Overwrite existing files"
     ),
-    build: bool = typer.Option(False, "--build", help="Output to src directory"),
+    build: bool = typer.Option(True, "--build", help="Output to src directory"),
     node: Optional[str] = typer.Option(
         None, "--node", help="Specific node name to generate"
     ),
@@ -103,7 +103,7 @@ def generate(
     """
     Generate code based on the blueprint.
     """
-    subdir = "src" if build else None
+    subdir = "src" if build else "target"
     with get_container(config_file=config_file, out=out, subdir=subdir) as container:
         use_case = container.generate_project_use_case()
         cmd = GenerateProjectCommand(overwrite=overwrite, node=node)

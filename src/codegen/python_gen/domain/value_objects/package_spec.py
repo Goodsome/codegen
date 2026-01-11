@@ -4,7 +4,7 @@ Name: PackageSpec
 Description: Represents a Python package.
 """
 
-from codegen.shared.domain.services.naming_service import NamingService
+from codegen.shared.domain.value_objects.naming_string import SnakeString
 from pathlib import Path
 
 from pydantic import Field
@@ -17,7 +17,7 @@ from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 class PackageSpec(ValueObject):
     """Represents a Python package."""
 
-    name: str
+    name: SnakeString
     modules: list[ModuleSpec] = Field(default_factory=list)
     sub_packages: list["PackageSpec"] = Field(default_factory=list)
 
@@ -35,7 +35,8 @@ class PackageSpec(ValueObject):
         has_init_module = any(mod.is_init_module() for mod in modules)
         if not has_init_module:
             modules.append(ModuleSpec.get_init_module())
-        name = NamingService().to_snake_case(name)
+        if isinstance(name, str):
+            name = SnakeString(name)
         return cls(
             name=name,
             modules=modules,
