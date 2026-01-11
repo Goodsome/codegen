@@ -1,3 +1,4 @@
+from codegen.shared.domain.value_objects.naming_string import PascalString
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
 from dataclasses import field
 
@@ -5,14 +6,12 @@ from codegen.domain_definition.domain.value_objects.port_spec import PortSpec
 from codegen.orchestration.domain.services.attribute_mapper import AttributeMapper
 from codegen.orchestration.domain.services.method_mapper import MethodMapper
 from codegen.python_gen.domain.enums import FunctionType
-from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.domain_definition.domain.value_objects.implementation_spec import (
     ImplementationSpec,
 )
 from dataclasses import dataclass
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
-from codegen.shared.domain.services.naming_service import NamingService
 
 
 @dataclass
@@ -20,7 +19,6 @@ class ImplementationMapper:
 
     attribute_mapper: AttributeMapper = field(default_factory=AttributeMapper)
     method_mapper: MethodMapper = field(default_factory=MethodMapper)
-    naming_service: NamingService = field(default_factory=NamingService)
 
     def to_module_spec(
         self,
@@ -53,8 +51,7 @@ class ImplementationMapper:
             attributes=attributes,
             methods=methods,
         )
-        module_name = self.naming_service.to_snake_case(class_spec.name)
-        return ModuleSpec.create(name=module_name, classes=[class_spec])
+        return ModuleSpec.create(name=class_spec.name, classes=[class_spec])
 
     def to_implementation(
         self, module_spec: ModuleSpec, technology: str
@@ -81,7 +78,7 @@ class ImplementationMapper:
 
     def _get_class_name(self, implementation: ImplementationSpec) -> str:
         parts = [
-            self.naming_service.to_camel_case(implementation.technology),
-            self.naming_service.to_camel_case(implementation.implements),
+            PascalString(implementation.technology),
+            PascalString(implementation.implements),
         ]
         return "".join(parts)

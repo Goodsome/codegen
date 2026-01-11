@@ -1,4 +1,4 @@
-name: codegen
+name: Codegen
 description: ''
 contexts:
 - name: DomainDefinition
@@ -19,7 +19,7 @@ contexts:
       description: Specification of a domain aggregate to be generated.
       attributes:
       - name: name
-        type: str
+        type: PascalString
       - name: description
         type: str
         optional: true
@@ -42,7 +42,7 @@ contexts:
       description: Standard specification for a class attribute.
       attributes:
       - name: name
-        type: str
+        type: SnakeString
       - name: type
         type: str
       - name: description
@@ -55,7 +55,7 @@ contexts:
       description: Root of the generation model. Represents the entire project definition.
       attributes:
       - name: name
-        type: str
+        type: PascalString
       - name: description
         type: str
       - name: layout
@@ -73,7 +73,7 @@ contexts:
         - name: cls
           type: Any
         - name: name
-          type: str
+          type: Union[str, PascalString]
         - name: description
           type: str
         - name: layout
@@ -94,7 +94,7 @@ contexts:
       description: A logical boundary within the system.
       attributes:
       - name: name
-        type: str
+        type: PascalString
       - name: description
         type: str
         optional: true
@@ -168,7 +168,7 @@ contexts:
       description: Specification of an enum member to be generated.
       attributes:
       - name: name
-        type: str
+        type: MacroString
       - name: value
         type: str | int | None
         optional: true
@@ -179,7 +179,7 @@ contexts:
       description: Specification of an enum to be generated.
       attributes:
       - name: name
-        type: str
+        type: PascalString
       - name: description
         type: str
         optional: true
@@ -189,9 +189,9 @@ contexts:
       description: Specification of an implementation to be generated.
       attributes:
       - name: implements
-        type: str
+        type: PascalString
       - name: technology
-        type: str
+        type: SnakeString
       - name: description
         type: str
         optional: true
@@ -233,7 +233,7 @@ contexts:
       description: Standard specification for a class method.
       attributes:
       - name: name
-        type: str
+        type: SnakeString
       - name: description
         type: str
         optional: true
@@ -252,7 +252,7 @@ contexts:
       description: Specification of a domain port to be generated.
       attributes:
       - name: name
-        type: str
+        type: PascalString
       - name: description
         type: str
         optional: true
@@ -280,7 +280,7 @@ contexts:
       description: Specification of a domain service to be generated.
       attributes:
       - name: name
-        type: str
+        type: PascalString
       - name: description
         type: str
         optional: true
@@ -294,7 +294,7 @@ contexts:
       description: Specification of a use case to be generated.
       attributes:
       - name: name
-        type: str
+        type: PascalString
       - name: kind
         type: str
       - name: attributes
@@ -337,7 +337,7 @@ contexts:
       description: Specification of a value object to be generated.
       attributes:
       - name: name
-        type: str
+        type: PascalString
       - name: description
         type: str
         optional: true
@@ -584,9 +584,6 @@ contexts:
       - name: method_mapper
         type: MethodMapper
         optional: true
-      - name: naming_service
-        type: NamingService
-        optional: true
       operations:
       - name: to_module_spec
         inputs:
@@ -614,9 +611,6 @@ contexts:
       attributes:
       - name: implementation_mapper
         type: ImplementationMapper
-        optional: true
-      - name: naming_service
-        type: NamingService
         optional: true
       operations:
       - name: to_package_spec
@@ -841,7 +835,7 @@ contexts:
       description: Represents a class in a Python module.
       attributes:
       - name: name
-        type: str
+        type: PascalString
       - name: description
         type: str
         optional: true
@@ -912,7 +906,7 @@ contexts:
       description: Represents an enum member in a Python module.
       attributes:
       - name: name
-        type: str
+        type: MacroString
       - name: value
         type: str | int | None
         optional: true
@@ -950,7 +944,7 @@ contexts:
       description: Represents an enum in a Python module.
       attributes:
       - name: name
-        type: str
+        type: PascalString
       - name: description
         type: str
         optional: true
@@ -1022,7 +1016,7 @@ contexts:
       description: Represents a function in a Python module.
       attributes:
       - name: name
-        type: str
+        type: SnakeString
       - name: decorators
         type: list[str]
         optional: true
@@ -1162,7 +1156,7 @@ contexts:
       description: Represents a Python module.
       attributes:
       - name: name
-        type: str
+        type: SnakeString
       - name: functions
         type: list[FunctionSpec]
         optional: true
@@ -1264,7 +1258,7 @@ contexts:
       description: Represents a Python package.
       attributes:
       - name: name
-        type: str
+        type: SnakeString
       - name: modules
         type: list[ModuleSpec]
         optional: true
@@ -1316,7 +1310,7 @@ contexts:
       description: Represents a parameter in a Python function.
       attributes:
       - name: name
-        type: str
+        type: SnakeString
       - name: annotation
         type: TypeAnnotationSpec
       - name: default
@@ -1526,22 +1520,70 @@ contexts:
       technology: black
 - name: Shared
   domain:
-    services:
-    - name: NamingService
-      description: Provides naming conventions for generated artifacts.
-      operations:
-      - name: to_snake_case
-        inputs:
-        - name: name
-          type: str
+    value_objects:
+    - name: NamingString
+      description: 基于 case-converter 的增强型字符串
+      behaviors:
+      - name: to_pascal
+        inputs: []
         output:
           type: str
-      - name: to_camel_case
-        inputs:
-        - name: name
-          type: str
+      - name: to_snake
+        inputs: []
         output:
           type: str
+      - name: to_kebab
+        inputs: []
+        output:
+          type: str
+      - name: to_camel
+        inputs: []
+        output:
+          type: str
+      - name: to_macro
+        inputs: []
+        output:
+          type: str
+      - name: __get_pydantic_core_schema__
+        inputs:
+        - name: cls
+          type: Any
+        - name: source_type
+          type: Any
+        - name: handler
+          type: GetCoreSchemaHandler
+        output:
+          type: core_schema.CoreSchema
+    - name: PascalString
+      behaviors:
+      - name: __new__
+        inputs:
+        - name: cls
+          type: Any
+        - name: value
+          type: str
+        output:
+          type: Any
+    - name: SnakeString
+      behaviors:
+      - name: __new__
+        inputs:
+        - name: cls
+          type: Any
+        - name: value
+          type: str
+        output:
+          type: Any
+    - name: MacroString
+      behaviors:
+      - name: __new__
+        inputs:
+        - name: cls
+          type: Any
+        - name: value
+          type: str
+        output:
+          type: Any
     ports:
     - name: FileSystemPort
       description: Port for interacting with the file system.

@@ -1,22 +1,17 @@
+from dataclasses import dataclass, field
+from logging import getLogger
 from typing import Callable
 
 from codegen.domain_definition.domain.enums import PortType
+from codegen.domain_definition.domain.value_objects.infrastructure_spec import (
+    InfrastructureSpec,
+)
 from codegen.domain_definition.domain.value_objects.port_spec import PortSpec
 from codegen.orchestration.domain.services.implementation_mapper import (
     ImplementationMapper,
 )
-from codegen.domain_definition.domain.value_objects.infrastructure_spec import (
-    InfrastructureSpec,
-)
-from dataclasses import dataclass, field
-
-from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
-from codegen.shared.domain.services.naming_service import NamingService
-
-from logging import getLogger
-
 
 logger = getLogger(__name__)
 
@@ -27,7 +22,6 @@ class InfrastructureMapper:
     implementation_mapper: ImplementationMapper = field(
         default_factory=ImplementationMapper
     )
-    naming_service: NamingService = field(default_factory=NamingService)
 
     def to_package_spec(
         self,

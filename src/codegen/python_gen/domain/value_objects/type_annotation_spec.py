@@ -12,11 +12,14 @@ from codegen.shared.models import ValueObject
 
 _TYPE_NAME_MAPPING: dict[str, str] = {
     "string": "str",
+    "integer": "int",
     "String": "str",
     "List": "list",
     "Dict": "dict",
     "Set": "set",
     "Tuple": "tuple",
+    "void": "None",
+    "boolean": "bool",
 }
 
 

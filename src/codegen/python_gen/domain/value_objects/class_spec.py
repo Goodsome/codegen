@@ -10,13 +10,14 @@ from pydantic.fields import Field
 
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.parameter_spec import ParameterSpec
+from codegen.shared.domain.value_objects.naming_string import PascalString
 from codegen.shared.models import ValueObject
 
 
 class ClassSpec(ValueObject):
     """Represents a class in a Python module."""
 
-    name: str
+    name: PascalString
     description: str = Field(default="")
     decorators: list[str] = Field(default_factory=list)
     inheritance: list[str] = Field(default_factory=list)
@@ -34,7 +35,7 @@ class ClassSpec(ValueObject):
         methods: list[FunctionSpec] | None = None,
     ) -> "ClassSpec":
         return cls(
-            name=name,
+            name=PascalString(name),
             description=description,
             decorators=decorators or [],
             inheritance=inheritance or [],

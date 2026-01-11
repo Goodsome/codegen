@@ -6,7 +6,9 @@ from codegen.python_gen.domain.services.python_syntax_translator import (
     PythonSyntaxTranslator,
 )
 from codegen.shared.domain.ports.file_system_port import FileSystemPort
-from typing import Union
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -44,7 +46,11 @@ class GeneratePackage:
             package_spec=pkg, target_node=cmd.node
         )
         for rel_path, content in source_tree.items():
-            content = self.code_formatter.format_code(content)
+            try:
+                content = self.code_formatter.format_code(content)
+            except Exception as e:
+                logger.warning(f"Failed to format code for {rel_path}: {e}")
+
             self.file_system_port.write_file(
                 path=rel_path, content=content, overwrite=cmd.overwrite
             )

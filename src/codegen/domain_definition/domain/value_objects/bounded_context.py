@@ -1,3 +1,4 @@
+from codegen.shared.domain.value_objects.naming_string import PascalString
 from functools import cached_property
 
 from pydantic import Field
@@ -16,7 +17,7 @@ from codegen.shared.models import ValueObject
 class BoundedContext(ValueObject):
     """A logical boundary within the system."""
 
-    name: str
+    name: PascalString
     description: str = Field(default_factory=str)
     domain: DomainSpec = Field(default_factory=DomainSpec)
     application: ApplicationSpec = Field(default_factory=ApplicationSpec)
@@ -38,7 +39,7 @@ class BoundedContext(ValueObject):
         if infrastructure is None:
             infrastructure = InfrastructureSpec()
         return cls(
-            name=name,
+            name=PascalString(name),
             description=description,
             domain=domain,
             application=application,

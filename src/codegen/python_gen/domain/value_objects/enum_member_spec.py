@@ -1,5 +1,5 @@
+from codegen.shared.domain.value_objects.naming_string import MacroString
 import ast
-from typing import Union
 from codegen.shared.models import ValueObject
 from pydantic import Field
 
@@ -7,7 +7,7 @@ from pydantic import Field
 class PythonEnumMemberSpec(ValueObject):
     """Represents an enum member in a Python module."""
 
-    name: str
+    name: MacroString
     value: str | int | None = Field(default=None)
     description: str = Field(default_factory=str)
 
@@ -15,7 +15,11 @@ class PythonEnumMemberSpec(ValueObject):
     def create(
         cls, name: str, value: str | int | None = None, description: str = ""
     ) -> "PythonEnumMemberSpec":
-        return cls(name=name, value=value, description=description)
+        return cls(
+            name=MacroString(name),
+            value=value,
+            description=description,
+        )
 
     @classmethod
     def parse_ast(cls, node: ast.Assign | ast.AnnAssign) -> "PythonEnumMemberSpec":

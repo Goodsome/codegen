@@ -33,6 +33,8 @@ GLOBAL_REGISTRY = {
     "field": "dataclasses",
     "ABC": "abc",
     "abstractmethod": "abc",
+    "datetime": "datetime",
+    "UUID": "uuid",
 }
 
 TEMPORARY_MAPPING = {"dataclass(frozen=True)": "dataclass"}
