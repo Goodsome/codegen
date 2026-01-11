@@ -20,7 +20,23 @@ from codegen.python_gen.application.use_cases.generate_schem_json import (
 
 # 创建 Typer 应用实例
 app = typer.Typer(
-    name="codegen", help="DDD Project Scaffolding Tool", add_completion=False
+    name="codegen",
+    help="""A DDD (Domain-Driven Design) Project Scaffolding Tool.
+
+    Codegen reads a codegen.yaml blueprint file that defines your project structure
+    and generates Python code based on DDD patterns. It can also reverse-engineer
+    existing Python packages back into a codegen.yaml blueprint.
+
+    Common commands:
+    - codegen generate              Generate code from codegen.yaml
+    - codegen generate-blueprint    Reverse engineer Python package to blueprint
+    - codegen generate-blueprint-schema  Generate JSON schema for blueprint
+        
+
+    For more information, see: https://github.com/Goodsome/codegen
+    """,
+    add_completion=False,
+    rich_markup_mode="markdown",
 )
 
 
@@ -89,23 +105,51 @@ def get_default_package_path() -> Path:
 @app.command()
 def generate(
     overwrite: bool = typer.Option(
-        False, "--overwrite", help="Overwrite existing files"
+        False, "--overwrite", help="Overwrite existing files without prompting"
     ),
-    build: bool = typer.Option(True, "--build", help="Output to src directory"),
+    build: bool = typer.Option(
+        True,
+        "--build/--no-build",
+        help="Output to src directory (default: --build). Use --no-build to output to target directory",
+    ),
     node: Optional[str] = typer.Option(
-        None, "--node", help="Specific node name to generate"
+        None,
+        "--node",
+        help="Generate only a specific bounded context or component by name (e.g., 'DomainDefinition')",
     ),
     config_file: Path = typer.Option(
-        Path("codegen.yaml"), "--config", "-c", help="Path to codegen.yaml"
+        Path("codegen.yaml"),
+        "--config",
+        "-c",
+        help="Path to the codegen.yaml blueprint file (default: codegen.yaml in current directory)",
     ),
-    out: Path | None = typer.Option(None, "--out", help="Output directory"),
+    out: Path | None = typer.Option(
+        None,
+        "--out",
+        help="Custom output directory (overrides --build/--no-build default locations)",
+    ),
 ):
     """
-    Generate code based on the blueprint.
+    Generate Python code from a codegen.yaml blueprint.
+
+    This command reads the codegen.yaml configuration file and generates a complete
+    DDD project structure including:
+        - Domain layer (aggregates, value objects, services, enums, ports)
+        - Application layer (use cases, commands, queries, results)
+        - Infrastructure layer (adapters, implementations)
+
+    Examples:
+        codegen generate                           # Generate with defaults (src/ output)
+        codegen generate --overwrite              # Regenerate and overwrite existing files
+        codegen generate --no-build --out ./output  # Output to custom directory
+        codegen generate --node MyContext         # Generate only MyContext bounded context
+        codegen generate -c my-project.yaml       # Use custom config file
     """
     subdir = "src" if build else "target"
     with get_container(config_file=config_file, out=out, subdir=subdir) as container:
         use_case = container.generate_project_use_case()
+        if node is not None:
+            overwrite = True
         cmd = GenerateProjectCommand(overwrite=overwrite, node=node)
         use_case.execute(cmd)
 
@@ -113,10 +157,29 @@ def generate(
 @app.command(name="generate-blueprint")
 def generate_blueprint(
     config_file: str = typer.Option(
-        "codegen.yaml", "--config", "-c", help="Path to codegen.yaml"
+        "codegen.yaml",
+        "--config",
+        "-c",
+        help="Path to output codegen.yaml blueprint file",
     ),
-    package_path: Path | None = typer.Option(None, "--package", help="Package path"),
+    package_path: Path | None = typer.Option(
+        None,
+        "--package",
+        help="Path to existing Python package to reverse engineer (default: auto-detect from src/)",
+    ),
 ):
+    """
+    Reverse engineer an existing Python package into a codegen.yaml blueprint.
+
+    This command analyzes Python source code and generates a codegen.yaml file
+    that describes the project structure using DDD concepts (bounded contexts,
+    aggregates, value objects, ports, use cases, etc.).
+
+    Examples:
+        codegen generate-blueprint                          # Auto-detect package and output codegen.yaml
+        codegen generate-blueprint --package ./src/myapp   # Analyze specific package
+        codegen generate-blueprint -c blueprint-draft.yaml # Output to custom file
+    """
     config_file_path = Path(config_file)
     with get_container(config_file=config_file_path) as container:
         if package_path is None:
@@ -129,7 +192,10 @@ def generate_blueprint(
 @app.command(name="generate-blueprint-schema")
 def generate_blueprint_schema():
     """
-    Generate blueprint schema JSON file.
+    Generate JSON schema for codegen.yaml blueprint validation.
+
+    This creates a codegen.schema.json file that can be used with YAML editors
+    (like VS Code) to enable autocomplete and validation for codegen.yaml files.
     """
     with get_container() as container:
         use_case = GenerateSchemaJsonUseCase(file_system_port=container.os_file_port())

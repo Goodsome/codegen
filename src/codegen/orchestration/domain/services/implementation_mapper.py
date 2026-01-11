@@ -46,6 +46,7 @@ class ImplementationMapper:
         class_name = self._get_class_name(implementation)
         class_spec = ClassSpec.create(
             name=class_name,
+            decorators=["dataclass"],
             description=implementation.description,
             inheritance=[implementation.implements],
             attributes=attributes,
@@ -77,8 +78,4 @@ class ImplementationMapper:
         raise ValueError("No Implementation found in module")
 
     def _get_class_name(self, implementation: ImplementationSpec) -> str:
-        parts = [
-            PascalString(implementation.technology),
-            PascalString(implementation.implements),
-        ]
-        return "".join(parts)
+        return PascalString(implementation.technology) + implementation.implements

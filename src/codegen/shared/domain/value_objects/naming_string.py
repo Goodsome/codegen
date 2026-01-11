@@ -10,7 +10,6 @@ class NamingString(str):
     基于 case-converter 的增强型字符串
     """
 
-    # 实例方法：允许在对象上直接转换
     def to_pascal(self) -> str:
         return caseconverter.pascalcase(self)
 
