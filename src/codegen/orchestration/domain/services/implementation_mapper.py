@@ -29,7 +29,7 @@ class ImplementationMapper:
             self.method_mapper.to_function_spec(
                 f, function_type=FunctionType.INSTANCE_METHOD
             )
-            for f in port.operations
+            for f in port.get_final_operations()
         ]
         methods += [
             self.method_mapper.to_function_spec(
@@ -69,6 +69,7 @@ class ImplementationMapper:
                     if function.is_private:
                         private_methods.append(self.method_mapper.to_method(function))
                 return ImplementationSpec.create(
+                    name=cls.name,
                     implements=cls.inheritance[0],
                     technology=technology,
                     description=cls.description,
@@ -78,4 +79,6 @@ class ImplementationMapper:
         raise ValueError("No Implementation found in module")
 
     def _get_class_name(self, implementation: ImplementationSpec) -> str:
+        if implementation.name:
+            return implementation.name
         return PascalString(implementation.technology) + implementation.implements

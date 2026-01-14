@@ -10,3 +10,16 @@ class AttributeSpec(ValueObject):
     type: str
     description: str = Field(default_factory=str)
     optional: bool = Field(default_factory=bool)
+
+    @classmethod
+    def create(
+        cls,
+        name: str,
+        type: str,
+        optional: bool = False,
+    ):
+        return cls(
+            name=SnakeString(name),
+            type=type,
+            optional=optional,
+        )

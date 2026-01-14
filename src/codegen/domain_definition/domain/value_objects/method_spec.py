@@ -12,3 +12,16 @@ class MethodSpec(ValueObject):
     description: str = Field(default_factory=str)
     inputs: list[AttributeSpec]
     output: MethodOutput
+
+    @classmethod
+    def create(
+        cls,
+        name: str,
+        inputs: list[AttributeSpec],
+        output: MethodOutput,
+    ):
+        return cls(
+            name=SnakeString(name),
+            inputs=inputs,
+            output=output,
+        )

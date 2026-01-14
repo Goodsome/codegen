@@ -9,6 +9,7 @@ from codegen.shared.models import ValueObject
 class ImplementationSpec(ValueObject):
     """Specification of an implementation to be generated."""
 
+    name: PascalString = Field(default_factory=str)
     implements: PascalString
     technology: SnakeString
     description: str = Field(default_factory=str)
@@ -18,6 +19,7 @@ class ImplementationSpec(ValueObject):
     @classmethod
     def create(
         cls,
+        name: str,
         implements: str,
         technology: str,
         description: str = "",
@@ -25,6 +27,7 @@ class ImplementationSpec(ValueObject):
         private_methods: list[MethodSpec] | None = None,
     ):
         return cls(
+            name=PascalString(name),
             implements=PascalString(implements),
             technology=SnakeString(technology),
             description=description,
