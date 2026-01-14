@@ -23,9 +23,8 @@ class PortMapper:
                 function_type=FunctionType.INSTANCE_METHOD,
                 is_abstract=True,
             )
-            for method in port.operations
+            for method in port.get_final_operations()
         ]
-        # 端口通常是抽象基类
         class_spec = ClassSpec.create(
             name=port.name,
             description=port.description,

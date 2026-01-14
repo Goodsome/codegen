@@ -272,6 +272,10 @@
           "title":"Implements",
           "type":"string"
         },
+        "name":{
+          "title":"Name",
+          "type":"string"
+        },
         "private_methods":{
           "items":{
             "$ref":"#/$defs/MethodSpec"
@@ -376,6 +380,18 @@
       "additionalProperties":false,
       "description":"Specification of a domain port to be generated.",
       "properties":{
+        "aggregate":{
+          "anyOf":[
+            {
+              "type":"string"
+            },
+            {
+              "type":"null"
+            }
+          ],
+          "default":null,
+          "title":"Aggregate"
+        },
         "description":{
           "title":"Description",
           "type":"string"

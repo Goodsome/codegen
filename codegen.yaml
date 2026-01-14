@@ -63,6 +63,19 @@ contexts:
       - name: optional
         type: bool
         optional: true
+      behaviors:
+      - name: create
+        inputs:
+        - name: cls
+          type: Any
+        - name: name
+          type: str
+        - name: type
+          type: str
+        - name: optional
+          type: bool
+        output:
+          type: Any
     - name: Blueprint
       description: Root of the generation model. Represents the entire project definition.
       attributes:
@@ -200,6 +213,9 @@ contexts:
     - name: ImplementationSpec
       description: Specification of an implementation to be generated.
       attributes:
+      - name: name
+        type: PascalString
+        optional: true
       - name: implements
         type: PascalString
       - name: technology
@@ -218,6 +234,8 @@ contexts:
         inputs:
         - name: cls
           type: Any
+        - name: name
+          type: str
         - name: implements
           type: str
         - name: technology
@@ -262,6 +280,19 @@ contexts:
         type: list[AttributeSpec]
       - name: output
         type: MethodOutput
+      behaviors:
+      - name: create
+        inputs:
+        - name: cls
+          type: Any
+        - name: name
+          type: str
+        - name: inputs
+          type: list[AttributeSpec]
+        - name: output
+          type: MethodOutput
+        output:
+          type: Any
     - name: PortBinding
       description: Binding between a port and an adapter.
       attributes:
@@ -279,10 +310,17 @@ contexts:
         optional: true
       - name: kind
         type: PortType
+      - name: aggregate
+        type: PascalString | None
+        optional: true
       - name: operations
         type: list[MethodSpec]
         optional: true
       behaviors:
+      - name: check_aggregate_if_repository
+        inputs: []
+        output:
+          type: PortSpec
       - name: create
         inputs:
         - name: cls
@@ -293,10 +331,28 @@ contexts:
           type: Union[PortType, str]
         - name: description
           type: str
+        - name: aggregate
+          type: str | None
         - name: operations
           type: list[MethodSpec] | None
         output:
           type: PortSpec
+      - name: get_final_operations
+        inputs: []
+        output:
+          type: list[MethodSpec]
+      - name: get_save_method_spec
+        inputs: []
+        output:
+          type: MethodSpec | None
+      - name: get_delete_method_spec
+        inputs: []
+        output:
+          type: MethodSpec | None
+      - name: get_find_by_id_method_spec
+        inputs: []
+        output:
+          type: MethodSpec | None
     - name: ServiceSpec
       description: Specification of a domain service to be generated.
       attributes:
@@ -401,7 +457,8 @@ contexts:
           type: Blueprint
   infrastructure:
     implementations:
-    - implements: BlueprintStorage
+    - name: YamlBlueprintStorage
+      implements: BlueprintStorage
       technology: yaml
       description: Blueprint loader that reads from a YAML file.
 - name: Orchestration
@@ -1537,7 +1594,8 @@ contexts:
           type: PackageSpec
   infrastructure:
     implementations:
-    - implements: CodeFormatter
+    - name: BlackCodeFormatter
+      implements: CodeFormatter
       technology: black
 - name: Shared
   domain:
@@ -1670,9 +1728,11 @@ contexts:
           type: str
   infrastructure:
     implementations:
-    - implements: TemplatePort
+    - name: JinjaAdapter
+      implements: TemplatePort
       technology: jinja
       description: Jinja-based template rendering adapter.
-    - implements: FileSystemPort
+    - name: OsFileSystem
+      implements: FileSystemPort
       technology: os
       description: OS file system adapter for reading/writing files.
