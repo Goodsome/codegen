@@ -445,27 +445,34 @@
       "title":"ServiceSpec",
       "type":"object"
     },
+    "UseCaseKind":{
+      "enum":[
+        "command",
+        "query"
+      ],
+      "title":"UseCaseKind",
+      "type":"string"
+    },
     "UseCaseSpec":{
       "additionalProperties":false,
       "description":"Specification of a use case to be generated.",
       "properties":{
-        "attributes":{
+        "command":{
+          "$ref":"#/$defs/DataContractSpec"
+        },
+        "dependencies":{
           "items":{
             "$ref":"#/$defs/AttributeSpec"
           },
-          "title":"Attributes",
+          "title":"Dependencies",
           "type":"array"
-        },
-        "command":{
-          "$ref":"#/$defs/DataContractSpec"
         },
         "description":{
           "title":"Description",
           "type":"string"
         },
         "kind":{
-          "title":"Kind",
-          "type":"string"
+          "$ref":"#/$defs/UseCaseKind"
         },
         "name":{
           "title":"Name",

@@ -139,11 +139,11 @@ def generate(
         - Infrastructure layer (adapters, implementations)
 
     Examples:
-        codegen generate                           # Generate with defaults (src/ output)
-        codegen generate --overwrite              # Regenerate and overwrite existing files
-        codegen generate --no-build --out ./output  # Output to custom directory
-        codegen generate --node MyContext         # Generate only MyContext bounded context
-        codegen generate -c my-project.yaml       # Use custom config file
+        codegen generate # Generate with defaults (src/ output)
+        codegen generate --overwrite # Regenerate and overwrite existing files
+        codegen generate --no-build --out ./output # Output to custom directory
+        codegen generate --node MyContext # Generate only MyContext bounded context
+        codegen generate -c my-project.yaml # Use custom config file
     """
     subdir = "src" if build else "target"
     with get_container(config_file=config_file, out=out, subdir=subdir) as container:
@@ -176,8 +176,8 @@ def generate_blueprint(
     aggregates, value objects, ports, use cases, etc.).
 
     Examples:
-        codegen generate-blueprint                          # Auto-detect package and output codegen.yaml
-        codegen generate-blueprint --package ./src/myapp   # Analyze specific package
+        codegen generate-blueprint # Auto-detect package and output codegen.yaml
+        codegen generate-blueprint --package ./src/myapp # Analyze specific package
         codegen generate-blueprint -c blueprint-draft.yaml # Output to custom file
     """
     config_file_path = Path(config_file)

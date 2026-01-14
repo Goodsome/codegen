@@ -1,3 +1,4 @@
+from codegen.domain_definition.domain.enums import UseCaseKind
 from codegen.shared.domain.value_objects.naming_string import PascalString
 from pydantic import Field
 from codegen.shared.models import ValueObject
@@ -11,8 +12,8 @@ class UseCaseSpec(ValueObject):
     """Specification of a use case to be generated."""
 
     name: PascalString
-    kind: str
-    attributes: list[AttributeSpec] = Field(default_factory=list)
+    kind: UseCaseKind
+    dependencies: list[AttributeSpec] = Field(default_factory=list)
     description: str = Field(default_factory=str)
     command: DataContractSpec = Field(default_factory=DataContractSpec)
     query: DataContractSpec = Field(default_factory=DataContractSpec)
@@ -22,25 +23,27 @@ class UseCaseSpec(ValueObject):
     def create(
         cls,
         name: str,
-        kind: str,
-        attributes: list[AttributeSpec] | None = None,
+        kind: str | UseCaseKind,
+        dependencies: list[AttributeSpec] | None = None,
         description: str = "",
         command: DataContractSpec | None = None,
         query: DataContractSpec | None = None,
         result: DataContractSpec | None = None,
     ):
-        if attributes is None:
-            attributes = []
+        if dependencies is None:
+            dependencies = []
         if command is None:
             command = DataContractSpec()
         if query is None:
             query = DataContractSpec()
         if result is None:
             result = DataContractSpec()
+        if isinstance(kind, str):
+            kind = UseCaseKind(kind)
         return cls(
-            name=name,
+            name=PascalString(name),
             kind=kind,
-            attributes=attributes,
+            dependencies=dependencies,
             description=description,
             command=command,
             query=query,
