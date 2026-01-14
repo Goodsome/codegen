@@ -1,3 +1,4 @@
+from codegen.domain_definition.domain.enums import UseCaseKind
 from codegen.orchestration.domain.services.method_mapper import MethodMapper
 from dataclasses import dataclass, field
 from codegen.orchestration.domain.services.attribute_mapper import AttributeMapper
@@ -27,34 +28,34 @@ class UseCaseMapper:
 
     def to_module_spec(self, use_case: UseCaseSpec) -> ModuleSpec:
         classes: list[ClassSpec] = []
-        if use_case.kind == "command":
+        if use_case.kind is UseCaseKind.COMMAND:
             command_name = f"{use_case.name}Command"
             cmd_attributes = self.attribute_mapper.to_parameter_specs(
                 use_case.command.attributes,
                 default_field_flavor=FieldFlavor.DATACLASS,
             )
-            command_class = ClassSpec(
+            command_class = ClassSpec.create(
                 name=command_name,
                 decorators=["dataclass(frozen=True)"],
                 attributes=cmd_attributes,
             )
-            param = ParameterSpec(
+            param = ParameterSpec.create(
                 name="cmd",
                 annotation=TypeAnnotationSpec.parse(command_name),
             )
             classes.append(command_class)
-        elif use_case.kind == "query":
+        elif use_case.kind is UseCaseKind.QUERY:
             query_name = f"{use_case.name}Query"
             query_attributes = self.attribute_mapper.to_parameter_specs(
                 use_case.query.attributes,
                 default_field_flavor=FieldFlavor.DATACLASS,
             )
-            query_class = ClassSpec(
+            query_class = ClassSpec.create(
                 name=query_name,
                 decorators=["dataclass(frozen=True)"],
                 attributes=query_attributes,
             )
-            param = ParameterSpec(
+            param = ParameterSpec.create(
                 name="query",
                 annotation=TypeAnnotationSpec.parse(query_name),
             )
@@ -67,7 +68,7 @@ class UseCaseMapper:
             use_case.result.attributes,
             default_field_flavor=FieldFlavor.DATACLASS,
         )
-        result_class = ClassSpec(
+        result_class = ClassSpec.create(
             name=f"{use_case.name}Result",
             decorators=["dataclass(frozen=True)"],
             attributes=result_attributes,
@@ -75,7 +76,7 @@ class UseCaseMapper:
         classes.append(result_class)
 
         uc_attributes = self.attribute_mapper.to_parameter_specs(
-            use_case.attributes,
+            use_case.dependencies,
             default_field_flavor=FieldFlavor.DATACLASS,
         )
         execute_method = FunctionSpec.create(
@@ -104,7 +105,7 @@ class UseCaseMapper:
         query = None
         result = None
         uc_name = module_spec.name
-        uc_attributes = []
+        uc_deps = []
         for cls in module_spec.classes:
             if cls.name.endswith("Command"):
                 kind = "command"
@@ -119,12 +120,12 @@ class UseCaseMapper:
                 result = DataContractSpec(attributes=result_attributes)
             else:
                 uc_name = cls.name
-                uc_attributes = self.attribute_mapper.to_attributes(cls.attributes)
+                uc_deps = self.attribute_mapper.to_attributes(cls.attributes)
 
         return UseCaseSpec.create(
             name=uc_name,
             kind=kind,
-            attributes=uc_attributes,
+            dependencies=uc_deps,
             command=command,
             query=query,
             result=result,

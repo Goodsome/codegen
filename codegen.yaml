@@ -14,6 +14,18 @@ contexts:
         value: client
       - name: PROVIDER
         value: provider
+    - name: MappingDirection
+      members:
+      - name: ONE_WAY
+        value: one_way
+      - name: TWO_WAY
+        value: two_way
+    - name: UseCaseKind
+      members:
+      - name: COMMAND
+        value: command
+      - name: QUERY
+        value: query
     value_objects:
     - name: AggregateSpec
       description: Specification of a domain aggregate to be generated.
@@ -224,6 +236,15 @@ contexts:
       - name: implementations
         type: list[ImplementationSpec]
         optional: true
+    - name: MapperSpec
+      description: Base class for value object mappers.
+      attributes:
+      - name: source
+        type: str
+      - name: target
+        type: str
+      - name: direction
+        type: MappingDirection
     - name: MethodOutput
       description: Specification of the output of a method.
       attributes:
@@ -296,8 +317,8 @@ contexts:
       - name: name
         type: PascalString
       - name: kind
-        type: str
-      - name: attributes
+        type: UseCaseKind
+      - name: dependencies
         type: list[AttributeSpec]
         optional: true
       - name: description
@@ -320,8 +341,8 @@ contexts:
         - name: name
           type: str
         - name: kind
-          type: str
-        - name: attributes
+          type: Union[str, UseCaseKind]
+        - name: dependencies
           type: list[AttributeSpec] | None
         - name: description
           type: str
@@ -366,7 +387,7 @@ contexts:
     use_cases:
     - name: LoadBlueprint
       kind: command
-      attributes:
+      dependencies:
       - name: blueprint_loader
         type: BlueprintStorage
       command:
@@ -775,7 +796,7 @@ contexts:
     use_cases:
     - name: GenerateProject
       kind: command
-      attributes:
+      dependencies:
       - name: loader
         type: LoadBlueprint
       - name: generator
@@ -795,7 +816,7 @@ contexts:
           type: str
     - name: GenerateBlueprint
       kind: command
-      attributes:
+      dependencies:
       - name: parser
         type: ParsePackage
       - name: storage
@@ -1476,7 +1497,7 @@ contexts:
     use_cases:
     - name: GeneratePackage
       kind: command
-      attributes:
+      dependencies:
       - name: file_system_port
         type: FileSystemPort
       - name: translator
@@ -1498,12 +1519,12 @@ contexts:
           type: str
     - name: GenerateSchemaJsonUseCase
       kind: command
-      attributes:
+      dependencies:
       - name: file_system_port
         type: FileSystemPort
     - name: ParsePackage
       kind: query
-      attributes:
+      dependencies:
       - name: translator
         type: PythonSyntaxTranslator
       query:
