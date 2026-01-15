@@ -10,7 +10,7 @@ class MethodSpec(ValueObject):
 
     name: SnakeString
     description: str = Field(default_factory=str)
-    inputs: list[AttributeSpec]
+    inputs: list[AttributeSpec] = Field(default_factory=list)
     output: MethodOutput
 
     @classmethod
