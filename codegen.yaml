@@ -150,7 +150,6 @@ contexts:
         output:
           type: Any
       - name: port_index
-        inputs: []
         output:
           type: dict[str, PortSpec]
       - name: get_port_spec
@@ -278,6 +277,7 @@ contexts:
         optional: true
       - name: inputs
         type: list[AttributeSpec]
+        optional: true
       - name: output
         type: MethodOutput
       behaviors:
@@ -318,7 +318,6 @@ contexts:
         optional: true
       behaviors:
       - name: check_aggregate_if_repository
-        inputs: []
         output:
           type: PortSpec
       - name: create
@@ -338,19 +337,15 @@ contexts:
         output:
           type: PortSpec
       - name: get_final_operations
-        inputs: []
         output:
           type: list[MethodSpec]
       - name: get_save_method_spec
-        inputs: []
         output:
           type: MethodSpec | None
       - name: get_delete_method_spec
-        inputs: []
         output:
           type: MethodSpec | None
       - name: get_find_by_id_method_spec
-        inputs: []
         output:
           type: MethodSpec | None
     - name: ServiceSpec
@@ -430,7 +425,6 @@ contexts:
       kind: adapter
       operations:
       - name: load
-        inputs: []
         output:
           type: Blueprint | None
       - name: save
@@ -971,7 +965,6 @@ contexts:
         output:
           type: Any
       - name: get_required_types
-        inputs: []
         output:
           type: set[str]
       - name: merge
@@ -1083,11 +1076,9 @@ contexts:
         output:
           type: FieldSpec
       - name: func_name
-        inputs: []
         output:
           type: Any
       - name: render
-        inputs: []
         output:
           type: str
     - name: FunctionSpec
@@ -1144,11 +1135,9 @@ contexts:
         output:
           type: Any
       - name: get_required_types
-        inputs: []
         output:
           type: set[str]
       - name: is_instance_method
-        inputs: []
         output:
           type: bool
       - name: merge
@@ -1158,7 +1147,6 @@ contexts:
         output:
           type: FunctionSpec
       - name: is_init_method
-        inputs: []
         output:
           type: bool
     - name: ImportedName
@@ -1171,7 +1159,6 @@ contexts:
         optional: true
       behaviors:
       - name: render
-        inputs: []
         output:
           type: str
     - name: ImportFromSpec
@@ -1213,15 +1200,12 @@ contexts:
         output:
           type: ImportFromSpec
       - name: render
-        inputs: []
         output:
           type: str
       - name: render_from_expression
-        inputs: []
         output:
           type: str
       - name: render_names
-        inputs: []
         output:
           type: str
       - name: merge
@@ -1287,11 +1271,9 @@ contexts:
         output:
           type: ModuleSpec
       - name: filename
-        inputs: []
         output:
           type: str
       - name: is_init_module
-        inputs: []
         output:
           type: bool
       - name: is_match_name
@@ -1301,7 +1283,6 @@ contexts:
         output:
           type: bool
       - name: get_required_types
-        inputs: []
         output:
           type: set[str]
       - name: has_class
@@ -1323,7 +1304,6 @@ contexts:
         output:
           type: bool
       - name: collect_class_spec
-        inputs: []
         output:
           type: dict[str, ClassSpec]
       - name: merge
@@ -1357,7 +1337,6 @@ contexts:
         output:
           type: Any
       - name: is_empty
-        inputs: []
         output:
           type: bool
       - name: get_global_registry
@@ -1375,7 +1354,6 @@ contexts:
         output:
           type: Any
       - name: collect_class_spec
-        inputs: []
         output:
           type: dict[str, ClassSpec]
       - name: merge
@@ -1423,11 +1401,9 @@ contexts:
         output:
           type: list[ParameterSpec]
       - name: get_required_types
-        inputs: []
         output:
           type: set[str]
       - name: render_default
-        inputs: []
         output:
           type: str
     - name: TypeAnnotationSpec
@@ -1464,15 +1440,12 @@ contexts:
         output:
           type: TypeAnnotationSpec
       - name: render
-        inputs: []
         output:
           type: str
       - name: get_all_referenced_names
-        inputs: []
         output:
           type: set[str]
       - name: is_nullable
-        inputs: []
         output:
           type: bool
     services:
@@ -1604,23 +1577,18 @@ contexts:
       description: 基于 case-converter 的增强型字符串
       behaviors:
       - name: to_pascal
-        inputs: []
         output:
           type: str
       - name: to_snake
-        inputs: []
         output:
           type: str
       - name: to_kebab
-        inputs: []
         output:
           type: str
       - name: to_camel
-        inputs: []
         output:
           type: str
       - name: to_macro
-        inputs: []
         output:
           type: str
       - name: __get_pydantic_core_schema__

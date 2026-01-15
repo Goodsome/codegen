@@ -350,7 +350,6 @@
       },
       "required":[
         "name",
-        "inputs",
         "output"
       ],
       "title":"MethodSpec",
