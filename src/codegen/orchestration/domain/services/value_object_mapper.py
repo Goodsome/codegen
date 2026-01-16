@@ -6,6 +6,7 @@ from codegen.domain_definition.domain.value_objects.value_object_spec import (
 from dataclasses import dataclass, field
 from codegen.orchestration.domain.services.method_mapper import MethodMapper
 from codegen.orchestration.domain.services.attribute_mapper import AttributeMapper
+from codegen.python_gen.domain.enums import FunctionType
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
@@ -26,11 +27,19 @@ class ValueObjectMapper:
             )
             for attr in value_object.attributes
         ]
+        methods = [
+            self.method_mapper.to_function_spec(
+                behavior,
+                function_type=FunctionType.INSTANCE_METHOD,
+            )
+            for behavior in value_object.behaviors
+        ]
         class_spec = ClassSpec.create(
             name=value_object.name,
             description=value_object.description,
             inheritance=["ValueObject"],
             attributes=attributes,
+            methods=methods,
         )
         return ModuleSpec.create(name=value_object.name, classes=[class_spec])
 

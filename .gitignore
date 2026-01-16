@@ -27,3 +27,4 @@ Thumbs.db
 /src/codegen.egg-info/
 /build/
 /dist/
+/project_context.txt
