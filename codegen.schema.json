@@ -160,6 +160,13 @@
           "title":"Aggregates",
           "type":"array"
         },
+        "entities":{
+          "items":{
+            "$ref":"#/$defs/EntitySpec"
+          },
+          "title":"Entities",
+          "type":"array"
+        },
         "enums":{
           "items":{
             "$ref":"#/$defs/EnumSpec"
@@ -190,6 +197,39 @@
         }
       },
       "title":"DomainSpec",
+      "type":"object"
+    },
+    "EntitySpec":{
+      "additionalProperties":false,
+      "description":"Specification of an entity.",
+      "properties":{
+        "attributes":{
+          "items":{
+            "$ref":"#/$defs/AttributeSpec"
+          },
+          "title":"Attributes",
+          "type":"array"
+        },
+        "behaviors":{
+          "items":{
+            "$ref":"#/$defs/MethodSpec"
+          },
+          "title":"Behaviors",
+          "type":"array"
+        },
+        "description":{
+          "title":"Description",
+          "type":"string"
+        },
+        "name":{
+          "title":"Name",
+          "type":"string"
+        }
+      },
+      "required":[
+        "name"
+      ],
+      "title":"EntitySpec",
       "type":"object"
     },
     "EnumMemberSpec":{

@@ -182,11 +182,28 @@ contexts:
       - name: value_objects
         type: list[ValueObjectSpec]
         optional: true
+      - name: entities
+        type: list[EntitySpec]
+        optional: true
       - name: services
         type: list[ServiceSpec]
         optional: true
       - name: ports
         type: list[PortSpec]
+        optional: true
+    - name: EntitySpec
+      description: Specification of an entity.
+      attributes:
+      - name: name
+        type: PascalString
+      - name: description
+        type: str
+        optional: true
+      - name: attributes
+        type: list[AttributeSpec]
+        optional: true
+      - name: behaviors
+        type: list[MethodSpec]
         optional: true
     - name: EnumMemberSpec
       description: Specification of an enum member to be generated.
@@ -597,6 +614,9 @@ contexts:
       - name: aggregate_mapper
         type: AggregateMapper
         optional: true
+      - name: entity_mapper
+        type: EntityMapper
+        optional: true
       - name: value_object_mapper
         type: ValueObjectMapper
         optional: true
@@ -622,6 +642,39 @@ contexts:
           type: PackageSpec
         output:
           type: DomainSpec
+    - name: EntityMapper
+      attributes:
+      - name: attribute_mapper
+        type: AttributeMapper
+        optional: true
+      - name: method_mapper
+        type: MethodMapper
+        optional: true
+      operations:
+      - name: to_module_spec
+        inputs:
+        - name: entity
+          type: EntitySpec
+        output:
+          type: ModuleSpec
+      - name: to_package_spec
+        inputs:
+        - name: entities
+          type: Iterable[EntitySpec]
+        output:
+          type: PackageSpec
+      - name: to_entity
+        inputs:
+        - name: module
+          type: ModuleSpec
+        output:
+          type: EntitySpec
+      - name: to_entities
+        inputs:
+        - name: package
+          type: PackageSpec
+        output:
+          type: list[EntitySpec]
     - name: EnumMapper
       operations:
       - name: to_python_enum_spec
