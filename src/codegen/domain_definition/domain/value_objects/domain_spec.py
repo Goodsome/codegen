@@ -1,3 +1,4 @@
+from codegen.domain_definition.domain.value_objects.entity_spec import EntitySpec
 from codegen.domain_definition.domain.value_objects.value_object_spec import (
     ValueObjectSpec,
 )
@@ -15,5 +16,6 @@ class DomainSpec(ValueObject):
     aggregates: list[AggregateSpec] = Field(default_factory=list)
     enums: list[EnumSpec] = Field(default_factory=list)
     value_objects: list[ValueObjectSpec] = Field(default_factory=list)
+    entities: list[EntitySpec] = Field(default_factory=list)
     services: list[ServiceSpec] = Field(default_factory=list)
     ports: list[PortSpec] = Field(default_factory=list)

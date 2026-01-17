@@ -1,3 +1,4 @@
+from codegen.orchestration.domain.services.entity_mapper import EntityMapper
 from codegen.orchestration.domain.services.enum_mapper import EnumMapper
 from codegen.domain_definition.domain.value_objects.enum_spec import EnumSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
@@ -15,6 +16,7 @@ from codegen.orchestration.domain.services.aggregate_mapper import AggregateMapp
 class DomainMapper:
 
     aggregate_mapper: AggregateMapper = field(default_factory=AggregateMapper)
+    entity_mapper: EntityMapper = field(default_factory=EntityMapper)
     value_object_mapper: ValueObjectMapper = field(default_factory=ValueObjectMapper)
     service_mapper: ServiceMapper = field(default_factory=ServiceMapper)
     port_mapper: PortMapper = field(default_factory=PortMapper)
@@ -22,6 +24,7 @@ class DomainMapper:
 
     def to_package_spec(self, domain: DomainSpec) -> PackageSpec:
         aggregate_pkg = self.aggregate_mapper.to_package_spec(domain.aggregates)
+        entity_pkg = self.entity_mapper.to_package_spec(domain.entities)
         value_objects_pkg = self.value_object_mapper.to_package_spec(
             domain.value_objects
         )
@@ -29,6 +32,7 @@ class DomainMapper:
         ports_pkg = self.port_mapper.to_package_spec(domain.ports)
         sub_packages = [
             aggregate_pkg,
+            entity_pkg,
             value_objects_pkg,
             services_pkg,
             ports_pkg,
@@ -44,6 +48,7 @@ class DomainMapper:
 
     def to_domain(self, package_spec: PackageSpec) -> DomainSpec:
         aggregates = []
+        entities = []
         value_objects = []
         services = []
         ports = []
@@ -52,6 +57,8 @@ class DomainMapper:
         for pkg in package_spec.sub_packages:
             if pkg.name == "aggregates":
                 aggregates = self.aggregate_mapper.to_aggregates(pkg)
+            elif pkg.name == "entities":
+                entities = self.entity_mapper.to_entities(pkg)
             elif pkg.name == "value_objects":
                 value_objects = self.value_object_mapper.to_value_objects(pkg)
             elif pkg.name == "services":
@@ -64,6 +71,7 @@ class DomainMapper:
 
         return DomainSpec(
             aggregates=aggregates,
+            entities=entities,
             value_objects=value_objects,
             services=services,
             ports=ports,
