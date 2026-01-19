@@ -47,6 +47,7 @@ class ModuleSpec(ValueObject):
         name = "models"
         classes = [
             ClassSpec.create_value_object(),
+            ClassSpec.create_entity(),
             ClassSpec.create_aggregate(),
         ]
         return cls.create(name=name, classes=classes)

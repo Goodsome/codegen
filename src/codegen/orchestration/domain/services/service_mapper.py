@@ -21,7 +21,7 @@ class ServiceMapper:
                 attr,
                 default_field_flavor=FieldFlavor.DATACLASS,
             )
-            for attr in service.attributes
+            for attr in service.dependencies
         ]
         methods = [
             self.method_mapper.to_function_spec(
@@ -54,7 +54,7 @@ class ServiceMapper:
         return ServiceSpec(
             name=cls.name,
             description=cls.description,
-            attributes=attributes,
+            dependencies=attributes,
             operations=operations,
         )
 

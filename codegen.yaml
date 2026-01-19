@@ -373,7 +373,7 @@ contexts:
       - name: description
         type: str
         optional: true
-      - name: attributes
+      - name: dependencies
         type: list[AttributeSpec]
         optional: true
       - name: operations
@@ -476,7 +476,7 @@ contexts:
   domain:
     services:
     - name: AggregateMapper
-      attributes:
+      dependencies:
       - name: attribute_mapper
         type: AttributeMapper
         optional: true
@@ -509,7 +509,7 @@ contexts:
         output:
           type: list[AggregateSpec]
     - name: ApplicationMapper
-      attributes:
+      dependencies:
       - name: use_case_mapper
         type: UseCaseMapper
         optional: true
@@ -560,7 +560,7 @@ contexts:
         output:
           type: list[AttributeSpec]
     - name: BlueprintMapper
-      attributes:
+      dependencies:
       - name: context_mapper
         type: ContextMapper
         optional: true
@@ -578,7 +578,7 @@ contexts:
         output:
           type: Blueprint
     - name: ContextMapper
-      attributes:
+      dependencies:
       - name: domain_mapper
         type: DomainMapper
         optional: true
@@ -610,7 +610,7 @@ contexts:
         output:
           type: None
     - name: DomainMapper
-      attributes:
+      dependencies:
       - name: aggregate_mapper
         type: AggregateMapper
         optional: true
@@ -643,7 +643,7 @@ contexts:
         output:
           type: DomainSpec
     - name: EntityMapper
-      attributes:
+      dependencies:
       - name: attribute_mapper
         type: AttributeMapper
         optional: true
@@ -702,7 +702,7 @@ contexts:
         output:
           type: Iterable[EnumSpec]
     - name: ImplementationMapper
-      attributes:
+      dependencies:
       - name: attribute_mapper
         type: AttributeMapper
         optional: true
@@ -733,7 +733,7 @@ contexts:
         output:
           type: str
     - name: InfrastructureMapper
-      attributes:
+      dependencies:
       - name: implementation_mapper
         type: ImplementationMapper
         optional: true
@@ -753,7 +753,7 @@ contexts:
         output:
           type: InfrastructureSpec
     - name: MethodMapper
-      attributes:
+      dependencies:
       - name: attribute_mapper
         type: AttributeMapper
         optional: true
@@ -777,7 +777,7 @@ contexts:
         output:
           type: MethodSpec
     - name: PortMapper
-      attributes:
+      dependencies:
       - name: attribute_mapper
         type: AttributeMapper
         optional: true
@@ -810,7 +810,7 @@ contexts:
         output:
           type: list[PortSpec]
     - name: ServiceMapper
-      attributes:
+      dependencies:
       - name: attribute_mapper
         type: AttributeMapper
         optional: true
@@ -843,7 +843,7 @@ contexts:
         output:
           type: list[ServiceSpec]
     - name: UseCaseMapper
-      attributes:
+      dependencies:
       - name: attribute_mapper
         type: AttributeMapper
         optional: true
@@ -864,7 +864,7 @@ contexts:
         output:
           type: UseCaseSpec
     - name: ValueObjectMapper
-      attributes:
+      dependencies:
       - name: attribute_mapper
         type: AttributeMapper
         optional: true
@@ -1002,6 +1002,12 @@ contexts:
         output:
           type: ClassSpec
       - name: create_aggregate
+        inputs:
+        - name: cls
+          type: Any
+        output:
+          type: ClassSpec
+      - name: create_entity
         inputs:
         - name: cls
           type: Any
@@ -1503,7 +1509,7 @@ contexts:
           type: bool
     services:
     - name: DependencyResolver
-      attributes:
+      dependencies:
       - name: global_registry
         type: dict[str, str]
       operations:
@@ -1523,7 +1529,7 @@ contexts:
           type: Iterable[ImportFromSpec]
     - name: PythonSyntaxTranslator
       description: Bidirectional translator between Python source code and PackageSpec.
-      attributes:
+      dependencies:
       - name: template_port
         type: TemplatePort
       - name: file_system_port

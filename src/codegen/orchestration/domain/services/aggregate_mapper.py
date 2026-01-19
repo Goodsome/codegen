@@ -26,12 +26,19 @@ class AggregateMapper:
             )
             for attr in aggregate.attributes
         ]
-        methods = [
-            self.method_mapper.to_function_spec(
-                method, function_type=FunctionType.INSTANCE_METHOD
+        methods = []
+        for method in aggregate.behaviors:
+            if method.inputs and method.inputs[0].name == "cls":
+                func_type = FunctionType.CLASS_METHOD
+            elif method.inputs and method.inputs[0].name == "self":
+                func_type = FunctionType.INSTANCE_METHOD
+            else:
+                func_type = FunctionType.INSTANCE_METHOD
+            func_spec = self.method_mapper.to_function_spec(
+                method=method,
+                function_type=func_type,
             )
-            for method in aggregate.behaviors
-        ]
+            methods.append(func_spec)
         class_spec = ClassSpec.create(
             name=aggregate.name,
             description=aggregate.description,
