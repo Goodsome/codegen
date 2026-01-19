@@ -18,6 +18,9 @@ BUILTIN_TYPES = {
     "None",
     "list",
     "dict",
+    "tuple",
+    "staticmethod",
+    "classmethod",
 }
 
 GLOBAL_REGISTRY = {

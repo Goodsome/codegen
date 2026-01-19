@@ -27,7 +27,14 @@ class MethodMapper:
         parameters = [
             self.attribute_mapper.to_parameter_spec(attr) for attr in method.inputs
         ]
-        decorators = ["abstractmethod"] if is_abstract else []
+        decorators = []
+        if is_abstract:
+            decorators.append("abstractmethod")
+        if function_type is FunctionType.CLASS_METHOD:
+            decorators.append("classmethod")
+        elif function_type is FunctionType.STATIC_METHOD:
+            decorators.append("staticmethod")
+            
         function_name = method.name
         if is_private and not function_name.startswith("_"):
             function_name = "_" + function_name

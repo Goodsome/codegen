@@ -10,5 +10,5 @@ class ServiceSpec(ValueObject):
 
     name: PascalString
     description: str = Field(default_factory=str)
-    attributes: list[AttributeSpec] = Field(default_factory=list)
+    dependencies: list[AttributeSpec] = Field(default_factory=list)
     operations: list[MethodSpec] = Field(default_factory=list)

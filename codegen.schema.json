@@ -471,11 +471,11 @@
       "additionalProperties":false,
       "description":"Specification of a domain service to be generated.",
       "properties":{
-        "attributes":{
+        "dependencies":{
           "items":{
             "$ref":"#/$defs/AttributeSpec"
           },
-          "title":"Attributes",
+          "title":"Dependencies",
           "type":"array"
         },
         "description":{

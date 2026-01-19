@@ -56,6 +56,13 @@ class ClassSpec(ValueObject):
             name="Aggregate",
             inheritance=["BaseModel"],
         )
+    
+    @classmethod
+    def create_entity(cls) -> "ClassSpec":
+        return cls.create(
+            name="Entity",
+            inheritance=["BaseModel"],
+        )
 
     @classmethod
     def parse_ast(cls, node: ast.ClassDef, source_code: str):

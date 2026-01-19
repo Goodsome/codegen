@@ -15,7 +15,7 @@ from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 class EnumMapper:
 
     def to_python_enum_spec(self, meta_enum: EnumSpec) -> PythonEnumSpec:
-        return PythonEnumSpec(
+        return PythonEnumSpec.create(
             name=meta_enum.name,
             description=meta_enum.description,
             members=[

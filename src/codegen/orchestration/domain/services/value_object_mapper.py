@@ -6,7 +6,7 @@ from codegen.domain_definition.domain.value_objects.value_object_spec import (
 from dataclasses import dataclass, field
 from codegen.orchestration.domain.services.method_mapper import MethodMapper
 from codegen.orchestration.domain.services.attribute_mapper import AttributeMapper
-from codegen.python_gen.domain.enums import FunctionType
+from codegen.python_gen.domain.enums import FunctionType, FieldFlavor
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
@@ -19,7 +19,6 @@ class ValueObjectMapper:
     method_mapper: MethodMapper = field(default_factory=MethodMapper)
 
     def to_module_spec(self, value_object: ValueObjectSpec) -> ModuleSpec:
-        from codegen.python_gen.domain.enums import FieldFlavor
 
         attributes = [
             self.attribute_mapper.to_parameter_spec(
@@ -27,13 +26,19 @@ class ValueObjectMapper:
             )
             for attr in value_object.attributes
         ]
-        methods = [
-            self.method_mapper.to_function_spec(
-                behavior,
-                function_type=FunctionType.INSTANCE_METHOD,
+        methods = []
+        for method in value_object.behaviors:
+            if method.inputs and method.inputs[0].name == "cls":
+                func_type = FunctionType.CLASS_METHOD
+            elif method.inputs and method.inputs[0].name == "self":
+                func_type = FunctionType.INSTANCE_METHOD
+            else:
+                func_type = FunctionType.INSTANCE_METHOD
+            func_spec = self.method_mapper.to_function_spec(
+                method=method,
+                function_type=func_type,
             )
-            for behavior in value_object.behaviors
-        ]
+            methods.append(func_spec)
         class_spec = ClassSpec.create(
             name=value_object.name,
             description=value_object.description,
