@@ -59,6 +59,22 @@
       "additionalProperties":false,
       "description":"Standard specification for a class attribute.",
       "properties":{
+        "container":{
+          "$ref":"#/$defs/ContainerType",
+          "default":"none"
+        },
+        "default":{
+          "anyOf":[
+            {
+              "type":"string"
+            },
+            {
+              "type":"null"
+            }
+          ],
+          "default":null,
+          "title":"Default"
+        },
         "description":{
           "title":"Description",
           "type":"string"
@@ -125,6 +141,16 @@
       ],
       "title":"BoundedContext",
       "type":"object"
+    },
+    "ContainerType":{
+      "enum":[
+        "none",
+        "list",
+        "set",
+        "map"
+      ],
+      "title":"ContainerType",
+      "type":"string"
     },
     "DataContractSpec":{
       "additionalProperties":false,

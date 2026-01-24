@@ -55,13 +55,19 @@ contexts:
       attributes:
       - name: name
         type: SnakeString
-      - name: type
-        type: str
       - name: description
         type: str
         optional: true
+      - name: type
+        type: str
+      - name: container
+        type: ContainerType
+        optional: true
       - name: optional
         type: bool
+        optional: true
+      - name: default
+        type: str | None
         optional: true
       behaviors:
       - name: create
@@ -1631,6 +1637,34 @@ contexts:
       technology: black
 - name: Shared
   domain:
+    enums:
+    - name: ContainerType
+      members:
+      - name: NONE
+        value: none
+      - name: LIST
+        value: list
+      - name: SET
+        value: set
+      - name: MAP
+        value: map
+    - name: PrimitiveType
+      description: 通用原语类型，不依赖具体语言。
+      members:
+      - name: STRING
+        value: string
+      - name: INTEGER
+        value: integer
+      - name: FLOAT
+        value: float
+      - name: BOOLEAN
+        value: boolean
+      - name: DATETIME
+        value: datetime
+      - name: UUID
+        value: uuid
+      - name: ANY
+        value: any
     value_objects:
     - name: NamingString
       description: 基于 case-converter 的增强型字符串
