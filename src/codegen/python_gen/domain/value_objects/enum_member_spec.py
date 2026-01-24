@@ -1,4 +1,4 @@
-from codegen.shared.domain.value_objects.naming_string import MacroString
+from codegen.shared.domain.value_objects.macro_string import MacroString
 import ast
 from codegen.shared.models import ValueObject
 from pydantic import Field

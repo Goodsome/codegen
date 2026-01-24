@@ -4,7 +4,7 @@ Name: ModuleSpec
 Description: Represents a Python module.
 """
 
-from codegen.shared.domain.value_objects.naming_string import SnakeString
+from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.python_gen.domain.value_objects.enum_spec import PythonEnumSpec
 import ast
 

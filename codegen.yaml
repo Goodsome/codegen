@@ -945,6 +945,16 @@ contexts:
 - name: PythonGen
   domain:
     enums:
+    - name: AssignmentFlavor
+      members:
+      - name: NONE
+        value: none
+      - name: LITERAL
+        value: literal
+      - name: PYDANTIC_FIELD
+        value: pydantic_field
+      - name: DATACLASS_FIELD
+        value: dataclass_field
     - name: FunctionType
       members:
       - name: CLASS_METHOD
@@ -962,6 +972,36 @@ contexts:
       - name: DATACLASS
         value: dataclass
     value_objects:
+    - name: AssignmentSpec
+      description: 描述变量的赋值结构 (RHS)。 对应 AST 中的 value 节点。
+      attributes:
+        - name: flavor
+          type: AssignmentFlavor
+        - name: content
+          type: str
+          optional: true
+        - name: is_factory
+          type: bool
+    - name: VariableSpec
+      description: "对应 Python 代码中的 name: type_spec = assignment_spec"
+      attributes:
+        - name: name
+          type: str
+        - name: type_spec
+          type: TypeSpec
+        - name: assignment
+          type: AssignmentSpec
+      behaviors:
+        - name: create
+          inputs:
+          - name: name
+            type: str
+          - name: type_spec
+            type: TypeSpec
+          - name: assignment
+            type: AssignmentSpec
+          output:
+            type: VariableSpec
     - name: ClassSpec
       description: Represents a class in a Python module.
       attributes:
@@ -1512,6 +1552,15 @@ contexts:
           type: set[str]
       - name: is_nullable
         output:
+          type: bool
+    - name: TypeSpec
+      description: 描述变量的类型注解结构 (LHS)。 对应 AST 中的 annotation 节点。
+      attributes:
+        - name: core_type
+          type: str
+        - name: container
+          type: ContainerType
+        - name: nullable
           type: bool
     services:
     - name: DependencyResolver

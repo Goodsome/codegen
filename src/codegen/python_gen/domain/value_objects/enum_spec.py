@@ -1,6 +1,6 @@
 import ast
 
-from codegen.shared.domain.value_objects.naming_string import PascalString
+from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.models import ValueObject
 from pydantic import Field
 from codegen.python_gen.domain.value_objects.enum_member_spec import (
