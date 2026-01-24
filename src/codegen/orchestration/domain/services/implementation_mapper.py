@@ -1,4 +1,4 @@
-from codegen.shared.domain.value_objects.naming_string import PascalString
+from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
 from dataclasses import field
 

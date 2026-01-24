@@ -35,21 +35,3 @@ class NamingString(str):
         )
 
 
-class PascalString(NamingString):
-    def __new__(cls, value: str):
-        converted = caseconverter.pascalcase(value)
-        return super().__new__(cls, converted)
-
-
-class SnakeString(NamingString):
-    def __new__(cls, value: str):
-        if value.startswith("_"):
-            return super().__new__(cls, value)
-        converted = caseconverter.snakecase(value)
-        return super().__new__(cls, converted)
-
-
-class MacroString(NamingString):
-    def __new__(cls, value: str):
-        converted = caseconverter.macrocase(value)
-        return super().__new__(cls, converted)

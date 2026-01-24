@@ -4,7 +4,7 @@ Name: PackageSpec
 Description: Represents a Python package.
 """
 
-from codegen.shared.domain.value_objects.naming_string import SnakeString
+from codegen.shared.domain.value_objects.snake_string import SnakeString
 from pathlib import Path
 
 from pydantic import Field

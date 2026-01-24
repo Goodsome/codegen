@@ -4,7 +4,7 @@ Name: FunctionSpec
 Description: Represents a function in a Python module.
 """
 
-from codegen.shared.domain.value_objects.naming_string import SnakeString
+from codegen.shared.domain.value_objects.snake_string import SnakeString
 import ast
 
 from codegen.python_gen.domain.enums import FunctionType

@@ -1,5 +1,5 @@
-from codegen.shared.domain.value_objects.naming_string import SnakeString
-from codegen.shared.domain.value_objects.naming_string import PascalString
+from codegen.shared.domain.value_objects.snake_string import SnakeString
+from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
 from pydantic import Field
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec

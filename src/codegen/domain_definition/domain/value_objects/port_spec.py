@@ -4,7 +4,7 @@ from codegen.domain_definition.domain.enums import PortType
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
 from codegen.domain_definition.domain.value_objects.method_output import MethodOutput
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
-from codegen.shared.domain.value_objects.naming_string import PascalString
+from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.models import ValueObject
 
 

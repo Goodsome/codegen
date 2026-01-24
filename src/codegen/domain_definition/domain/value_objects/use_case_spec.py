@@ -1,5 +1,5 @@
 from codegen.domain_definition.domain.enums import UseCaseKind
-from codegen.shared.domain.value_objects.naming_string import PascalString
+from codegen.shared.domain.value_objects.pascal_string import PascalString
 from pydantic import Field
 from codegen.shared.models import ValueObject
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
