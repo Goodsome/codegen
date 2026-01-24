@@ -9,7 +9,7 @@ from codegen.domain_definition.infrastructure.adapters.yaml_blueprint_storage im
     YamlBlueprintStorage,
 )
 from codegen.orchestration.application.use_cases.generate_project import GenerateProject
-from codegen.orchestration.application.use_cases.update_blueprint import GenerateBlueprint
+from codegen.orchestration.application.use_cases.generate_blueprint import GenerateBlueprint
 from codegen.python_gen.application.use_cases.generate_package import (
     GeneratePackage,
 )

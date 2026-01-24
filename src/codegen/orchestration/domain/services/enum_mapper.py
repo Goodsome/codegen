@@ -3,8 +3,8 @@ from codegen.domain_definition.domain.value_objects.enum_spec import EnumSpec
 from codegen.domain_definition.domain.value_objects.enum_member_spec import (
     EnumMemberSpec,
 )
-from codegen.python_gen.domain.value_objects.enum_spec import PythonEnumSpec
-from codegen.python_gen.domain.value_objects.enum_member_spec import (
+from codegen.python_gen.domain.value_objects.python_enum_spec import PythonEnumSpec
+from codegen.python_gen.domain.value_objects.python_enum_member_spec import (
     PythonEnumMemberSpec,
 )
 from typing import Iterable

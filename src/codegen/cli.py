@@ -10,12 +10,12 @@ from codegen.bootstrap import Container
 from codegen.orchestration.application.use_cases.generate_project import (
     GenerateProjectCommand,
 )
-from codegen.orchestration.application.use_cases.update_blueprint import (
+from codegen.orchestration.application.use_cases.generate_blueprint import (
     GenerateBlueprintCommand,
 )
 from codegen.python_gen.application.use_cases.generate_schem_json import (
     GenerateSchemaJsonCommand,
-    GenerateSchemaJsonUseCase,
+    GenerateSchemaJson,
 )
 
 # 创建 Typer 应用实例
@@ -198,7 +198,7 @@ def generate_blueprint_schema():
     (like VS Code) to enable autocomplete and validation for codegen.yaml files.
     """
     with get_container() as container:
-        use_case = GenerateSchemaJsonUseCase(file_system_port=container.os_file_port())
+        use_case = GenerateSchemaJson(file_system_port=container.os_file_port())
         cmd = GenerateSchemaJsonCommand()
         use_case.execute(cmd)
 
