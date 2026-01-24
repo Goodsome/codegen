@@ -15,7 +15,7 @@ class GenerateSchemaJsonResult: ...
 
 
 @dataclass
-class GenerateSchemaJsonUseCase:
+class GenerateSchemaJson:
     file_system_port: FileSystemPort
 
     def execute(self, cmd: GenerateSchemaJsonCommand) -> GenerateSchemaJsonResult:
