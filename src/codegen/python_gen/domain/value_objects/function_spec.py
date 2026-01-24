@@ -55,7 +55,7 @@ class FunctionSpec(ValueObject):
         params: list[ParameterSpec] = []
         for arg in node.args.args:
             anno = TypeAnnotationSpec.parse_ast(arg.annotation)
-            params.append(ParameterSpec(name=arg.arg, annotation=anno))
+            params.append(ParameterSpec.create(name=arg.arg, annotation=anno))
 
         return_anno = TypeAnnotationSpec.parse_ast(node.returns)
         if node.body:

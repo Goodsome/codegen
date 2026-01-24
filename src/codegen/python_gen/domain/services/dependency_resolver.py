@@ -28,6 +28,7 @@ GLOBAL_REGISTRY = {
     "BaseModel": "pydantic",
     "Path": "pathlib",
     "Any": "typing",
+    "Type": "typing",
     "Dict": "typing",
     "Union": "typing",
     "Iterable": "typing",
