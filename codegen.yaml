@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=./codegen.schema.json
 name: Codegen
 description: ''
 contexts:
@@ -904,6 +905,24 @@ contexts:
           type: list[ValueObjectSpec]
   application:
     use_cases:
+    - name: GenerateBlueprint
+      kind: command
+      dependencies:
+      - name: parser
+        type: ParsePackage
+      - name: storage
+        type: BlueprintStorage
+      - name: mapper
+        type: BlueprintMapper
+        optional: true
+      command:
+        attributes:
+        - name: path
+          type: Path
+      result:
+        attributes:
+        - name: result
+          type: str
     - name: GenerateProject
       kind: command
       dependencies:
@@ -920,24 +939,6 @@ contexts:
           type: bool
         - name: node
           type: str | None
-      result:
-        attributes:
-        - name: result
-          type: str
-    - name: GenerateBlueprint
-      kind: command
-      dependencies:
-      - name: parser
-        type: ParsePackage
-      - name: storage
-        type: BlueprintStorage
-      - name: mapper
-        type: BlueprintMapper
-        optional: true
-      command:
-        attributes:
-        - name: path
-          type: Path
       result:
         attributes:
         - name: result
@@ -975,33 +976,13 @@ contexts:
     - name: AssignmentSpec
       description: 描述变量的赋值结构 (RHS)。 对应 AST 中的 value 节点。
       attributes:
-        - name: flavor
-          type: AssignmentFlavor
-        - name: content
-          type: str
-          optional: true
-        - name: is_factory
-          type: bool
-    - name: VariableSpec
-      description: "对应 Python 代码中的 name: type_spec = assignment_spec"
-      attributes:
-        - name: name
-          type: str
-        - name: type_spec
-          type: TypeSpec
-        - name: assignment
-          type: AssignmentSpec
-      behaviors:
-        - name: create
-          inputs:
-          - name: name
-            type: str
-          - name: type_spec
-            type: TypeSpec
-          - name: assignment
-            type: AssignmentSpec
-          output:
-            type: VariableSpec
+      - name: flavor
+        type: AssignmentFlavor
+      - name: content
+        type: str
+        optional: true
+      - name: is_factory
+        type: bool
     - name: ClassSpec
       description: Represents a class in a Python module.
       attributes:
@@ -1078,86 +1059,6 @@ contexts:
           type: ClassSpec
         output:
           type: ClassSpec
-    - name: PythonEnumMemberSpec
-      description: Represents an enum member in a Python module.
-      attributes:
-      - name: name
-        type: MacroString
-      - name: value
-        type: str | int | None
-        optional: true
-      - name: description
-        type: str
-        optional: true
-      behaviors:
-      - name: create
-        inputs:
-        - name: cls
-          type: Any
-        - name: name
-          type: str
-        - name: value
-          type: str | int | None
-        - name: description
-          type: str
-        output:
-          type: PythonEnumMemberSpec
-      - name: parse_ast
-        inputs:
-        - name: cls
-          type: Any
-        - name: node
-          type: Union[ast.Assign, ast.AnnAssign]
-        output:
-          type: PythonEnumMemberSpec
-      - name: _parse_value
-        inputs:
-        - name: node
-          type: ast.AST
-        output:
-          type: str | int | None
-    - name: PythonEnumSpec
-      description: Represents an enum in a Python module.
-      attributes:
-      - name: name
-        type: PascalString
-      - name: description
-        type: str
-        optional: true
-      - name: decorators
-        type: list[str]
-        optional: true
-      - name: base_class
-        type: str
-        optional: true
-      - name: members
-        type: list[PythonEnumMemberSpec]
-        optional: true
-      behaviors:
-      - name: create
-        inputs:
-        - name: cls
-          type: Any
-        - name: name
-          type: str
-        - name: description
-          type: str
-        - name: decorators
-          type: list[str] | None
-        - name: base_class
-          type: str
-        - name: members
-          type: list[PythonEnumMemberSpec] | None
-        output:
-          type: PythonEnumSpec
-      - name: parse_ast
-        inputs:
-        - name: cls
-          type: Any
-        - name: node
-          type: ast.ClassDef
-        output:
-          type: PythonEnumSpec
     - name: FieldSpec
       attributes:
       - name: default
@@ -1511,6 +1412,86 @@ contexts:
       - name: render_default
         output:
           type: str
+    - name: PythonEnumMemberSpec
+      description: Represents an enum member in a Python module.
+      attributes:
+      - name: name
+        type: MacroString
+      - name: value
+        type: str | int | None
+        optional: true
+      - name: description
+        type: str
+        optional: true
+      behaviors:
+      - name: create
+        inputs:
+        - name: cls
+          type: Any
+        - name: name
+          type: str
+        - name: value
+          type: str | int | None
+        - name: description
+          type: str
+        output:
+          type: PythonEnumMemberSpec
+      - name: parse_ast
+        inputs:
+        - name: cls
+          type: Any
+        - name: node
+          type: Union[ast.Assign, ast.AnnAssign]
+        output:
+          type: PythonEnumMemberSpec
+      - name: _parse_value
+        inputs:
+        - name: node
+          type: ast.AST
+        output:
+          type: str | int | None
+    - name: PythonEnumSpec
+      description: Represents an enum in a Python module.
+      attributes:
+      - name: name
+        type: PascalString
+      - name: description
+        type: str
+        optional: true
+      - name: decorators
+        type: list[str]
+        optional: true
+      - name: base_class
+        type: str
+        optional: true
+      - name: members
+        type: list[PythonEnumMemberSpec]
+        optional: true
+      behaviors:
+      - name: create
+        inputs:
+        - name: cls
+          type: Any
+        - name: name
+          type: str
+        - name: description
+          type: str
+        - name: decorators
+          type: list[str] | None
+        - name: base_class
+          type: str
+        - name: members
+          type: list[PythonEnumMemberSpec] | None
+        output:
+          type: PythonEnumSpec
+      - name: parse_ast
+        inputs:
+        - name: cls
+          type: Any
+        - name: node
+          type: ast.ClassDef
+        output:
+          type: PythonEnumSpec
     - name: TypeAnnotationSpec
       description: Represents a type annotation.
       attributes:
@@ -1556,12 +1537,45 @@ contexts:
     - name: TypeSpec
       description: 描述变量的类型注解结构 (LHS)。 对应 AST 中的 annotation 节点。
       attributes:
-        - name: core_type
+      - name: core_type
+        type: str
+      - name: container
+        type: ContainerType
+      - name: nullable
+        type: bool
+    - name: VariableSpec
+      description: '对应 Python 代码中的 name: type_spec = assignment_spec'
+      attributes:
+      - name: name
+        type: SnakeString
+      - name: type_spec
+        type: TypeSpec
+      - name: assignment
+        type: AssignmentSpec
+      behaviors:
+      - name: create
+        inputs:
+        - name: cls
+          type: Any
+        - name: name
           type: str
-        - name: container
-          type: ContainerType
-        - name: nullable
-          type: bool
+        - name: type_spec
+          type: TypeSpec
+        - name: assignment
+          type: AssignmentSpec
+        output:
+          type: VariableSpec
+      - name: from_ast
+        inputs:
+        - name: cls
+          type: Any
+        - name: node
+          type: ast.AnnAssign
+        output:
+          type: VariableSpec
+      - name: to_ast
+        output:
+          type: ast.AnnAssign
     services:
     - name: DependencyResolver
       dependencies:
@@ -1661,7 +1675,7 @@ contexts:
         attributes:
         - name: result
           type: str
-    - name: GenerateSchemaJsonUseCase
+    - name: GenerateSchemaJson
       kind: command
       dependencies:
       - name: file_system_port
@@ -1715,6 +1729,16 @@ contexts:
       - name: ANY
         value: any
     value_objects:
+    - name: MacroString
+      behaviors:
+      - name: __new__
+        inputs:
+        - name: cls
+          type: Any
+        - name: value
+          type: str
+        output:
+          type: Any
     - name: NamingString
       description: 基于 case-converter 的增强型字符串
       behaviors:
@@ -1754,16 +1778,6 @@ contexts:
         output:
           type: Any
     - name: SnakeString
-      behaviors:
-      - name: __new__
-        inputs:
-        - name: cls
-          type: Any
-        - name: value
-          type: str
-        output:
-          type: Any
-    - name: MacroString
       behaviors:
       - name: __new__
         inputs:

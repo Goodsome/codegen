@@ -13,7 +13,7 @@ from codegen.orchestration.application.use_cases.generate_project import (
 from codegen.orchestration.application.use_cases.generate_blueprint import (
     GenerateBlueprintCommand,
 )
-from codegen.python_gen.application.use_cases.generate_schem_json import (
+from codegen.python_gen.application.use_cases.generate_schema_json import (
     GenerateSchemaJsonCommand,
     GenerateSchemaJson,
 )

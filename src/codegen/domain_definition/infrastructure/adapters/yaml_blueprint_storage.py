@@ -49,6 +49,7 @@ class YamlBlueprintStorage(BlueprintStorage):
             )
 
             with open(yaml_path, "w", encoding="utf-8") as f:
+                f.write("# yaml-language-server: $schema=./codegen.schema.json\n")
                 yaml.safe_dump(
                     cleaned_data,
                     f,

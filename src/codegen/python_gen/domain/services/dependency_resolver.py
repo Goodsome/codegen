@@ -19,6 +19,7 @@ BUILTIN_TYPES = {
     "list",
     "dict",
     "tuple",
+    "set",
     "staticmethod",
     "classmethod",
 }
@@ -26,11 +27,13 @@ BUILTIN_TYPES = {
 GLOBAL_REGISTRY = {
     "Field": "pydantic",
     "BaseModel": "pydantic",
+    "GetCoreSchemaHandler": "pydantic",
     "Path": "pathlib",
     "Any": "typing",
     "Type": "typing",
     "Dict": "typing",
     "Union": "typing",
+    "Callable": "typing",
     "Iterable": "typing",
     "Iterator": "typing",
     "dataclass": "dataclasses",
