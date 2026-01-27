@@ -5,6 +5,11 @@ from dependency_injector import containers, providers
 from dependency_injector.providers import Singleton, Factory
 
 from codegen.domain_definition.application.use_cases.load_blueprint import LoadBlueprint
+from codegen.domain_definition.application.use_cases.modify_blueprint import (
+    AddComponent,
+    UpdateComponent,
+    DeleteComponent,
+)
 from codegen.domain_definition.infrastructure.adapters.yaml_blueprint_storage import (
     YamlBlueprintStorage,
 )
@@ -66,5 +71,20 @@ class Container(containers.DeclarativeContainer):
     update_blueprint_user_case: Factory[GenerateBlueprint] = Factory(
         GenerateBlueprint,
         parser=parse_package_use_case,
+        storage=blueprint_loader_provider,
+    )
+
+    add_component_use_case: Factory[AddComponent] = Factory(
+        AddComponent,
+        storage=blueprint_loader_provider,
+    )
+
+    update_component_use_case: Factory[UpdateComponent] = Factory(
+        UpdateComponent,
+        storage=blueprint_loader_provider,
+    )
+
+    delete_component_use_case: Factory[DeleteComponent] = Factory(
+        DeleteComponent,
         storage=blueprint_loader_provider,
     )
