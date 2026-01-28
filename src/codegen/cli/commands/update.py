@@ -15,6 +15,11 @@ from codegen.domain_definition.domain.value_objects.entity_spec import EntitySpe
 from codegen.domain_definition.domain.value_objects.value_object_spec import ValueObjectSpec
 from codegen.domain_definition.domain.value_objects.port_spec import PortSpec
 from codegen.domain_definition.domain.enums import PortType
+from codegen.domain_definition.domain.value_objects.implementation_spec import (
+    ImplementationSpec,
+)
+from codegen.shared.domain.value_objects.snake_string import SnakeString
+from codegen.domain_definition.domain.value_objects.use_case_spec import UseCaseSpec
 
 app = typer.Typer(name="update", help="Update existing components")
 
@@ -41,6 +46,10 @@ def _update_attributes_and_desc(
         found_component = next((x for x in ctx_obj.domain.entities if str(x.name) == name), None)
     elif type_ == "value_object":
         found_component = next((x for x in ctx_obj.domain.value_objects if str(x.name) == name), None)
+    elif type_ == "implementation":
+        found_component = next((x for x in ctx_obj.infrastructure.implementations if str(x.name) == name), None)
+    elif type_ == "use_case":
+        found_component = next((x for x in ctx_obj.application.use_cases if str(x.name) == name), None)
     
     if not found_component:
         typer.echo(f"❌ {type_.capitalize()} '{name}' not found inside context '{context}'.")
@@ -50,7 +59,16 @@ def _update_attributes_and_desc(
     new_desc = description if description is not None else found_component.description
     
     # Merge Attributes if applicable
-    final_attrs = list(found_component.attributes)
+    final_attrs = list(found_component.attributes) if hasattr(found_component, "attributes") else []
+    
+    # Use cases have 'dependencies' instead of 'attributes' in the generic sense, but UpdateComponentCommand is generic.
+    # We might need specialized logic for UseCase dependencies if we want to expose them as attributes here.
+    # For now, let's assume attributes argument is not supported for Use Cases in this generic function OR we map it to dependencies.
+    # Let's handle Use Cases separately in their own command function to avoid confusion with 'attributes' vs 'dependencies'.
+    
+    if type_ == "use_case":
+        raise NotImplementedError("Use generic function not suitable for Use Case due to field differences")
+
     if attributes:
         for attr_str in attributes:
             pa = AttributeParser.parse(attr_str)
@@ -82,6 +100,15 @@ def _update_attributes_and_desc(
             name=found_component.name,
             description=new_desc,
             attributes=final_attrs,
+        )
+    elif type_ == "implementation":
+        new_component = ImplementationSpec(
+            name=found_component.name,
+            description=new_desc,
+            attributes=final_attrs,
+            implements=found_component.implements,
+            technology=found_component.technology,
+            private_methods=found_component.private_methods
         )
     else:
         raise NotImplementedError(f"Update not implemented for {type_}")
@@ -208,3 +235,128 @@ def update_port(
         updater = container.update_component_use_case()
         updater.execute(UpdateComponentCommand(context=context, component=new_port))
         typer.echo(f"✅ Port '{name}' updated.")
+
+
+@app.command("implementation")
+def update_implementation(
+    name: str = typer.Argument(..., help="Name of the Implementation"),
+    context: str = typer.Option(..., "--context", help="Target Bounded Context"),
+    description: str = typer.Option(None, "--desc", "-d", help="New Description"),
+    attributes: list[str] = typer.Option(
+        [], "--add-attr", "-a", help="Add attributes 'name:type'"
+    ),
+    tech: str = typer.Option(None, "--tech", "-t", help="New Technology"),
+    implements: str = typer.Option(None, "--implements", "-i", help="New Interface implemented"),
+    config_file: Path = typer.Option(
+        Path("codegen.yaml"),
+        "--config",
+        "-c",
+        help="Path to the codegen.yaml blueprint file",
+    ),
+):
+    """Update an Infrastructure Implementation."""
+    with get_container(config_file=config_file) as container:
+        # Custom logic for implementations because of fields like tech and implements
+        
+        # 1. Load existing blueprint
+        loader = container.load_blueprint_use_case()
+        res = loader.execute(LoadBlueprintCommand())
+        blueprint = res.blueprint
+
+        # 2. Find Context
+        ctx_obj = blueprint.get_context(context)
+        if not ctx_obj:
+            typer.echo(f"❌ Context '{context}' not found.")
+            raise typer.Exit(1)
+
+        # 3. Find Component
+        found = next((x for x in ctx_obj.infrastructure.implementations if str(x.name) == name), None)
+        
+        if not found:
+            typer.echo(f"❌ Implementation '{name}' not found inside context '{context}'.")
+            raise typer.Exit(1)
+            
+        # 4. Modify
+        new_desc = description if description is not None else found.description
+        new_tech = SnakeString(tech) if tech else found.technology
+        new_implements = implements if implements else found.implements
+        
+        # Merge Attributes
+        final_attrs = list(found.attributes)
+        if attributes:
+            for attr_str in attributes:
+                pa = AttributeParser.parse(attr_str)
+                new_spec = AttributeSpec.create(name=pa.name, type=pa.type, optional=pa.optional)
+                idx = next((i for i, x in enumerate(final_attrs) if x.name == new_spec.name), -1)
+                if idx >= 0:
+                    final_attrs[idx] = new_spec
+                else:
+                    final_attrs.append(new_spec)
+
+        new_impl = ImplementationSpec(
+            name=found.name,
+            description=new_desc,
+            technology=new_tech,
+            implements=new_implements,
+            attributes=final_attrs,
+            private_methods=found.private_methods
+        )
+        
+        # 5. Save
+        updater = container.update_component_use_case()
+        updater.execute(UpdateComponentCommand(context=context, component=new_impl))
+        typer.echo(f"✅ Implementation '{name}' updated.")
+
+
+@app.command("use-case")
+def update_use_case(
+    name: str = typer.Argument(..., help="Name of the Use Case"),
+    context: str = typer.Option(..., "--context", help="Target Bounded Context"),
+    description: str = typer.Option(None, "--desc", "-d", help="New Description"),
+    config_file: Path = typer.Option(
+        Path("codegen.yaml"),
+        "--config",
+        "-c",
+        help="Path to the codegen.yaml blueprint file",
+    ),
+):
+    """Update a Use Case."""
+    with get_container(config_file=config_file) as container:
+        # 1. Load existing blueprint
+        loader = container.load_blueprint_use_case()
+        res = loader.execute(LoadBlueprintCommand())
+        blueprint = res.blueprint
+
+        # 2. Find Context
+        ctx_obj = blueprint.get_context(context)
+        if not ctx_obj:
+            typer.echo(f"❌ Context '{context}' not found.")
+            raise typer.Exit(1)
+
+        # 3. Find Component
+        found = next((x for x in ctx_obj.application.use_cases if str(x.name) == name), None)
+        
+        if not found:
+            typer.echo(f"❌ Use Case '{name}' not found inside context '{context}'.")
+            raise typer.Exit(1)
+            
+        # 4. Modify
+        new_desc = description if description is not None else found.description
+        
+        # (Optional) Update dependencies? Not exposed in generic update yet for attributes
+
+        new_uc = UseCaseSpec(
+            name=found.name,
+            kind=found.kind,
+            description=new_desc,
+            dependencies=found.dependencies,
+            command=found.command,
+            query=found.query,
+            result=found.result
+        )
+        
+        # 5. Save
+        # BoundedContext.update_application_component handles UseCaseSpec
+        updater = container.update_component_use_case()
+        updater.execute(UpdateComponentCommand(context=context, component=new_uc))
+        typer.echo(f"✅ Use Case '{name}' updated.")

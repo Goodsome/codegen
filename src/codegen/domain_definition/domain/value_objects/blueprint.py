@@ -51,10 +51,12 @@ class Blueprint(ValueObject):
         return self.model_copy(update={"contexts": new_list})
 
     def delete_context(self, name: str) -> "Blueprint":
-        new_list = [c for c in self.contexts if str(c.name) != name]
+        target_name = PascalString(name)
+        new_list = [c for c in self.contexts if c.name != target_name]
         if len(new_list) == len(self.contexts):
             raise ValueError(f"Context '{name}' not found.")
         return self.model_copy(update={"contexts": new_list})
 
     def get_context(self, name: str) -> BoundedContext | None:
-        return next((c for c in self.contexts if str(c.name) == name), None)
+        target_name = PascalString(name)
+        return next((c for c in self.contexts if c.name == target_name), None)

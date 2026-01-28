@@ -11,6 +11,9 @@ from codegen.domain_definition.domain.value_objects.infrastructure_spec import (
     InfrastructureSpec,
 )
 from codegen.domain_definition.domain.value_objects.port_spec import PortSpec
+from codegen.domain_definition.domain.value_objects.implementation_spec import (
+    ImplementationSpec,
+)
 from codegen.shared.models import ValueObject
 from typing import Any
 from codegen.domain_definition.domain.value_objects.aggregate_spec import AggregateSpec
@@ -169,3 +172,35 @@ class BoundedContext(ValueObject):
                 update={"application": self.application.delete_port(name)}
             )
         raise ValueError(f"Unknown application component type: {component_type}")
+
+    def add_infrastructure_component(self, component: Any) -> "BoundedContext":
+        if isinstance(component, ImplementationSpec):
+            return self.model_copy(
+                update={
+                    "infrastructure": self.infrastructure.add_implementation(component)
+                }
+            )
+        raise ValueError(f"Unknown infrastructure component type: {type(component)}")
+
+    def update_infrastructure_component(self, component: Any) -> "BoundedContext":
+        if isinstance(component, ImplementationSpec):
+            return self.model_copy(
+                update={
+                    "infrastructure": self.infrastructure.update_implementation(
+                        component
+                    )
+                }
+            )
+        raise ValueError(f"Unknown infrastructure component type: {type(component)}")
+
+    def delete_infrastructure_component(
+        self, name: str, component_type: str
+    ) -> "BoundedContext":
+        component_type = component_type.lower()
+        if component_type == "implementation":
+            return self.model_copy(
+                update={
+                    "infrastructure": self.infrastructure.delete_implementation(name)
+                }
+            )
+        raise ValueError(f"Unknown infrastructure component type: {component_type}")
