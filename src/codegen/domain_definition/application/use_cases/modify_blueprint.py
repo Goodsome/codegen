@@ -40,8 +40,12 @@ class AddComponent:
             try:
                 new_context = context.add_domain_component(cmd.component)
             except ValueError:
-                # Try application component
-                 new_context = context.add_application_component(cmd.component)
+                try:
+                    # Try application component
+                    new_context = context.add_application_component(cmd.component)
+                except ValueError:
+                    # Try infrastructure component
+                    new_context = context.add_infrastructure_component(cmd.component)
             
             new_blueprint = blueprint.update_context(new_context)
 
@@ -73,7 +77,10 @@ class UpdateComponent:
             try:
                 new_context = context.update_domain_component(cmd.component)
             except ValueError:
-                new_context = context.update_application_component(cmd.component)
+                try:
+                    new_context = context.update_application_component(cmd.component)
+                except ValueError:
+                    new_context = context.update_infrastructure_component(cmd.component)
 
             new_blueprint = blueprint.update_context(new_context)
 
@@ -106,7 +113,10 @@ class DeleteComponent:
             try:
                 new_context = context.delete_domain_component(cmd.name, cmd.type)
             except ValueError:
-                new_context = context.delete_application_component(cmd.name, cmd.type)
+                try:
+                    new_context = context.delete_application_component(cmd.name, cmd.type)
+                except ValueError:
+                    new_context = context.delete_infrastructure_component(cmd.name, cmd.type)
 
             new_blueprint = blueprint.update_context(new_context)
 

@@ -116,3 +116,31 @@ def delete_port(
     ),
 ):
     _delete_component(name, context, "port", config_file)
+
+
+@app.command("implementation")
+def delete_implementation(
+    name: str = typer.Argument(..., help="Name of the Implementation"),
+    context: str = typer.Option(..., "--context", help="Target Bounded Context"),
+    config_file: Path = typer.Option(
+        Path("codegen.yaml"),
+        "--config",
+        "-c",
+        help="Path to the codegen.yaml blueprint file",
+    ),
+):
+    _delete_component(name, context, "implementation", config_file)
+
+
+@app.command("use-case")
+def delete_use_case(
+    name: str = typer.Argument(..., help="Name of the Use Case"),
+    context: str = typer.Option(..., "--context", help="Target Bounded Context"),
+    config_file: Path = typer.Option(
+        Path("codegen.yaml"),
+        "--config",
+        "-c",
+        help="Path to the codegen.yaml blueprint file",
+    ),
+):
+    _delete_component(name, context, "use_case", config_file)
