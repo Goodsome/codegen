@@ -97,6 +97,23 @@ codegen add implementation PostgresOrderRepo --context Billing --tech sqlalchemy
 codegen update implementation PostgresOrderRepo --context Billing --desc "Async Postgres Repo"
 ```
 
+#### Sub-Components (Methods & Members)
+You can manage methods (for Services, Aggregates, Implementations, Ports) and enum members directly.
+
+```bash
+# Add a method to a Service
+codegen add method calculate_total --on OrderService --type service --context Billing --arg "order_id:str" --return float
+
+# Add a member to an Enum
+codegen add member PAID --on OrderStatus --context Billing --value 1
+
+# Update a method
+codegen update method calculate_total --on OrderService --type service --context Billing --desc "Updated description"
+
+# Delete a method
+codegen delete method calculate_total --on OrderService --type service --context Billing
+```
+
 #### Deleting Components
 ```bash
 codegen delete value-object Money --context Billing

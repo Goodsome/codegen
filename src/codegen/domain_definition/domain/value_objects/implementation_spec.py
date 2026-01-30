@@ -16,6 +16,23 @@ class ImplementationSpec(ValueObject):
     attributes: list[AttributeSpec] = Field(default_factory=list)
     private_methods: list[MethodSpec] = Field(default_factory=list)
 
+    def add_private_method(self, method: MethodSpec) -> "ImplementationSpec":
+        if any(m.name == method.name for m in self.private_methods):
+            raise ValueError(f"Method '{method.name}' already exists in implementation '{self.name}'.")
+        return self.model_copy(update={"private_methods": self.private_methods + [method]})
+
+    def update_private_method(self, method: MethodSpec) -> "ImplementationSpec":
+        if not any(m.name == method.name for m in self.private_methods):
+            raise ValueError(f"Method '{method.name}' not found in implementation '{self.name}'.")
+        new_methods = [method if m.name == method.name else m for m in self.private_methods]
+        return self.model_copy(update={"private_methods": new_methods})
+
+    def delete_private_method(self, name: str) -> "ImplementationSpec":
+        new_methods = [m for m in self.private_methods if str(m.name) != name]
+        if len(new_methods) == len(self.private_methods):
+            raise ValueError(f"Method '{name}' not found in implementation '{self.name}'.")
+        return self.model_copy(update={"private_methods": new_methods})
+
     @classmethod
     def create(
         cls,

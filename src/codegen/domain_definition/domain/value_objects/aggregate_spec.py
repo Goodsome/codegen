@@ -13,6 +13,23 @@ class AggregateSpec(ValueObject):
     attributes: list[AttributeSpec] = Field(default_factory=list)
     behaviors: list[MethodSpec] = Field(default_factory=list)
 
+    def add_behavior(self, behavior: MethodSpec) -> "AggregateSpec":
+        if any(b.name == behavior.name for b in self.behaviors):
+            raise ValueError(f"Behavior '{behavior.name}' already exists in aggregate '{self.name}'.")
+        return self.model_copy(update={"behaviors": self.behaviors + [behavior]})
+
+    def update_behavior(self, behavior: MethodSpec) -> "AggregateSpec":
+        if not any(b.name == behavior.name for b in self.behaviors):
+            raise ValueError(f"Behavior '{behavior.name}' not found in aggregate '{self.name}'.")
+        new_behaviors = [behavior if b.name == behavior.name else b for b in self.behaviors]
+        return self.model_copy(update={"behaviors": new_behaviors})
+
+    def delete_behavior(self, name: str) -> "AggregateSpec":
+        new_behaviors = [b for b in self.behaviors if str(b.name) != name]
+        if len(new_behaviors) == len(self.behaviors):
+            raise ValueError(f"Behavior '{name}' not found in aggregate '{self.name}'.")
+        return self.model_copy(update={"behaviors": new_behaviors})
+
     def add_attribute(self, attribute: AttributeSpec) -> "AggregateSpec":
         if any(a.name == attribute.name for a in self.attributes):
             raise ValueError(
