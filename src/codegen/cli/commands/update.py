@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 
 import typer
 from codegen.cli.utils import get_container
@@ -20,6 +21,8 @@ from codegen.domain_definition.domain.value_objects.implementation_spec import (
 )
 from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.domain_definition.domain.value_objects.use_case_spec import UseCaseSpec
+from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
+from codegen.domain_definition.domain.value_objects.enum_member_spec import EnumMemberSpec
 
 app = typer.Typer(name="update", help="Update existing components")
 
@@ -61,15 +64,10 @@ def _update_attributes_and_desc(
     # Merge Attributes if applicable
     final_attrs = list(found_component.attributes) if hasattr(found_component, "attributes") else []
     
-    # Use cases have 'dependencies' instead of 'attributes' in the generic sense, but UpdateComponentCommand is generic.
-    # We might need specialized logic for UseCase dependencies if we want to expose them as attributes here.
-    # For now, let's assume attributes argument is not supported for Use Cases in this generic function OR we map it to dependencies.
-    # Let's handle Use Cases separately in their own command function to avoid confusion with 'attributes' vs 'dependencies'.
-    
     if type_ == "use_case":
-        raise NotImplementedError("Use generic function not suitable for Use Case due to field differences")
-
-    if attributes:
+          # Use cases don't support generic attribute update here
+          pass 
+    elif attributes:
         for attr_str in attributes:
             pa = AttributeParser.parse(attr_str)
             new_spec = AttributeSpec.create(name=pa.name, type=pa.type, optional=pa.optional)
@@ -343,8 +341,6 @@ def update_use_case(
         # 4. Modify
         new_desc = description if description is not None else found.description
         
-        # (Optional) Update dependencies? Not exposed in generic update yet for attributes
-
         new_uc = UseCaseSpec(
             name=found.name,
             kind=found.kind,
@@ -356,7 +352,153 @@ def update_use_case(
         )
         
         # 5. Save
-        # BoundedContext.update_application_component handles UseCaseSpec
         updater = container.update_component_use_case()
         updater.execute(UpdateComponentCommand(context=context, component=new_uc))
         typer.echo(f"✅ Use Case '{name}' updated.")
+
+
+@app.command("method")
+def update_method(
+    name: str = typer.Argument(..., help="Name of the Method"),
+    on: str = typer.Option(..., "--on", help="Name of the parent component"),
+    context: str = typer.Option(..., "--context", help="Target Bounded Context"),
+    type_: str = typer.Option(..., "--type", help="Type of parent component: service, aggregate, implementation, port"),
+    description: str = typer.Option(None, "--desc", "-d", help="New Description"),
+    config_file: Path = typer.Option(
+        Path("codegen.yaml"),
+        "--config",
+        "-c",
+        help="Path to the codegen.yaml blueprint file",
+    ),
+):
+    """Update a method description."""
+    with get_container(config_file=config_file) as container:
+        # 1. Load Blueprint
+        loader = container.load_blueprint_use_case()
+        res = loader.execute(LoadBlueprintCommand())
+        blueprint = res.blueprint
+
+        # 2. Find Context
+        ctx_obj = blueprint.get_context(context)
+        if not ctx_obj:
+            typer.echo(f"❌ Context '{context}' not found.")
+            raise typer.Exit(1)
+            
+        type_ = type_.lower()
+        parent = None
+        method_list = []
+        
+        # 3. Find Parent
+        if type_ == "service":
+            parent = next((x for x in ctx_obj.domain.services if str(x.name) == on), None)
+            if parent: method_list = parent.operations
+        elif type_ == "aggregate":
+            parent = next((x for x in ctx_obj.domain.aggregates if str(x.name) == on), None)
+            if parent: method_list = parent.behaviors
+        elif type_ == "implementation":
+            parent = next((x for x in ctx_obj.infrastructure.implementations if str(x.name) == on), None)
+            if parent: method_list = parent.private_methods
+        elif type_ == "port":
+            parent = next((x for x in ctx_obj.domain.ports if str(x.name) == on), None)
+            if not parent:
+                parent = next((x for x in ctx_obj.application.ports if str(x.name) == on), None)
+            if parent: method_list = parent.operations
+        else:
+            typer.echo(f"❌ Invalid type: {type_}")
+            raise typer.Exit(1)
+            
+        if not parent:
+            typer.echo(f"❌ {type_.capitalize()} '{on}' not found in context '{context}'.")
+            raise typer.Exit(1)
+            
+        # 4. Find Method
+        method = next((m for m in method_list if str(m.name) == name), None)
+        if not method:
+            typer.echo(f"❌ Method '{name}' not found in {type_} '{on}'.")
+            raise typer.Exit(1)
+
+        # 5. Modify
+        new_desc = description if description is not None else method.description
+        
+        # TODO: Support updating args and return type? 
+        # For now just description as per MVP 
+        
+        new_method = MethodSpec(
+            name=method.name,
+            inputs=method.inputs,
+            output=method.output,
+            description=new_desc
+        )
+
+        # 6. Save
+        updated_component = None
+        if type_ == "service":
+            updated_component = parent.update_operation(new_method)
+        elif type_ == "aggregate":
+            updated_component = parent.update_behavior(new_method)
+        elif type_ == "implementation":
+            updated_component = parent.update_private_method(new_method)
+        elif type_ == "port":
+            updated_component = parent.update_operation(new_method)
+
+        updater = container.update_component_use_case()
+        updater.execute(UpdateComponentCommand(context=context, component=updated_component))
+        
+    typer.echo(f"✅ Method '{name}' updated in {type_} '{on}'.")
+
+
+@app.command("member")
+def update_member(
+    name: str = typer.Argument(..., help="Name of the Enum Member"),
+    on: str = typer.Option(..., "--on", help="Name of the Enum"),
+    context: str = typer.Option(..., "--context", help="Target Bounded Context"),
+    value: str = typer.Option(None, "--value", help="New Value"),
+    description: str = typer.Option(None, "--desc", "-d", help="New Description"),
+    config_file: Path = typer.Option(
+        Path("codegen.yaml"),
+        "--config",
+        "-c",
+        help="Path to the codegen.yaml blueprint file",
+    ),
+):
+    """Update an Enum Member."""
+    with get_container(config_file=config_file) as container:
+        # 1. Load Blueprint
+        loader = container.load_blueprint_use_case()
+        res = loader.execute(LoadBlueprintCommand())
+        blueprint = res.blueprint
+
+        # 2. Find Context
+        ctx_obj = blueprint.get_context(context)
+        if not ctx_obj:
+            typer.echo(f"❌ Context '{context}' not found.")
+            raise typer.Exit(1)
+
+        # 3. Find Enum
+        parent = next((x for x in ctx_obj.domain.enums if str(x.name) == on), None)
+        if not parent:
+            typer.echo(f"❌ Enum '{on}' not found in context '{context}'.")
+            raise typer.Exit(1)
+            
+        # 4. Find Member
+        member = next((m for m in parent.members if str(m.name) == name), None)
+        if not member:
+            typer.echo(f"❌ Member '{name}' not found in Enum '{on}'.")
+            raise typer.Exit(1)
+
+        # 5. Modify
+        new_desc = description if description is not None else member.description
+        new_value = value if value is not None else member.value
+
+        new_member = EnumMemberSpec(
+            name=member.name,
+            value=new_value,
+            description=new_desc
+        )
+
+        # 6. Save
+        updated_component = parent.update_member(new_member)
+        updater = container.update_component_use_case()
+        updater.execute(UpdateComponentCommand(context=context, component=updated_component))
+        
+    typer.echo(f"✅ Member '{name}' updated in Enum '{on}'.")

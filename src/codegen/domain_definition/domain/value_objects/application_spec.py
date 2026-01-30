@@ -1,3 +1,4 @@
+from codegen.domain_definition.domain.value_objects.service_spec import ServiceSpec
 from codegen.domain_definition.domain.value_objects.use_case_spec import UseCaseSpec
 from codegen.domain_definition.domain.value_objects.port_spec import PortSpec
 from codegen.shared.models import ValueObject
@@ -9,6 +10,7 @@ class ApplicationSpec(ValueObject):
 
     use_cases: list[UseCaseSpec] = Field(default_factory=list)
     ports: list[PortSpec] = Field(default_factory=list)
+    services: list[ServiceSpec] = Field(default_factory=list)
 
     def add_use_case(self, use_case: UseCaseSpec) -> "ApplicationSpec":
         if any(uc.name == use_case.name for uc in self.use_cases):
