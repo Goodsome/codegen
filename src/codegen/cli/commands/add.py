@@ -350,47 +350,34 @@ def add_method(
         )
         method_spec = method_spec.model_copy(update={"description": description})
 
-        # 4. Find Parent and Add Method
-        updated_component = None
-        type_ = type_.lower()
-
-        if type_ == "service":
-            parent = next((x for x in ctx_obj.domain.services if str(x.name) == on), None)
-            if not parent:
-                typer.echo(f"❌ Service '{on}' not found in context '{context}'.")
-                raise typer.Exit(1)
-            updated_component = parent.add_operation(method_spec)
-
-        elif type_ == "aggregate":
-            parent = next((x for x in ctx_obj.domain.aggregates if str(x.name) == on), None)
-            if not parent:
-                typer.echo(f"❌ Aggregate '{on}' not found in context '{context}'.")
-                raise typer.Exit(1)
-            updated_component = parent.add_behavior(method_spec)
-
-        elif type_ == "implementation":
-            parent = next((x for x in ctx_obj.infrastructure.implementations if str(x.name) == on), None)
-            if not parent:
-                typer.echo(f"❌ Implementation '{on}' not found in context '{context}'.")
-                raise typer.Exit(1)
-            updated_component = parent.add_private_method(method_spec)
-            
-        elif type_ == "port":
-            parent = next((x for x in ctx_obj.domain.ports if str(x.name) == on), None)
-            if not parent:
-                # Try application ports if not in domain
-                parent = next((x for x in ctx_obj.application.ports if str(x.name) == on), None)
-            
-            if not parent:
-                typer.echo(f"❌ Port '{on}' not found in context '{context}'.")
-                raise typer.Exit(1)
-            updated_component = parent.add_operation(method_spec)
-
-        else:
-            typer.echo(f"❌ Invalid type: {type_}. Valid values: service, aggregate, implementation, port")
+        # 4. Find Parent using Locator
+        from codegen.domain_definition.domain.services.component_locator import ComponentLocator
+        
+        locator = ComponentLocator()
+        parent = locator.find_parent_component(ctx_obj, on, type_)
+        
+        if not parent:
+            typer.echo(f"❌ {type_.capitalize()} '{on}' not found in context '{context}'.")
             raise typer.Exit(1)
 
-        # 5. Save
+        # 5. Add Method (Polymorphic dispatch based on type)
+        updated_component = None
+        type_clean = type_.lower()
+
+        if type_clean == "service":
+            updated_component = parent.add_operation(method_spec)
+        elif type_clean == "aggregate":
+            updated_component = parent.add_behavior(method_spec)
+        elif type_clean == "implementation":
+            updated_component = parent.add_private_method(method_spec)
+        elif type_clean == "port":
+            updated_component = parent.add_operation(method_spec)
+        else:
+             # Should be caught by Locator or Typer, but safe fallback
+             typer.echo(f"❌ custom logic needed for {type_}")
+             raise typer.Exit(1)
+
+        # 6. Save
         updater = container.update_component_use_case()
         updater.execute(UpdateComponentCommand(context=context, component=updated_component))
         
@@ -424,8 +411,10 @@ def add_member(
             typer.echo(f"❌ Context '{context}' not found.")
             raise typer.Exit(1)
 
-        # 3. Find Enum
-        parent = next((x for x in ctx_obj.domain.enums if str(x.name) == on), None)
+        # 3. Find Enum using ComponentLocator
+        from codegen.domain_definition.domain.services.component_locator import ComponentLocator
+        locator = ComponentLocator()
+        parent = locator.find_parent_component(ctx_obj, on, "enum")
         if not parent:
             typer.echo(f"❌ Enum '{on}' not found in context '{context}'.")
             raise typer.Exit(1)
