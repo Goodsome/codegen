@@ -65,142 +65,112 @@ class BoundedContext(ValueObject):
             raise ValueError(f"Port {port_name} not found in {self.name}")
         return self.port_index[port_name]
 
-    def add_domain_component(self, component: Any) -> "BoundedContext":
-        if isinstance(component, AggregateSpec):
-            return self.model_copy(
-                update={"domain": self.domain.add_aggregate(component)}
-            )
-        if isinstance(component, ValueObjectSpec):
-            return self.model_copy(
-                update={"domain": self.domain.add_value_object(component)}
-            )
-        if isinstance(component, EnumSpec):
-            return self.model_copy(update={"domain": self.domain.add_enum(component)})
-        if isinstance(component, EntitySpec):
-            return self.model_copy(
-                update={"domain": self.domain.add_entity(component)}
-            )
-        if isinstance(component, ServiceSpec):
-            return self.model_copy(
-                update={"domain": self.domain.add_service(component)}
-            )
+
+    # =================================================================
+    # Dispatcher Logic
+    # =================================================================
+
+    def _update_domain(self, updater: Any) -> "BoundedContext":
+        return self.model_copy(update={"domain": updater(self.domain)})
+
+    def _update_application(self, updater: Any) -> "BoundedContext":
+        return self.model_copy(update={"application": updater(self.application)})
+
+    def _update_infrastructure(self, updater: Any) -> "BoundedContext":
+        return self.model_copy(update={"infrastructure": updater(self.infrastructure)})
+
+    # Type -> Add Handler
+    _ADD_HANDLERS = {
+        # Domain
+        AggregateSpec: lambda ctx, c: ctx._update_domain(lambda d: d.add_aggregate(c)),
+        EntitySpec: lambda ctx, c: ctx._update_domain(lambda d: d.add_entity(c)),
+        ValueObjectSpec: lambda ctx, c: ctx._update_domain(lambda d: d.add_value_object(c)),
+        EnumSpec: lambda ctx, c: ctx._update_domain(lambda d: d.add_enum(c)),
+        ServiceSpec: lambda ctx, c: ctx._update_domain(lambda d: d.add_service(c)),
+        PortSpec: lambda ctx, c: ctx._update_domain(lambda d: d.add_port(c)),  # Default to Domain
+        # Application
+        UseCaseSpec: lambda ctx, c: ctx._update_application(lambda a: a.add_use_case(c)),
+        # Infrastructure
+        ImplementationSpec: lambda ctx, c: ctx._update_infrastructure(lambda i: i.add_implementation(c)),
+    }
+
+    # Type -> Update Handler
+    _UPDATE_HANDLERS = {
+        # Domain
+        AggregateSpec: lambda ctx, c: ctx._update_domain(lambda d: d.update_aggregate(c)),
+        EntitySpec: lambda ctx, c: ctx._update_domain(lambda d: d.update_entity(c)),
+        ValueObjectSpec: lambda ctx, c: ctx._update_domain(lambda d: d.update_value_object(c)),
+        EnumSpec: lambda ctx, c: ctx._update_domain(lambda d: d.update_enum(c)),
+        ServiceSpec: lambda ctx, c: ctx._update_domain(lambda d: d.update_service(c)),
+        # Application
+        UseCaseSpec: lambda ctx, c: ctx._update_application(lambda a: a.update_use_case(c)),
+        # Infrastructure
+        ImplementationSpec: lambda ctx, c: ctx._update_infrastructure(lambda i: i.update_implementation(c)),
+        # PortSpec handled via _update_port_strategy (added below)
+    }
+
+    def add_component(self, component: Any) -> "BoundedContext":
+        """Add a component to the context using the dispatcher."""
+        handler = self._ADD_HANDLERS.get(type(component))
+        if not handler:
+            raise ValueError(f"Unsupported component type for addition: {type(component).__name__}")
+        return handler(self, component)
+
+    def _update_port_strategy(self, component: PortSpec) -> "BoundedContext":
+        """Strategy to update port in Domain layer first, then Application layer."""
+        try:
+            return self._update_domain(lambda d: d.update_port(component))
+        except ValueError:
+            # Domain layer not found, try Application layer
+            return self._update_application(lambda a: a.update_port(component))
+
+    def update_component(self, component: Any) -> "BoundedContext":
+        """Update a component to the context using the dispatcher."""
+        # Special handling for PortSpec (dual-location)
         if isinstance(component, PortSpec):
-            return self.model_copy(update={"domain": self.domain.add_port(component)})
-        raise ValueError(f"Unknown domain component type: {type(component)}")
+            return self._update_port_strategy(component)
 
-    def update_domain_component(self, component: Any) -> "BoundedContext":
-        if isinstance(component, AggregateSpec):
-            return self.model_copy(
-                update={"domain": self.domain.update_aggregate(component)}
-            )
-        if isinstance(component, ValueObjectSpec):
-            return self.model_copy(
-                update={"domain": self.domain.update_value_object(component)}
-            )
-        if isinstance(component, EnumSpec):
-            return self.model_copy(
-                update={"domain": self.domain.update_enum(component)}
-            )
-        if isinstance(component, EntitySpec):
-            return self.model_copy(
-                update={"domain": self.domain.update_entity(component)}
-            )
-        if isinstance(component, ServiceSpec):
-            return self.model_copy(
-                update={"domain": self.domain.update_service(component)}
-            )
-        if isinstance(component, PortSpec):
-            return self.model_copy(
-                update={"domain": self.domain.update_port(component)}
-            )
-        raise ValueError(f"Unknown domain component type: {type(component)}")
+        handler = self._UPDATE_HANDLERS.get(type(component))
+        if not handler:
+            raise ValueError(f"Unsupported component type for update: {type(component).__name__}")
+        return handler(self, component)
 
-    def delete_domain_component(
-        self, name: str, component_type: str
-    ) -> "BoundedContext":
-        component_type = component_type.lower()
-        if component_type == "aggregate":
-            return self.model_copy(
-                update={"domain": self.domain.delete_aggregate(name)}
-            )
-        if component_type in ("valueobject", "value_object"):
-            return self.model_copy(
-                update={"domain": self.domain.delete_value_object(name)}
-            )
-        if component_type == "enum":
-            return self.model_copy(update={"domain": self.domain.delete_enum(name)})
-        if component_type == "entity":
-            return self.model_copy(update={"domain": self.domain.delete_entity(name)})
-        if component_type == "service":
-            return self.model_copy(update={"domain": self.domain.delete_service(name)})
-        if component_type == "port":
-            return self.model_copy(update={"domain": self.domain.delete_port(name)})
-        raise ValueError(f"Unknown domain component type: {component_type}")
+    # =================================================================
+    # Delete Dispatcher
+    # =================================================================
 
-    def add_application_component(self, component: Any) -> "BoundedContext":
-        if isinstance(component, UseCaseSpec):
-            return self.model_copy(
-                update={"application": self.application.add_use_case(component)}
-            )
-        if isinstance(component, PortSpec):
-            return self.model_copy(
-                update={"application": self.application.add_port(component)}
-            )
-        raise ValueError(f"Unknown application component type: {type(component)}")
+    def _delete_port_strategy(self, name: str) -> "BoundedContext":
+        """Strategy to delete port from Domain layer first, then Application layer."""
+        try:
+            return self._update_domain(lambda d: d.delete_port(name))
+        except ValueError:
+            # Domain layer not found, try Application layer
+            # If Application layer also not found, this will naturally raise ValueError
+            return self._update_application(lambda a: a.delete_port(name))
 
-    def update_application_component(self, component: Any) -> "BoundedContext":
-        if isinstance(component, UseCaseSpec):
-            return self.model_copy(
-                update={"application": self.application.update_use_case(component)}
-            )
-        if isinstance(component, PortSpec):
-            return self.model_copy(
-                update={"application": self.application.update_port(component)}
-            )
-        raise ValueError(f"Unknown application component type: {type(component)}")
+    # Type String -> Delete Handler
+    _DELETE_HANDLERS = {
+        # Domain
+        "aggregate": lambda ctx, name: ctx._update_domain(lambda d: d.delete_aggregate(name)),
+        "entity": lambda ctx, name: ctx._update_domain(lambda d: d.delete_entity(name)),
+        "value_object": lambda ctx, name: ctx._update_domain(lambda d: d.delete_value_object(name)),
+        "valueobject": lambda ctx, name: ctx._update_domain(lambda d: d.delete_value_object(name)),
+        "enum": lambda ctx, name: ctx._update_domain(lambda d: d.delete_enum(name)),
+        "service": lambda ctx, name: ctx._update_domain(lambda d: d.delete_service(name)),
+        "port": lambda ctx, name: ctx._delete_port_strategy(name),
+        # Application
+        "use_case": lambda ctx, name: ctx._update_application(lambda a: a.delete_use_case(name)),
+        "usecase": lambda ctx, name: ctx._update_application(lambda a: a.delete_use_case(name)),
+        # Infrastructure
+        "implementation": lambda ctx, name: ctx._update_infrastructure(lambda i: i.delete_implementation(name)),
+    }
 
-    def delete_application_component(
-        self, name: str, component_type: str
-    ) -> "BoundedContext":
-        component_type = component_type.lower()
-        if component_type in ("usecase", "use_case"):
-            return self.model_copy(
-                update={"application": self.application.delete_use_case(name)}
-            )
-        if component_type == "port":
-            return self.model_copy(
-                update={"application": self.application.delete_port(name)}
-            )
-        raise ValueError(f"Unknown application component type: {component_type}")
+    def delete_component(self, name: str, component_type: str) -> "BoundedContext":
+        """Delete a component from the context using the dispatcher."""
+        type_clean = component_type.lower().replace("-", "_")
 
-    def add_infrastructure_component(self, component: Any) -> "BoundedContext":
-        if isinstance(component, ImplementationSpec):
-            return self.model_copy(
-                update={
-                    "infrastructure": self.infrastructure.add_implementation(component)
-                }
-            )
-        raise ValueError(f"Unknown infrastructure component type: {type(component)}")
+        handler = self._DELETE_HANDLERS.get(type_clean)
+        if not handler:
+            raise ValueError(f"Unknown component type for deletion: {component_type}")
 
-    def update_infrastructure_component(self, component: Any) -> "BoundedContext":
-        if isinstance(component, ImplementationSpec):
-            return self.model_copy(
-                update={
-                    "infrastructure": self.infrastructure.update_implementation(
-                        component
-                    )
-                }
-            )
-        raise ValueError(f"Unknown infrastructure component type: {type(component)}")
-
-    def delete_infrastructure_component(
-        self, name: str, component_type: str
-    ) -> "BoundedContext":
-        component_type = component_type.lower()
-        if component_type == "implementation":
-            return self.model_copy(
-                update={
-                    "infrastructure": self.infrastructure.delete_implementation(name)
-                }
-            )
-        raise ValueError(f"Unknown infrastructure component type: {component_type}")
+        return handler(self, name)

@@ -177,23 +177,12 @@ def delete_method(
             raise typer.Exit(1)
             
         type_ = type_.lower()
-        parent = None
         
-        # 3. Find Parent
-        if type_ == "service":
-            parent = next((x for x in ctx_obj.domain.services if str(x.name) == on), None)
-        elif type_ == "aggregate":
-            parent = next((x for x in ctx_obj.domain.aggregates if str(x.name) == on), None)
-        elif type_ == "implementation":
-            parent = next((x for x in ctx_obj.infrastructure.implementations if str(x.name) == on), None)
-        elif type_ == "port":
-            parent = next((x for x in ctx_obj.domain.ports if str(x.name) == on), None)
-            if not parent:
-                parent = next((x for x in ctx_obj.application.ports if str(x.name) == on), None)
-        else:
-            typer.echo(f"❌ Invalid type: {type_}")
-            raise typer.Exit(1)
-            
+        # 3. Find Parent using ComponentLocator
+        from codegen.domain_definition.domain.services.component_locator import ComponentLocator
+        locator = ComponentLocator()
+        parent = locator.find_parent_component(ctx_obj, on, type_)
+        
         if not parent:
             typer.echo(f"❌ {type_.capitalize()} '{on}' not found in context '{context}'.")
             raise typer.Exit(1)
@@ -245,8 +234,10 @@ def delete_member(
             typer.echo(f"❌ Context '{context}' not found.")
             raise typer.Exit(1)
 
-        # 3. Find Enum
-        parent = next((x for x in ctx_obj.domain.enums if str(x.name) == on), None)
+        # 3. Find Enum using ComponentLocator
+        from codegen.domain_definition.domain.services.component_locator import ComponentLocator
+        locator = ComponentLocator()
+        parent = locator.find_parent_component(ctx_obj, on, "enum")
         if not parent:
             typer.echo(f"❌ Enum '{on}' not found in context '{context}'.")
             raise typer.Exit(1)

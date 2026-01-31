@@ -41,18 +41,10 @@ def _update_attributes_and_desc(
         typer.echo(f"❌ Context '{context}' not found.")
         raise typer.Exit(1)
 
-    # 3. Find Component
-    found_component = None
-    if type_ == "aggregate":
-        found_component = next((x for x in ctx_obj.domain.aggregates if str(x.name) == name), None)
-    elif type_ == "entity":
-        found_component = next((x for x in ctx_obj.domain.entities if str(x.name) == name), None)
-    elif type_ == "value_object":
-        found_component = next((x for x in ctx_obj.domain.value_objects if str(x.name) == name), None)
-    elif type_ == "implementation":
-        found_component = next((x for x in ctx_obj.infrastructure.implementations if str(x.name) == name), None)
-    elif type_ == "use_case":
-        found_component = next((x for x in ctx_obj.application.use_cases if str(x.name) == name), None)
+    # 3. Find Component using ComponentLocator
+    from codegen.domain_definition.domain.services.component_locator import ComponentLocator
+    locator = ComponentLocator()
+    found_component = locator.find_parent_component(ctx_obj, name, type_)
     
     if not found_component:
         typer.echo(f"❌ {type_.capitalize()} '{name}' not found inside context '{context}'.")
@@ -267,8 +259,10 @@ def update_implementation(
             typer.echo(f"❌ Context '{context}' not found.")
             raise typer.Exit(1)
 
-        # 3. Find Component
-        found = next((x for x in ctx_obj.infrastructure.implementations if str(x.name) == name), None)
+        # 3. Find Component using ComponentLocator
+        from codegen.domain_definition.domain.services.component_locator import ComponentLocator
+        locator = ComponentLocator()
+        found = locator.find_parent_component(ctx_obj, name, "implementation")
         
         if not found:
             typer.echo(f"❌ Implementation '{name}' not found inside context '{context}'.")
@@ -331,8 +325,10 @@ def update_use_case(
             typer.echo(f"❌ Context '{context}' not found.")
             raise typer.Exit(1)
 
-        # 3. Find Component
-        found = next((x for x in ctx_obj.application.use_cases if str(x.name) == name), None)
+        # 3. Find Component using ComponentLocator
+        from codegen.domain_definition.domain.services.component_locator import ComponentLocator
+        locator = ComponentLocator()
+        found = locator.find_parent_component(ctx_obj, name, "use_case")
         
         if not found:
             typer.echo(f"❌ Use Case '{name}' not found inside context '{context}'.")
@@ -385,30 +381,28 @@ def update_method(
             raise typer.Exit(1)
             
         type_ = type_.lower()
-        parent = None
         method_list = []
         
-        # 3. Find Parent
-        if type_ == "service":
-            parent = next((x for x in ctx_obj.domain.services if str(x.name) == on), None)
-            if parent: method_list = parent.operations
-        elif type_ == "aggregate":
-            parent = next((x for x in ctx_obj.domain.aggregates if str(x.name) == on), None)
-            if parent: method_list = parent.behaviors
-        elif type_ == "implementation":
-            parent = next((x for x in ctx_obj.infrastructure.implementations if str(x.name) == on), None)
-            if parent: method_list = parent.private_methods
-        elif type_ == "port":
-            parent = next((x for x in ctx_obj.domain.ports if str(x.name) == on), None)
-            if not parent:
-                parent = next((x for x in ctx_obj.application.ports if str(x.name) == on), None)
-            if parent: method_list = parent.operations
-        else:
-            typer.echo(f"❌ Invalid type: {type_}")
-            raise typer.Exit(1)
-            
+        # 3. Find Parent using ComponentLocator
+        from codegen.domain_definition.domain.services.component_locator import ComponentLocator
+        locator = ComponentLocator()
+        parent = locator.find_parent_component(ctx_obj, on, type_)
+        
         if not parent:
             typer.echo(f"❌ {type_.capitalize()} '{on}' not found in context '{context}'.")
+            raise typer.Exit(1)
+        
+        # Get method list based on type
+        if type_ == "service":
+            method_list = parent.operations
+        elif type_ == "aggregate":
+            method_list = parent.behaviors
+        elif type_ == "implementation":
+            method_list = parent.private_methods
+        elif type_ == "port":
+            method_list = parent.operations
+        else:
+            typer.echo(f"❌ Invalid type: {type_}")
             raise typer.Exit(1)
             
         # 4. Find Method
@@ -474,8 +468,10 @@ def update_member(
             typer.echo(f"❌ Context '{context}' not found.")
             raise typer.Exit(1)
 
-        # 3. Find Enum
-        parent = next((x for x in ctx_obj.domain.enums if str(x.name) == on), None)
+        # 3. Find Enum using ComponentLocator
+        from codegen.domain_definition.domain.services.component_locator import ComponentLocator
+        locator = ComponentLocator()
+        parent = locator.find_parent_component(ctx_obj, on, "enum")
         if not parent:
             typer.echo(f"❌ Enum '{on}' not found in context '{context}'.")
             raise typer.Exit(1)
