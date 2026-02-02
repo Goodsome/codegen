@@ -52,9 +52,9 @@ class PackageSpec(ValueObject):
                 return False
         return True
 
-    def get_global_registry(self, root_name: str = "") -> dict[str, str]:
+    def get_global_registry(self, root_path: str = "") -> dict[str, str]:
         symbol_table: dict[str, str] = {}
-        self._build_symbol_table(root_name, symbol_table)
+        self._build_symbol_table(root_path, symbol_table)
         return symbol_table
 
     def _build_symbol_table(self, root_path: str, table: dict[str, str]):

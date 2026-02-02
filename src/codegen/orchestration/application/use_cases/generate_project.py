@@ -16,6 +16,7 @@ class GenerateProjectCommand:
 
     overwrite: bool
     node: str | None
+    root_path: str = ""
 
 
 @dataclass(frozen=True)
@@ -39,6 +40,7 @@ class GenerateProject:
                 package_spec=package_spec,
                 node=cmd.node,
                 overwrite=cmd.overwrite,
+                root_path=cmd.root_path,
             )
         )
         return GenerateProjectResult(

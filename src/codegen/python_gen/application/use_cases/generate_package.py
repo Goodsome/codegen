@@ -17,6 +17,7 @@ class GeneratePackageCommand:
     package_spec: PackageSpec
     overwrite: bool
     node: str | None = field(default=None)
+    root_path: str = field(default="")
 
 
 @dataclass(frozen=True)
@@ -43,7 +44,8 @@ class GeneratePackage:
         else:
             pkg = cmd.package_spec
         source_tree = self.translator.generate_source_tree(
-            package_spec=pkg, target_node=cmd.node
+            package_spec=pkg, target_node=cmd.node,
+            root_path=cmd.root_path,
         )
         for rel_path, content in source_tree.items():
             try:

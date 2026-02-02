@@ -54,8 +54,10 @@ class DependencyResolver:
     global_registry: dict[str, str]
 
     @classmethod
-    def build_from_package_spec(cls, package_spec: PackageSpec) -> "DependencyResolver":
-        global_registry = package_spec.get_global_registry()
+    def build_from_package_spec(cls, package_spec: PackageSpec, root_path: str="") -> "DependencyResolver":
+        global_registry = package_spec.get_global_registry(
+            root_path=root_path,
+        )
         global_registry.update(GLOBAL_REGISTRY)
         return cls(global_registry=global_registry)
 
