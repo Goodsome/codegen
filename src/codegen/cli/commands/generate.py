@@ -52,7 +52,10 @@ def generate(
         use_case = container.generate_project_use_case()
         if node is not None:
             overwrite = True
-        cmd = GenerateProjectCommand(overwrite=overwrite, node=node)
+        root_path = ""
+        if out:
+            root_path = str(out).replace("/", ".").replace("\\", ".")
+        cmd = GenerateProjectCommand(overwrite=overwrite, node=node, root_path=root_path)
         use_case.execute(cmd)
 
 

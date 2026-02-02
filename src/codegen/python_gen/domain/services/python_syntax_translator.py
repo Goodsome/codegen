@@ -51,14 +51,17 @@ class PythonSyntaxTranslator:
         return content
 
     def generate_source_tree(
-        self, package_spec: PackageSpec, target_node: str | None
+        self, package_spec: PackageSpec, target_node: str | None, root_path: str = "",
     ) -> dict[Path, str]:
         """
         核心方法：将 PackageSpec 转换为虚拟文件树。
         返回格式: { Path('relative/path/to/file.py'): 'source code content' }
         """
         # 1. 预先构建依赖解析器
-        resolver = DependencyResolver.build_from_package_spec(package_spec)
+        resolver = DependencyResolver.build_from_package_spec(
+            package_spec,
+            root_path=root_path,
+        )
 
         # 2. 结果容器
         virtual_files: dict[Path, str] = {}
