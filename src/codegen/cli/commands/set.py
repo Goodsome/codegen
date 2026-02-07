@@ -39,7 +39,7 @@ def _parse_key_values(args: List[str]) -> dict:
 
 
 @app.command()
-def set(
+def set_cmd(
     path: str = typer.Argument(
         ...,
         help="Path to set (e.g., 'project.version', 'contexts.sales.aggregates')",
