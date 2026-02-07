@@ -10,6 +10,17 @@ from codegen.domain_definition.application.use_cases.modify_blueprint import (
     UpdateComponent,
     DeleteComponent,
 )
+from codegen.domain_definition.application.use_cases.path_operations import (
+    GetValue,
+    SetValue,
+    RemoveValue,
+)
+from codegen.domain_definition.domain.services.blueprint_path_resolver import (
+    BlueprintPathResolver,
+)
+from codegen.domain_definition.domain.services.blueprint_path_operations import (
+    BlueprintPathOperations,
+)
 from codegen.domain_definition.infrastructure.adapters.yaml_blueprint_storage import (
     YamlBlueprintStorage,
 )
@@ -44,6 +55,14 @@ class Container(containers.DeclarativeContainer):
     )
 
     code_formatter_provider = Singleton(BlackCodeFormatter)
+
+    # Path resolution services
+    path_resolver_provider = Singleton(BlueprintPathResolver)
+
+    path_operations_provider = Singleton(
+        BlueprintPathOperations,
+        resolver=path_resolver_provider,
+    )
 
     load_blueprint_use_case: Factory[LoadBlueprint] = Factory(
         LoadBlueprint,
@@ -87,4 +106,23 @@ class Container(containers.DeclarativeContainer):
     delete_component_use_case: Factory[DeleteComponent] = Factory(
         DeleteComponent,
         storage=blueprint_loader_provider,
+    )
+
+    # Path-based use cases
+    get_value_use_case: Factory[GetValue] = Factory(
+        GetValue,
+        storage=blueprint_loader_provider,
+        operations=path_operations_provider,
+    )
+
+    set_value_use_case: Factory[SetValue] = Factory(
+        SetValue,
+        storage=blueprint_loader_provider,
+        operations=path_operations_provider,
+    )
+
+    remove_value_use_case: Factory[RemoveValue] = Factory(
+        RemoveValue,
+        storage=blueprint_loader_provider,
+        operations=path_operations_provider,
     )

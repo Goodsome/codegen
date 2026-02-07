@@ -37,6 +37,7 @@ GLOBAL_REGISTRY = {
     "Callable": "typing",
     "Iterable": "typing",
     "Iterator": "typing",
+    "ClassVar": "typing",
     "dataclass": "dataclasses",
     "field": "dataclasses",
     "ABC": "abc",
