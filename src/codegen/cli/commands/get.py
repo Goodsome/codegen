@@ -51,7 +51,7 @@ def _serialize_value(value, format: str) -> str:
 
 
 @app.command()
-def get(
+def get_cmd(
     path: str = typer.Argument(
         ...,
         help="Path to query (e.g., 'project.name', 'contexts.sales.aggregates')",

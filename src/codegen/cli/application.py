@@ -5,9 +5,10 @@ from codegen.cli.utils import version_callback
 from codegen.cli.commands.build import build
 from codegen.cli.commands.reverse import reverse
 from codegen.cli.commands.schema import schema
-from codegen.cli.commands.get import get as get_cmd
-from codegen.cli.commands.set import set as set_cmd
+from codegen.cli.commands.get import get_cmd
+from codegen.cli.commands.set import set_cmd
 from codegen.cli.commands.rm import rm
+from codegen.cli.commands.tree import tree_cmd
 
 # Legacy commands (for backward compatibility)
 from codegen.cli.commands.generate import generate, generate_blueprint, generate_blueprint_schema
@@ -23,6 +24,9 @@ app = typer.Typer(
   build      Compile codegen.yaml into Python code
   reverse    Reverse-engineer Python code into codegen.yaml
   schema     Output JSON schema for the blueprint
+
+**Overview Command**:
+  tree       Display blueprint structure as a visual tree
 
 **Edit Commands (Blueprint Manipulation)**:
   get        Get a value by path (e.g., 'contexts.sales')
@@ -52,6 +56,7 @@ For more information, see: https://github.com/Goodsome/codegen
 app.command()(build)
 app.command()(reverse)
 app.command()(schema)
+app.command(name="tree")(tree_cmd)
 app.command(name="get")(get_cmd)
 app.command(name="set")(set_cmd)
 app.command()(rm)
