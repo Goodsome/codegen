@@ -42,12 +42,14 @@ mcp = FastMCP("Codegen MCP Server")
 
 
 def _get_container(
-    config_file: Path,
-    out: Path | None = None,
-    subdir: str | None = None,
+        config_file: Path,
+        root_path: Path,
+        out: Path | None = None,
+        subdir: str | None = None,
 ) -> Container:
-    """Create a configured container instance."""
-    cwd = Path.cwd()
+    """Create a configured container instance using a specific root path."""
+    cwd = root_path
+
     yaml_path = config_file if config_file.is_absolute() else (cwd / config_file)
     output_dir = out or (cwd / subdir if subdir else cwd)
     template_root = resources.files("codegen") / "python_gen" / "templates"
@@ -63,9 +65,10 @@ def _get_container(
         return Container(config=config)
 
 
-def _get_default_package_path() -> Path:
-    """Get default package path for reverse engineering."""
-    cwd = Path.cwd()
+def _get_default_package_path(root_path: Path) -> Path:
+    """Get default package path for reverse engineering relative to root path."""
+    # MODIFIED: Use passed root_path instead of Path.cwd()
+    cwd = root_path
     src_dir = cwd / "src"
     if src_dir.exists():
         pkgs = [
@@ -128,11 +131,11 @@ def _parse_value(value_str: str) -> Any:
 
 @mcp.tool()
 def build(
-    config_file: str = "codegen.yaml",
-    overwrite: bool = False,
-    build_dir: bool = True,
-    node: str | None = None,
-    out: str | None = None,
+        work_dir: str,
+        config_file: str = "codegen.yaml",
+        build_dir: bool = True,
+        node: str | None = None,
+        out: str | None = None,
 ) -> str:
     """
     Build: Compile codegen.yaml into Python code.
@@ -141,31 +144,37 @@ def build(
     file and generates Python code based on DDD patterns.
 
     Args:
-        config_file: Path to the codegen.yaml blueprint file
-        overwrite: Overwrite existing files without prompting
+        work_dir: Absolute path to the project root directory
+        config_file: Path to the codegen.yaml blueprint file (relative to work_dir)
         build_dir: Output to src directory (True) or target directory (False)
-        node: Generate only a specific bounded context or component by name
+        node: Generate only a specific bounded context or component by name, overwrite mode.
         out: Custom output directory
-
-    Returns:
-        Success message or error description
     """
     try:
-        config_path = Path(config_file)
+        # MODIFIED: Resolve work_dir and pass to container
+        root_path = Path(work_dir).resolve()
+        config_path = Path(config_file) # Will be joined with root_path in _get_container if relative
+
         output_path = Path(out) if out else None
         subdir = "src" if build_dir else "target"
 
-        container = _get_container(config_file=config_path, out=output_path, subdir=subdir)
+        container = _get_container(
+            config_file=config_path,
+            root_path=root_path,
+            out=output_path,
+            subdir=subdir
+        )
         use_case = container.generate_project_use_case()
 
+        overwrite = False
         if node is not None:
             overwrite = True
 
-        root_path = ""
+        root_path_str = ""
         if output_path:
-            root_path = str(output_path).replace("/", ".").replace("\\", ".")
+            root_path_str = str(output_path).replace("/", ".").replace("\\", ".")
 
-        cmd = GenerateProjectCommand(overwrite=overwrite, node=node, root_path=root_path)
+        cmd = GenerateProjectCommand(overwrite=overwrite, node=node, root_path=root_path_str)
         use_case.execute(cmd)
 
         return "Build completed successfully."
@@ -175,8 +184,9 @@ def build(
 
 @mcp.tool()
 def reverse(
-    config_file: str = "codegen.yaml",
-    package_path: str | None = None,
+        work_dir: str,
+        config_file: str = "codegen.yaml",
+        package_path: str | None = None,
 ) -> str:
     """
     Reverse: Reverse-engineer Python code into codegen.yaml.
@@ -185,17 +195,21 @@ def reverse(
     a codegen.yaml blueprint that describes its structure.
 
     Args:
+        work_dir: Absolute path to the project root directory
         config_file: Path to output codegen.yaml blueprint file
         package_path: Path to existing Python package to reverse engineer
-
-    Returns:
-        Success message or error description
     """
     try:
+        # MODIFIED: Resolve work_dir
+        root_path = Path(work_dir).resolve()
         config_path = Path(config_file)
-        container = _get_container(config_file=config_path)
 
-        pkg_path = Path(package_path) if package_path else _get_default_package_path()
+        container = _get_container(config_file=config_path, root_path=root_path)
+
+        pkg_path = Path(package_path) if package_path else _get_default_package_path(root_path)
+        # Ensure pkg_path is absolute or relative to root_path correctly
+        if not pkg_path.is_absolute():
+            pkg_path = root_path / pkg_path
 
         use_case = container.update_blueprint_user_case()
         cmd = GenerateBlueprintCommand(path=pkg_path)
@@ -208,26 +222,23 @@ def reverse(
 
 @mcp.tool()
 def tree(
-    config_file: str = "codegen.yaml",
-    path: str | None = None,
-    depth: int = -1,
-    detail: bool = False,
+        work_dir: str,
+        config_file: str = "codegen.yaml",
+        path: str | None = None,
+        depth: int = -1,
+        detail: bool = False,
 ) -> str:
     """
     Tree: Display blueprint structure as a visual tree.
 
-    Provides a hierarchical overview of your project's DDD structure,
-    making it easy to understand the organization of contexts,
-    aggregates, entities, and other components.
+    Provides a hierarchical overview of your project's DDD structure.
 
     Args:
+        work_dir: Absolute path to the project root directory
         config_file: Path to the codegen.yaml blueprint file
         path: Optional path to start from (e.g., 'contexts.DomainDefinition')
         depth: Maximum depth to display (-1 for unlimited)
         detail: Show descriptions alongside names
-
-    Returns:
-        Tree structure as text or error description
     """
     try:
         from io import StringIO
@@ -240,8 +251,11 @@ def tree(
             add_model_children,
         )
 
+        # MODIFIED: Resolve work_dir
+        root_path = Path(work_dir).resolve()
         config_path = Path(config_file)
-        container = _get_container(config_file=config_path)
+
+        container = _get_container(config_file=config_path, root_path=root_path)
 
         # Load the blueprint
         load_use_case = container.load_blueprint_use_case()
@@ -286,27 +300,26 @@ def tree(
 
 @mcp.tool()
 def get(
-    path: str,
-    config_file: str = "codegen.yaml",
-    output_format: str = "json",
+        work_dir: str,
+        path: str,
+        config_file: str = "codegen.yaml",
+        output_format: str = "json",
 ) -> str:
     """
     Get: Query a value from blueprint by path.
 
-    Use dot notation to navigate the blueprint structure.
-    Supports index access with [n] syntax.
-
     Args:
+        work_dir: Absolute path to the project root directory
         path: Path to query (e.g., 'project.name', 'contexts.sales.aggregates')
         config_file: Path to the codegen.yaml blueprint file
         output_format: Output format: json or yaml
-
-    Returns:
-        The value at the specified path or error description
     """
     try:
+        # MODIFIED: Resolve work_dir
+        root_path = Path(work_dir).resolve()
         config_path = Path(config_file)
-        container = _get_container(config_file=config_path)
+
+        container = _get_container(config_file=config_path, root_path=root_path)
 
         use_case = container.get_value_use_case()
         result = use_case.execute(GetValueCommand(path=path))
@@ -320,30 +333,29 @@ def get(
 
 @mcp.tool()
 def set(
-    path: str,
-    value: str,
-    config_file: str = "codegen.yaml",
-    append: bool = False,
+        work_dir: str,
+        path: str,
+        value: str,
+        config_file: str = "codegen.yaml",
+        append: bool = False,
 ) -> str:
     """
     Set: Set or update a value in blueprint by path (Upsert).
 
-    Use dot notation to navigate. The value should be a JSON string.
-
     Args:
+        work_dir: Absolute path to the project root directory
         path: Path to set (e.g., 'project.version', 'contexts.sales.aggregates')
         value: JSON value to set
         config_file: Path to the codegen.yaml blueprint file
         append: Append to list instead of replace
-
-    Returns:
-        Success message or error description
     """
     try:
+        # MODIFIED: Resolve work_dir
+        root_path = Path(work_dir).resolve()
         config_path = Path(config_file)
         parsed_value = _parse_value(value)
 
-        container = _get_container(config_file=config_path)
+        container = _get_container(config_file=config_path, root_path=root_path)
         use_case = container.set_value_use_case()
 
         use_case.execute(SetValueCommand(
@@ -361,25 +373,24 @@ def set(
 
 @mcp.tool()
 def rm(
-    path: str,
-    config_file: str = "codegen.yaml",
+        work_dir: str,
+        path: str,
+        config_file: str = "codegen.yaml",
 ) -> str:
     """
     Remove: Delete a value from blueprint by path.
 
-    Use dot notation to specify what to remove.
-    Can remove fields, list items (by index or name), or nested objects.
-
     Args:
+        work_dir: Absolute path to the project root directory
         path: Path to remove (e.g., 'contexts.sales', 'contexts[0]')
         config_file: Path to the codegen.yaml blueprint file
-
-    Returns:
-        Success message or error description
     """
     try:
+        # MODIFIED: Resolve work_dir
+        root_path = Path(work_dir).resolve()
         config_path = Path(config_file)
-        container = _get_container(config_file=config_path)
+
+        container = _get_container(config_file=config_path, root_path=root_path)
 
         use_case = container.remove_value_use_case()
         use_case.execute(RemoveValueCommand(path=path))
