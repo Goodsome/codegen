@@ -1,0 +1,395 @@
+"""
+Codegen MCP Server.
+
+Exposes codegen CLI commands as MCP tools for LLM integration via Model Context Protocol.
+Uses FastMCP for simplified server implementation.
+
+Available tools:
+- build: Compile codegen.yaml into Python code
+- reverse: Reverse-engineer Python code into codegen.yaml
+- tree: Display blueprint structure as text tree
+- get: Query a value from blueprint by path
+- set: Set or update a value in blueprint by path
+- rm: Remove a value from blueprint by path
+"""
+
+import json
+from pathlib import Path
+from typing import Any
+from importlib import resources
+
+from mcp.server.fastmcp import FastMCP
+from pydantic import BaseModel
+
+from codegen.bootstrap import Container
+from codegen.domain_definition.application.use_cases.load_blueprint import (
+    LoadBlueprintCommand,
+)
+from codegen.domain_definition.application.use_cases.path_operations import (
+    GetValueCommand,
+    SetValueCommand,
+    RemoveValueCommand,
+)
+from codegen.orchestration.application.use_cases.generate_project import (
+    GenerateProjectCommand,
+)
+from codegen.orchestration.application.use_cases.generate_blueprint import (
+    GenerateBlueprintCommand,
+)
+
+# Create MCP server instance
+mcp = FastMCP("Codegen MCP Server")
+
+
+def _get_container(
+    config_file: Path,
+    out: Path | None = None,
+    subdir: str | None = None,
+) -> Container:
+    """Create a configured container instance."""
+    cwd = Path.cwd()
+    yaml_path = config_file if config_file.is_absolute() else (cwd / config_file)
+    output_dir = out or (cwd / subdir if subdir else cwd)
+    template_root = resources.files("codegen") / "python_gen" / "templates"
+
+    with resources.as_file(template_root) as path:
+        config = {
+            "template_root": path,
+            "output_root": output_dir,
+            "project_root": cwd,
+            "encoding": "utf-8",
+            "config_path": yaml_path,
+        }
+        return Container(config=config)
+
+
+def _get_default_package_path() -> Path:
+    """Get default package path for reverse engineering."""
+    cwd = Path.cwd()
+    src_dir = cwd / "src"
+    if src_dir.exists():
+        pkgs = [
+            p for p in src_dir.iterdir() if p.is_dir() and not p.name.startswith(".")
+        ]
+        path = pkgs[0] if pkgs else src_dir
+    else:
+        path = cwd
+    return path
+
+
+def _serialize_value(value: Any, output_format: str = "json") -> str:
+    """Serialize value to string for output."""
+    if isinstance(value, BaseModel):
+        if output_format == "yaml":
+            import yaml
+            return yaml.dump(value.model_dump(), allow_unicode=True, default_flow_style=False)
+        return value.model_dump_json(indent=2)
+
+    if isinstance(value, (list, dict)):
+        if output_format == "yaml":
+            import yaml
+
+            def to_dict(obj: Any) -> Any:
+                if isinstance(obj, BaseModel):
+                    return obj.model_dump()
+                if isinstance(obj, list):
+                    return [to_dict(item) for item in obj]
+                if isinstance(obj, dict):
+                    return {k: to_dict(v) for k, v in obj.items()}
+                return obj
+
+            return yaml.dump(to_dict(value), allow_unicode=True, default_flow_style=False)
+        return json.dumps(
+            value if not any(isinstance(v, BaseModel) for v in (value if isinstance(value, list) else [value]))
+            else [v.model_dump() if isinstance(v, BaseModel) else v for v in value] if isinstance(value, list)
+            else value,
+            indent=2,
+            ensure_ascii=False,
+            default=lambda o: o.model_dump() if isinstance(o, BaseModel) else str(o)
+        )
+
+    return str(value)
+
+
+def _parse_value(value_str: str) -> Any:
+    """Parse value string - tries JSON first, falls back to string."""
+    if not value_str:
+        return value_str
+    try:
+        return json.loads(value_str)
+    except json.JSONDecodeError:
+        return value_str
+
+
+# =============================================================================
+# MCP Tools
+# =============================================================================
+
+
+@mcp.tool()
+def build(
+    config_file: str = "codegen.yaml",
+    overwrite: bool = False,
+    build_dir: bool = True,
+    node: str | None = None,
+    out: str | None = None,
+) -> str:
+    """
+    Build: Compile codegen.yaml into Python code.
+
+    This is the primary code generation command. It reads your blueprint
+    file and generates Python code based on DDD patterns.
+
+    Args:
+        config_file: Path to the codegen.yaml blueprint file
+        overwrite: Overwrite existing files without prompting
+        build_dir: Output to src directory (True) or target directory (False)
+        node: Generate only a specific bounded context or component by name
+        out: Custom output directory
+
+    Returns:
+        Success message or error description
+    """
+    try:
+        config_path = Path(config_file)
+        output_path = Path(out) if out else None
+        subdir = "src" if build_dir else "target"
+
+        container = _get_container(config_file=config_path, out=output_path, subdir=subdir)
+        use_case = container.generate_project_use_case()
+
+        if node is not None:
+            overwrite = True
+
+        root_path = ""
+        if output_path:
+            root_path = str(output_path).replace("/", ".").replace("\\", ".")
+
+        cmd = GenerateProjectCommand(overwrite=overwrite, node=node, root_path=root_path)
+        use_case.execute(cmd)
+
+        return "Build completed successfully."
+    except Exception as e:
+        return f"Error: {e}"
+
+
+@mcp.tool()
+def reverse(
+    config_file: str = "codegen.yaml",
+    package_path: str | None = None,
+) -> str:
+    """
+    Reverse: Reverse-engineer Python code into codegen.yaml.
+
+    This command analyzes an existing Python package and generates
+    a codegen.yaml blueprint that describes its structure.
+
+    Args:
+        config_file: Path to output codegen.yaml blueprint file
+        package_path: Path to existing Python package to reverse engineer
+
+    Returns:
+        Success message or error description
+    """
+    try:
+        config_path = Path(config_file)
+        container = _get_container(config_file=config_path)
+
+        pkg_path = Path(package_path) if package_path else _get_default_package_path()
+
+        use_case = container.update_blueprint_user_case()
+        cmd = GenerateBlueprintCommand(path=pkg_path)
+        use_case.execute(cmd)
+
+        return f"Reverse engineering completed. Blueprint saved to {config_file}"
+    except Exception as e:
+        return f"Error: {e}"
+
+
+@mcp.tool()
+def tree(
+    config_file: str = "codegen.yaml",
+    path: str | None = None,
+    depth: int = -1,
+    detail: bool = False,
+) -> str:
+    """
+    Tree: Display blueprint structure as a visual tree.
+
+    Provides a hierarchical overview of your project's DDD structure,
+    making it easy to understand the organization of contexts,
+    aggregates, entities, and other components.
+
+    Args:
+        config_file: Path to the codegen.yaml blueprint file
+        path: Optional path to start from (e.g., 'contexts.DomainDefinition')
+        depth: Maximum depth to display (-1 for unlimited)
+        detail: Show descriptions alongside names
+
+    Returns:
+        Tree structure as text or error description
+    """
+    try:
+        from io import StringIO
+        from rich.console import Console
+        from rich.tree import Tree as RichTree
+
+        # Import tree helpers from CLI module
+        from codegen.cli.commands.tree import (
+            add_item_to_tree,
+            add_model_children,
+        )
+
+        config_path = Path(config_file)
+        container = _get_container(config_file=config_path)
+
+        # Load the blueprint
+        load_use_case = container.load_blueprint_use_case()
+        result = load_use_case.execute(LoadBlueprintCommand())
+
+        if not result or not result.blueprint:
+            return "Error: Blueprint not found"
+
+        blueprint = result.blueprint
+
+        # If path specified, navigate to that location
+        target = blueprint
+        root_label = f"📦 Project: {blueprint.name}"
+
+        if path:
+            get_use_case = container.get_value_use_case()
+            target = get_use_case.execute(GetValueCommand(path=path))
+            root_label = f"📍 {path}"
+
+        # Build the tree
+        root = RichTree(root_label)
+
+        if isinstance(target, list):
+            for item in target:
+                add_item_to_tree(item, root, 0, depth, detail)
+        elif isinstance(target, BaseModel):
+            add_model_children(target, root, 0, depth, detail)
+        else:
+            root.add(str(target))
+
+        # Render to string
+        output = StringIO()
+        console = Console(file=output, force_terminal=False, no_color=True, width=120)
+        console.print(root)
+
+        return output.getvalue()
+    except KeyError as e:
+        return f"Error: Path not found - {e}"
+    except Exception as e:
+        return f"Error: {e}"
+
+
+@mcp.tool()
+def get(
+    path: str,
+    config_file: str = "codegen.yaml",
+    output_format: str = "json",
+) -> str:
+    """
+    Get: Query a value from blueprint by path.
+
+    Use dot notation to navigate the blueprint structure.
+    Supports index access with [n] syntax.
+
+    Args:
+        path: Path to query (e.g., 'project.name', 'contexts.sales.aggregates')
+        config_file: Path to the codegen.yaml blueprint file
+        output_format: Output format: json or yaml
+
+    Returns:
+        The value at the specified path or error description
+    """
+    try:
+        config_path = Path(config_file)
+        container = _get_container(config_file=config_path)
+
+        use_case = container.get_value_use_case()
+        result = use_case.execute(GetValueCommand(path=path))
+
+        return _serialize_value(result, output_format)
+    except KeyError as e:
+        return f"Error: Path not found - {e}"
+    except Exception as e:
+        return f"Error: {e}"
+
+
+@mcp.tool()
+def set(
+    path: str,
+    value: str,
+    config_file: str = "codegen.yaml",
+    append: bool = False,
+) -> str:
+    """
+    Set: Set or update a value in blueprint by path (Upsert).
+
+    Use dot notation to navigate. The value should be a JSON string.
+
+    Args:
+        path: Path to set (e.g., 'project.version', 'contexts.sales.aggregates')
+        value: JSON value to set
+        config_file: Path to the codegen.yaml blueprint file
+        append: Append to list instead of replace
+
+    Returns:
+        Success message or error description
+    """
+    try:
+        config_path = Path(config_file)
+        parsed_value = _parse_value(value)
+
+        container = _get_container(config_file=config_path)
+        use_case = container.set_value_use_case()
+
+        use_case.execute(SetValueCommand(
+            path=path,
+            value=parsed_value,
+            append=append,
+        ))
+
+        return f"Successfully set value at '{path}'"
+    except KeyError as e:
+        return f"Error: Path not found - {e}"
+    except Exception as e:
+        return f"Error: {e}"
+
+
+@mcp.tool()
+def rm(
+    path: str,
+    config_file: str = "codegen.yaml",
+) -> str:
+    """
+    Remove: Delete a value from blueprint by path.
+
+    Use dot notation to specify what to remove.
+    Can remove fields, list items (by index or name), or nested objects.
+
+    Args:
+        path: Path to remove (e.g., 'contexts.sales', 'contexts[0]')
+        config_file: Path to the codegen.yaml blueprint file
+
+    Returns:
+        Success message or error description
+    """
+    try:
+        config_path = Path(config_file)
+        container = _get_container(config_file=config_path)
+
+        use_case = container.remove_value_use_case()
+        use_case.execute(RemoveValueCommand(path=path))
+
+        return f"Successfully removed '{path}'"
+    except KeyError as e:
+        return f"Error: Path not found - {e}"
+    except Exception as e:
+        return f"Error: {e}"
+
+
+if __name__ == "__main__":
+    mcp.run()
