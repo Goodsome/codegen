@@ -25,12 +25,17 @@ class OSFileSystem(FileSystemPort):
         full_path = self.root / path
         return full_path.read_text(encoding=self.encoding)
 
-    def write_file(self, path: Path, content: str, overwrite: bool = False) -> None:
+    def write_file(self, path: Path, content: str, overwrite: bool = False) -> bool:
+        """
+        Writes content to file.
+        Returns True if written, False if skipped (due to overwrite=False).
+        """
         full_path = self.root / path
         full_path.parent.mkdir(parents=True, exist_ok=True)
         if full_path.exists() and not overwrite:
-            return
+            return False
         _ = full_path.write_text(content, encoding=self.encoding)
+        return True
 
     def list_directory_recursively(self, path: Path) -> Iterator[Path]:
         return self.root.glob(str(path / "**" / "*"))

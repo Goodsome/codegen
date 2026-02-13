@@ -36,6 +36,7 @@ from codegen.orchestration.application.use_cases.generate_project import (
 from codegen.orchestration.application.use_cases.generate_blueprint import (
     GenerateBlueprintCommand,
 )
+from codegen.orchestration.domain.value_objects.build_result import BuildResult
 
 # Create MCP server instance
 mcp = FastMCP("Codegen MCP Server")
@@ -136,7 +137,7 @@ def build(
         build_dir: bool = True,
         node: str | None = None,
         out: str | None = None,
-) -> str:
+) -> BuildResult:
     """
     Build: Compile codegen.yaml into Python code.
 
@@ -147,39 +148,35 @@ def build(
         work_dir: Absolute path to the project root directory
         config_file: Path to the codegen.yaml blueprint file (relative to work_dir)
         build_dir: Output to src directory (True) or target directory (False)
-        node: Generate only a specific bounded context or component by name, overwrite mode.
+        node: Generate only a specific component by name, overwrite mode.
         out: Custom output directory
     """
-    try:
-        # MODIFIED: Resolve work_dir and pass to container
-        root_path = Path(work_dir).resolve()
-        config_path = Path(config_file) # Will be joined with root_path in _get_container if relative
+    root_path = Path(work_dir).resolve()
+    config_path = Path(config_file) # Will be joined with root_path in _get_container if relative
 
-        output_path = Path(out) if out else None
-        subdir = "src" if build_dir else "target"
+    output_path = Path(out) if out else None
+    subdir = "src" if build_dir else "target"
 
-        container = _get_container(
-            config_file=config_path,
-            root_path=root_path,
-            out=output_path,
-            subdir=subdir
-        )
-        use_case = container.generate_project_use_case()
+    container = _get_container(
+        config_file=config_path,
+        root_path=root_path,
+        out=output_path,
+        subdir=subdir
+    )
+    use_case = container.generate_project_use_case()
 
-        overwrite = False
-        if node is not None:
-            overwrite = True
+    overwrite = False
+    if node is not None:
+        overwrite = True
 
-        root_path_str = ""
-        if output_path:
-            root_path_str = str(output_path).replace("/", ".").replace("\\", ".")
+    root_path_str = ""
+    if output_path:
+        root_path_str = str(output_path).replace("/", ".").replace("\\", ".")
 
-        cmd = GenerateProjectCommand(overwrite=overwrite, node=node, root_path=root_path_str)
-        use_case.execute(cmd)
+    cmd = GenerateProjectCommand(overwrite=overwrite, node=node, root_path=root_path_str)
+    r = use_case.execute(cmd)
 
-        return "Build completed successfully."
-    except Exception as e:
-        return f"Error: {e}"
+    return r.result
 
 
 @mcp.tool()
