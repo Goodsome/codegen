@@ -12,7 +12,13 @@ class FileSystemPort(ABC):
     def read_file(self, path: Path) -> str: ...
 
     @abstractmethod
-    def write_file(self, path: Path, content: str, overwrite: bool = False) -> None: ...
+    def write_file(self, path: Path, content: str, overwrite: bool = False) -> None:
+        """
+        Writes content to file.
+        Returns True if written, False if skipped (due to overwrite=False).
+        """
+        ...
+    
 
     @abstractmethod
     def list_directory_recursively(self, path: Path) -> Iterator[Path]: ...
