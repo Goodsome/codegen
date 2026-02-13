@@ -9,6 +9,9 @@ from codegen.domain_definition.domain.ports.blueprint_storage import (
 )
 from codegen.domain_definition.domain.value_objects.blueprint import Blueprint
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 class YamlBlueprintStorage(BlueprintStorage):
     """Blueprint loader that reads from a YAML file."""
@@ -33,8 +36,7 @@ class YamlBlueprintStorage(BlueprintStorage):
             return Blueprint.model_validate(data)
 
         except Exception as e:
-            # 在实际工程中，这里应该记录日志或抛出自定义异常
-            print(f"Error loading yaml spec: {e}")
+            logger.error(f"Error loading yaml spec: {e}")
             raise e
 
     def save(self, blueprint: Blueprint) -> None:
@@ -59,5 +61,5 @@ class YamlBlueprintStorage(BlueprintStorage):
                     default_flow_style=False,
                 )
         except Exception as e:
-            print(f"Error saving yaml spec: {e}")
+            logger.error(f"Error saving yaml spec: {e}")
             raise e

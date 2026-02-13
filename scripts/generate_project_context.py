@@ -1,5 +1,8 @@
 import os
 from pathlib import Path
+import logging
+
+logger = logging.getLogger(__name__)
 
 # 配置：需要忽略的目录和文件后缀
 IGNORE_DIRS = {'.git', '__pycache__', '.idea', '.vscode', 'venv', '.venv', 'build', 'dist', 'codegen.egg-info'}
@@ -37,10 +40,10 @@ def merge_project_files(root_dir: str = ".", output_file: str = "project_context
                 outfile.write(content)
                 outfile.write("\n")
             except Exception as e:
-                print(f"Skipping binary or unreadable file: {rel_path} ({e})")
+                logger.info(f"Skipping binary or unreadable file: {rel_path} ({e})")
 
-    print(f"✅ 完成！所有代码已合并至: {output_file}")
-    print(f"   文件大小: {os.path.getsize(output_file) / 1024:.2f} KB")
+    logger.info(f"✅ 完成！所有代码已合并至: {output_file}")
+    logger.info(f"   文件大小: {os.path.getsize(output_file) / 1024:.2f} KB")
 
 if __name__ == "__main__":
     merge_project_files()

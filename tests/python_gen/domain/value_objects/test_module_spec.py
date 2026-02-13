@@ -24,4 +24,3 @@ class Attribute(ValueObject):
         module_spec,
         module_spec.imports,
     )
-    print(content)
