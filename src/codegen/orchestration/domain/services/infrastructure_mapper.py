@@ -36,7 +36,10 @@ class InfrastructureMapper:
 
         kind_packages: list[PackageSpec] = []
         for kind, tech_modules in module_bags.items():
-            pkg_name = kind.value.lower() + 's'
+            if kind is PortType.REPOSITORY:
+                pkg_name = "repositories"
+            else:
+                pkg_name = kind.value.lower() + 's'
             kind_pkg = PackageSpec.create(name=pkg_name, modules=tech_modules)
             kind_packages.append(kind_pkg)
 

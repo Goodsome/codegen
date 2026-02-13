@@ -481,6 +481,74 @@ contexts:
       description: Blueprint loader that reads from a YAML file.
 - name: Orchestration
   domain:
+    enums:
+    - name: BuildStatus
+      members:
+      - name: SUCCESS
+        value: SUCCESS
+      - name: FAILURE
+        value: FAILURE
+      - name: WARNING
+        value: WARNING
+    - name: FileStatus
+      members:
+      - name: CREATED
+        value: CREATED
+      - name: UPDATED
+        value: UPDATED
+      - name: SKIPPED
+        value: SKIPPED
+      - name: FAILED
+        value: FAILED
+    value_objects:
+    - name: FileResult
+      description: Represents the outcome for a single file generation.
+      attributes:
+      - name: path
+        type: str
+      - name: status
+        type: FileStatus
+      - name: message
+        type: str
+        optional: true
+      - name: diff
+        type: str
+        optional: true
+    - name: BuildStats
+      description: Aggregated statistics for a build operation.
+      attributes:
+      - name: total_files
+        type: int
+        default: '0'
+      - name: created_count
+        type: int
+        default: '0'
+      - name: updated_count
+        type: int
+        default: '0'
+      - name: skipped_count
+        type: int
+        default: '0'
+      - name: failed_count
+        type: int
+        default: '0'
+      - name: duration_ms
+        type: int
+        default: '0'
+    - name: BuildResult
+      description: Top-level result object returned by generation use cases.
+      attributes:
+      - name: status
+        type: BuildStatus
+      - name: files
+        type: list[FileResult]
+        default: '[]'
+      - name: stats
+        type: BuildStats
+        optional: true
+      - name: messages
+        type: list[str]
+        default: '[]'
     services:
     - name: AggregateMapper
       dependencies:
@@ -942,7 +1010,7 @@ contexts:
       result:
         attributes:
         - name: result
-          type: str
+          type: BuildResult
 - name: PythonGen
   domain:
     enums:
@@ -1674,7 +1742,7 @@ contexts:
       result:
         attributes:
         - name: result
-          type: str
+          type: BuildResult
     - name: GenerateSchemaJson
       kind: command
       dependencies:
