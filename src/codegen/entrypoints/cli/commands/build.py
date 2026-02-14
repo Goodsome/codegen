@@ -14,7 +14,7 @@ from rich.panel import Panel
 from rich.text import Text
 from rich import box
 
-from codegen.cli.utils import get_container
+from codegen.entrypoints.cli.utils import get_container
 from codegen.orchestration.application.use_cases.generate_project import (
     GenerateProjectCommand,
 )

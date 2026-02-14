@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Optional, List
 
 import typer
-from codegen.cli.utils import get_container
+from codegen.entrypoints.cli.utils import get_container
 from codegen.domain_definition.application.use_cases.path_operations import (
     SetValueCommand,
 )
