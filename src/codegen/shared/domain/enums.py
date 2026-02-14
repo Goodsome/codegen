@@ -28,7 +28,3 @@ class PrimitiveType(Enum):
     UUID = "uuid"
 
     ANY = "any"
-    
-    @classmethod
-    def has_value(cls, value: str) -> bool:
-        return value in cls._value2member_map_

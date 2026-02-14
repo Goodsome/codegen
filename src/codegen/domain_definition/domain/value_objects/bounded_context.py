@@ -1,8 +1,6 @@
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from functools import cached_property
-
 from pydantic import Field
-
 from codegen.domain_definition.domain.value_objects.application_spec import (
     ApplicationSpec,
 )
@@ -15,13 +13,16 @@ from codegen.domain_definition.domain.value_objects.implementation_spec import (
     ImplementationSpec,
 )
 from codegen.shared.models import ValueObject
-from typing import Any
+from typing import Any, Union
 from codegen.domain_definition.domain.value_objects.aggregate_spec import AggregateSpec
-from codegen.domain_definition.domain.value_objects.value_object_spec import ValueObjectSpec
+from codegen.domain_definition.domain.value_objects.value_object_spec import (
+    ValueObjectSpec,
+)
 from codegen.domain_definition.domain.value_objects.entity_spec import EntitySpec
 from codegen.domain_definition.domain.value_objects.enum_spec import EnumSpec
 from codegen.domain_definition.domain.value_objects.service_spec import ServiceSpec
 from codegen.domain_definition.domain.value_objects.use_case_spec import UseCaseSpec
+from codegen.domain_definition.domain.value_objects.test_config import TestConfig
 
 
 class BoundedContext(ValueObject):
@@ -32,16 +33,19 @@ class BoundedContext(ValueObject):
     domain: DomainSpec = Field(default_factory=DomainSpec)
     application: ApplicationSpec = Field(default_factory=ApplicationSpec)
     infrastructure: InfrastructureSpec = Field(default_factory=InfrastructureSpec)
+    test_config: TestConfig | None = None
 
     @classmethod
     def create(
-        cls,
+        cls: Any,
         name: str,
         description: str = "",
         domain: DomainSpec | None = None,
         application: ApplicationSpec | None = None,
         infrastructure: InfrastructureSpec | None = None,
-    ):
+        test_config: TestConfig | None = None,
+    ) -> Any:
+
         if domain is None:
             domain = DomainSpec()
         if application is None:
@@ -54,13 +58,17 @@ class BoundedContext(ValueObject):
             domain=domain,
             application=application,
             infrastructure=infrastructure,
+            test_config=test_config,
         )
 
-    @cached_property
-    def port_index(self) -> dict[str, PortSpec]:
+    def port_index(
+        self,
+    ) -> dict[str, PortSpec]:
+
         return {port.name: port for port in self.domain.ports + self.application.ports}
 
     def get_port_spec(self, port_name: str) -> PortSpec:
+
         if port_name not in self.port_index:
             raise ValueError(f"Port {port_name} not found in {self.name}")
         return self.port_index[port_name]
