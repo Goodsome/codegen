@@ -27,6 +27,12 @@ contexts:
         value: command
       - name: QUERY
         value: query
+    - name: TestMockStrategy
+      members:
+      - name: UNITTEST
+        value: unittest
+      - name: PYTEST
+        value: pytest
     value_objects:
     - name: AggregateSpec
       description: Specification of a domain aggregate to be generated.
@@ -99,6 +105,9 @@ contexts:
       - name: bootstrap
         type: BootstrapSpec
         optional: true
+      - name: test_config
+        type: TestConfig
+        optional: true
       behaviors:
       - name: create
         inputs:
@@ -114,6 +123,9 @@ contexts:
           type: list[BoundedContext] | None
         - name: bootstrap
           type: BootstrapSpec | None
+        - name: test_config
+          type: TestConfig | None
+          optional: true
         output:
           type: Any
     - name: BootstrapSpec
@@ -139,6 +151,9 @@ contexts:
       - name: infrastructure
         type: InfrastructureSpec
         optional: true
+      - name: test_config
+        type: TestConfig
+        optional: true
       behaviors:
       - name: create
         inputs:
@@ -154,6 +169,9 @@ contexts:
           type: ApplicationSpec | None
         - name: infrastructure
           type: InfrastructureSpec | None
+        - name: test_config
+          type: TestConfig | None
+          optional: true
         output:
           type: Any
       - name: port_index
@@ -443,6 +461,18 @@ contexts:
       - name: behaviors
         type: list[MethodSpec]
         optional: true
+    - name: TestConfig
+      description: Configuration for automated test generation.
+      attributes:
+      - name: enabled
+        type: bool
+        default: 'True'
+      - name: strategy
+        type: TestMockStrategy
+        default: PYTEST
+      - name: fixtures_path
+        type: str
+        optional: true
     ports:
     - name: BlueprintStorage
       description: Loads the blueprint from a file.
@@ -638,6 +668,9 @@ contexts:
       dependencies:
       - name: context_mapper
         type: ContextMapper
+        optional: true
+      - name: test_mapper
+        type: TestMapper
         optional: true
       operations:
       - name: to_package_spec
@@ -971,6 +1004,18 @@ contexts:
           type: PackageSpec
         output:
           type: list[ValueObjectSpec]
+    - name: TestMapper
+      dependencies:
+      - name: test_generator
+        type: TestGenerator
+        optional: true
+      operations:
+      - name: to_package_spec
+        inputs:
+        - name: context
+          type: BoundedContext
+        output:
+          type: PackageSpec
   application:
     use_cases:
     - name: GenerateBlueprint
@@ -1708,6 +1753,21 @@ contexts:
           type: str | None
         output:
           type: None
+    - name: TestGenerator
+      description: Generator for automated test skeletons.
+      operations:
+      - name: to_test_module_spec
+        inputs:
+        - name: context
+          type: BoundedContext
+        - name: use_case
+          type: UseCaseSpec | None
+          optional: true
+        - name: aggregate
+          type: AggregateSpec | None
+          optional: true
+        output:
+          type: ModuleSpec
     ports:
     - name: CodeFormatter
       description: Formats Python source code.

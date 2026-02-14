@@ -24,3 +24,10 @@ class UseCaseKind(Enum):
     COMMAND = "command"
 
     QUERY = "query"
+
+
+class TestMockStrategy(Enum):
+
+    UNITTEST = "unittest"
+
+    PYTEST = "pytest"
