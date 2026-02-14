@@ -47,9 +47,13 @@ class ImportFromSpec(ValueObject):
 
     def render(self) -> str:
         from_expr = self.render_from_expression()
+        r = ""
         if from_expr:
-            return f"{from_expr} import {self.render_names()}"
-        return f"import {self.render_names()}"
+            r = f"{from_expr} import {self.render_names()}"
+        elif self.module == "__root__":
+            for imported_name in self.names:
+                r += f"import {imported_name.render()}\n"
+        return r
 
     def render_from_expression(self) -> str:
         if self.module == "__root__":

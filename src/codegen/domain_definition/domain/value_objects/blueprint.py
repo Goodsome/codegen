@@ -1,12 +1,13 @@
-from codegen.shared.domain.value_objects.pascal_string import PascalString
+from typing import Any, Union
+
+from pydantic import Field
+
+from codegen.domain_definition.domain.value_objects.bootstrap_spec import BootstrapSpec
 from codegen.domain_definition.domain.value_objects.bounded_context import (
     BoundedContext,
 )
+from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.models import ValueObject
-from codegen.domain_definition.domain.value_objects.bootstrap_spec import BootstrapSpec
-from pydantic import Field
-from codegen.domain_definition.domain.value_objects.test_config import TestConfig
-from typing import Any, Union
 
 
 class Blueprint(ValueObject):
@@ -17,7 +18,6 @@ class Blueprint(ValueObject):
     layout: str = Field(default_factory=str)
     contexts: list[BoundedContext] = Field(default_factory=list)
     bootstrap: BootstrapSpec = Field(default_factory=BootstrapSpec)
-    test_config: TestConfig | None = None
 
     @classmethod
     def create(
@@ -27,7 +27,6 @@ class Blueprint(ValueObject):
         layout: str = "",
         contexts: list[BoundedContext] | None = None,
         bootstrap: BootstrapSpec | None = None,
-        test_config: TestConfig | None = None,
     ) -> Any:
 
         if contexts is None:
@@ -42,7 +41,6 @@ class Blueprint(ValueObject):
             layout=layout,
             contexts=contexts,
             bootstrap=bootstrap,
-            test_config=test_config,
         )
 
     def add_context(self, context: BoundedContext) -> "Blueprint":
