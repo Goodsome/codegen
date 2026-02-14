@@ -11,12 +11,6 @@ from codegen.cli.commands.rm import rm
 from codegen.cli.commands.tree import tree_cmd
 from codegen.cli.commands.mcp_cmd import mcp_cmd
 
-# Legacy commands (for backward compatibility)
-from codegen.cli.commands.generate import generate, generate_blueprint, generate_blueprint_schema
-from codegen.cli.commands.add import app as add_app
-from codegen.cli.commands.update import app as update_app
-from codegen.cli.commands.delete import app as delete_app
-
 app = typer.Typer(
     name="codegen",
     help="""Codegen CLI - DDD Project Scaffolding Tool.
@@ -63,19 +57,6 @@ app.command(name="set")(set_cmd)
 app.command()(rm)
 app.command(name="mcp")(mcp_cmd)
 
-# ============================================================================
-# Legacy Commands (Backward Compatibility - Deprecated)
-# ============================================================================
-
-# Old generate commands - kept for backward compatibility
-app.command(name="generate", deprecated=True, help="[DEPRECATED] Use 'build' instead. Generate code from codegen.yaml")(generate)
-app.command(name="generate-blueprint", deprecated=True, help="[DEPRECATED] Use 'reverse' instead. Reverse engineer Python package")(generate_blueprint)
-app.command(name="generate-blueprint-schema", deprecated=True, help="[DEPRECATED] Use 'schema' instead. Generate JSON schema")(generate_blueprint_schema)
-
-# Old sub-apps - kept for backward compatibility
-app.add_typer(add_app, name="add", deprecated=True, help="[DEPRECATED] Use 'set --append' instead. Add components")
-app.add_typer(update_app, name="update", deprecated=True, help="[DEPRECATED] Use 'set' instead. Update components")
-app.add_typer(delete_app, name="delete", deprecated=True, help="[DEPRECATED] Use 'rm' instead. Delete components")
 
 
 if __name__ == "__main__":

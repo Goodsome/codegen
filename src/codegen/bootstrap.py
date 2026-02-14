@@ -1,31 +1,23 @@
-from codegen.python_gen.infrastructure.adapters.black_code_formatter import (
-    BlackCodeFormatter,
-)
 from dependency_injector import containers, providers
 from dependency_injector.providers import Singleton, Factory
 
 from codegen.domain_definition.application.use_cases.load_blueprint import LoadBlueprint
-from codegen.domain_definition.application.use_cases.modify_blueprint import (
-    AddComponent,
-    UpdateComponent,
-    DeleteComponent,
-)
 from codegen.domain_definition.application.use_cases.path_operations import (
     GetValue,
     SetValue,
     RemoveValue,
 )
-from codegen.domain_definition.domain.services.blueprint_path_resolver import (
-    BlueprintPathResolver,
-)
 from codegen.domain_definition.domain.services.blueprint_path_operations import (
     BlueprintPathOperations,
+)
+from codegen.domain_definition.domain.services.blueprint_path_resolver import (
+    BlueprintPathResolver,
 )
 from codegen.domain_definition.infrastructure.adapters.yaml_blueprint_storage import (
     YamlBlueprintStorage,
 )
-from codegen.orchestration.application.use_cases.generate_project import GenerateProject
 from codegen.orchestration.application.use_cases.generate_blueprint import GenerateBlueprint
+from codegen.orchestration.application.use_cases.generate_project import GenerateProject
 from codegen.python_gen.application.use_cases.generate_package import (
     GeneratePackage,
 )
@@ -34,6 +26,9 @@ from codegen.python_gen.application.use_cases.parse_package import (
 )
 from codegen.python_gen.domain.services.python_syntax_translator import (
     PythonSyntaxTranslator,
+)
+from codegen.python_gen.infrastructure.adapters.black_code_formatter import (
+    BlackCodeFormatter,
 )
 from codegen.shared.infrastructure.adapters.jinja_adapter import JinjaAdapter
 from codegen.shared.infrastructure.adapters.os_file_system import OSFileSystem
@@ -87,24 +82,9 @@ class Container(containers.DeclarativeContainer):
         generator=generate_package_use_case,
     )
 
-    update_blueprint_user_case: Factory[GenerateBlueprint] = Factory(
+    update_blueprint_use_case: Factory[GenerateBlueprint] = Factory(
         GenerateBlueprint,
         parser=parse_package_use_case,
-        storage=blueprint_loader_provider,
-    )
-
-    add_component_use_case: Factory[AddComponent] = Factory(
-        AddComponent,
-        storage=blueprint_loader_provider,
-    )
-
-    update_component_use_case: Factory[UpdateComponent] = Factory(
-        UpdateComponent,
-        storage=blueprint_loader_provider,
-    )
-
-    delete_component_use_case: Factory[DeleteComponent] = Factory(
-        DeleteComponent,
         storage=blueprint_loader_provider,
     )
 
