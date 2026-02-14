@@ -5,4 +5,5 @@
 
 # Feature
 
+* 增加tree get的能力，不要再直接查询 codegen.yaml
 * 代码清理工具
