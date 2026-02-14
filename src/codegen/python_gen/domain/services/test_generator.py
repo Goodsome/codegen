@@ -16,6 +16,8 @@ from dataclasses import dataclass
 @dataclass
 class TestGenerator:
     """Generator for automated test skeletons."""
+    
+    __test__ = False
 
     def to_test_module_spec(
         self,
