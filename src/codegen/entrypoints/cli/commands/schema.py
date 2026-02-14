@@ -5,7 +5,7 @@ Replaces the old 'codegen generate-blueprint-schema' command.
 """
 
 import typer
-from codegen.cli.utils import get_container
+from codegen.entrypoints.cli.utils import get_container
 from codegen.python_gen.application.use_cases.generate_schema_json import (
     GenerateSchemaJson,
     GenerateSchemaJsonCommand,

@@ -7,7 +7,7 @@ Replaces the old 'codegen generate-blueprint' command.
 from pathlib import Path
 
 import typer
-from codegen.cli.utils import get_container, get_default_package_path
+from codegen.entrypoints.cli.utils import get_container, get_default_package_path
 from codegen.orchestration.application.use_cases.generate_blueprint import (
     GenerateBlueprintCommand,
 )

@@ -1,15 +1,14 @@
 import typer
-from codegen.cli.utils import version_callback
 
 # New path-based commands
-from codegen.cli.commands.build import build
-from codegen.cli.commands.reverse import reverse
-from codegen.cli.commands.schema import schema
-from codegen.cli.commands.get import get_cmd
-from codegen.cli.commands.set import set_cmd
-from codegen.cli.commands.rm import rm
-from codegen.cli.commands.tree import tree_cmd
-from codegen.cli.commands.mcp_cmd import mcp_cmd
+from codegen.entrypoints.cli.commands.build import build
+from codegen.entrypoints.cli.commands.reverse import reverse
+from codegen.entrypoints.cli.commands.schema import schema
+from codegen.entrypoints.cli.commands.get import get_cmd
+from codegen.entrypoints.cli.commands.set import set_cmd
+from codegen.entrypoints.cli.commands.rm import rm
+from codegen.entrypoints.cli.commands.tree import tree_cmd
+from codegen.entrypoints.cli.commands.mcp_cmd import mcp_cmd
 
 app = typer.Typer(
     name="codegen",

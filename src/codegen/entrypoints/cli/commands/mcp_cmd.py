@@ -42,7 +42,7 @@ def mcp_cmd(
         $ codegen mcp                    # Start with stdio transport
         $ codegen mcp --transport http   # Start with HTTP transport
     """
-    from codegen.mcp.server import mcp
+    from codegen.entrypoints.mcp.server import mcp
 
     if transport == "http":
         mcp.run(transport="http", port=port)

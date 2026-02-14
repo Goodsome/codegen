@@ -7,7 +7,7 @@ New path-based command for deleting blueprint values.
 from pathlib import Path
 
 import typer
-from codegen.cli.utils import get_container
+from codegen.entrypoints.cli.utils import get_container
 from codegen.domain_definition.application.use_cases.path_operations import (
     RemoveValueCommand,
 )

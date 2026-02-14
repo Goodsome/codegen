@@ -243,7 +243,7 @@ def tree(
         from rich.tree import Tree as RichTree
 
         # Import tree helpers from CLI module
-        from codegen.cli.commands.tree import (
+        from codegen.entrypoints.cli.commands.tree import (
             add_item_to_tree,
             add_model_children,
         )
