@@ -208,7 +208,7 @@ def reverse(
         if not pkg_path.is_absolute():
             pkg_path = root_path / pkg_path
 
-        use_case = container.update_blueprint_user_case()
+        use_case = container.update_blueprint_use_case()
         cmd = GenerateBlueprintCommand(path=pkg_path)
         use_case.execute(cmd)
 
