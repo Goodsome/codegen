@@ -27,6 +27,8 @@ class UseCaseKind(Enum):
 
 
 class TestMockStrategy(Enum):
+    
+    __test__ = False
 
     UNITTEST = "unittest"
 

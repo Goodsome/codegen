@@ -5,6 +5,8 @@ from pydantic import Field
 
 class TestConfig(ValueObject):
     """Configuration for automated test generation."""
+    
+    __test__ = False
 
     enabled: bool = True
     strategy: TestMockStrategy = TestMockStrategy.PYTEST

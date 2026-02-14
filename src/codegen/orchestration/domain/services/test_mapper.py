@@ -8,6 +8,8 @@ from codegen.python_gen.domain.services.test_generator import TestGenerator
 
 @dataclass
 class TestMapper:
+    
+    __test__ = False
 
     test_generator: TestGenerator = field(default_factory=TestGenerator)
 
