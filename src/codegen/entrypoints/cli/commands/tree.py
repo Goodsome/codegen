@@ -14,7 +14,7 @@ from rich.console import Console
 from pydantic import BaseModel
 
 from codegen.entrypoints.cli.utils import get_container
-from codegen.domain_definition.application.use_cases.path_operations import (
+from codegen.domain_definition.application.use_cases.get_value import (
     GetValueCommand,
 )
 

@@ -8,9 +8,7 @@ from pathlib import Path
 
 import typer
 from codegen.entrypoints.cli.utils import get_container
-from codegen.domain_definition.application.use_cases.path_operations import (
-    RemoveValueCommand,
-)
+from codegen.domain_definition.application.use_cases.remove_value import RemoveValueCommand
 
 app = typer.Typer(name="rm", help="Remove a value from blueprint by path")
 

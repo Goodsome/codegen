@@ -25,11 +25,11 @@ from codegen.bootstrap import Container
 from codegen.domain_definition.application.use_cases.load_blueprint import (
     LoadBlueprintCommand,
 )
-from codegen.domain_definition.application.use_cases.path_operations import (
+from codegen.domain_definition.application.use_cases.get_value import (
     GetValueCommand,
-    SetValueCommand,
-    RemoveValueCommand,
 )
+from codegen.domain_definition.application.use_cases.set_value import SetValueCommand
+from codegen.domain_definition.application.use_cases.remove_value import RemoveValueCommand
 from codegen.orchestration.application.use_cases.generate_project import (
     GenerateProjectCommand,
 )

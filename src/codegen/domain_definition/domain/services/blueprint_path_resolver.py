@@ -8,18 +8,9 @@ Supports paths like:
 """
 
 import re
-from dataclasses import dataclass
 from typing import Any
 
-
-@dataclass
-class PathSegment:
-    """Represents a single segment in a path expression."""
-    name: str
-    index: int | None = None  # None = dict key by name, int = list index
-    
-    def is_index_access(self) -> bool:
-        return self.index is not None
+from codegen.domain_definition.domain.services.path_segment import PathSegment
 
 
 class BlueprintPathResolver:
