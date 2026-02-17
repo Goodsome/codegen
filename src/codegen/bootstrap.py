@@ -2,11 +2,11 @@ from dependency_injector import containers, providers
 from dependency_injector.providers import Singleton, Factory
 
 from codegen.domain_definition.application.use_cases.load_blueprint import LoadBlueprint
-from codegen.domain_definition.application.use_cases.path_operations import (
+from codegen.domain_definition.application.use_cases.get_value import (
     GetValue,
-    SetValue,
-    RemoveValue,
 )
+from codegen.domain_definition.application.use_cases.set_value import SetValue
+from codegen.domain_definition.application.use_cases.remove_value import RemoveValue
 from codegen.domain_definition.domain.services.blueprint_path_operations import (
     BlueprintPathOperations,
 )

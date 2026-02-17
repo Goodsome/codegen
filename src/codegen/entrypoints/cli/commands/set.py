@@ -11,9 +11,7 @@ from typing import Optional, List
 
 import typer
 from codegen.entrypoints.cli.utils import get_container
-from codegen.domain_definition.application.use_cases.path_operations import (
-    SetValueCommand,
-)
+from codegen.domain_definition.application.use_cases.set_value import SetValueCommand
 
 app = typer.Typer(name="set", help="Set a value in blueprint by path")
 

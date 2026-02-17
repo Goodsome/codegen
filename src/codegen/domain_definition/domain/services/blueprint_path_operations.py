@@ -13,8 +13,8 @@ from pydantic import BaseModel
 
 from codegen.domain_definition.domain.services.blueprint_path_resolver import (
     BlueprintPathResolver,
-    PathSegment,
 )
+from codegen.domain_definition.domain.services.path_segment import PathSegment
 
 
 @dataclass

@@ -632,7 +632,6 @@
       "type":"string"
     },
     "layout":{
-      "default":"",
       "title":"Layout",
       "type":"string"
     },
