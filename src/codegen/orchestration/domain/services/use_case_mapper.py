@@ -18,6 +18,7 @@ from codegen.python_gen.domain.value_objects.parameter_spec import (
 from codegen.python_gen.domain.value_objects.type_annotation_spec import (
     TypeAnnotationSpec,
 )
+from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import parse_type_str
 
 
 @dataclass
@@ -41,7 +42,7 @@ class UseCaseMapper:
             )
             param = ParameterSpec.create(
                 name="cmd",
-                annotation=TypeAnnotationSpec.parse(command_name),
+                annotation=parse_type_str(command_name),
             )
             classes.append(command_class)
         elif use_case.kind is UseCaseKind.QUERY:
@@ -57,7 +58,7 @@ class UseCaseMapper:
             )
             param = ParameterSpec.create(
                 name="query",
-                annotation=TypeAnnotationSpec.parse(query_name),
+                annotation=parse_type_str(query_name),
             )
             classes.append(query_class)
         else:
@@ -82,7 +83,7 @@ class UseCaseMapper:
         execute_method = FunctionSpec.create(
             name="execute",
             parameters=[param],
-            return_annotation=TypeAnnotationSpec.parse(result_name),
+            return_annotation=parse_type_str(result_name),
             function_type=FunctionType.INSTANCE_METHOD,
         )
         uc_class = ClassSpec.create(

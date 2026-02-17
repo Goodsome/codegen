@@ -181,6 +181,25 @@ src/codegen/python_gen/infrastructure/adapters/
     *   否则:
         *   Return `ast.ImportFrom(module=module, names=[ast.alias(name=n.name, asname=n.alias) for n in names], level=0)`.
 
+### 3.7 `enum_builder.build_enum`
+
+*   **Input**: `enum_spec: PythonEnumSpec`
+*   **Output**: `ast.ClassDef`
+*   **Logic**:
+    1.  `body: list[ast.stmt] = []`.
+    2.  **Docstring**: 如果 `enum_spec.description` 存在，创建 `ast.Expr(value=ast.Constant(value=...))` 作为 body 第一项。
+    3.  **Members**:
+        *   遍历 `enum_spec.members`.
+        *   对于每个 member，创建 `ast.Assign`:
+            *   `targets = [ast.Name(id=member.name, ctx=ast.Store())]`.
+            *   `value`:
+                *   如果 `member.value` 是简单类型(str/int)，使用 `ast.Constant`.
+                *   如果是复杂表达式，可能需要 `ast.parse` (视 `PythonEnumMemberSpec` 定义而定，目前假设为简单值).
+            *   Append to body.
+    4.  **Bases**: `enum_spec.base_class` (默认 "Enum"). `bases = [ast.Name(id=base_class, ctx=ast.Load())]`.
+    5.  **Decorators**: `enum_spec.decorators` -> 解析.
+    6.  Return `ast.ClassDef`.
+
 ---
 
 ## 4. AstParsers (AST -> Spec) 详细设计
@@ -251,6 +270,23 @@ src/codegen/python_gen/infrastructure/adapters/
     *   Extract module name (`__root__` if `Import`).
     *   Extract names (`ast.alias`).
 
+### 4.6 `enum_parser.parse_enum`
+
+*   **Input**: `node: ast.ClassDef`
+*   **Output**: `PythonEnumSpec`
+*   **Logic**:
+    *   `name`: `node.name`.
+    *   `description`: `ast.get_docstring(node)`.
+    *   `base_class`: 从 `node.bases` 提取 (通常是第一个元素).
+    *   `decorators`: `ast.unparse`.
+    *   `members`: 遍历 `node.body`:
+        *   如果是 `ast.Assign` 且 target 是 `ast.Name` (且不以 `_` 开头，排除 `__doc__` 等):
+            *   `member_name` = `target.id`.
+            *   `member_value` = `ast.literal_eval(node.value)` (如果是字面量) 或 `ast.unparse(node.value)`.
+            *   `PythonEnumMemberSpec(name=member_name, value=member_value)`.
+        *   忽略其他节点 (如 docstring Expr).
+    *   Return `PythonEnumSpec.create(...)`.
+
 ---
 
 ## 5. PythonSyntaxTranslator 重构方案
@@ -288,6 +324,35 @@ def to_code(self, module_spec: ModuleSpec, imports: Iterable[ImportFromSpec]) ->
     # Old: self.template_port.render("module.j2", context)
     # New:
     return self.source_code_port.render_module(module_spec, list(imports))
+
+### 5.4 接口兼容性分析
+
+`PythonSyntaxTranslator` 的公共接口 (`to_package_spec`, `to_code`, `generate_source_tree`) 保持不变，仅仅是内部实现更换。
+因此，上层 Use Case (`GeneratePackage`, `ParsePackage`) **不需要任何修改**。
+这保证了迁移过程对应用层的透明性。
+
+### 5.5 过渡方案：JinjaSourceCodeAdapter
+
+为了支持渐进式迁移 (Strangler Fig Pattern)，在 Phase 0 阶段将引入 `JinjaSourceCodeAdapter`：
+
+```python
+class JinjaSourceCodeAdapter(SourceCodePort):
+    """仅支持正向生成的兼容层"""
+    def __init__(self, template_port):
+        self.template_port = template_port
+
+    def render_module(self, module_spec, imports):
+        # 委托给旧的 TemplatePort (Jinja2)
+        return self.template_port.render("module.j2", {...})
+    
+    def parse_module(self, source_code, module_name):
+        # 抛出异常，强制要求反向解析使用 AstTranslator
+        raise NotImplementedError("Jinja adapter does not support parsing. Use AstTranslator.")
+```
+
+这意味着：
+1.  **反向解析 (Parse)**: 直接使用 `AstTranslator` (需先完成 Phase 1 实现)。
+2.  **正向生成 (Render)**: 指向 `JinjaSourceCodeAdapter`，直到 `AstTranslator.render_module` 实现成熟 (Phase 2/3) 后再切换。
 ```
 
 ## 6. Domain Spec Cleanup Plan

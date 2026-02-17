@@ -2,19 +2,19 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
+from codegen.python_gen.domain.ports.source_code_port import SourceCodePort
 from codegen.python_gen.domain.services.dependency_resolver import DependencyResolver
 from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.ports.file_system_port import FileSystemPort
-from codegen.shared.domain.ports.template_port import TemplatePort
 
 
 @dataclass
 class PythonSyntaxTranslator:
     """Bidirectional translator between Python source code and PackageSpec."""
 
-    template_port: TemplatePort
+    source_code_port: SourceCodePort
     file_system_port: FileSystemPort
 
     def to_package_spec(self, package_path: Path) -> PackageSpec:
@@ -30,7 +30,8 @@ class PythonSyntaxTranslator:
         for filepath in self.file_system_port.list_directory_flat(package_path):
             if self.file_system_port.is_file(filepath) and filepath.suffix == ".py":
                 source_code = self.file_system_port.read_file(filepath)
-                modules.append(ModuleSpec.parse_code(source_code, filepath.stem))
+                # Use source_code_port instead of ModuleSpec.parse_code
+                modules.append(self.source_code_port.parse_module(source_code, filepath.stem))
             elif (
                 self.file_system_port.is_directory(filepath)
                 and filepath.name != "__pycache__"
@@ -46,9 +47,7 @@ class PythonSyntaxTranslator:
     def to_code(
         self, module_spec: ModuleSpec, imports: Iterable[ImportFromSpec]
     ) -> str:
-        context = {"module_spec": module_spec, "imports": imports}
-        content = self.template_port.render("module.j2", context)
-        return content
+        return self.source_code_port.render_module(module_spec, list(imports))
 
     def generate_source_tree(
         self, package_spec: PackageSpec, target_node: str | None, root_path: str = "",

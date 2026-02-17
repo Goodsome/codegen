@@ -6,7 +6,7 @@ Description: Represents a Python module.
 
 from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.python_gen.domain.value_objects.python_enum_spec import PythonEnumSpec
-import ast
+
 
 from pydantic.fields import Field
 
@@ -56,30 +56,7 @@ class ModuleSpec(ValueObject):
     def get_init_module(cls) -> "ModuleSpec":
         return cls.create(name="__init__")
 
-    @classmethod
-    def parse_code(cls, source_code: str, module_name: str) -> "ModuleSpec":
-        tree = ast.parse(source_code)
-        classes: list[ClassSpec] = []
-        functions: list[FunctionSpec] = []
-        imports: list[ImportFromSpec] = []
-        enums: list[PythonEnumSpec] = []
-        for node in tree.body:
-            if isinstance(node, ast.ClassDef):
-                if module_name == "enums":
-                    enums.append(PythonEnumSpec.parse_ast(node))
-                else:
-                    classes.append(ClassSpec.parse_ast(node, source_code))
-            elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                functions.append(FunctionSpec.parse_ast(node, source_code))
-            elif isinstance(node, (ast.Import, ast.ImportFrom)):
-                imports.append(ImportFromSpec.parse_ast(node))
-        return cls.create(
-            name=module_name,
-            classes=classes,
-            functions=functions,
-            imports=imports,
-            enums=enums,
-        )
+
 
     @property
     def filename(self) -> str:

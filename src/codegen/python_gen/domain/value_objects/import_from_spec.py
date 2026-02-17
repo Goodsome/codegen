@@ -1,4 +1,4 @@
-import ast
+
 
 from codegen.shared.models import ValueObject
 from codegen.python_gen.domain.value_objects.imported_name import ImportedName
@@ -12,29 +12,17 @@ class ImportFromSpec(ValueObject):
 
     @classmethod
     def create(
-        cls, module: str, names: list[str] | list[ast.alias]
+        cls, module: str, names: list[str]
     ) -> "ImportFromSpec":
         _names: list[ImportedName] = []
         for name in names:
-            if isinstance(name, ast.alias):
-                _names.append(ImportedName(name=name.name, alias=name.asname))
-            else:
-                _names.append(ImportedName(name=name))
+            _names.append(ImportedName(name=name))
         return cls(
             module=module,
             names=_names,
         )
 
-    @classmethod
-    def parse_ast(cls, node: ast.Import | ast.ImportFrom):
-        if isinstance(node, ast.ImportFrom) and node.module:
-            module = node.module
-        else:
-            module = "__root__"
-        return cls.create(
-            module=module,
-            names=node.names,
-        )
+
 
     def has_name(self, name: str) -> bool:
         return any(name == imported_name.name for imported_name in self.names)

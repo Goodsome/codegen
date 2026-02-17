@@ -5,7 +5,7 @@ Description: Represents a function in a Python module.
 """
 
 from codegen.shared.domain.value_objects.snake_string import SnakeString
-import ast
+
 
 from codegen.python_gen.domain.enums import FunctionType
 from pydantic import Field
@@ -50,41 +50,7 @@ class FunctionSpec(ValueObject):
             is_private=is_private,
         )
 
-    @classmethod
-    def parse_ast(cls, node: ast.FunctionDef | ast.AsyncFunctionDef, source_code: str):
-        params: list[ParameterSpec] = []
-        for arg in node.args.args:
-            anno = TypeAnnotationSpec.parse_ast(arg.annotation)
-            params.append(ParameterSpec.create(name=arg.arg, annotation=anno))
 
-        return_anno = TypeAnnotationSpec.parse_ast(node.returns)
-        if node.body:
-            suite_code = "\n".join([ast.unparse(b) for b in node.body])
-        else:
-            suite_code = ""
-        decorators = [ast.unparse(decorator) for decorator in node.decorator_list]
-
-        # Determine function type
-        function_type = FunctionType.FUNCTION
-        if "classmethod" in decorators:
-            function_type = FunctionType.CLASS_METHOD
-        elif "staticmethod" in decorators:
-            function_type = FunctionType.STATIC_METHOD
-        elif params and params[0].name == "self":
-            function_type = FunctionType.INSTANCE_METHOD
-            params = params[1:]
-
-        is_private = node.name.startswith("_")
-
-        return cls.create(
-            name=node.name,
-            return_annotation=return_anno,
-            decorators=decorators,
-            parameters=params,
-            suite=suite_code,
-            function_type=function_type,
-            is_private=is_private,
-        )
 
     def get_required_types(self) -> set[str]:
         types: set[str] = set()

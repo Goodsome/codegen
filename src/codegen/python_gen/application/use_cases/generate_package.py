@@ -94,6 +94,7 @@ class GeneratePackage:
             logger.critical(f"Critical error during package generation: {e}")
             build_result.status = BuildStatus.FAILURE
             build_result.messages.append(str(e))
+            raise e
         
         finally:
             build_result.stats.duration_ms = int((time.time() - start_time) * 1000)

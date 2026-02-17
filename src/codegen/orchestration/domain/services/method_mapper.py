@@ -11,6 +11,8 @@ from codegen.python_gen.domain.value_objects.type_annotation_spec import (
 from codegen.domain_definition.domain.value_objects.method_output import MethodOutput
 from dataclasses import dataclass, field
 
+from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import parse_type_str
+
 
 @dataclass
 class MethodMapper:
@@ -42,7 +44,7 @@ class MethodMapper:
             name=function_name,
             parameters=parameters,
             decorators=decorators,
-            return_annotation=TypeAnnotationSpec.parse(method.output.type),
+            return_annotation=parse_type_str(method.output.type),
             function_type=function_type,
             suite="...",
             is_private=is_private,

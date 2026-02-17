@@ -4,7 +4,7 @@ Name: ClassSpec
 Description: Represents a class in a Python module.
 """
 
-import ast
+
 
 from pydantic.fields import Field
 
@@ -64,42 +64,7 @@ class ClassSpec(ValueObject):
             inheritance=["BaseModel"],
         )
 
-    @classmethod
-    def parse_ast(cls, node: ast.ClassDef, source_code: str):
-        methods: list[FunctionSpec] = []
-        attributes: list[ParameterSpec] = []
-        inheritance: list[str] = [ast.unparse(base) for base in node.bases]
-        decorators: list[str] = [
-            ast.unparse(decorator) for decorator in node.decorator_list
-        ]
-        description: str = ast.get_docstring(node) or ""
-        in_pydantic_model = False
-        if (
-            "ValueObject" in inheritance
-            or "AggregateRoot" in inheritance
-            or "BaseModel" in inheritance
-        ):
-            in_pydantic_model = True
 
-        for item in node.body:
-            if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                methods.append(FunctionSpec.parse_ast(item, source_code))
-            elif isinstance(item, (ast.AnnAssign, ast.Assign)):
-                attributes.extend(
-                    ParameterSpec.parse_ast(
-                        item,
-                        in_pydantic_model=in_pydantic_model,
-                    )
-                )
-
-        return cls.create(
-            name=node.name,
-            description=description,
-            inheritance=inheritance,
-            decorators=decorators,
-            attributes=attributes,
-            methods=methods,
-        )
 
     def get_required_types(self) -> set[str]:
         types: set[str] = set()

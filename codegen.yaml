@@ -73,8 +73,6 @@ contexts:
           type: str
       - name: __get_pydantic_core_schema__
         inputs:
-        - name: cls
-          type: Any
         - name: source_type
           type: Any
         - name: handler
@@ -771,8 +769,6 @@ contexts:
       behaviors:
       - name: create
         inputs:
-        - name: cls
-          type: Any
         - name: name
           type: str
         - name: description
@@ -788,33 +784,14 @@ contexts:
         output:
           type: ClassSpec
       - name: create_value_object
-        inputs:
-        - name: cls
-          type: Any
         output:
           type: ClassSpec
       - name: create_aggregate
-        inputs:
-        - name: cls
-          type: Any
         output:
           type: ClassSpec
       - name: create_entity
-        inputs:
-        - name: cls
-          type: Any
         output:
           type: ClassSpec
-      - name: parse_ast
-        inputs:
-        - name: cls
-          type: Any
-        - name: node
-          type: ast.ClassDef
-        - name: source_code
-          type: str
-        output:
-          type: Any
       - name: get_required_types
         output:
           type: set[str]
@@ -849,8 +826,6 @@ contexts:
       behaviors:
       - name: create
         inputs:
-        - name: cls
-          type: Any
         - name: name
           type: str
         - name: return_annotation
@@ -865,16 +840,6 @@ contexts:
           type: FunctionType
         - name: is_private
           type: bool
-        output:
-          type: Any
-      - name: parse_ast
-        inputs:
-        - name: cls
-          type: Any
-        - name: node
-          type: Union[ast.FunctionDef, ast.AsyncFunctionDef]
-        - name: source_code
-          type: str
         output:
           type: Any
       - name: get_required_types
@@ -908,8 +873,6 @@ contexts:
       behaviors:
       - name: create
         inputs:
-        - name: cls
-          type: Any
         - name: name
           type: str
         - name: annotation
@@ -920,16 +883,6 @@ contexts:
           type: FieldFlavor | None
         output:
           type: Any
-      - name: parse_ast
-        inputs:
-        - name: cls
-          type: Any
-        - name: node
-          type: Union[ast.AnnAssign, ast.Assign]
-        - name: in_pydantic_model
-          type: bool
-        output:
-          type: list[ParameterSpec]
       - name: get_required_types
         output:
           type: set[str]
@@ -945,30 +898,6 @@ contexts:
         type: list[TypeAnnotationSpec]
         optional: true
       behaviors:
-      - name: parse
-        inputs:
-        - name: cls
-          type: Any
-        - name: annotation
-          type: str
-        output:
-          type: TypeAnnotationSpec
-      - name: parse_ast
-        inputs:
-        - name: cls
-          type: Any
-        - name: node
-          type: ast.AST | None
-        output:
-          type: TypeAnnotationSpec
-      - name: _parse_node
-        inputs:
-        - name: cls
-          type: Any
-        - name: node
-          type: ast.AST
-        output:
-          type: TypeAnnotationSpec
       - name: render
         output:
           type: str
@@ -992,8 +921,6 @@ contexts:
       behaviors:
       - name: create
         inputs:
-        - name: cls
-          type: Any
         - name: name
           type: str
         - name: value
@@ -1002,20 +929,6 @@ contexts:
           type: str
         output:
           type: PythonEnumMemberSpec
-      - name: parse_ast
-        inputs:
-        - name: cls
-          type: Any
-        - name: node
-          type: Union[ast.Assign, ast.AnnAssign]
-        output:
-          type: PythonEnumMemberSpec
-      - name: _parse_value
-        inputs:
-        - name: node
-          type: ast.AST
-        output:
-          type: str | int | None
     - name: AssignmentSpec
       description: 描述变量的赋值结构 (RHS)。 对应 AST 中的 value 节点。
       attributes:
@@ -1067,8 +980,6 @@ contexts:
       behaviors:
       - name: create
         inputs:
-        - name: cls
-          type: Any
         - name: name
           type: str
         - name: functions
@@ -1082,25 +993,9 @@ contexts:
         output:
           type: ModuleSpec
       - name: create_shared_models
-        inputs:
-        - name: cls
-          type: Any
         output:
           type: ModuleSpec
       - name: get_init_module
-        inputs:
-        - name: cls
-          type: Any
-        output:
-          type: ModuleSpec
-      - name: parse_code
-        inputs:
-        - name: cls
-          type: Any
-        - name: source_code
-          type: str
-        - name: module_name
-          type: str
         output:
           type: ModuleSpec
       - name: filename
@@ -1159,8 +1054,6 @@ contexts:
       behaviors:
       - name: create
         inputs:
-        - name: cls
-          type: Any
         - name: name
           type: str
         - name: modules
@@ -1209,8 +1102,6 @@ contexts:
       behaviors:
       - name: create_from_annotation
         inputs:
-        - name: cls
-          type: Any
         - name: annotation
           type: TypeAnnotationSpec
         - name: flavor
@@ -1233,22 +1124,12 @@ contexts:
       behaviors:
       - name: create
         inputs:
-        - name: cls
-          type: Any
         - name: module
           type: str
         - name: names
-          type: Union[list[str], list[ast.alias]]
+          type: list[str]
         output:
           type: ImportFromSpec
-      - name: parse_ast
-        inputs:
-        - name: cls
-          type: Any
-        - name: node
-          type: Union[ast.Import, ast.ImportFrom]
-        output:
-          type: Any
       - name: has_name
         inputs:
         - name: name
@@ -1288,8 +1169,6 @@ contexts:
       behaviors:
       - name: create
         inputs:
-        - name: cls
-          type: Any
         - name: name
           type: str
         - name: type_spec
@@ -1300,8 +1179,6 @@ contexts:
           type: VariableSpec
       - name: from_ast
         inputs:
-        - name: cls
-          type: Any
         - name: node
           type: ast.AnnAssign
         output:
@@ -1329,8 +1206,6 @@ contexts:
       behaviors:
       - name: create
         inputs:
-        - name: cls
-          type: Any
         - name: name
           type: str
         - name: description
@@ -1343,47 +1218,7 @@ contexts:
           type: list[PythonEnumMemberSpec] | None
         output:
           type: PythonEnumSpec
-      - name: parse_ast
-        inputs:
-        - name: cls
-          type: Any
-        - name: node
-          type: ast.ClassDef
-        output:
-          type: PythonEnumSpec
     services:
-    - name: TestGenerator
-      description: Generator for automated test skeletons.
-      dependencies:
-      - name: __test__
-        type: Any
-      operations:
-      - name: to_test_module_spec
-        inputs:
-        - name: context
-          type: BoundedContext
-        - name: use_case
-          type: UseCaseSpec | None
-        - name: aggregate
-          type: AggregateSpec | None
-        output:
-          type: ModuleSpec
-      - name: _generate_use_case_test
-        inputs:
-        - name: context
-          type: BoundedContext
-        - name: use_case
-          type: UseCaseSpec
-        output:
-          type: ModuleSpec
-      - name: _generate_aggregate_test
-        inputs:
-        - name: context
-          type: BoundedContext
-        - name: aggregate
-          type: AggregateSpec
-        output:
-          type: ModuleSpec
     - name: DependencyResolver
       dependencies:
       - name: global_registry
@@ -1391,8 +1226,6 @@ contexts:
       operations:
       - name: build_from_package_spec
         inputs:
-        - name: cls
-          type: Any
         - name: package_spec
           type: PackageSpec
         - name: root_path
@@ -1408,8 +1241,8 @@ contexts:
     - name: PythonSyntaxTranslator
       description: Bidirectional translator between Python source code and PackageSpec.
       dependencies:
-      - name: template_port
-        type: TemplatePort
+      - name: source_code_port
+        type: SourceCodePort
       - name: file_system_port
         type: FileSystemPort
       operations:
@@ -1452,6 +1285,27 @@ contexts:
         output:
           type: None
     ports:
+    - name: SourceCodePort
+      description: Port for bidirectional translation between Spec objects and Python
+        source code.
+      kind: adapter
+      operations:
+      - name: render_module
+        inputs:
+        - name: module_spec
+          type: ModuleSpec
+        - name: imports
+          type: list[ImportFromSpec]
+        output:
+          type: str
+      - name: parse_module
+        inputs:
+        - name: source_code
+          type: str
+        - name: module_name
+          type: str
+        output:
+          type: ModuleSpec
     - name: CodeFormatter
       description: Formats Python source code.
       kind: adapter
@@ -1509,6 +1363,10 @@ contexts:
           type: BuildResult
   infrastructure:
     implementations:
+    - name: AstTranslator
+      implements: SourceCodePort
+      technology: ast
+      description: AST-based implementation of SourceCodePort.
     - name: BlackCodeFormatter
       implements: CodeFormatter
       technology: black
@@ -1539,6 +1397,8 @@ contexts:
         value: query
     - name: TestMockStrategy
       members:
+      - name: TEST
+        value: 0
       - name: UNITTEST
         value: unittest
       - name: PYTEST
@@ -1569,8 +1429,6 @@ contexts:
       behaviors:
       - name: create
         inputs:
-        - name: cls
-          type: Any
         - name: name
           type: str
         - name: kind
@@ -1599,43 +1457,6 @@ contexts:
       - name: services
         type: list[ServiceSpec]
         optional: true
-      behaviors:
-      - name: add_use_case
-        inputs:
-        - name: use_case
-          type: UseCaseSpec
-        output:
-          type: ApplicationSpec
-      - name: update_use_case
-        inputs:
-        - name: use_case
-          type: UseCaseSpec
-        output:
-          type: ApplicationSpec
-      - name: delete_use_case
-        inputs:
-        - name: name
-          type: str
-        output:
-          type: ApplicationSpec
-      - name: add_port
-        inputs:
-        - name: port
-          type: PortSpec
-        output:
-          type: ApplicationSpec
-      - name: update_port
-        inputs:
-        - name: port
-          type: PortSpec
-        output:
-          type: ApplicationSpec
-      - name: delete_port
-        inputs:
-        - name: name
-          type: str
-        output:
-          type: ApplicationSpec
     - name: EnumMemberSpec
       description: Specification of an enum member to be generated.
       attributes:
@@ -1679,30 +1500,11 @@ contexts:
       - name: implementations
         type: list[ImplementationSpec]
         optional: true
-      behaviors:
-      - name: add_implementation
-        inputs:
-        - name: implementation
-          type: ImplementationSpec
-        output:
-          type: InfrastructureSpec
-      - name: update_implementation
-        inputs:
-        - name: implementation
-          type: ImplementationSpec
-        output:
-          type: InfrastructureSpec
-      - name: delete_implementation
-        inputs:
-        - name: name
-          type: str
-        output:
-          type: InfrastructureSpec
     - name: ContainerSpec
       description: Specification for a container (dependency injection).
       attributes:
-      - name: providers
-        type: list
+      - name: bindings
+        type: list[PortBinding]
         optional: true
     - name: MethodOutput
       description: Specification of the output of a method.
@@ -1761,28 +1563,8 @@ contexts:
         type: list[MethodSpec]
         optional: true
       behaviors:
-      - name: add_private_method
-        inputs:
-        - name: method
-          type: MethodSpec
-        output:
-          type: ImplementationSpec
-      - name: update_private_method
-        inputs:
-        - name: method
-          type: MethodSpec
-        output:
-          type: ImplementationSpec
-      - name: delete_private_method
-        inputs:
-        - name: name
-          type: str
-        output:
-          type: ImplementationSpec
       - name: create
         inputs:
-        - name: cls
-          type: Any
         - name: name
           type: str
         - name: implements
@@ -1816,8 +1598,6 @@ contexts:
       behaviors:
       - name: create
         inputs:
-        - name: cls
-          type: Any
         - name: name
           type: Union[str, PascalString]
         - name: description
@@ -1846,8 +1626,6 @@ contexts:
       behaviors:
       - name: create
         inputs:
-        - name: cls
-          type: Any
         - name: name
           type: str
         - name: inputs
@@ -1877,115 +1655,6 @@ contexts:
       - name: ports
         type: list[PortSpec]
         optional: true
-      behaviors:
-      - name: add_aggregate
-        inputs:
-        - name: aggregate
-          type: AggregateSpec
-        output:
-          type: DomainSpec
-      - name: update_aggregate
-        inputs:
-        - name: aggregate
-          type: AggregateSpec
-        output:
-          type: DomainSpec
-      - name: delete_aggregate
-        inputs:
-        - name: name
-          type: str
-        output:
-          type: DomainSpec
-      - name: add_value_object
-        inputs:
-        - name: value_object
-          type: ValueObjectSpec
-        output:
-          type: DomainSpec
-      - name: update_value_object
-        inputs:
-        - name: value_object
-          type: ValueObjectSpec
-        output:
-          type: DomainSpec
-      - name: delete_value_object
-        inputs:
-        - name: name
-          type: str
-        output:
-          type: DomainSpec
-      - name: add_enum
-        inputs:
-        - name: enum
-          type: EnumSpec
-        output:
-          type: DomainSpec
-      - name: update_enum
-        inputs:
-        - name: enum
-          type: EnumSpec
-        output:
-          type: DomainSpec
-      - name: delete_enum
-        inputs:
-        - name: name
-          type: str
-        output:
-          type: DomainSpec
-      - name: add_entity
-        inputs:
-        - name: entity
-          type: EntitySpec
-        output:
-          type: DomainSpec
-      - name: update_entity
-        inputs:
-        - name: entity
-          type: EntitySpec
-        output:
-          type: DomainSpec
-      - name: delete_entity
-        inputs:
-        - name: name
-          type: str
-        output:
-          type: DomainSpec
-      - name: add_service
-        inputs:
-        - name: service
-          type: ServiceSpec
-        output:
-          type: DomainSpec
-      - name: update_service
-        inputs:
-        - name: service
-          type: ServiceSpec
-        output:
-          type: DomainSpec
-      - name: delete_service
-        inputs:
-        - name: name
-          type: str
-        output:
-          type: DomainSpec
-      - name: add_port
-        inputs:
-        - name: port
-          type: PortSpec
-        output:
-          type: DomainSpec
-      - name: update_port
-        inputs:
-        - name: port
-          type: PortSpec
-        output:
-          type: DomainSpec
-      - name: delete_port
-        inputs:
-        - name: name
-          type: str
-        output:
-          type: DomainSpec
     - name: BoundedContext
       description: A logical boundary within the system.
       attributes:
@@ -2012,8 +1681,6 @@ contexts:
       behaviors:
       - name: create
         inputs:
-        - name: cls
-          type: Any
         - name: name
           type: str
         - name: description
@@ -2053,25 +1720,6 @@ contexts:
       - name: operations
         type: list[MethodSpec]
         optional: true
-      behaviors:
-      - name: add_operation
-        inputs:
-        - name: operation
-          type: MethodSpec
-        output:
-          type: ServiceSpec
-      - name: update_operation
-        inputs:
-        - name: operation
-          type: MethodSpec
-        output:
-          type: ServiceSpec
-      - name: delete_operation
-        inputs:
-        - name: name
-          type: str
-        output:
-          type: ServiceSpec
     - name: EntitySpec
       description: Specification of an entity.
       attributes:
@@ -2108,8 +1756,6 @@ contexts:
       behaviors:
       - name: create
         inputs:
-        - name: cls
-          type: Any
         - name: name
           type: str
         - name: type
@@ -2135,31 +1781,8 @@ contexts:
         type: list[MethodSpec]
         optional: true
       behaviors:
-      - name: add_operation
-        inputs:
-        - name: operation
-          type: MethodSpec
-        output:
-          type: PortSpec
-      - name: update_operation
-        inputs:
-        - name: operation
-          type: MethodSpec
-        output:
-          type: PortSpec
-      - name: delete_operation
-        inputs:
-        - name: name
-          type: str
-        output:
-          type: PortSpec
-      - name: check_aggregate_if_repository
-        output:
-          type: PortSpec
       - name: create
         inputs:
-        - name: cls
-          type: Any
         - name: name
           type: str
         - name: kind
@@ -2194,25 +1817,6 @@ contexts:
         optional: true
       - name: members
         type: list[EnumMemberSpec]
-      behaviors:
-      - name: add_member
-        inputs:
-        - name: member
-          type: EnumMemberSpec
-        output:
-          type: EnumSpec
-      - name: update_member
-        inputs:
-        - name: member
-          type: EnumMemberSpec
-        output:
-          type: EnumSpec
-      - name: delete_member
-        inputs:
-        - name: name
-          type: str
-        output:
-          type: EnumSpec
     - name: AggregateSpec
       description: Specification of a domain aggregate to be generated.
       attributes:
@@ -2227,49 +1831,9 @@ contexts:
       - name: behaviors
         type: list[MethodSpec]
         optional: true
-      behaviors:
-      - name: add_behavior
-        inputs:
-        - name: behavior
-          type: MethodSpec
-        output:
-          type: AggregateSpec
-      - name: update_behavior
-        inputs:
-        - name: behavior
-          type: MethodSpec
-        output:
-          type: AggregateSpec
-      - name: delete_behavior
-        inputs:
-        - name: name
-          type: str
-        output:
-          type: AggregateSpec
-      - name: add_attribute
-        inputs:
-        - name: attribute
-          type: AttributeSpec
-        output:
-          type: AggregateSpec
-      - name: update_attribute
-        inputs:
-        - name: attribute
-          type: AttributeSpec
-        output:
-          type: AggregateSpec
-      - name: delete_attribute
-        inputs:
-        - name: name
-          type: str
-        output:
-          type: AggregateSpec
     - name: BootstrapSpec
       description: Specification of the bootstrap configuration.
       attributes:
-      - name: bindings
-        type: list[PortBinding]
-        optional: true
       - name: config
         type: ConfigSpec | None
         optional: true
