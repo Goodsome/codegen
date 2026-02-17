@@ -5,12 +5,16 @@
 
 # Feature
 
+* 增加tree get set的能力，不要再直接查询 codegen.yaml
+  * set需要校验，并返回具体信息，而不是啥都往里面写
+  * reverse codegen.yaml 改动太大了。主要问题是codegen.yaml 没有规定的顺序
+* build 问题
+  * enum
+  * naming问题，比如：SOP
 * 支持interfaces
 * 支持bootstrap
   * 上下文中的container
 * 支持entrypoints
-* 增加tree get set的能力，不要再直接查询 codegen.yaml
-  * reverse codegen.yaml 改动太大了。主要问题是codegen.yaml 没有规定的顺序
 * 代码清理工具
 
 ## 专属的 Bootstrap 目录（适合大型项目）
