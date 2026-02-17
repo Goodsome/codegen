@@ -60,9 +60,8 @@ def parse_module(source_code: str, module_name: str) -> ModuleSpec:
             pass
             
         else:
-            # Ignore unsupported structures (e.g., if __name__ == "__main__", assignments, etc.)
-            # We only extract classes, functions, enums, and imports
-            pass
+            # Raise error for unsupported structures to ensure fidelity
+            raise ValueError(f"Found unsupported top-level node: {ast.dump(item)}")
             
     return ModuleSpec.create(
         name=module_name,
