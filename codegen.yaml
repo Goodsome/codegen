@@ -1698,6 +1698,12 @@ contexts:
           type: str
         output:
           type: InfrastructureSpec
+    - name: ContainerSpec
+      description: Specification for a container (dependency injection).
+      attributes:
+      - name: providers
+        type: list
+        optional: true
     - name: MethodOutput
       description: Specification of the output of a method.
       attributes:
@@ -1719,6 +1725,22 @@ contexts:
         type: str
       - name: implementation
         type: str
+    - name: ConfigFieldSpec
+      description: Specification for a single configuration field.
+      attributes:
+      - name: name
+        type: SnakeString
+      - name: type
+        type: str
+      - name: default
+        type: str | None
+        optional: true
+      - name: description
+        type: str
+        optional: true
+      - name: env_var
+        type: str | None
+        optional: true
     - name: ImplementationSpec
       description: Specification of an implementation to be generated.
       attributes:
@@ -1981,6 +2003,12 @@ contexts:
       - name: infrastructure
         type: InfrastructureSpec
         optional: true
+      - name: config
+        type: ConfigSpec | None
+        optional: true
+      - name: container
+        type: ContainerSpec | None
+        optional: true
       behaviors:
       - name: create
         inputs:
@@ -1996,6 +2024,10 @@ contexts:
           type: ApplicationSpec | None
         - name: infrastructure
           type: InfrastructureSpec | None
+        - name: config
+          type: ConfigSpec | None
+        - name: container
+          type: ContainerSpec | None
         output:
           type: Any
       - name: port_index
@@ -2237,6 +2269,27 @@ contexts:
       attributes:
       - name: bindings
         type: list[PortBinding]
+        optional: true
+      - name: config
+        type: ConfigSpec | None
+        optional: true
+      - name: container
+        type: ContainerSpec | None
+        optional: true
+    - name: ConfigSpec
+      description: Specification for a configuration object (AppSettings or ContextSettings).
+      attributes:
+      - name: class_name
+        type: PascalString | None
+        optional: true
+      - name: env_prefix
+        type: str
+        optional: true
+      - name: env_file
+        type: str | None
+        optional: true
+      - name: fields
+        type: list[ConfigFieldSpec]
         optional: true
     services:
     - name: BlueprintPathResolver
