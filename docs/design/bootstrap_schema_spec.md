@@ -126,7 +126,7 @@ contexts:
     * Update `bootstrap_spec.py`
     * Update `bounded_context.py`
 2. **Update codegen.schema.json**: 使用工具 `codegen_schema` 更新 `codegen.yaml` 的架构定义，
-3. **Update Codegen YAML**: 使用工具 `codegen_reserse` 更新 `codegen.yaml` 中的 Self-hosting 定义。
+3. **Update Codegen YAML**: 使用工具 `codegen_reverse` 更新 `codegen.yaml` 中的 Self-hosting 定义。
 4. **Generator Logic**:
 * 更新 `GenerateProject` UseCase 以识别新的 Spec。
 * 实现 Config 聚合逻辑：在生成 `bootstrap/config.py` 时，需读取所有 Context 的 `config` 定义并进行 import 和嵌套。

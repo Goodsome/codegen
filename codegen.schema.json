@@ -116,6 +116,28 @@
           },
           "title":"Bindings",
           "type":"array"
+        },
+        "config":{
+          "anyOf":[
+            {
+              "$ref":"#/$defs/ConfigSpec"
+            },
+            {
+              "type":"null"
+            }
+          ],
+          "default":null
+        },
+        "container":{
+          "anyOf":[
+            {
+              "$ref":"#/$defs/ContainerSpec"
+            },
+            {
+              "type":"null"
+            }
+          ],
+          "default":null
         }
       },
       "title":"BootstrapSpec",
@@ -127,6 +149,28 @@
       "properties":{
         "application":{
           "$ref":"#/$defs/ApplicationSpec"
+        },
+        "config":{
+          "anyOf":[
+            {
+              "$ref":"#/$defs/ConfigSpec"
+            },
+            {
+              "type":"null"
+            }
+          ],
+          "default":null
+        },
+        "container":{
+          "anyOf":[
+            {
+              "$ref":"#/$defs/ContainerSpec"
+            },
+            {
+              "type":"null"
+            }
+          ],
+          "default":null
         },
         "description":{
           "title":"Description",
@@ -147,6 +191,112 @@
         "name"
       ],
       "title":"BoundedContext",
+      "type":"object"
+    },
+    "ConfigFieldSpec":{
+      "additionalProperties":false,
+      "description":"Specification for a single configuration field.",
+      "properties":{
+        "default":{
+          "anyOf":[
+            {
+              "type":"string"
+            },
+            {
+              "type":"null"
+            }
+          ],
+          "default":null,
+          "title":"Default"
+        },
+        "description":{
+          "default":"",
+          "title":"Description",
+          "type":"string"
+        },
+        "env_var":{
+          "anyOf":[
+            {
+              "type":"string"
+            },
+            {
+              "type":"null"
+            }
+          ],
+          "default":null,
+          "title":"Env Var"
+        },
+        "name":{
+          "title":"Name",
+          "type":"string"
+        },
+        "type":{
+          "title":"Type",
+          "type":"string"
+        }
+      },
+      "required":[
+        "name",
+        "type"
+      ],
+      "title":"ConfigFieldSpec",
+      "type":"object"
+    },
+    "ConfigSpec":{
+      "additionalProperties":false,
+      "description":"Specification for a configuration object (AppSettings or ContextSettings).",
+      "properties":{
+        "class_name":{
+          "anyOf":[
+            {
+              "type":"string"
+            },
+            {
+              "type":"null"
+            }
+          ],
+          "default":null,
+          "title":"Class Name"
+        },
+        "env_file":{
+          "anyOf":[
+            {
+              "type":"string"
+            },
+            {
+              "type":"null"
+            }
+          ],
+          "default":null,
+          "title":"Env File"
+        },
+        "env_prefix":{
+          "default":"",
+          "title":"Env Prefix",
+          "type":"string"
+        },
+        "fields":{
+          "items":{
+            "$ref":"#/$defs/ConfigFieldSpec"
+          },
+          "title":"Fields",
+          "type":"array"
+        }
+      },
+      "title":"ConfigSpec",
+      "type":"object"
+    },
+    "ContainerSpec":{
+      "additionalProperties":false,
+      "description":"Specification for a container (dependency injection).",
+      "properties":{
+        "providers":{
+          "items":{},
+          "title":"Providers",
+          "type":"array"
+        }
+      },
+      "title":"ContainerSpec",
       "type":"object"
     },
     "ContainerType":{
