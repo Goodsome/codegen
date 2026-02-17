@@ -44,7 +44,7 @@ def reverse(
     with get_container(config_file=config_file_path) as container:
         if package_path is None:
             package_path = get_default_package_path()
-        use_case = container.update_blueprint_user_case()
+        use_case = container.update_blueprint_use_case()
         cmd = GenerateBlueprintCommand(path=package_path)
         use_case.execute(cmd)
         typer.echo(f"Reverse engineering completed. Blueprint saved to {config_file}")
