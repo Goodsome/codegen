@@ -17,29 +17,6 @@ class PortSpec(ValueObject):
     aggregate: PascalString | None = None
     operations: list[MethodSpec] = Field(default_factory=list)
 
-    def add_operation(self, operation: MethodSpec) -> "PortSpec":
-        if any(op.name == operation.name for op in self.operations):
-            raise ValueError(f"Operation '{operation.name}' already exists in port '{self.name}'.")
-        return self.model_copy(update={"operations": self.operations + [operation]})
-
-    def update_operation(self, operation: MethodSpec) -> "PortSpec":
-        if not any(op.name == operation.name for op in self.operations):
-            raise ValueError(f"Operation '{operation.name}' not found in port '{self.name}'.")
-        new_ops = [operation if op.name == operation.name else op for op in self.operations]
-        return self.model_copy(update={"operations": new_ops})
-
-    def delete_operation(self, name: str) -> "PortSpec":
-        new_ops = [op for op in self.operations if str(op.name) != name]
-        if len(new_ops) == len(self.operations):
-            raise ValueError(f"Operation '{name}' not found in port '{self.name}'.")
-        return self.model_copy(update={"operations": new_ops})
-
-    @model_validator(mode="after")
-    def check_aggregate_if_repository(self) -> "PortSpec":
-        if self.kind is PortType.REPOSITORY and self.aggregate is None:
-            raise ValueError("Aggregate must be specified for repository ports")
-        return self
-
     @classmethod
     def create(
         cls,

@@ -4,6 +4,7 @@ from codegen.python_gen.domain.value_objects.parameter_spec import (
 )
 from codegen.python_gen.domain.enums import FieldFlavor
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
+from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import parse_type_str
 
 
 @dataclass
@@ -16,7 +17,7 @@ class AttributeMapper:
     ) -> ParameterSpec:
         return ParameterSpec.create(
             name=attribute.name,
-            annotation=attribute.type,
+            annotation=parse_type_str(attribute.type),
             optional=attribute.optional,
             default_field_flavor=default_field_flavor,
         )

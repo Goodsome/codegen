@@ -30,6 +30,7 @@ from codegen.python_gen.domain.services.python_syntax_translator import (
 from codegen.python_gen.infrastructure.adapters.black_code_formatter import (
     BlackCodeFormatter,
 )
+from codegen.python_gen.infrastructure.adapters.ast_translator import AstTranslator
 from codegen.shared.infrastructure.adapters.jinja_adapter import JinjaAdapter
 from codegen.shared.infrastructure.adapters.os_file_system import OSFileSystem
 
@@ -40,12 +41,13 @@ class Container(containers.DeclarativeContainer):
 
     os_file_port = Singleton(OSFileSystem, config=config)
     template_port_provider = Singleton(JinjaAdapter, config=config)
+    ast_translator_provider = Singleton(AstTranslator)
 
     blueprint_loader_provider = Singleton(YamlBlueprintStorage, config=config)
 
     python_syntax_translator_provider = Singleton(
         PythonSyntaxTranslator,
-        template_port=template_port_provider,
+        source_code_port=ast_translator_provider,
         file_system_port=os_file_port,
     )
 
