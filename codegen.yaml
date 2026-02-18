@@ -15,6 +15,10 @@ contexts:
         value: set
       - name: MAP
         value: map
+      - name: ITERABLE
+        value: iterable
+      - name: CALLABLE
+        value: callable
     - name: PrimitiveType
       description: 通用原语类型，不依赖具体语言。
       members:
@@ -38,9 +42,9 @@ contexts:
       - name: __new__
         inputs:
         - name: cls
-          type: Any
+          type: any
         - name: value
-          type: str
+          type: string
         output:
           type: Any
     - name: PascalString
@@ -48,9 +52,9 @@ contexts:
       - name: __new__
         inputs:
         - name: cls
-          type: Any
+          type: any
         - name: value
-          type: str
+          type: string
         output:
           type: Any
     - name: NamingString
@@ -74,7 +78,7 @@ contexts:
       - name: __get_pydantic_core_schema__
         inputs:
         - name: source_type
-          type: Any
+          type: any
         - name: handler
           type: GetCoreSchemaHandler
         output:
@@ -84,9 +88,9 @@ contexts:
       - name: __new__
         inputs:
         - name: cls
-          type: Any
+          type: any
         - name: value
-          type: str
+          type: string
         output:
           type: Any
     ports:
@@ -97,9 +101,10 @@ contexts:
       - name: render
         inputs:
         - name: template_path
-          type: str
+          type: string
         - name: context
-          type: dict[str, Any]
+          type: any
+          container: map
         output:
           type: str
     - name: FileSystemPort
@@ -117,9 +122,9 @@ contexts:
         - name: path
           type: Path
         - name: content
-          type: str
+          type: string
         - name: overwrite
-          type: bool
+          type: boolean
         output:
           type: None
       - name: list_directory_recursively
@@ -188,18 +193,17 @@ contexts:
       description: Top-level result object returned by generation use cases.
       attributes:
       - name: model_config
-        type: Any
+        type: any
       - name: status
         type: BuildStatus
       - name: files
-        type: list[FileResult]
-        optional: true
+        type: FileResult
+        container: list
       - name: stats
         type: BuildStats
-        optional: true
       - name: messages
-        type: list[str]
-        optional: true
+        type: string
+        container: list
       behaviors:
       - name: add_file_result
         inputs:
@@ -211,38 +215,30 @@ contexts:
       description: Represents the outcome for a single file generation.
       attributes:
       - name: path
-        type: str
+        type: string
       - name: status
         type: FileStatus
       - name: message
-        type: str
-        optional: true
+        type: string
       - name: diff
-        type: str
-        optional: true
+        type: string
     - name: BuildStats
       description: Aggregated statistics for a build operation.
       attributes:
       - name: model_config
-        type: Any
+        type: any
       - name: total_files
-        type: int
-        optional: true
+        type: integer
       - name: created_count
-        type: int
-        optional: true
+        type: integer
       - name: updated_count
-        type: int
-        optional: true
+        type: integer
       - name: skipped_count
-        type: int
-        optional: true
+        type: integer
       - name: failed_count
-        type: int
-        optional: true
+        type: integer
       - name: duration_ms
-        type: int
-        optional: true
+        type: integer
       behaviors:
       - name: add_result
         inputs:
@@ -255,10 +251,8 @@ contexts:
       dependencies:
       - name: attribute_mapper
         type: AttributeMapper
-        optional: true
       - name: method_mapper
         type: MethodMapper
-        optional: true
       operations:
       - name: to_module_spec
         inputs:
@@ -273,7 +267,7 @@ contexts:
         - name: module_spec
           type: ModuleSpec
         - name: technology
-          type: str
+          type: string
         output:
           type: ImplementationSpec
       - name: _get_class_name
@@ -299,7 +293,8 @@ contexts:
       - name: to_module_spec
         inputs:
         - name: enums
-          type: Iterable[EnumSpec]
+          type: EnumSpec
+          container: iterable
         output:
           type: ModuleSpec
       - name: to_meta_enums
@@ -312,10 +307,8 @@ contexts:
       dependencies:
       - name: attribute_mapper
         type: AttributeMapper
-        optional: true
       - name: method_mapper
         type: MethodMapper
-        optional: true
       operations:
       - name: to_module_spec
         inputs:
@@ -326,7 +319,8 @@ contexts:
       - name: to_package_spec
         inputs:
         - name: value_objects
-          type: Iterable[ValueObjectSpec]
+          type: ValueObjectSpec
+          container: iterable
         output:
           type: PackageSpec
       - name: module_spec_to_value_objects
@@ -345,10 +339,8 @@ contexts:
       dependencies:
       - name: attribute_mapper
         type: AttributeMapper
-        optional: true
       - name: method_mapper
         type: MethodMapper
-        optional: true
       operations:
       - name: to_module_spec
         inputs:
@@ -359,7 +351,8 @@ contexts:
       - name: to_package_spec
         inputs:
         - name: entities
-          type: Iterable[EntitySpec]
+          type: EntitySpec
+          container: iterable
         output:
           type: PackageSpec
       - name: to_entity
@@ -378,22 +371,16 @@ contexts:
       dependencies:
       - name: aggregate_mapper
         type: AggregateMapper
-        optional: true
       - name: entity_mapper
         type: EntityMapper
-        optional: true
       - name: value_object_mapper
         type: ValueObjectMapper
-        optional: true
       - name: service_mapper
         type: ServiceMapper
-        optional: true
       - name: port_mapper
         type: PortMapper
-        optional: true
       - name: enum_mapper
         type: EnumMapper
-        optional: true
       operations:
       - name: to_package_spec
         inputs:
@@ -411,13 +398,10 @@ contexts:
       dependencies:
       - name: domain_mapper
         type: DomainMapper
-        optional: true
       - name: application_mapper
         type: ApplicationMapper
-        optional: true
       - name: infrastructure_mapper
         type: InfrastructureMapper
-        optional: true
       operations:
       - name: to_package_spec
         inputs:
@@ -434,7 +418,8 @@ contexts:
       - name: _collect_class_specs_in_ports
         inputs:
         - name: class_specs
-          type: dict[str, ClassSpec]
+          type: ClassSpec
+          container: map
         - name: package_spec
           type: PackageSpec
         output:
@@ -443,14 +428,14 @@ contexts:
       dependencies:
       - name: implementation_mapper
         type: ImplementationMapper
-        optional: true
       operations:
       - name: to_package_spec
         inputs:
         - name: infrastructure
           type: InfrastructureSpec
         - name: port_finder
-          type: Callable[[str], PortSpec]
+          type: PortSpec
+          container: callable
         output:
           type: PackageSpec
       - name: to_infrastructure
@@ -463,10 +448,8 @@ contexts:
       dependencies:
       - name: attribute_mapper
         type: AttributeMapper
-        optional: true
       - name: method_mapper
         type: MethodMapper
-        optional: true
       operations:
       - name: to_module_spec
         inputs:
@@ -477,7 +460,8 @@ contexts:
       - name: to_package_spec
         inputs:
         - name: aggregates
-          type: Iterable[AggregateSpec]
+          type: AggregateSpec
+          container: iterable
         output:
           type: PackageSpec
       - name: to_aggregate
@@ -496,7 +480,6 @@ contexts:
       dependencies:
       - name: context_mapper
         type: ContextMapper
-        optional: true
       operations:
       - name: to_package_spec
         inputs:
@@ -511,13 +494,17 @@ contexts:
         output:
           type: Blueprint
     - name: AttributeMapper
+      dependencies:
+      - name: type_system_converter
+        type: TypeSystemConverter
       operations:
       - name: to_parameter_spec
         inputs:
         - name: attribute
           type: AttributeSpec
         - name: default_field_flavor
-          type: FieldFlavor | None
+          type: FieldFlavor
+          optional: true
         output:
           type: ParameterSpec
       - name: to_attribute
@@ -529,22 +516,24 @@ contexts:
       - name: to_parameter_specs
         inputs:
         - name: attributes
-          type: list[AttributeSpec]
+          type: AttributeSpec
+          container: list
         - name: default_field_flavor
-          type: FieldFlavor | None
+          type: FieldFlavor
+          optional: true
         output:
           type: list[ParameterSpec]
       - name: to_attributes
         inputs:
         - name: parameter_specs
-          type: list[ParameterSpec]
+          type: ParameterSpec
+          container: list
         output:
           type: list[AttributeSpec]
     - name: MethodMapper
       dependencies:
       - name: attribute_mapper
         type: AttributeMapper
-        optional: true
       operations:
       - name: to_function_spec
         inputs:
@@ -553,9 +542,9 @@ contexts:
         - name: function_type
           type: FunctionType
         - name: is_abstract
-          type: bool
+          type: boolean
         - name: is_private
-          type: bool
+          type: boolean
         output:
           type: FunctionSpec
       - name: to_method
@@ -568,10 +557,8 @@ contexts:
       dependencies:
       - name: attribute_mapper
         type: AttributeMapper
-        optional: true
       - name: method_mapper
         type: MethodMapper
-        optional: true
       operations:
       - name: to_module_spec
         inputs:
@@ -582,7 +569,8 @@ contexts:
       - name: to_package_spec
         inputs:
         - name: ports
-          type: Iterable[PortSpec]
+          type: PortSpec
+          container: iterable
         output:
           type: PackageSpec
       - name: to_port
@@ -611,13 +599,19 @@ contexts:
         - name: annotation
           type: TypeAnnotationSpec
         output:
-          type: tuple[str, ContainerType, bool]
+          type: tuple[str, ContainerType, bool, str | None]
       - name: _apply_container
         inputs:
         - name: core_type
-          type: str
+          type: string
         - name: container
           type: ContainerType
+        output:
+          type: TypeAnnotationSpec
+      - name: _make_optional
+        inputs:
+        - name: annotation
+          type: TypeAnnotationSpec
         output:
           type: TypeAnnotationSpec
       - name: _extract_optional
@@ -636,10 +630,8 @@ contexts:
       dependencies:
       - name: attribute_mapper
         type: AttributeMapper
-        optional: true
       - name: method_mapper
         type: MethodMapper
-        optional: true
       operations:
       - name: to_module_spec
         inputs:
@@ -657,10 +649,8 @@ contexts:
       dependencies:
       - name: use_case_mapper
         type: UseCaseMapper
-        optional: true
       - name: port_mapper
         type: PortMapper
-        optional: true
       operations:
       - name: to_package_spec
         inputs:
@@ -678,10 +668,8 @@ contexts:
       dependencies:
       - name: attribute_mapper
         type: AttributeMapper
-        optional: true
       - name: method_mapper
         type: MethodMapper
-        optional: true
       operations:
       - name: to_module_spec
         inputs:
@@ -692,7 +680,8 @@ contexts:
       - name: to_package_spec
         inputs:
         - name: services
-          type: Iterable[ServiceSpec]
+          type: ServiceSpec
+          container: iterable
         output:
           type: PackageSpec
       - name: to_service
@@ -718,16 +707,15 @@ contexts:
         type: GeneratePackage
       - name: mapper
         type: BlueprintMapper
-        optional: true
       command:
         attributes:
         - name: overwrite
-          type: bool
+          type: boolean
         - name: node
-          type: str | None
-        - name: root_path
-          type: str
+          type: string
           optional: true
+        - name: root_path
+          type: string
       result:
         attributes:
         - name: result
@@ -741,7 +729,6 @@ contexts:
         type: BlueprintStorage
       - name: mapper
         type: BlueprintMapper
-        optional: true
       command:
         attributes:
         - name: path
@@ -749,7 +736,7 @@ contexts:
       result:
         attributes:
         - name: result
-          type: str
+          type: string
 - name: Entrypoints
 - name: PythonGen
   domain:
@@ -785,33 +772,34 @@ contexts:
       description: Represents a top-level assignment in a module.
       attributes:
       - name: name
-        type: str
+        type: string
       - name: value
-        type: str
+        type: string
       - name: type_annotation
-        type: Optional[str]
+        type: string
         optional: true
       behaviors:
       - name: create
         inputs:
         - name: name
-          type: str
+          type: string
         - name: value
-          type: str
+          type: string
         - name: type_annotation
-          type: str | None
+          type: string
+          optional: true
         output:
           type: ModuleAssignmentSpec
     - name: RawCodeSpec
       description: Represents a block of raw source code.
       attributes:
       - name: code
-        type: str
+        type: string
       behaviors:
       - name: create
         inputs:
         - name: code
-          type: str
+          type: string
         output:
           type: RawCodeSpec
     - name: ClassSpec
@@ -820,35 +808,42 @@ contexts:
       - name: name
         type: PascalString
       - name: description
-        type: str
-        optional: true
+        type: string
       - name: decorators
-        type: list[str]
-        optional: true
+        type: string
+        container: list
       - name: inheritance
-        type: list[str]
-        optional: true
+        type: string
+        container: list
       - name: attributes
-        type: list[ParameterSpec]
-        optional: true
+        type: ParameterSpec
+        container: list
       - name: methods
-        type: list[FunctionSpec]
-        optional: true
+        type: FunctionSpec
+        container: list
       behaviors:
       - name: create
         inputs:
         - name: name
-          type: str
+          type: string
         - name: description
-          type: str
+          type: string
         - name: decorators
-          type: list[str] | None
+          type: string
+          container: list
+          optional: true
         - name: inheritance
-          type: list[str] | None
+          type: string
+          container: list
+          optional: true
         - name: attributes
-          type: list[ParameterSpec] | None
+          type: ParameterSpec
+          container: list
+          optional: true
         - name: methods
-          type: list[FunctionSpec] | None
+          type: FunctionSpec
+          container: list
+          optional: true
         output:
           type: ClassSpec
       - name: create_value_object
@@ -875,39 +870,40 @@ contexts:
       - name: name
         type: SnakeString
       - name: decorators
-        type: list[str]
-        optional: true
+        type: string
+        container: list
       - name: parameters
-        type: list[ParameterSpec]
-        optional: true
+        type: ParameterSpec
+        container: list
       - name: return_annotation
         type: TypeAnnotationSpec
       - name: suite
-        type: str
-        optional: true
+        type: string
       - name: function_type
         type: FunctionType
-        optional: true
       - name: is_private
-        type: bool
-        optional: true
+        type: boolean
       behaviors:
       - name: create
         inputs:
         - name: name
-          type: str
+          type: string
         - name: return_annotation
           type: TypeAnnotationSpec
         - name: decorators
-          type: list[str] | None
+          type: string
+          container: list
+          optional: true
         - name: parameters
-          type: list[ParameterSpec] | None
+          type: ParameterSpec
+          container: list
+          optional: true
         - name: suite
-          type: str
+          type: string
         - name: function_type
           type: FunctionType
         - name: is_private
-          type: bool
+          type: boolean
         output:
           type: Any
       - name: get_required_types
@@ -933,22 +929,23 @@ contexts:
       - name: annotation
         type: TypeAnnotationSpec
       - name: default
-        type: FieldSpec | None
+        type: FieldSpec
         optional: true
       - name: optional
-        type: bool
-        optional: true
+        type: boolean
       behaviors:
       - name: create
         inputs:
         - name: name
-          type: str
+          type: string
         - name: annotation
-          type: Union[str, TypeAnnotationSpec]
+          type: Any
+          custom_type_string: Union[str, TypeAnnotationSpec]
         - name: optional
-          type: bool
+          type: boolean
         - name: default_field_flavor
-          type: FieldFlavor | None
+          type: FieldFlavor
+          optional: true
         output:
           type: Any
       - name: get_required_types
@@ -961,10 +958,10 @@ contexts:
       description: Represents a type annotation.
       attributes:
       - name: name
-        type: str
+        type: string
       - name: args
-        type: list[TypeAnnotationSpec]
-        optional: true
+        type: TypeAnnotationSpec
+        container: list
       behaviors:
       - name: render
         output:
@@ -981,20 +978,20 @@ contexts:
       - name: name
         type: MacroString
       - name: value
-        type: str | int | None
-        optional: true
+        type: Any
+        custom_type_string: str | int | None
       - name: description
-        type: str
-        optional: true
+        type: string
       behaviors:
       - name: create
         inputs:
         - name: name
-          type: str
+          type: string
         - name: value
-          type: str | int | None
+          type: Any
+          custom_type_string: str | int | None
         - name: description
-          type: str
+          type: string
         output:
           type: PythonEnumMemberSpec
     - name: AssignmentSpec
@@ -1003,26 +1000,25 @@ contexts:
       - name: flavor
         type: AssignmentFlavor
       - name: content
-        type: str
-        optional: true
+        type: string
       - name: is_factory
-        type: bool
+        type: boolean
     - name: TypeSpec
       description: 描述变量的类型注解结构 (LHS)。 对应 AST 中的 annotation 节点。
       attributes:
       - name: core_type
-        type: str
+        type: string
       - name: container
         type: ContainerType
       - name: nullable
-        type: bool
+        type: boolean
     - name: ImportedName
       description: Represents a name imported from another module.
       attributes:
       - name: name
-        type: str
+        type: string
       - name: alias
-        type: str | None
+        type: string
         optional: true
       behaviors:
       - name: render
@@ -1034,40 +1030,52 @@ contexts:
       - name: name
         type: SnakeString
       - name: functions
-        type: list[FunctionSpec]
-        optional: true
+        type: FunctionSpec
+        container: list
       - name: classes
-        type: list[ClassSpec]
-        optional: true
+        type: ClassSpec
+        container: list
       - name: imports
-        type: list[ImportFromSpec]
-        optional: true
+        type: ImportFromSpec
+        container: list
       - name: enums
-        type: list[PythonEnumSpec]
-        optional: true
+        type: PythonEnumSpec
+        container: list
       - name: assignments
-        type: list[ModuleAssignmentSpec]
-        optional: true
+        type: ModuleAssignmentSpec
+        container: list
       - name: extra_code
-        type: list[RawCodeSpec]
-        optional: true
+        type: RawCodeSpec
+        container: list
       behaviors:
       - name: create
         inputs:
         - name: name
-          type: str
+          type: string
         - name: functions
-          type: list[FunctionSpec] | None
+          type: FunctionSpec
+          container: list
+          optional: true
         - name: classes
-          type: list[ClassSpec] | None
+          type: ClassSpec
+          container: list
+          optional: true
         - name: imports
-          type: list[ImportFromSpec] | None
+          type: ImportFromSpec
+          container: list
+          optional: true
         - name: enums
-          type: list[PythonEnumSpec] | None
+          type: PythonEnumSpec
+          container: list
+          optional: true
         - name: assignments
-          type: list[ModuleAssignmentSpec] | None
+          type: ModuleAssignmentSpec
+          container: list
+          optional: true
         - name: extra_code
-          type: list[RawCodeSpec] | None
+          type: RawCodeSpec
+          container: list
+          optional: true
         output:
           type: ModuleSpec
       - name: create_shared_models
@@ -1085,7 +1093,7 @@ contexts:
       - name: is_match_name
         inputs:
         - name: name
-          type: str
+          type: string
         output:
           type: bool
       - name: get_required_types
@@ -1094,19 +1102,19 @@ contexts:
       - name: has_class
         inputs:
         - name: class_name
-          type: str
+          type: string
         output:
           type: bool
       - name: has_function
         inputs:
         - name: function_name
-          type: str
+          type: string
         output:
           type: bool
       - name: has_class_or_function
         inputs:
         - name: name
-          type: str
+          type: string
         output:
           type: bool
       - name: collect_class_spec
@@ -1124,20 +1132,24 @@ contexts:
       - name: name
         type: SnakeString
       - name: modules
-        type: list[ModuleSpec]
-        optional: true
+        type: ModuleSpec
+        container: list
       - name: sub_packages
-        type: list[PackageSpec]
-        optional: true
+        type: PackageSpec
+        container: list
       behaviors:
       - name: create
         inputs:
         - name: name
-          type: str
+          type: string
         - name: modules
-          type: list[ModuleSpec] | None
+          type: ModuleSpec
+          container: list
+          optional: true
         - name: sub_packages
-          type: list[PackageSpec] | None
+          type: PackageSpec
+          container: list
+          optional: true
         output:
           type: Any
       - name: is_empty
@@ -1146,15 +1158,16 @@ contexts:
       - name: get_global_registry
         inputs:
         - name: root_path
-          type: str
+          type: string
         output:
           type: dict[str, str]
       - name: _build_symbol_table
         inputs:
         - name: root_path
-          type: str
+          type: string
         - name: table
-          type: dict[str, str]
+          type: string
+          container: map
         output:
           type: Any
       - name: collect_class_spec
@@ -1169,14 +1182,11 @@ contexts:
     - name: FieldSpec
       attributes:
       - name: default
-        type: str
-        optional: true
+        type: string
       - name: default_factory
-        type: str
-        optional: true
+        type: string
       - name: flavor
         type: FieldFlavor
-        optional: true
       behaviors:
       - name: create_from_annotation
         inputs:
@@ -1196,33 +1206,34 @@ contexts:
       description: Represents an import statement from another module.
       attributes:
       - name: module
-        type: str
+        type: string
       - name: names
-        type: list[ImportedName]
+        type: ImportedName
+        container: list
       - name: type_checking
-        type: bool
-        optional: true
+        type: boolean
       behaviors:
       - name: create
         inputs:
         - name: module
-          type: str
+          type: string
         - name: names
-          type: list[str]
+          type: string
+          container: list
         - name: type_checking
-          type: bool
+          type: boolean
         output:
           type: ImportFromSpec
       - name: has_name
         inputs:
         - name: name
-          type: str
+          type: string
         output:
           type: bool
       - name: add_name
         inputs:
         - name: name
-          type: str
+          type: string
         output:
           type: ImportFromSpec
       - name: render
@@ -1253,7 +1264,7 @@ contexts:
       - name: create
         inputs:
         - name: name
-          type: str
+          type: string
         - name: type_spec
           type: TypeSpec
         - name: assignment
@@ -1275,44 +1286,47 @@ contexts:
       - name: name
         type: PascalString
       - name: description
-        type: str
-        optional: true
+        type: string
       - name: decorators
-        type: list[str]
-        optional: true
+        type: string
+        container: list
       - name: base_class
-        type: str
-        optional: true
+        type: string
       - name: members
-        type: list[PythonEnumMemberSpec]
-        optional: true
+        type: PythonEnumMemberSpec
+        container: list
       behaviors:
       - name: create
         inputs:
         - name: name
-          type: str
+          type: string
         - name: description
-          type: str
+          type: string
         - name: decorators
-          type: list[str] | None
+          type: string
+          container: list
+          optional: true
         - name: base_class
-          type: str
+          type: string
         - name: members
-          type: list[PythonEnumMemberSpec] | None
+          type: PythonEnumMemberSpec
+          container: list
+          optional: true
         output:
           type: PythonEnumSpec
     services:
     - name: DependencyResolver
       dependencies:
       - name: global_registry
-        type: dict[str, str]
+        type: string
+        container: map
       operations:
       - name: build_from_package_spec
         inputs:
         - name: package_spec
           type: PackageSpec
         - name: root_path
-          type: str
+          type: string
         output:
           type: DependencyResolver
       - name: resolve_module
@@ -1340,7 +1354,8 @@ contexts:
         - name: module_spec
           type: ModuleSpec
         - name: imports
-          type: Iterable[ImportFromSpec]
+          type: ImportFromSpec
+          container: iterable
         output:
           type: str
       - name: generate_source_tree
@@ -1348,9 +1363,10 @@ contexts:
         - name: package_spec
           type: PackageSpec
         - name: target_node
-          type: str | None
+          type: string
+          optional: true
         - name: root_path
-          type: str
+          type: string
         output:
           type: dict[Path, str]
       - name: _collect_files_recursively
@@ -1360,11 +1376,13 @@ contexts:
         - name: resolver
           type: DependencyResolver
         - name: output_dict
-          type: dict[Path, str]
+          type: Any
+          custom_type_string: dict[Path, str]
         - name: current_path
           type: Path
         - name: target_node
-          type: str | None
+          type: string
+          optional: true
         output:
           type: None
     ports:
@@ -1378,15 +1396,16 @@ contexts:
         - name: module_spec
           type: ModuleSpec
         - name: imports
-          type: list[ImportFromSpec]
+          type: ImportFromSpec
+          container: list
         output:
           type: str
       - name: parse_module
         inputs:
         - name: source_code
-          type: str
+          type: string
         - name: module_name
-          type: str
+          type: string
         output:
           type: ModuleSpec
     - name: CodeFormatter
@@ -1396,7 +1415,7 @@ contexts:
       - name: format_code
         inputs:
         - name: code
-          type: str
+          type: string
         output:
           type: str
   application:
@@ -1433,13 +1452,12 @@ contexts:
         - name: package_spec
           type: PackageSpec
         - name: overwrite
-          type: bool
+          type: boolean
         - name: node
-          type: str | None
+          type: string
           optional: true
         - name: root_path
-          type: str
-          optional: true
+          type: string
       result:
         attributes:
         - name: result
@@ -1495,171 +1513,170 @@ contexts:
       - name: kind
         type: UseCaseKind
       - name: dependencies
-        type: list[AttributeSpec]
-        optional: true
+        type: AttributeSpec
+        container: list
       - name: description
-        type: str
-        optional: true
+        type: string
       - name: command
         type: DataContractSpec
-        optional: true
       - name: query
         type: DataContractSpec
-        optional: true
       - name: result
         type: DataContractSpec
-        optional: true
       behaviors:
       - name: create
         inputs:
         - name: name
-          type: str
+          type: string
         - name: kind
-          type: Union[str, UseCaseKind]
+          type: Any
+          custom_type_string: Union[str, UseCaseKind]
         - name: dependencies
-          type: list[AttributeSpec] | None
+          type: AttributeSpec
+          container: list
+          optional: true
         - name: description
-          type: str
+          type: string
         - name: command
-          type: DataContractSpec | None
+          type: DataContractSpec
+          optional: true
         - name: query
-          type: DataContractSpec | None
+          type: DataContractSpec
+          optional: true
         - name: result
-          type: DataContractSpec | None
+          type: DataContractSpec
+          optional: true
         output:
           type: Any
     - name: ApplicationSpec
       description: Specification of an application to be generated.
       attributes:
       - name: use_cases
-        type: list[UseCaseSpec]
-        optional: true
+        type: UseCaseSpec
+        container: list
       - name: ports
-        type: list[PortSpec]
-        optional: true
+        type: PortSpec
+        container: list
       - name: services
-        type: list[ServiceSpec]
-        optional: true
+        type: ServiceSpec
+        container: list
     - name: EnumMemberSpec
       description: Specification of an enum member to be generated.
       attributes:
       - name: name
         type: MacroString
       - name: value
-        type: str | int | None
-        optional: true
+        type: Any
+        custom_type_string: str | int | None
       - name: description
-        type: str
-        optional: true
+        type: string
     - name: ValueObjectSpec
       description: Specification of a value object to be generated.
       attributes:
       - name: name
         type: PascalString
       - name: description
-        type: str
-        optional: true
+        type: string
       - name: attributes
-        type: list[AttributeSpec]
-        optional: true
+        type: AttributeSpec
+        container: list
       - name: behaviors
-        type: list[MethodSpec]
-        optional: true
+        type: MethodSpec
+        container: list
     - name: DataContractSpec
       description: Generic data contract specification for use case command/query/result.
       attributes:
       - name: name
-        type: str
-        optional: true
+        type: string
       - name: description
-        type: str
-        optional: true
+        type: string
       - name: attributes
-        type: list[AttributeSpec]
-        optional: true
+        type: AttributeSpec
+        container: list
     - name: InfrastructureSpec
       description: Specification of an infrastructure to be generated.
       attributes:
       - name: implementations
-        type: list[ImplementationSpec]
-        optional: true
+        type: ImplementationSpec
+        container: list
     - name: ContainerSpec
       description: Specification for a container (dependency injection).
       attributes:
       - name: bindings
-        type: list[PortBinding]
-        optional: true
+        type: PortBinding
+        container: list
     - name: MethodOutput
       description: Specification of the output of a method.
       attributes:
       - name: type
-        type: str
+        type: string
     - name: MapperSpec
       description: Base class for value object mappers.
       attributes:
       - name: source
-        type: str
+        type: string
       - name: target
-        type: str
+        type: string
       - name: direction
         type: MappingDirection
     - name: PortBinding
       description: Binding between a port and an adapter.
       attributes:
       - name: port
-        type: str
+        type: string
       - name: implementation
-        type: str
+        type: string
     - name: ConfigFieldSpec
       description: Specification for a single configuration field.
       attributes:
       - name: name
         type: SnakeString
       - name: type
-        type: str
+        type: string
       - name: default
-        type: str | None
+        type: string
         optional: true
       - name: description
-        type: str
-        optional: true
+        type: string
       - name: env_var
-        type: str | None
+        type: string
         optional: true
     - name: ImplementationSpec
       description: Specification of an implementation to be generated.
       attributes:
       - name: name
         type: PascalString
-        optional: true
       - name: implements
         type: PascalString
       - name: technology
         type: SnakeString
       - name: description
-        type: str
-        optional: true
+        type: string
       - name: attributes
-        type: list[AttributeSpec]
-        optional: true
+        type: AttributeSpec
+        container: list
       - name: private_methods
-        type: list[MethodSpec]
-        optional: true
+        type: MethodSpec
+        container: list
       behaviors:
       - name: create
         inputs:
         - name: name
-          type: str
+          type: string
         - name: implements
-          type: str
+          type: string
         - name: technology
-          type: str
+          type: string
         - name: description
-          type: str
+          type: string
         - name: attributes
-          type: list[AttributeSpec] | None
+          type: AttributeSpec
+          container: list
+          optional: true
         - name: private_methods
-          type: list[MethodSpec] | None
+          type: MethodSpec
+          container: list
+          optional: true
         output:
           type: Any
     - name: Blueprint
@@ -1668,29 +1685,31 @@ contexts:
       - name: name
         type: PascalString
       - name: description
-        type: str
+        type: string
       - name: layout
-        type: str
-        optional: true
+        type: string
       - name: contexts
-        type: list[BoundedContext]
-        optional: true
+        type: BoundedContext
+        container: list
       - name: bootstrap
         type: BootstrapSpec
-        optional: true
       behaviors:
       - name: create
         inputs:
         - name: name
-          type: Union[str, PascalString]
+          type: Any
+          custom_type_string: Union[str, PascalString]
         - name: description
-          type: str
+          type: string
         - name: layout
-          type: str
+          type: string
         - name: contexts
-          type: list[BoundedContext] | None
+          type: BoundedContext
+          container: list
+          optional: true
         - name: bootstrap
-          type: BootstrapSpec | None
+          type: BootstrapSpec
+          optional: true
         output:
           type: Any
     - name: MethodSpec
@@ -1699,20 +1718,20 @@ contexts:
       - name: name
         type: SnakeString
       - name: description
-        type: str
-        optional: true
+        type: string
       - name: inputs
-        type: list[AttributeSpec]
-        optional: true
+        type: AttributeSpec
+        container: list
       - name: output
         type: MethodOutput
       behaviors:
       - name: create
         inputs:
         - name: name
-          type: str
+          type: string
         - name: inputs
-          type: list[AttributeSpec]
+          type: AttributeSpec
+          container: list
         - name: output
           type: MethodOutput
         output:
@@ -1721,63 +1740,64 @@ contexts:
       description: Specification of a domain to be generated.
       attributes:
       - name: aggregates
-        type: list[AggregateSpec]
-        optional: true
+        type: AggregateSpec
+        container: list
       - name: enums
-        type: list[EnumSpec]
-        optional: true
+        type: EnumSpec
+        container: list
       - name: value_objects
-        type: list[ValueObjectSpec]
-        optional: true
+        type: ValueObjectSpec
+        container: list
       - name: entities
-        type: list[EntitySpec]
-        optional: true
+        type: EntitySpec
+        container: list
       - name: services
-        type: list[ServiceSpec]
-        optional: true
+        type: ServiceSpec
+        container: list
       - name: ports
-        type: list[PortSpec]
-        optional: true
+        type: PortSpec
+        container: list
     - name: BoundedContext
       description: A logical boundary within the system.
       attributes:
       - name: name
         type: PascalString
       - name: description
-        type: str
-        optional: true
+        type: string
       - name: domain
         type: DomainSpec
-        optional: true
       - name: application
         type: ApplicationSpec
-        optional: true
       - name: infrastructure
         type: InfrastructureSpec
-        optional: true
       - name: config
-        type: ConfigSpec | None
+        type: ConfigSpec
         optional: true
       - name: container
-        type: ContainerSpec | None
+        type: ContainerSpec
         optional: true
       behaviors:
       - name: create
         inputs:
         - name: name
-          type: str
+          type: string
         - name: description
-          type: str
+          type: string
         - name: domain
-          type: DomainSpec | None
+          type: DomainSpec
+          optional: true
         - name: application
-          type: ApplicationSpec | None
+          type: ApplicationSpec
+          optional: true
         - name: infrastructure
-          type: InfrastructureSpec | None
+          type: InfrastructureSpec
+          optional: true
         - name: config
-          type: ConfigSpec | None
+          type: ConfigSpec
+          optional: true
         - name: container
-          type: ContainerSpec | None
+          type: ContainerSpec
+          optional: true
         output:
           type: Any
       - name: port_index
@@ -1786,7 +1806,7 @@ contexts:
       - name: get_port_spec
         inputs:
         - name: port_name
-          type: str
+          type: string
         output:
           type: PortSpec
     - name: ServiceSpec
@@ -1795,56 +1815,54 @@ contexts:
       - name: name
         type: PascalString
       - name: description
-        type: str
-        optional: true
+        type: string
       - name: dependencies
-        type: list[AttributeSpec]
-        optional: true
+        type: AttributeSpec
+        container: list
       - name: operations
-        type: list[MethodSpec]
-        optional: true
+        type: MethodSpec
+        container: list
     - name: EntitySpec
       description: Specification of an entity.
       attributes:
       - name: name
         type: PascalString
       - name: description
-        type: str
-        optional: true
+        type: string
       - name: attributes
-        type: list[AttributeSpec]
-        optional: true
+        type: AttributeSpec
+        container: list
       - name: behaviors
-        type: list[MethodSpec]
-        optional: true
+        type: MethodSpec
+        container: list
     - name: AttributeSpec
       description: Standard specification for a class attribute.
       attributes:
       - name: name
         type: SnakeString
       - name: description
-        type: str
-        optional: true
+        type: string
       - name: type
-        type: str
+        type: string
       - name: container
         type: ContainerType
-        optional: true
       - name: optional
-        type: bool
-        optional: true
+        type: boolean
       - name: default
-        type: str | None
+        type: string
+        optional: true
+      - name: custom_type_string
+        type: string
         optional: true
       behaviors:
       - name: create
         inputs:
         - name: name
-          type: str
+          type: string
         - name: type
-          type: str
+          type: string
         - name: optional
-          type: bool
+          type: boolean
         output:
           type: Any
     - name: PortSpec
@@ -1853,29 +1871,32 @@ contexts:
       - name: name
         type: PascalString
       - name: description
-        type: str
-        optional: true
+        type: string
       - name: kind
         type: PortType
       - name: aggregate
-        type: PascalString | None
+        type: PascalString
         optional: true
       - name: operations
-        type: list[MethodSpec]
-        optional: true
+        type: MethodSpec
+        container: list
       behaviors:
       - name: create
         inputs:
         - name: name
-          type: str
+          type: string
         - name: kind
-          type: Union[PortType, str]
+          type: Any
+          custom_type_string: Union[PortType, str]
         - name: description
-          type: str
+          type: string
         - name: aggregate
-          type: str | None
+          type: string
+          optional: true
         - name: operations
-          type: list[MethodSpec] | None
+          type: MethodSpec
+          container: list
+          optional: true
         output:
           type: PortSpec
       - name: get_final_operations
@@ -1896,48 +1917,46 @@ contexts:
       - name: name
         type: PascalString
       - name: description
-        type: str
-        optional: true
+        type: string
       - name: members
-        type: list[EnumMemberSpec]
+        type: EnumMemberSpec
+        container: list
     - name: AggregateSpec
       description: Specification of a domain aggregate to be generated.
       attributes:
       - name: name
         type: PascalString
       - name: description
-        type: str
-        optional: true
+        type: string
       - name: attributes
-        type: list[AttributeSpec]
-        optional: true
+        type: AttributeSpec
+        container: list
       - name: behaviors
-        type: list[MethodSpec]
-        optional: true
+        type: MethodSpec
+        container: list
     - name: BootstrapSpec
       description: Specification of the bootstrap configuration.
       attributes:
       - name: config
-        type: ConfigSpec | None
+        type: ConfigSpec
         optional: true
       - name: container
-        type: ContainerSpec | None
+        type: ContainerSpec
         optional: true
     - name: ConfigSpec
       description: Specification for a configuration object (AppSettings or ContextSettings).
       attributes:
       - name: class_name
-        type: PascalString | None
+        type: PascalString
         optional: true
       - name: env_prefix
-        type: str
-        optional: true
+        type: string
       - name: env_file
-        type: str | None
+        type: string
         optional: true
       - name: fields
-        type: list[ConfigFieldSpec]
-        optional: true
+        type: ConfigFieldSpec
+        container: list
     services:
     - name: BlueprintPathResolver
       description: "Parses path expressions and resolves them against Blueprint/Pydantic\
@@ -1946,34 +1965,35 @@ contexts:
         \ by name in list: \"contexts.DomainDefinition\" (finds by 'name' field)"
       dependencies:
       - name: _SEGMENT_PATTERN
-        type: Any
+        type: any
       operations:
       - name: parse
         inputs:
         - name: path
-          type: str
+          type: string
         output:
           type: list[PathSegment]
       - name: resolve
         inputs:
         - name: obj
-          type: Any
+          type: any
         - name: path
-          type: str
+          type: string
         output:
           type: Any
       - name: _resolve_segments
         inputs:
         - name: obj
-          type: Any
+          type: any
         - name: segments
-          type: list[PathSegment]
+          type: PathSegment
+          container: list
         output:
           type: Any
       - name: _get_segment_value
         inputs:
         - name: obj
-          type: Any
+          type: any
         - name: segment
           type: PathSegment
         output:
@@ -1981,29 +2001,29 @@ contexts:
       - name: _access_by_name
         inputs:
         - name: obj
-          type: Any
+          type: any
         - name: name
-          type: str
+          type: string
         output:
           type: Any
       - name: _get_item_name
         inputs:
         - name: item
-          type: Any
+          type: any
         output:
           type: str | None
     - name: ComponentLocator
       description: Responsible for finding any component within a BoundedContext.
       dependencies:
       - name: _FIND_HANDLERS
-        type: Any
+        type: any
       operations:
       - name: _find_port_strategy
         inputs:
         - name: context
           type: BoundedContext
         - name: name
-          type: str
+          type: string
         output:
           type: Any
       - name: find_parent_component
@@ -2011,9 +2031,9 @@ contexts:
         - name: context
           type: BoundedContext
         - name: name
-          type: str
+          type: string
         - name: type_hint
-          type: str
+          type: string
         output:
           type: Any
     - name: BlueprintPathOperations
@@ -2028,55 +2048,57 @@ contexts:
       - name: get_value
         inputs:
         - name: obj
-          type: Any
+          type: any
         - name: path
-          type: str
+          type: string
         output:
           type: Any
       - name: set_value
         inputs:
         - name: obj
-          type: Any
+          type: any
         - name: path
-          type: str
+          type: string
         - name: value
-          type: Any
+          type: any
         - name: append
-          type: bool
+          type: boolean
         output:
           type: Any
       - name: remove_value
         inputs:
         - name: obj
-          type: Any
+          type: any
         - name: path
-          type: str
+          type: string
         output:
           type: Any
       - name: _set_recursive
         inputs:
         - name: obj
-          type: Any
+          type: any
         - name: segments
-          type: list[PathSegment]
+          type: PathSegment
+          container: list
         - name: value
-          type: Any
+          type: any
         - name: append
-          type: bool
+          type: boolean
         output:
           type: Any
       - name: _remove_recursive
         inputs:
         - name: obj
-          type: Any
+          type: any
         - name: segments
-          type: list[PathSegment]
+          type: PathSegment
+          container: list
         output:
           type: Any
       - name: _get_segment_value
         inputs:
         - name: obj
-          type: Any
+          type: any
         - name: segment
           type: PathSegment
         output:
@@ -2084,15 +2106,15 @@ contexts:
       - name: _access_by_name
         inputs:
         - name: obj
-          type: Any
+          type: any
         - name: name
-          type: str
+          type: string
         output:
           type: Any
       - name: _get_item_name
         inputs:
         - name: item
-          type: Any
+          type: any
         output:
           type: str | None
       - name: _find_item_index
@@ -2100,25 +2122,25 @@ contexts:
         - name: items
           type: list
         - name: name
-          type: str
+          type: string
         output:
           type: int
       - name: _set_final_value
         inputs:
         - name: obj
-          type: Any
+          type: any
         - name: segment
           type: PathSegment
         - name: value
-          type: Any
+          type: any
         - name: append
-          type: bool
+          type: boolean
         output:
           type: Any
       - name: _remove_final_value
         inputs:
         - name: obj
-          type: Any
+          type: any
         - name: segment
           type: PathSegment
         output:
@@ -2126,36 +2148,36 @@ contexts:
       - name: _update_segment
         inputs:
         - name: obj
-          type: Any
+          type: any
         - name: segment
           type: PathSegment
         - name: new_value
-          type: Any
+          type: any
         output:
           type: Any
       - name: _update_field
         inputs:
         - name: obj
-          type: Any
+          type: any
         - name: field_name
-          type: str
+          type: string
         - name: new_value
-          type: Any
+          type: any
         output:
           type: Any
       - name: parse_value
         inputs:
         - name: value_str
-          type: str
+          type: string
         output:
           type: Any
     - name: PathSegment
       description: Represents a single segment in a path expression.
       dependencies:
       - name: name
-        type: str
+        type: string
       - name: index
-        type: int | None
+        type: integer
         optional: true
       operations:
       - name: is_index_access
@@ -2187,12 +2209,11 @@ contexts:
       command:
         attributes:
         - name: path
-          type: str
+          type: string
         - name: value
-          type: Any
+          type: any
         - name: append
-          type: bool
-          optional: true
+          type: boolean
     - name: RemoveValue
       kind: command
       dependencies:
@@ -2203,7 +2224,7 @@ contexts:
       command:
         attributes:
         - name: path
-          type: str
+          type: string
     - name: GetValue
       kind: command
       dependencies:
@@ -2214,7 +2235,7 @@ contexts:
       command:
         attributes:
         - name: path
-          type: str
+          type: string
     - name: LoadBlueprint
       kind: command
       dependencies:
@@ -2223,7 +2244,7 @@ contexts:
       command:
         attributes:
         - name: node
-          type: str | None
+          type: string
           optional: true
       result:
         attributes:
