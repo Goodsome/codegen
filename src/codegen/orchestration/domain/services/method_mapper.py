@@ -27,7 +27,7 @@ class MethodMapper:
         is_private: bool = False,
     ) -> FunctionSpec:
         parameters = [
-            self.attribute_mapper.to_parameter_spec(attr) for attr in method.inputs
+            self.attribute_mapper.to_variable_spec(attr) for attr in method.inputs
         ]
         decorators = []
         if is_abstract:

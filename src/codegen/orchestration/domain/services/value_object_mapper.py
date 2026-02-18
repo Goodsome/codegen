@@ -21,7 +21,7 @@ class ValueObjectMapper:
     def to_module_spec(self, value_object: ValueObjectSpec) -> ModuleSpec:
 
         attributes = [
-            self.attribute_mapper.to_parameter_spec(
+            self.attribute_mapper.to_variable_spec(
                 attr, default_field_flavor=FieldFlavor.PYDANTIC
             )
             for attr in value_object.attributes

@@ -23,7 +23,7 @@ class EntityMapper:
         """
         # 1. 映射属性 (使用 Pydantic Flavor，因为 Entity 继承自 BaseModel)
         attributes = [
-            self.attribute_mapper.to_parameter_spec(
+            self.attribute_mapper.to_variable_spec(
                 attr,
                 default_field_flavor=FieldFlavor.PYDANTIC,
             )

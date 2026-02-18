@@ -768,6 +768,34 @@ contexts:
       - name: DATACLASS
         value: dataclass
     value_objects:
+    - name: CallSpec
+      description: 函数调用或类实例化 (对应 AST Call节点)。
+      attributes:
+      - name: callee
+        type: string 
+        description: 被调用的对象名 (e.g., "func", "MyClass", "os.getenv")
+        
+      - name: args
+        type: AssignmentSpec 
+        container: list
+        description: 位置参数列表。注意这里递归引用了 AssignmentSpec，因为参数本身也可以是表达式。
+        
+      - name: kwargs
+        type: AssignmentSpec
+        container: map
+        description: 关键字参数字典。
+    - name: LiteralSpec
+      description: 基础类型的字面量值 (对应 AST Constant节点)。
+      attributes:
+      - name: value
+        type: any 
+        description: Python 原生值 (int, str, bool, None, etc.)
+    - name: ReferenceSpec
+      description: 引用一个已存在的变量或符号 (对应 AST Name节点)。
+      attributes:
+      - name: name
+        type: string
+        description: 变量名 (e.g., "my_var", "os.path")
     - name: ModuleAssignmentSpec
       description: Represents a top-level assignment in a module.
       attributes:
@@ -999,10 +1027,40 @@ contexts:
       attributes:
       - name: flavor
         type: AssignmentFlavor
-      - name: content
+      - name: literal
+        type: LiteralSpec
+        optional: true
+        
+      - name: reference
+        type: ReferenceSpec
+        optional: true
+        
+      - name: call
+        type: CallSpec
+        optional: true
+        
+      - name: list_items
+        type: AssignmentSpec
+        container: list
+        optional: true
+        
+      - name: dict_items
+        type: AssignmentSpec
+        container: map
+        optional: true
+        
+      - name: code
         type: string
-      - name: is_factory
-        type: boolean
+        optional: true # 对应 RAW_CODE
+        
+      behaviors:
+      - name: factory
+        inputs:
+        - name: value
+          type: any
+        output:
+          type: AssignmentSpec
+        description: 智能工厂方法，根据输入类型自动创建对应的 Spec (int->Literal, CallSpec->Call, etc.)
     - name: TypeSpec
       description: 描述变量的类型注解结构 (LHS)。 对应 AST 中的 annotation 节点。
       attributes:

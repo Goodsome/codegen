@@ -17,7 +17,7 @@ class ServiceMapper:
 
     def to_module_spec(self, service: ServiceSpec) -> ModuleSpec:
         attributes = [
-            self.attribute_mapper.to_parameter_spec(
+            self.attribute_mapper.to_variable_spec(
                 attr,
                 default_field_flavor=FieldFlavor.DATACLASS,
             )

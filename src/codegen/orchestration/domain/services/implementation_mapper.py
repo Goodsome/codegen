@@ -40,7 +40,7 @@ class ImplementationMapper:
             for f in implementation.private_methods
         ]
         attributes = [
-            self.attribute_mapper.to_parameter_spec(attr)
+            self.attribute_mapper.to_variable_spec(attr)
             for attr in implementation.attributes
         ]
         class_name = self._get_class_name(implementation)

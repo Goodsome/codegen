@@ -1,7 +1,7 @@
 
 import ast
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
-from codegen.python_gen.domain.value_objects.parameter_spec import ParameterSpec
+from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.python_gen.domain.value_objects.type_annotation_spec import TypeAnnotationSpec
 from codegen.python_gen.infrastructure.adapters.ast_parsers import type_parser
 # Need FieldSpec logic? Reusing parsers?
@@ -42,24 +42,28 @@ def parse_function(node: ast.FunctionDef | ast.AsyncFunctionDef) -> FunctionSpec
     if is_instance or is_class_method:
         clean_args = clean_args[1:] # Drop first arg
         
-    for arg in clean_args:
+    for i, arg in enumerate(clean_args):
         # Default value?
         # defaults list aligns with end of args.
-        # This mapping is tedious to do manually.
-        # But we need to do it to create ParameterSpec correctly if it has default.
-        # ParameterSpec currently has default: FieldSpec/None.
-        # Parsing default value from AST to FieldSpec is hard without knowing context (Pydantic Field vs simple value).
-        # FunctionSpec.parse_ast seemed to simplify this or delegate.
-        # For now, let's implement basic parameter parsing: name + annotation.
+        defaults_count = len(clean_args) - len(node.args.defaults)
         
-        # NOTE: Current ParameterSpec.parse_ast (in Domain) only handles AnnAssign/Assign attributes, NOT function args!
-        # FunctionSpec.parse_ast (in Domain) handles function args but just name + annotation.
-        # It ignores defaults!
-        # "params.append(ParameterSpec.create(name=arg.arg, annotation=anno))"
-        # So we will follow that status quo for now.
-        
+        assignment = None
+        if i >= defaults_count:
+            # This arg has a default
+            default_index = i - defaults_count
+            default_node = node.args.defaults[default_index]
+            
+            from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
+            from codegen.python_gen.domain.enums import AssignmentFlavor
+            
+            code = ast.unparse(default_node)
+            assignment = AssignmentSpec(
+                flavor=AssignmentFlavor.CODE,
+                code=code
+            )
+
         anno = type_parser.parse_type(arg.annotation)
-        params.append(ParameterSpec.create(name=arg.arg, annotation=anno))
+        params.append(VariableSpec.create(name=arg.arg, type_spec=anno, assignment=assignment))
 
     # 2. Return Type
     return_annotation = type_parser.parse_type(node.returns)
@@ -90,8 +94,8 @@ def parse_function(node: ast.FunctionDef | ast.AsyncFunctionDef) -> FunctionSpec
         is_private=is_private
     )
 
-def parse_parameter_from_assign(node: ast.AnnAssign | ast.Assign) -> list[ParameterSpec]:
-    """Parses AnnAssign/Assign into ParameterSpec list (for attributes)."""
+def parse_parameter_from_assign(node: ast.AnnAssign | ast.Assign) -> list[VariableSpec]:
+    """Parses AnnAssign/Assign into VariableSpec list (for attributes)."""
     # Logic similar to ParameterSpec.parse_ast
     
     results = []
@@ -102,26 +106,46 @@ def parse_parameter_from_assign(node: ast.AnnAssign | ast.Assign) -> list[Parame
             anno = type_parser.parse_type(node.annotation)
             
             # Default?
-            default_flavor = None # how to detect?
-            # parse value...
-            
-            ps = ParameterSpec.create(
-                name=name, 
-                annotation=anno,
-                optional=(node.value is not None)
-            )
-            # If value exists, we might want to capture it in 'default' FieldSpec.
+            # VariableSpec has assignment field.
+            # Convert node.value (AST) to AssignmentSpec?
+            # We can capture the code for now.
+            assignment = None
             if node.value:
-                # We can't easily reverse engineer FieldSpec from arbitrary AST yet without logic.
-                pass
+                from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
+                from codegen.python_gen.domain.enums import AssignmentFlavor
+                code = ast.unparse(node.value)
+                assignment = AssignmentSpec(
+                    flavor=AssignmentFlavor.CODE,
+                    code=code
+                )
+            
+            ps = VariableSpec.create(
+                name=name, 
+                type_spec=anno,
+                assignment=assignment
+            )
             results.append(ps)
             
     elif isinstance(node, ast.Assign):
          for target in node.targets:
              if isinstance(target, ast.Name):
-                 results.append(ParameterSpec.create(
+                 # For Assign, type is inferred or absent. VariableSpec allows optional type_spec.
+                 # VariableSpec(name, type_spec=None, assignment=...)
+                 
+                 assignment = None
+                 if node.value:
+                    from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
+                    from codegen.python_gen.domain.enums import AssignmentFlavor
+                    code = ast.unparse(node.value)
+                    assignment = AssignmentSpec(
+                        flavor=AssignmentFlavor.CODE,
+                        code=code
+                    )
+
+                 results.append(VariableSpec.create(
                      name=target.id,
-                     annotation=TypeAnnotationSpec(name="Any") # inferred
+                     type_spec=None, # TypeAnnotationSpec(name="Any") ? Or None.
+                     assignment=assignment
                  ))
                  
     return results

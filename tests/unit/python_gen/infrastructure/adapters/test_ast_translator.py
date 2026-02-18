@@ -3,7 +3,7 @@ from codegen.python_gen.infrastructure.adapters.ast_translator import AstTransla
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
-from codegen.python_gen.domain.value_objects.parameter_spec import ParameterSpec
+from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.python_gen.domain.value_objects.type_annotation_spec import TypeAnnotationSpec
 from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
 
@@ -44,7 +44,7 @@ class TestAstTranslatorBuilders:
         func = FunctionSpec.create(
             name="hello",
             parameters=[
-                ParameterSpec.create(name="name", annotation="str")
+                VariableSpec.create(name="name", type_spec=TypeAnnotationSpec(name="str"))
             ],
             return_annotation=TypeAnnotationSpec(name="str"),
             suite="return f'Hello {name}'"
@@ -126,3 +126,36 @@ class TestRoundTrip:
         assert parsed_spec.name == original_spec.name
         assert len(parsed_spec.classes) == len(original_spec.classes)
         assert parsed_spec.classes[0].name == original_spec.classes[0].name
+
+
+    def test_render_function_with_default_call(self):
+        translator = AstTranslator()
+        from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
+        
+        assignment = AssignmentSpec.from_call(
+            func_name="Field",
+            kwargs={"default": AssignmentSpec.from_literal("test")}
+        )
+        
+        from codegen.python_gen.domain.enums import FunctionType
+        
+        func_spec = FunctionSpec.create(
+            name="create_field",
+            return_annotation=TypeAnnotationSpec(name="Any"),
+            function_type=FunctionType.INSTANCE_METHOD,
+            parameters=[
+                VariableSpec.create(
+                    name="field_config",
+                    type_spec=TypeAnnotationSpec(name="FieldConfig"),
+                    assignment=assignment
+                )
+            ]
+        )
+        
+        
+        code = translator.render_module(ModuleSpec(name="test", classes=[
+             ClassSpec.create(name="TestClass", methods=[func_spec])
+        ]), [])
+        
+        
+        assert "def create_field(self, field_config: FieldConfig=Field(default='test')) -> Any:" in code
