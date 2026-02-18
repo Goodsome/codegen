@@ -271,30 +271,27 @@ class TestAttributeMapperReverse:
 
     # ============ 错误场景反向转换 ============
 
-    def test_reverse_map_with_non_str_key_raises(self, mapper):
-        """dict[int, str] 应该报错，因为 MAP 的键必须是 str"""
+    def test_reverse_map_with_non_str_key_fallback(self, mapper):
+        """dict[int, str] 应该回退到 custom_type_string"""
         spec = TypeAnnotationSpec(
             name="dict",
             args=[TypeAnnotationSpec(name="int"), TypeAnnotationSpec(name="str")],
         )
         param = ParameterSpec.create(name="invalid", annotation=spec)
-        with pytest.raises(ValueError) as exc_info:
-            mapper.to_attribute(param)
-        assert "str" in str(exc_info.value).lower()
+        attr = mapper.to_attribute(param)
+        assert attr.type == "Any"
+        assert attr.custom_type_string == "dict[int, str]"
 
-    def test_reverse_nested_container_raises(self, mapper):
-        """list[list[int]] 应该报错，因为不支持嵌套容器"""
+    def test_reverse_nested_container_fallback(self, mapper):
+        """list[list[int]] 应该回退到 custom_type_string"""
         inner_list = TypeAnnotationSpec(
             name="list", args=[TypeAnnotationSpec(name="int")]
         )
         spec = TypeAnnotationSpec(name="list", args=[inner_list])
         param = ParameterSpec.create(name="nested", annotation=spec)
-        with pytest.raises(ValueError) as exc_info:
-            mapper.to_attribute(param)
-        assert (
-            "nested" in str(exc_info.value).lower()
-            or "not supported" in str(exc_info.value).lower()
-        )
+        attr = mapper.to_attribute(param)
+        assert attr.type == "Any"
+        assert attr.custom_type_string == "list[list[int]]"
 
 
 class TestAttributeMapperBatch:
