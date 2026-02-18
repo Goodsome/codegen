@@ -13,6 +13,7 @@ class AttributeSpec(ValueObject):
     container: ContainerType = Field(default=ContainerType.NONE)
     optional: bool = Field(default_factory=bool)
     default: str | None = Field(default=None)
+    custom_type_string: str | None = Field(default=None)
 
     @classmethod
     def create(
@@ -25,4 +26,5 @@ class AttributeSpec(ValueObject):
             name=SnakeString(name),
             type=type,
             optional=optional,
+            custom_type_string=None,
         )

@@ -70,6 +70,18 @@
           "$ref":"#/$defs/ContainerType",
           "default":"none"
         },
+        "custom_type_string":{
+          "anyOf":[
+            {
+              "type":"string"
+            },
+            {
+              "type":"null"
+            }
+          ],
+          "default":null,
+          "title":"Custom Type String"
+        },
         "default":{
           "anyOf":[
             {
@@ -110,13 +122,6 @@
       "additionalProperties":false,
       "description":"Specification of the bootstrap configuration.",
       "properties":{
-        "bindings":{
-          "items":{
-            "$ref":"#/$defs/PortBinding"
-          },
-          "title":"Bindings",
-          "type":"array"
-        },
         "config":{
           "anyOf":[
             {
@@ -290,9 +295,11 @@
       "additionalProperties":false,
       "description":"Specification for a container (dependency injection).",
       "properties":{
-        "providers":{
-          "items":{},
-          "title":"Providers",
+        "bindings":{
+          "items":{
+            "$ref":"#/$defs/PortBinding"
+          },
+          "title":"Bindings",
           "type":"array"
         }
       },
@@ -304,7 +311,9 @@
         "none",
         "list",
         "set",
-        "map"
+        "map",
+        "iterable",
+        "callable"
       ],
       "title":"ContainerType",
       "type":"string"

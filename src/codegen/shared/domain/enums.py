@@ -11,6 +11,10 @@ class ContainerType(Enum):
 
     MAP = "map"
 
+    ITERABLE = "iterable"
+
+    CALLABLE = "callable"
+
 
 class PrimitiveType(Enum):
     """通用原语类型，不依赖具体语言。"""
