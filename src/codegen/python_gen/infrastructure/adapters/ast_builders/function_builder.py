@@ -1,8 +1,39 @@
 
 import ast
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
-from codegen.python_gen.domain.enums import FunctionType
+from codegen.python_gen.domain.enums import FunctionType, AssignmentFlavor
 from codegen.python_gen.infrastructure.adapters.ast_builders import type_builder
+
+def build_assignment_value(assignment) -> ast.expr:
+    """Builds an AST expression from an AssignmentSpec."""
+    if not assignment:
+        return ast.Constant(value=None)
+        
+    if assignment.code:
+         try:
+             return ast.parse(assignment.code, mode='eval').body
+         except SyntaxError:
+             pass
+             
+    if assignment.literal:
+        return ast.Constant(value=assignment.literal.value)
+        
+    if assignment.flavor == AssignmentFlavor.CALL and assignment.call:
+        args = [build_assignment_value(arg) for arg in assignment.call.args]
+        keywords = [
+            ast.keyword(arg=k, value=build_assignment_value(v))
+            for k, v in assignment.call.kwargs.items()
+        ]
+        
+        # Determine func node (Name or Attribute)
+        try:
+            func_node = ast.parse(assignment.call.callee, mode='eval').body
+        except SyntaxError:
+            func_node = ast.Name(id=assignment.call.callee, ctx=ast.Load())
+            
+        return ast.Call(func=func_node, args=args, keywords=keywords)
+        
+    return ast.Constant(value=None)
 
 def build_function(func_spec: FunctionSpec) -> ast.FunctionDef | ast.AsyncFunctionDef:
     """Builds an AST FunctionDef from a FunctionSpec."""
@@ -10,17 +41,6 @@ def build_function(func_spec: FunctionSpec) -> ast.FunctionDef | ast.AsyncFuncti
     # 1. Args
     args_list = []
     defaults_list = []
-    
-    # Handle 'self' or 'cls' for methods if not explicit in parameters?
-    # Spec says "parameters: list[ParameterSpec]".
-    # Design says: "If is_instance_method(), first argument via ast.arg(arg='self')".
-    # But usually ParameterSpec list in Spec *excludes* self?
-    # Let's check logic. FunctionSpec.is_instance_method() logic depends on type.
-    # If parameters list already has self, we shouldn't add it doubly.
-    # Spec `parameters` usually excludes implicit `self` in many DDD specs, but here `FunctionSpec` might include it or not.
-    # Design doc says: "If is_instance_method() is True, first parameter via ast.arg(arg='self') add."
-    # Then "Iterate func_spec.parameters".
-    # This implies `parameters` does NOT contain self.
     
     if func_spec.is_instance_method():
         args_list.append(ast.arg(arg="self", annotation=None))
@@ -32,17 +52,9 @@ def build_function(func_spec: FunctionSpec) -> ast.FunctionDef | ast.AsyncFuncti
         arg_node = build_parameter(param)
         args_list.append(arg_node)
         
-        # Build default
-        if param.default: # default is FieldSpec or None (wait, ParameterSpec says default: FieldSpec | None)
-             # However FieldSpec wraps value logic.
-             # render_default() gives string.
-             default_str = param.render_default()
-             if default_str:
-                 try:
-                     defaults_list.append(ast.parse(default_str, mode='eval').body)
-                 except SyntaxError:
-                     # Fallback to string or error?
-                     defaults_list.append(ast.Constant(value=None)) 
+        # Build default from assignment
+        if param.assignment: 
+             defaults_list.append(build_assignment_value(param.assignment))
     
     arguments = ast.arguments(
         posonlyargs=[],
@@ -57,9 +69,6 @@ def build_function(func_spec: FunctionSpec) -> ast.FunctionDef | ast.AsyncFuncti
     if func_spec.suite:
         try:
              # Parse suite code.
-             # If suite is "return 1", ast.parse OK.
-             # If suite has indentation, we need to be careful? 
-             # ast.parse dedents? No. But suite usually unindented str.
              parsed_suite = ast.parse(func_spec.suite) # Module
              if parsed_suite.body:
                  body.extend(parsed_suite.body)
@@ -82,8 +91,6 @@ def build_function(func_spec: FunctionSpec) -> ast.FunctionDef | ast.AsyncFuncti
         except SyntaxError:
             pass
             
-    # Function Type (Async not supported in Spec creation per design, but let's stick to FunctionDef)
-    
     return ast.FunctionDef(
         name=func_spec.name,
         args=arguments,
@@ -94,23 +101,23 @@ def build_function(func_spec: FunctionSpec) -> ast.FunctionDef | ast.AsyncFuncti
     )
 
 def build_parameter(param_spec) -> ast.arg:
-    """Builds an AST arg node."""
-    annotation = type_builder.build_type_annotation(param_spec.annotation)
+    """Builds an AST arg node from VariableSpec."""
+    annotation = None
+    if param_spec.type_spec:
+        annotation = type_builder.build_type_annotation(param_spec.type_spec)
     return ast.arg(arg=param_spec.name, annotation=annotation)
 
+
 def build_parameter_as_attribute(param_spec) -> ast.AnnAssign:
-    """Builds an AST AnnAssign node (for Class Attributes)."""
+    """Builds an AST AnnAssign node (for Class Attributes) from VariableSpec."""
     target = ast.Name(id=param_spec.name, ctx=ast.Store())
-    annotation = type_builder.build_type_annotation(param_spec.annotation)
+    annotation = None
+    if param_spec.type_spec:
+        annotation = type_builder.build_type_annotation(param_spec.type_spec)
     
     value = None
-    if param_spec.default:
-        val_str = param_spec.render_default()
-        if val_str:
-            try:
-                value = ast.parse(val_str, mode='eval').body
-            except SyntaxError:
-                pass
+    if param_spec.assignment:
+         value = build_assignment_value(param_spec.assignment)
                 
     return ast.AnnAssign(
         target=target,

@@ -4,12 +4,14 @@ from enum import Enum
 class AssignmentFlavor(Enum):
 
     NONE = "none"
-
     LITERAL = "literal"
+    SYMBOL = "symbol"
+    CALL = "call"
+    DICT = "dict"
+    LIST = "list"
+    RAW_CODE = "raw_code"
+    CODE = "code"
 
-    PYDANTIC_FIELD = "pydantic_field"
-
-    DATACLASS_FIELD = "dataclass_field"
 
 
 class FunctionType(Enum):

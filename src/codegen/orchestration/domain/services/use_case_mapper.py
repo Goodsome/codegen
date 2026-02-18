@@ -12,8 +12,8 @@ from codegen.python_gen.domain.value_objects.function_spec import (
     FunctionSpec,
 )
 from codegen.python_gen.domain.enums import FunctionType, FieldFlavor
-from codegen.python_gen.domain.value_objects.parameter_spec import (
-    ParameterSpec,
+from codegen.python_gen.domain.value_objects.variable_spec import (
+    VariableSpec,
 )
 from codegen.python_gen.domain.value_objects.type_annotation_spec import (
     TypeAnnotationSpec,
@@ -31,7 +31,7 @@ class UseCaseMapper:
         classes: list[ClassSpec] = []
         if use_case.kind is UseCaseKind.COMMAND:
             command_name = f"{use_case.name}Command"
-            cmd_attributes = self.attribute_mapper.to_parameter_specs(
+            cmd_attributes = self.attribute_mapper.to_variable_specs(
                 use_case.command.attributes,
                 default_field_flavor=FieldFlavor.DATACLASS,
             )
@@ -40,14 +40,15 @@ class UseCaseMapper:
                 decorators=["dataclass(frozen=True)"],
                 attributes=cmd_attributes,
             )
-            param = ParameterSpec.create(
+            # Create param for execute method
+            param = VariableSpec.create(
                 name="cmd",
-                annotation=parse_type_str(command_name),
+                type_spec=parse_type_str(command_name),
             )
             classes.append(command_class)
         elif use_case.kind is UseCaseKind.QUERY:
             query_name = f"{use_case.name}Query"
-            query_attributes = self.attribute_mapper.to_parameter_specs(
+            query_attributes = self.attribute_mapper.to_variable_specs(
                 use_case.query.attributes,
                 default_field_flavor=FieldFlavor.DATACLASS,
             )
@@ -56,16 +57,16 @@ class UseCaseMapper:
                 decorators=["dataclass(frozen=True)"],
                 attributes=query_attributes,
             )
-            param = ParameterSpec.create(
+            param = VariableSpec.create(
                 name="query",
-                annotation=parse_type_str(query_name),
+                type_spec=parse_type_str(query_name),
             )
             classes.append(query_class)
         else:
             raise ValueError(f"Unknown use case kind: {use_case.kind}")
 
         result_name = f"{use_case.name}Result"
-        result_attributes = self.attribute_mapper.to_parameter_specs(
+        result_attributes = self.attribute_mapper.to_variable_specs(
             use_case.result.attributes,
             default_field_flavor=FieldFlavor.DATACLASS,
         )
@@ -76,7 +77,7 @@ class UseCaseMapper:
         )
         classes.append(result_class)
 
-        uc_attributes = self.attribute_mapper.to_parameter_specs(
+        uc_attributes = self.attribute_mapper.to_variable_specs(
             use_case.dependencies,
             default_field_flavor=FieldFlavor.DATACLASS,
         )

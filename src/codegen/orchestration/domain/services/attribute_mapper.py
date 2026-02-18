@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
-from codegen.python_gen.domain.value_objects.parameter_spec import (
-    ParameterSpec,
+from codegen.python_gen.domain.value_objects.variable_spec import (
+    VariableSpec,
 )
+from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
 from codegen.python_gen.domain.enums import FieldFlavor
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
 from codegen.orchestration.domain.services.type_system_converter import (
@@ -13,43 +14,84 @@ from codegen.orchestration.domain.services.type_system_converter import (
 class AttributeMapper:
     type_system_converter: TypeSystemConverter = field(default_factory=TypeSystemConverter)
 
-    def to_parameter_spec(
+    def to_variable_spec(
         self,
         attribute: AttributeSpec,
         default_field_flavor: FieldFlavor | None = None,
-    ) -> ParameterSpec:
+    ) -> VariableSpec:
         annotation = self.type_system_converter.to_python_annotation(attribute)
 
-        return ParameterSpec.create(
+        assignment = None
+        if default_field_flavor and attribute.optional:
+            # Create default=Field(default=None) or similar
+            # Logic: If optional, default is usually None.
+            # If using Pydantic Field, we want Field(default=None).
+            # If using generic field, field(default=None).
+            
+            func_name = "Field" if default_field_flavor == FieldFlavor.PYDANTIC else "field"
+            kwargs = {}
+            if annotation.name == "None": # Logic check if it is explicitly None? 
+                # Attribute optional=True means python type is Optional[T] or T | None.
+                # So default value should be None.
+                kwargs["default"] = AssignmentSpec.from_literal("None") # "None" string literal or None value?
+                # AssignmentSpec from_literal(None) -> value=None.
+                # But rendered? Constant(value=None).
+            else:
+                 kwargs["default"] = AssignmentSpec.from_literal(None)
+            
+            assignment = AssignmentSpec.from_call(
+                func_name=func_name,
+                kwargs=kwargs
+            )
+        elif attribute.optional:
+            # Just default=None without Field wrapper?
+            # Or if it's a parameter in function -> default=None.
+            # If it's a class attribute without Field -> standard default.
+            # AttributeMapper is used for both Dataclasses/Pydantic models (need Field) and function args (no Field).
+            # Use 'default_field_flavor' to decide.
+            if default_field_flavor:
+                func_name = "Field" if default_field_flavor == FieldFlavor.PYDANTIC else "field"
+                assignment = AssignmentSpec.from_call(
+                    func_name=func_name,
+                    kwargs={"default": AssignmentSpec.from_literal(None)}
+                )
+            else:
+                assignment = AssignmentSpec.from_literal(None)
+
+        return VariableSpec.create(
             name=attribute.name,
-            annotation=annotation,
-            optional=attribute.optional,
-            default_field_flavor=default_field_flavor,
+            type_spec=annotation,
+            assignment=assignment,
         )
 
-    def to_attribute(self, parameter_spec: ParameterSpec) -> AttributeSpec:
+    def to_attribute(self, variable_spec: VariableSpec) -> AttributeSpec:
         generic_type, container, is_optional, custom_type_string = (
-            self.type_system_converter.from_python_annotation(parameter_spec.annotation)
+            self.type_system_converter.from_python_annotation(variable_spec.type_spec)
         )
+        
+        # Check assignment to confirm optionality?
+        # If type says optional, fine.
+        # If assignment is 'None', it reinforces optional but type is source of truth?
+        # Keep existing logic relying on type annotation.
 
         return AttributeSpec(
-            name=parameter_spec.name,
+            name=variable_spec.name,
             type=generic_type,
             container=container,
             optional=is_optional,
             custom_type_string=custom_type_string,
         )
 
-    def to_parameter_specs(
+    def to_variable_specs(
         self,
         attributes: list[AttributeSpec],
         default_field_flavor: FieldFlavor | None = None,
-    ) -> list[ParameterSpec]:
+    ) -> list[VariableSpec]:
         return [
-            self.to_parameter_spec(attr, default_field_flavor) for attr in attributes
+            self.to_variable_spec(attr, default_field_flavor) for attr in attributes
         ]
 
     def to_attributes(
-        self, parameter_specs: list[ParameterSpec]
+        self, variable_specs: list[VariableSpec]
     ) -> list[AttributeSpec]:
-        return [self.to_attribute(spec) for spec in parameter_specs]
+        return [self.to_attribute(spec) for spec in variable_specs]

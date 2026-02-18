@@ -9,7 +9,7 @@ Description: Represents a class in a Python module.
 from pydantic.fields import Field
 
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
-from codegen.python_gen.domain.value_objects.parameter_spec import ParameterSpec
+from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.models import ValueObject
 
@@ -21,7 +21,7 @@ class ClassSpec(ValueObject):
     description: str = Field(default="")
     decorators: list[str] = Field(default_factory=list)
     inheritance: list[str] = Field(default_factory=list)
-    attributes: list[ParameterSpec] = Field(default_factory=list)
+    attributes: list[VariableSpec] = Field(default_factory=list)
     methods: list[FunctionSpec] = Field(default_factory=list)
 
     @classmethod
@@ -31,7 +31,7 @@ class ClassSpec(ValueObject):
         description: str = "",
         decorators: list[str] | None = None,
         inheritance: list[str] | None = None,
-        attributes: list[ParameterSpec] | None = None,
+        attributes: list[VariableSpec] | None = None,
         methods: list[FunctionSpec] | None = None,
     ) -> "ClassSpec":
         return cls(
@@ -71,7 +71,8 @@ class ClassSpec(ValueObject):
         types.update(self.inheritance)
         types.update(self.decorators)
         for attribute in self.attributes:
-            types.update(attribute.get_required_types())
+            if attribute.type_spec:
+                 types.update(attribute.type_spec.get_all_referenced_names())
         for method in self.methods:
             types.update(method.get_required_types())
         return types

@@ -12,7 +12,7 @@ from pydantic import Field
 
 from codegen.shared.models import ValueObject
 
-from codegen.python_gen.domain.value_objects.parameter_spec import ParameterSpec
+from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.python_gen.domain.value_objects.type_annotation_spec import (
     TypeAnnotationSpec,
 )
@@ -23,7 +23,7 @@ class FunctionSpec(ValueObject):
 
     name: SnakeString
     decorators: list[str] = Field(default_factory=list)
-    parameters: list[ParameterSpec] = Field(default_factory=list)
+    parameters: list[VariableSpec] = Field(default_factory=list)
     return_annotation: TypeAnnotationSpec
     suite: str = Field(default="")
     function_type: FunctionType = Field(default=FunctionType.FUNCTION)
@@ -35,7 +35,7 @@ class FunctionSpec(ValueObject):
         name: str,
         return_annotation: TypeAnnotationSpec,
         decorators: list[str] | None = None,
-        parameters: list[ParameterSpec] | None = None,
+        parameters: list[VariableSpec] | None = None,
         suite: str = "",
         function_type: FunctionType = FunctionType.FUNCTION,
         is_private: bool = False,
@@ -57,7 +57,14 @@ class FunctionSpec(ValueObject):
         types.update(self.return_annotation.get_all_referenced_names())
         types.update(self.decorators)
         for p in self.parameters:
-            types.update(p.annotation.get_all_referenced_names())
+            if p.type_spec:
+                types.update(p.type_spec.get_all_referenced_names())
+            # Check assignment for types? AssignmentSpec doesn't easily expose types yet.
+            # But VariableSpec.assignment might have references.
+            # For now, let's stick to what ParameterSpec did (annotation + default).
+            # VariableSpec has type_spec.
+            # AssignmentSpec needs to be checked if it introduces types (e.g. CallSpec).
+            # For this refactor, let's keep it simple and match existing behavior + minimal extension.
         return types
 
     def is_instance_method(self) -> bool:
