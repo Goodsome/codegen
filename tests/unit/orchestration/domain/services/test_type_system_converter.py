@@ -42,27 +42,36 @@ class TestTypeSystemConverter:
 
     def test_from_python_primitive(self, converter):
         spec = TypeAnnotationSpec(name="str")
-        generic_type, container, is_optional = converter.from_python_annotation(spec)
+        generic_type, container, is_optional, custom = converter.from_python_annotation(
+            spec
+        )
         assert generic_type == "string"
         assert container == ContainerType.NONE
         assert is_optional is False
+        assert custom is None
 
     def test_from_python_container_list(self, converter):
         spec = TypeAnnotationSpec(name="list", args=[TypeAnnotationSpec(name="int")])
-        generic_type, container, is_optional = converter.from_python_annotation(spec)
+        generic_type, container, is_optional, custom = converter.from_python_annotation(
+            spec
+        )
         assert generic_type == "integer"
         assert container == ContainerType.LIST
         assert is_optional is False
+        assert custom is None
 
     def test_from_python_optional(self, converter):
         spec = TypeAnnotationSpec(
             name="Union",
             args=[TypeAnnotationSpec(name="str"), TypeAnnotationSpec(name="None")],
         )
-        generic_type, container, is_optional = converter.from_python_annotation(spec)
+        generic_type, container, is_optional, custom = converter.from_python_annotation(
+            spec
+        )
         assert generic_type == "string"
         assert container == ContainerType.NONE
         assert is_optional is True
+        assert custom is None
 
     def test_from_python_optional_list(self, converter):
         spec = TypeAnnotationSpec(
@@ -72,23 +81,33 @@ class TestTypeSystemConverter:
                 TypeAnnotationSpec(name="None"),
             ],
         )
-        generic_type, container, is_optional = converter.from_python_annotation(spec)
+        generic_type, container, is_optional, custom = converter.from_python_annotation(
+            spec
+        )
         assert generic_type == "integer"
         assert container == ContainerType.LIST
         assert is_optional is True
+        assert custom is None
 
     def test_from_python_invalid_nested(self, converter):
         inner_list = TypeAnnotationSpec(
             name="list", args=[TypeAnnotationSpec(name="int")]
         )
         spec = TypeAnnotationSpec(name="list", args=[inner_list])
-        with pytest.raises(ValueError, match="Nested containers are not supported"):
-            converter.from_python_annotation(spec)
+        
+        # expect fallback to custom_type_string
+        generic_type, container, is_optional, custom = converter.from_python_annotation(spec)
+        assert generic_type == "Any"
+        assert container == ContainerType.NONE
+        assert custom == "list[list[int]]"
 
     def test_from_python_invalid_map_key(self, converter):
         spec = TypeAnnotationSpec(
             name="dict",
             args=[TypeAnnotationSpec(name="int"), TypeAnnotationSpec(name="str")],
         )
-        with pytest.raises(ValueError, match="dict key type must be 'str'"):
-            converter.from_python_annotation(spec)
+        # expect fallback to custom_type_string
+        generic_type, container, is_optional, custom = converter.from_python_annotation(spec)
+        assert generic_type == "Any"
+        assert container == ContainerType.NONE
+        assert custom == "dict[int, str]"
