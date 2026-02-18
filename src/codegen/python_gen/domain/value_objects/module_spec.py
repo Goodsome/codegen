@@ -14,6 +14,8 @@ from codegen.shared.models import ValueObject
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
+from codegen.python_gen.domain.value_objects.module_assignment_spec import ModuleAssignmentSpec
+from codegen.python_gen.domain.value_objects.raw_code_spec import RawCodeSpec
 
 
 class ModuleSpec(ValueObject):
@@ -24,6 +26,8 @@ class ModuleSpec(ValueObject):
     classes: list[ClassSpec] = Field(default_factory=list)
     imports: list[ImportFromSpec] = Field(default_factory=list)
     enums: list[PythonEnumSpec] = Field(default_factory=list)
+    assignments: list[ModuleAssignmentSpec] = Field(default_factory=list)
+    extra_code: list[RawCodeSpec] = Field(default_factory=list)
 
     @classmethod
     def create(
@@ -33,6 +37,8 @@ class ModuleSpec(ValueObject):
         classes: list[ClassSpec] | None = None,
         imports: list[ImportFromSpec] | None = None,
         enums: list[PythonEnumSpec] | None = None,
+        assignments: list[ModuleAssignmentSpec] | None = None,
+        extra_code: list[RawCodeSpec] | None = None,
     ) -> "ModuleSpec":
         return cls(
             name=SnakeString(name),
@@ -40,6 +46,8 @@ class ModuleSpec(ValueObject):
             classes=classes or [],
             imports=imports or [],
             enums=enums or [],
+            assignments=assignments or [],
+            extra_code=extra_code or [],
         )
 
     @classmethod
@@ -120,11 +128,30 @@ class ModuleSpec(ValueObject):
                 imports_bag[i.module].names.extend(i.names)
             else:
                 imports_bag[i.module] = i
+        
         imports = list(imports_bag.values())
+        
+        other_assignments = {a.name: a for a in other.assignments}
+        assignments: list[ModuleAssignmentSpec] = []
+        for a in self.assignments:
+             if a.name in other_assignments:
+                 # Overwrite or Keep?
+                 # Usually later wins or verify equality. 
+                 # For simplicity, let's say other overrides self if present.
+                 assignments.append(other_assignments.pop(a.name))
+             else:
+                 assignments.append(a)
+        # Add remaining
+        assignments.extend(other_assignments.values())
+        
+        extra_code = self.extra_code + other.extra_code
+
         return ModuleSpec.create(
             name=self.name,
             functions=functions,
             classes=classes,
             imports=imports,
             enums=self.enums,
+            assignments=assignments,
+            extra_code=extra_code,
         )

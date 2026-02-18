@@ -10,9 +10,11 @@ class ImportFromSpec(ValueObject):
     module: str
     names: list[ImportedName]
 
+    type_checking: bool = False
+
     @classmethod
     def create(
-        cls, module: str, names: list[str]
+        cls, module: str, names: list[str], type_checking: bool = False
     ) -> "ImportFromSpec":
         _names: list[ImportedName] = []
         for name in names:
@@ -20,6 +22,7 @@ class ImportFromSpec(ValueObject):
         return cls(
             module=module,
             names=_names,
+            type_checking=type_checking,
         )
 
 
@@ -58,9 +61,10 @@ class ImportFromSpec(ValueObject):
             return f"({names})"
 
     def merge(self, other: "ImportFromSpec") -> "ImportFromSpec":
-        if self.module != other.module:
+        if self.module != other.module or self.type_checking != other.type_checking:
             return self
         return self.__class__(
             module=self.module,
             names=self.names + other.names,
+            type_checking=self.type_checking,
         )
