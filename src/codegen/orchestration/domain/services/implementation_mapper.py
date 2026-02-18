@@ -76,7 +76,7 @@ class ImplementationMapper:
                     attributes=attributes,
                     private_methods=private_methods,
                 )
-        raise ValueError("No Implementation found in module")
+        raise ValueError(f"No Implementation found in module, {module_spec.name}")
 
     def _get_class_name(self, implementation: ImplementationSpec) -> str:
         if implementation.name:

@@ -48,6 +48,8 @@ class InfrastructureMapper:
     def to_infrastructure(self, package_spec: PackageSpec) -> InfrastructureSpec:
         implementations = []
         for kind_pkg in package_spec.sub_packages:
+            if kind_pkg.name == "utils":
+                continue
             for tech_model in kind_pkg.modules:
                 if tech_model.is_init_module():
                     continue
