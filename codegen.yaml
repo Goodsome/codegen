@@ -597,6 +597,41 @@ contexts:
           type: PackageSpec
         output:
           type: list[PortSpec]
+    - name: TypeSystemConverter
+      description: 通用类型系统与 Python 类型系统的双向转换器
+      operations:
+      - name: to_python_annotation
+        inputs:
+        - name: attribute
+          type: AttributeSpec
+        output:
+          type: TypeAnnotationSpec
+      - name: from_python_annotation
+        inputs:
+        - name: annotation
+          type: TypeAnnotationSpec
+        output:
+          type: tuple[str, ContainerType, bool]
+      - name: _apply_container
+        inputs:
+        - name: core_type
+          type: str
+        - name: container
+          type: ContainerType
+        output:
+          type: TypeAnnotationSpec
+      - name: _extract_optional
+        inputs:
+        - name: annotation
+          type: TypeAnnotationSpec
+        output:
+          type: tuple[bool, TypeAnnotationSpec]
+      - name: _extract_container_and_type
+        inputs:
+        - name: annotation
+          type: TypeAnnotationSpec
+        output:
+          type: tuple[ContainerType, str]
     - name: UseCaseMapper
       dependencies:
       - name: attribute_mapper
@@ -746,6 +781,39 @@ contexts:
       - name: DATACLASS
         value: dataclass
     value_objects:
+    - name: ModuleAssignmentSpec
+      description: Represents a top-level assignment in a module.
+      attributes:
+      - name: name
+        type: str
+      - name: value
+        type: str
+      - name: type_annotation
+        type: Optional[str]
+        optional: true
+      behaviors:
+      - name: create
+        inputs:
+        - name: name
+          type: str
+        - name: value
+          type: str
+        - name: type_annotation
+          type: str | None
+        output:
+          type: ModuleAssignmentSpec
+    - name: RawCodeSpec
+      description: Represents a block of raw source code.
+      attributes:
+      - name: code
+        type: str
+      behaviors:
+      - name: create
+        inputs:
+        - name: code
+          type: str
+        output:
+          type: RawCodeSpec
     - name: ClassSpec
       description: Represents a class in a Python module.
       attributes:
@@ -977,6 +1045,12 @@ contexts:
       - name: enums
         type: list[PythonEnumSpec]
         optional: true
+      - name: assignments
+        type: list[ModuleAssignmentSpec]
+        optional: true
+      - name: extra_code
+        type: list[RawCodeSpec]
+        optional: true
       behaviors:
       - name: create
         inputs:
@@ -990,6 +1064,10 @@ contexts:
           type: list[ImportFromSpec] | None
         - name: enums
           type: list[PythonEnumSpec] | None
+        - name: assignments
+          type: list[ModuleAssignmentSpec] | None
+        - name: extra_code
+          type: list[RawCodeSpec] | None
         output:
           type: ModuleSpec
       - name: create_shared_models
@@ -1121,6 +1199,9 @@ contexts:
         type: str
       - name: names
         type: list[ImportedName]
+      - name: type_checking
+        type: bool
+        optional: true
       behaviors:
       - name: create
         inputs:
@@ -1128,6 +1209,8 @@ contexts:
           type: str
         - name: names
           type: list[str]
+        - name: type_checking
+          type: bool
         output:
           type: ImportFromSpec
       - name: has_name
