@@ -70,6 +70,7 @@ graph LR
     
 2.  **Explicit Wiring (Custom Components)**:
     *   对于非标准组件，必须在 `codegen.yaml` 的 `ContainerSpec.providers` 中显式定义。
+    *  **Update**: 当前阶段不实现 `providers` 字段
 
 ### 4.2 Mapping Logic
 **Source**: `DomainDefinition.Context` & `ContainerSpec`
@@ -90,9 +91,11 @@ graph LR
 1.  **Complex Field Initializers**:
     *   目前 `PythonGen` 可能仅支持简单的默认值。
     *   **Requirement**: 支持 `Expression` 对象作为默认值，以便生成 `providers.Factory(...)` 或 `Field(default_factory=...)`。
+    *   **Update**: 已完成
 2.  **Inner Class / Meta Config Support**:
     *   Pydantic 2.0 推荐使用 `model_config = SettingsConfigDict(...)` (Class Attribute) 而非 Inner Class。
     *   **Requirement**: 确保 `PythonGen` 能生成复杂的 Class Attribute 赋值。
+    *   **Update**: 已完成
 
 ### 5.2 Codegen YAML Data Population
 **Task**: Populate Dependencies in Codegen YAML
@@ -101,16 +104,13 @@ graph LR
 1.  **Populate Service Dependencies**:
     *   Schema 中 `ServiceSpec` 已包含 `dependencies` 字段。
     *   **Action**: 必须检查 `codegen.yaml` 中的 Service 定义，确保 `dependencies` 列表完整，否则生成器无法生成构造函数参数注入。
-
-2.  **ContainerSpec Providers Definitions**:
-    *   Schema 中 `ContainerSpec` 的 `providers` 字段目前定义为任意对象列表 (`items: {}`)。
-    *   **Action**: 需要在 `codegen.yaml` 中明确 `providers` 的结构约定（如 `name`, `class`, `dependencies`），以便 Mapper 能正确解析。
+    *   **Update**: 在`ContainerSpec`中 通过bindings 确定使用port的implement，如果未配置 bindings 则默认取第一个implement
 
 ## 6. Migration Plan
 
 1.  **Phase 1 (Data Population)**:
     *   [Task T1] 审查并补全 `codegen.yaml` 中所有 Service/UseCase 的 `dependencies` 字段。
-    *   [Task T2] 在 `codegen.yaml` 中定义 `Bootstrap` 和 `Context` 的 `container.providers` 内容。
+    *   [Task T2] 在 `codegen.yaml` 中定义 `Bootstrap` 和 `Context` 的 `container.bindings` 内容。
 
 2.  **Phase 2 (PythonGen Update)**:
     *   [Task T3] 升级 `PythonGen` 以支持 Expression 渲染和 Pydantic 2.0 风格配置。
