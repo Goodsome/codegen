@@ -11,16 +11,19 @@ from codegen.domain_definition.domain.value_objects.bounded_context import (
 from codegen.orchestration.domain.services.infrastructure_mapper import (
     InfrastructureMapper,
 )
+from codegen.orchestration.domain.services.config_mapper import ConfigMapper
+from codegen.orchestration.domain.services.container_mapper import ContainerMapper
 
 
 @dataclass
 class ContextMapper:
-
     domain_mapper: DomainMapper = field(default_factory=DomainMapper)
     application_mapper: ApplicationMapper = field(default_factory=ApplicationMapper)
     infrastructure_mapper: InfrastructureMapper = field(
         default_factory=InfrastructureMapper
     )
+    config_mapper: ConfigMapper = field(default_factory=ConfigMapper)
+    container_mapper: ContainerMapper = field(default_factory=ContainerMapper)
 
     def to_package_spec(self, context: BoundedContext) -> PackageSpec:
         domain_pkg = self.domain_mapper.to_package_spec(context.domain)
@@ -32,10 +35,26 @@ class ContextMapper:
             infrastructure=context.infrastructure,
             port_finder=context.get_port_spec,
         )
+
+        modules: list[ModuleSpec] = []
+
+        # Add shared models for Shared context
         if context.name == "Shared":
-            modules = [ModuleSpec.create_shared_models()]
-        else:
-            modules = []
+            modules.append(ModuleSpec.create_shared_models())
+
+        # Generate config module if context has config
+        if context.config:
+            config_module = self.config_mapper.to_module_spec(
+                context.config, class_name=f"{context.name}Settings"
+            )
+            modules.append(config_module)
+
+        # Generate container module if context has container
+        if context.container:
+            container_module = self.container_mapper.to_module_spec(
+                context.container, context=context, class_name="Container"
+            )
+            modules.append(container_module)
 
         return PackageSpec.create(
             name=context.name,
