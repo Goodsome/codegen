@@ -3,7 +3,7 @@ from codegen.python_gen.domain.value_objects.variable_spec import (
     VariableSpec,
 )
 from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
-from codegen.python_gen.domain.enums import FieldFlavor
+from codegen.python_gen.domain.enums import FieldFlavor, AssignmentFlavor
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
 from codegen.orchestration.domain.services.type_system_converter import (
     TypeSystemConverter,
@@ -22,7 +22,20 @@ class AttributeMapper:
         annotation = self.type_system_converter.to_python_annotation(attribute)
 
         assignment = None
-        if default_field_flavor and attribute.optional:
+        if attribute.default is not None:
+            # Explicit default value takes precedence
+            assignment = AssignmentSpec.from_code(attribute.default)
+            
+            # If default_field_flavor is set and optional, wrap it?
+            # If we have an explicit default, we generally trust it.
+            # But if it is a Pydantic model, we might need Field(default=...).
+            if default_field_flavor:
+                 func_name = "Field" if default_field_flavor == FieldFlavor.PYDANTIC else "field"
+                 assignment = AssignmentSpec.from_call(
+                    func_name=func_name,
+                    kwargs={"default": assignment}
+                 )
+        elif default_field_flavor and attribute.optional:
             # Create default=Field(default=None) or similar
             # Logic: If optional, default is usually None.
             # If using Pydantic Field, we want Field(default=None).
@@ -69,6 +82,30 @@ class AttributeMapper:
             self.type_system_converter.from_python_annotation(variable_spec.type_spec)
         )
         
+        default_value = None
+        if variable_spec.assignment:
+             if variable_spec.assignment.code:
+                 default_value = variable_spec.assignment.code
+             elif variable_spec.assignment.literal:
+                 default_value = repr(variable_spec.assignment.literal.value)
+        
+        if variable_spec.assignment and variable_spec.assignment.flavor == AssignmentFlavor.CALL:
+             call = variable_spec.assignment.call
+             if call and call.callee in ("Field", "field"):
+                 if "default" in call.kwargs:
+                     default_arg = call.kwargs["default"]
+                     if default_arg.code:
+                         default_value = default_arg.code
+                     elif default_arg.literal:
+                         default_value = repr(default_arg.literal.value)
+
+                     if default_arg.flavor == AssignmentFlavor.LITERAL and default_arg.literal.value is None:
+                         is_optional = True
+                         default_value = None
+                 elif "default_factory" in call.kwargs:
+                     is_optional = True
+                     default_value = None
+
         # Check assignment to confirm optionality?
         # If type says optional, fine.
         # If assignment is 'None', it reinforces optional but type is source of truth?
@@ -79,6 +116,7 @@ class AttributeMapper:
             type=generic_type,
             container=container,
             optional=is_optional,
+            default=default_value,
             custom_type_string=custom_type_string,
         )
 

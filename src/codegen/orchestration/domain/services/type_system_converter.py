@@ -61,9 +61,12 @@ class TypeSystemConverter:
         return annotation
 
     def from_python_annotation(
-        self, annotation: TypeAnnotationSpec
+        self, annotation: TypeAnnotationSpec | None
     ) -> tuple[str, ContainerType, bool, str | None]:
         """从 TypeAnnotationSpec 提取 container、core_type 和 optional"""
+        if annotation is None:
+            return "Any", ContainerType.NONE, False, None
+
         # 步骤 1: 检查可选类型（Union 且包含 None）
         is_optional, core_annotation = self._extract_optional(annotation)
 

@@ -6,6 +6,8 @@ from codegen.python_gen.domain.value_objects.type_annotation_spec import (
     TypeAnnotationSpec,
 )
 from codegen.shared.domain.enums import ContainerType
+from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
+from codegen.shared.domain.value_objects.snake_string import SnakeString
 
 
 class TestAttributeMapperForward:
@@ -269,7 +271,38 @@ class TestAttributeMapperReverse:
         attr = mapper.to_attribute(param)
         assert attr.type == "integer"
         assert attr.container == ContainerType.LIST
+        assert attr.container == ContainerType.LIST
         assert attr.optional is True
+
+    def test_reverse_optional_field_with_default_none(self, mapper):
+        """测试 Field(default=None) 应该被识别为 optional=True"""
+        spec = TypeAnnotationSpec(name="Any")
+        # value: Any = Field(default=None)
+        param = VariableSpec(
+            name=SnakeString("value"),
+            type_spec=spec,
+            assignment=AssignmentSpec.from_call(
+                func_name="Field",
+                kwargs={"default": AssignmentSpec.from_literal(None)}
+            )
+        )
+        attr = mapper.to_attribute(param)
+        assert attr.optional is True
+
+    def test_reverse_optional_field_with_default_factory(self, mapper):
+         """测试 Field(default_factory=str) 应该被识别为 optional=True"""
+         spec = TypeAnnotationSpec(name="str")
+         # description: str = Field(default_factory=str)
+         param = VariableSpec(
+             name=SnakeString("description"),
+             type_spec=spec,
+             assignment=AssignmentSpec.from_call(
+                 func_name="Field",
+                 kwargs={"default_factory": AssignmentSpec.from_literal("str")}
+             )
+         )
+         attr = mapper.to_attribute(param)
+         assert attr.optional is True
 
     # ============ 错误场景反向转换 ============
 

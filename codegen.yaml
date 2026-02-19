@@ -125,6 +125,7 @@ contexts:
           type: string
         - name: overwrite
           type: boolean
+          default: 'False'
         output:
           type: None
       - name: list_directory_recursively
@@ -193,17 +194,21 @@ contexts:
       description: Top-level result object returned by generation use cases.
       attributes:
       - name: model_config
-        type: any
+        type: Any
+        default: ConfigDict(frozen=False)
       - name: status
         type: BuildStatus
       - name: files
         type: FileResult
         container: list
+        default: Field(default_factory=list)
       - name: stats
         type: BuildStats
+        default: Field(default_factory=BuildStats)
       - name: messages
         type: string
         container: list
+        default: Field(default_factory=list)
       behaviors:
       - name: add_file_result
         inputs:
@@ -220,25 +225,34 @@ contexts:
         type: FileStatus
       - name: message
         type: string
+        default: Field(default_factory=str)
       - name: diff
         type: string
+        default: Field(default_factory=str)
     - name: BuildStats
       description: Aggregated statistics for a build operation.
       attributes:
       - name: model_config
-        type: any
+        type: Any
+        default: ConfigDict(frozen=False)
       - name: total_files
         type: integer
+        default: '0'
       - name: created_count
         type: integer
+        default: '0'
       - name: updated_count
         type: integer
+        default: '0'
       - name: skipped_count
         type: integer
+        default: '0'
       - name: failed_count
         type: integer
+        default: '0'
       - name: duration_ms
         type: integer
+        default: '0'
       behaviors:
       - name: add_result
         inputs:
@@ -251,8 +265,10 @@ contexts:
       dependencies:
       - name: attribute_mapper
         type: AttributeMapper
+        default: field(default_factory=AttributeMapper)
       - name: method_mapper
         type: MethodMapper
+        default: field(default_factory=MethodMapper)
       operations:
       - name: to_module_spec
         inputs:
@@ -307,8 +323,10 @@ contexts:
       dependencies:
       - name: attribute_mapper
         type: AttributeMapper
+        default: field(default_factory=AttributeMapper)
       - name: method_mapper
         type: MethodMapper
+        default: field(default_factory=MethodMapper)
       operations:
       - name: to_module_spec
         inputs:
@@ -339,8 +357,10 @@ contexts:
       dependencies:
       - name: attribute_mapper
         type: AttributeMapper
+        default: field(default_factory=AttributeMapper)
       - name: method_mapper
         type: MethodMapper
+        default: field(default_factory=MethodMapper)
       operations:
       - name: to_module_spec
         inputs:
@@ -371,16 +391,22 @@ contexts:
       dependencies:
       - name: aggregate_mapper
         type: AggregateMapper
+        default: field(default_factory=AggregateMapper)
       - name: entity_mapper
         type: EntityMapper
+        default: field(default_factory=EntityMapper)
       - name: value_object_mapper
         type: ValueObjectMapper
+        default: field(default_factory=ValueObjectMapper)
       - name: service_mapper
         type: ServiceMapper
+        default: field(default_factory=ServiceMapper)
       - name: port_mapper
         type: PortMapper
+        default: field(default_factory=PortMapper)
       - name: enum_mapper
         type: EnumMapper
+        default: field(default_factory=EnumMapper)
       operations:
       - name: to_package_spec
         inputs:
@@ -398,10 +424,13 @@ contexts:
       dependencies:
       - name: domain_mapper
         type: DomainMapper
+        default: field(default_factory=DomainMapper)
       - name: application_mapper
         type: ApplicationMapper
+        default: field(default_factory=ApplicationMapper)
       - name: infrastructure_mapper
         type: InfrastructureMapper
+        default: field(default_factory=InfrastructureMapper)
       operations:
       - name: to_package_spec
         inputs:
@@ -428,6 +457,7 @@ contexts:
       dependencies:
       - name: implementation_mapper
         type: ImplementationMapper
+        default: field(default_factory=ImplementationMapper)
       operations:
       - name: to_package_spec
         inputs:
@@ -448,8 +478,10 @@ contexts:
       dependencies:
       - name: attribute_mapper
         type: AttributeMapper
+        default: field(default_factory=AttributeMapper)
       - name: method_mapper
         type: MethodMapper
+        default: field(default_factory=MethodMapper)
       operations:
       - name: to_module_spec
         inputs:
@@ -480,6 +512,7 @@ contexts:
       dependencies:
       - name: context_mapper
         type: ContextMapper
+        default: field(default_factory=ContextMapper)
       operations:
       - name: to_package_spec
         inputs:
@@ -497,23 +530,25 @@ contexts:
       dependencies:
       - name: type_system_converter
         type: TypeSystemConverter
+        default: field(default_factory=TypeSystemConverter)
       operations:
-      - name: to_parameter_spec
+      - name: to_variable_spec
         inputs:
         - name: attribute
           type: AttributeSpec
         - name: default_field_flavor
           type: FieldFlavor
           optional: true
+          default: None
         output:
-          type: ParameterSpec
+          type: VariableSpec
       - name: to_attribute
         inputs:
-        - name: parameter_spec
-          type: ParameterSpec
+        - name: variable_spec
+          type: VariableSpec
         output:
           type: AttributeSpec
-      - name: to_parameter_specs
+      - name: to_variable_specs
         inputs:
         - name: attributes
           type: AttributeSpec
@@ -521,12 +556,13 @@ contexts:
         - name: default_field_flavor
           type: FieldFlavor
           optional: true
+          default: None
         output:
-          type: list[ParameterSpec]
+          type: list[VariableSpec]
       - name: to_attributes
         inputs:
-        - name: parameter_specs
-          type: ParameterSpec
+        - name: variable_specs
+          type: VariableSpec
           container: list
         output:
           type: list[AttributeSpec]
@@ -534,6 +570,7 @@ contexts:
       dependencies:
       - name: attribute_mapper
         type: AttributeMapper
+        default: field(default_factory=AttributeMapper)
       operations:
       - name: to_function_spec
         inputs:
@@ -541,10 +578,13 @@ contexts:
           type: MethodSpec
         - name: function_type
           type: FunctionType
+          default: FunctionType.FUNCTION
         - name: is_abstract
           type: boolean
+          default: 'False'
         - name: is_private
           type: boolean
+          default: 'False'
         output:
           type: FunctionSpec
       - name: to_method
@@ -557,8 +597,10 @@ contexts:
       dependencies:
       - name: attribute_mapper
         type: AttributeMapper
+        default: field(default_factory=AttributeMapper)
       - name: method_mapper
         type: MethodMapper
+        default: field(default_factory=MethodMapper)
       operations:
       - name: to_module_spec
         inputs:
@@ -598,6 +640,7 @@ contexts:
         inputs:
         - name: annotation
           type: TypeAnnotationSpec
+          optional: true
         output:
           type: tuple[str, ContainerType, bool, str | None]
       - name: _apply_container
@@ -630,8 +673,10 @@ contexts:
       dependencies:
       - name: attribute_mapper
         type: AttributeMapper
+        default: field(default_factory=AttributeMapper)
       - name: method_mapper
         type: MethodMapper
+        default: field(default_factory=MethodMapper)
       operations:
       - name: to_module_spec
         inputs:
@@ -649,8 +694,10 @@ contexts:
       dependencies:
       - name: use_case_mapper
         type: UseCaseMapper
+        default: field(default_factory=UseCaseMapper)
       - name: port_mapper
         type: PortMapper
+        default: field(default_factory=PortMapper)
       operations:
       - name: to_package_spec
         inputs:
@@ -668,8 +715,10 @@ contexts:
       dependencies:
       - name: attribute_mapper
         type: AttributeMapper
+        default: field(default_factory=AttributeMapper)
       - name: method_mapper
         type: MethodMapper
+        default: field(default_factory=MethodMapper)
       operations:
       - name: to_module_spec
         inputs:
@@ -707,6 +756,7 @@ contexts:
         type: GeneratePackage
       - name: mapper
         type: BlueprintMapper
+        default: field(default_factory=BlueprintMapper)
       command:
         attributes:
         - name: overwrite
@@ -716,6 +766,7 @@ contexts:
           optional: true
         - name: root_path
           type: string
+          default: ''''''
       result:
         attributes:
         - name: result
@@ -729,6 +780,7 @@ contexts:
         type: BlueprintStorage
       - name: mapper
         type: BlueprintMapper
+        default: field(default_factory=BlueprintMapper)
       command:
         attributes:
         - name: path
@@ -747,10 +799,18 @@ contexts:
         value: none
       - name: LITERAL
         value: literal
-      - name: PYDANTIC_FIELD
-        value: pydantic_field
-      - name: DATACLASS_FIELD
-        value: dataclass_field
+      - name: SYMBOL
+        value: symbol
+      - name: CALL
+        value: call
+      - name: DICT
+        value: dict
+      - name: LIST
+        value: list
+      - name: RAW_CODE
+        value: raw_code
+      - name: CODE
+        value: code
     - name: FunctionType
       members:
       - name: CLASS_METHOD
@@ -768,34 +828,6 @@ contexts:
       - name: DATACLASS
         value: dataclass
     value_objects:
-    - name: CallSpec
-      description: 函数调用或类实例化 (对应 AST Call节点)。
-      attributes:
-      - name: callee
-        type: string 
-        description: 被调用的对象名 (e.g., "func", "MyClass", "os.getenv")
-        
-      - name: args
-        type: AssignmentSpec 
-        container: list
-        description: 位置参数列表。注意这里递归引用了 AssignmentSpec，因为参数本身也可以是表达式。
-        
-      - name: kwargs
-        type: AssignmentSpec
-        container: map
-        description: 关键字参数字典。
-    - name: LiteralSpec
-      description: 基础类型的字面量值 (对应 AST Constant节点)。
-      attributes:
-      - name: value
-        type: any 
-        description: Python 原生值 (int, str, bool, None, etc.)
-    - name: ReferenceSpec
-      description: 引用一个已存在的变量或符号 (对应 AST Name节点)。
-      attributes:
-      - name: name
-        type: string
-        description: 变量名 (e.g., "my_var", "os.path")
     - name: ModuleAssignmentSpec
       description: Represents a top-level assignment in a module.
       attributes:
@@ -806,6 +838,7 @@ contexts:
       - name: type_annotation
         type: string
         optional: true
+        default: None
       behaviors:
       - name: create
         inputs:
@@ -816,6 +849,7 @@ contexts:
         - name: type_annotation
           type: string
           optional: true
+          default: None
         output:
           type: ModuleAssignmentSpec
     - name: RawCodeSpec
@@ -837,18 +871,23 @@ contexts:
         type: PascalString
       - name: description
         type: string
+        default: Field(default='')
       - name: decorators
         type: string
         container: list
+        default: Field(default_factory=list)
       - name: inheritance
         type: string
         container: list
+        default: Field(default_factory=list)
       - name: attributes
-        type: ParameterSpec
+        type: VariableSpec
         container: list
+        default: Field(default_factory=list)
       - name: methods
         type: FunctionSpec
         container: list
+        default: Field(default_factory=list)
       behaviors:
       - name: create
         inputs:
@@ -856,22 +895,27 @@ contexts:
           type: string
         - name: description
           type: string
+          default: ''''''
         - name: decorators
           type: string
           container: list
           optional: true
+          default: None
         - name: inheritance
           type: string
           container: list
           optional: true
+          default: None
         - name: attributes
-          type: ParameterSpec
+          type: VariableSpec
           container: list
           optional: true
+          default: None
         - name: methods
           type: FunctionSpec
           container: list
           optional: true
+          default: None
         output:
           type: ClassSpec
       - name: create_value_object
@@ -900,17 +944,22 @@ contexts:
       - name: decorators
         type: string
         container: list
+        default: Field(default_factory=list)
       - name: parameters
-        type: ParameterSpec
+        type: VariableSpec
         container: list
+        default: Field(default_factory=list)
       - name: return_annotation
         type: TypeAnnotationSpec
       - name: suite
         type: string
+        default: Field(default='')
       - name: function_type
         type: FunctionType
+        default: Field(default=FunctionType.FUNCTION)
       - name: is_private
         type: boolean
+        default: 'False'
       behaviors:
       - name: create
         inputs:
@@ -922,16 +971,21 @@ contexts:
           type: string
           container: list
           optional: true
+          default: None
         - name: parameters
-          type: ParameterSpec
+          type: VariableSpec
           container: list
           optional: true
+          default: None
         - name: suite
           type: string
+          default: ''''''
         - name: function_type
           type: FunctionType
+          default: FunctionType.FUNCTION
         - name: is_private
           type: boolean
+          default: 'False'
         output:
           type: Any
       - name: get_required_types
@@ -949,39 +1003,6 @@ contexts:
       - name: is_init_method
         output:
           type: bool
-    - name: ParameterSpec
-      description: Represents a parameter in a Python function.
-      attributes:
-      - name: name
-        type: SnakeString
-      - name: annotation
-        type: TypeAnnotationSpec
-      - name: default
-        type: FieldSpec
-        optional: true
-      - name: optional
-        type: boolean
-      behaviors:
-      - name: create
-        inputs:
-        - name: name
-          type: string
-        - name: annotation
-          type: Any
-          custom_type_string: Union[str, TypeAnnotationSpec]
-        - name: optional
-          type: boolean
-        - name: default_field_flavor
-          type: FieldFlavor
-          optional: true
-        output:
-          type: Any
-      - name: get_required_types
-        output:
-          type: set[str]
-      - name: render_default
-        output:
-          type: str
     - name: TypeAnnotationSpec
       description: Represents a type annotation.
       attributes:
@@ -990,6 +1011,7 @@ contexts:
       - name: args
         type: TypeAnnotationSpec
         container: list
+        default: Field(default_factory=list)
       behaviors:
       - name: render
         output:
@@ -1000,6 +1022,16 @@ contexts:
       - name: is_nullable
         output:
           type: bool
+    - name: ReferenceSpec
+      description: 引用一个已存在的变量或符号 (对应 AST Name节点)。
+      attributes:
+      - name: name
+        type: string
+    - name: LiteralSpec
+      description: 基础类型的字面量值 (对应 AST Constant节点)。
+      attributes:
+      - name: value
+        type: any
     - name: PythonEnumMemberSpec
       description: Represents an enum member in a Python module.
       attributes:
@@ -1007,9 +1039,11 @@ contexts:
         type: MacroString
       - name: value
         type: Any
+        default: Field(default=None)
         custom_type_string: str | int | None
       - name: description
         type: string
+        default: Field(default_factory=str)
       behaviors:
       - name: create
         inputs:
@@ -1017,9 +1051,11 @@ contexts:
           type: string
         - name: value
           type: Any
+          default: None
           custom_type_string: str | int | None
         - name: description
           type: string
+          default: ''''''
         output:
           type: PythonEnumMemberSpec
     - name: AssignmentSpec
@@ -1030,37 +1066,69 @@ contexts:
       - name: literal
         type: LiteralSpec
         optional: true
-        
+        default: Field(default=None)
       - name: reference
         type: ReferenceSpec
         optional: true
-        
+        default: Field(default=None)
       - name: call
         type: CallSpec
         optional: true
-        
+        default: Field(default=None)
       - name: list_items
         type: AssignmentSpec
         container: list
         optional: true
-        
+        default: Field(default=None)
       - name: dict_items
         type: AssignmentSpec
         container: map
         optional: true
-        
+        default: Field(default=None)
       - name: code
         type: string
-        optional: true # 对应 RAW_CODE
-        
+        optional: true
+        default: Field(default=None)
       behaviors:
-      - name: factory
+      - name: from_code
+        inputs:
+        - name: code
+          type: string
+        output:
+          type: AssignmentSpec
+      - name: from_literal
         inputs:
         - name: value
           type: any
         output:
           type: AssignmentSpec
-        description: 智能工厂方法，根据输入类型自动创建对应的 Spec (int->Literal, CallSpec->Call, etc.)
+      - name: from_call
+        inputs:
+        - name: func_name
+          type: string
+        - name: args
+          type: AssignmentSpec
+          container: list
+          optional: true
+          default: None
+        - name: kwargs
+          type: AssignmentSpec
+          container: map
+          optional: true
+          default: None
+        output:
+          type: AssignmentSpec
+    - name: CallSpec
+      description: 函数调用或类实例化 (对应 AST Call节点)。
+      attributes:
+      - name: callee
+        type: string
+      - name: args
+        type: AssignmentSpec
+        container: list
+      - name: kwargs
+        type: AssignmentSpec
+        container: map
     - name: TypeSpec
       description: 描述变量的类型注解结构 (LHS)。 对应 AST 中的 annotation 节点。
       attributes:
@@ -1078,6 +1146,7 @@ contexts:
       - name: alias
         type: string
         optional: true
+        default: None
       behaviors:
       - name: render
         output:
@@ -1090,21 +1159,27 @@ contexts:
       - name: functions
         type: FunctionSpec
         container: list
+        default: Field(default_factory=list)
       - name: classes
         type: ClassSpec
         container: list
+        default: Field(default_factory=list)
       - name: imports
         type: ImportFromSpec
         container: list
+        default: Field(default_factory=list)
       - name: enums
         type: PythonEnumSpec
         container: list
+        default: Field(default_factory=list)
       - name: assignments
         type: ModuleAssignmentSpec
         container: list
+        default: Field(default_factory=list)
       - name: extra_code
         type: RawCodeSpec
         container: list
+        default: Field(default_factory=list)
       behaviors:
       - name: create
         inputs:
@@ -1114,26 +1189,32 @@ contexts:
           type: FunctionSpec
           container: list
           optional: true
+          default: None
         - name: classes
           type: ClassSpec
           container: list
           optional: true
+          default: None
         - name: imports
           type: ImportFromSpec
           container: list
           optional: true
+          default: None
         - name: enums
           type: PythonEnumSpec
           container: list
           optional: true
+          default: None
         - name: assignments
           type: ModuleAssignmentSpec
           container: list
           optional: true
+          default: None
         - name: extra_code
           type: RawCodeSpec
           container: list
           optional: true
+          default: None
         output:
           type: ModuleSpec
       - name: create_shared_models
@@ -1192,9 +1273,11 @@ contexts:
       - name: modules
         type: ModuleSpec
         container: list
+        default: Field(default_factory=list)
       - name: sub_packages
         type: PackageSpec
         container: list
+        default: Field(default_factory=list)
       behaviors:
       - name: create
         inputs:
@@ -1204,10 +1287,12 @@ contexts:
           type: ModuleSpec
           container: list
           optional: true
+          default: None
         - name: sub_packages
           type: PackageSpec
           container: list
           optional: true
+          default: None
         output:
           type: Any
       - name: is_empty
@@ -1217,6 +1302,7 @@ contexts:
         inputs:
         - name: root_path
           type: string
+          default: ''''''
         output:
           type: dict[str, str]
       - name: _build_symbol_table
@@ -1237,29 +1323,6 @@ contexts:
           type: PackageSpec
         output:
           type: PackageSpec
-    - name: FieldSpec
-      attributes:
-      - name: default
-        type: string
-      - name: default_factory
-        type: string
-      - name: flavor
-        type: FieldFlavor
-      behaviors:
-      - name: create_from_annotation
-        inputs:
-        - name: annotation
-          type: TypeAnnotationSpec
-        - name: flavor
-          type: FieldFlavor
-        output:
-          type: FieldSpec
-      - name: func_name
-        output:
-          type: Any
-      - name: render
-        output:
-          type: str
     - name: ImportFromSpec
       description: Represents an import statement from another module.
       attributes:
@@ -1270,6 +1333,7 @@ contexts:
         container: list
       - name: type_checking
         type: boolean
+        default: 'False'
       behaviors:
       - name: create
         inputs:
@@ -1280,6 +1344,7 @@ contexts:
           container: list
         - name: type_checking
           type: boolean
+          default: 'False'
         output:
           type: ImportFromSpec
       - name: has_name
@@ -1315,29 +1380,27 @@ contexts:
       - name: name
         type: SnakeString
       - name: type_spec
-        type: TypeSpec
+        type: TypeAnnotationSpec
+        optional: true
+        default: Field(default=None)
       - name: assignment
         type: AssignmentSpec
+        optional: true
+        default: Field(default=None)
       behaviors:
       - name: create
         inputs:
         - name: name
           type: string
         - name: type_spec
-          type: TypeSpec
+          type: TypeAnnotationSpec
+          optional: true
         - name: assignment
           type: AssignmentSpec
+          optional: true
+          default: None
         output:
           type: VariableSpec
-      - name: from_ast
-        inputs:
-        - name: node
-          type: ast.AnnAssign
-        output:
-          type: VariableSpec
-      - name: to_ast
-        output:
-          type: ast.AnnAssign
     - name: PythonEnumSpec
       description: Represents an enum in a Python module.
       attributes:
@@ -1345,14 +1408,18 @@ contexts:
         type: PascalString
       - name: description
         type: string
+        default: Field(default_factory=str)
       - name: decorators
         type: string
         container: list
+        default: Field(default_factory=list)
       - name: base_class
         type: string
+        default: Field(default_factory=str)
       - name: members
         type: PythonEnumMemberSpec
         container: list
+        default: Field(default_factory=list)
       behaviors:
       - name: create
         inputs:
@@ -1360,16 +1427,20 @@ contexts:
           type: string
         - name: description
           type: string
+          default: ''''''
         - name: decorators
           type: string
           container: list
           optional: true
+          default: None
         - name: base_class
           type: string
+          default: '''Enum'''
         - name: members
           type: PythonEnumMemberSpec
           container: list
           optional: true
+          default: None
         output:
           type: PythonEnumSpec
     services:
@@ -1385,6 +1456,7 @@ contexts:
           type: PackageSpec
         - name: root_path
           type: string
+          default: ''''''
         output:
           type: DependencyResolver
       - name: resolve_module
@@ -1425,6 +1497,7 @@ contexts:
           optional: true
         - name: root_path
           type: string
+          default: ''''''
         output:
           type: dict[Path, str]
       - name: _collect_files_recursively
@@ -1514,8 +1587,10 @@ contexts:
         - name: node
           type: string
           optional: true
+          default: field(default=None)
         - name: root_path
           type: string
+          default: field(default='')
       result:
         attributes:
         - name: result
@@ -1573,14 +1648,19 @@ contexts:
       - name: dependencies
         type: AttributeSpec
         container: list
+        default: Field(default_factory=list)
       - name: description
         type: string
+        default: Field(default_factory=str)
       - name: command
         type: DataContractSpec
+        default: Field(default_factory=DataContractSpec)
       - name: query
         type: DataContractSpec
+        default: Field(default_factory=DataContractSpec)
       - name: result
         type: DataContractSpec
+        default: Field(default_factory=DataContractSpec)
       behaviors:
       - name: create
         inputs:
@@ -1593,17 +1673,22 @@ contexts:
           type: AttributeSpec
           container: list
           optional: true
+          default: None
         - name: description
           type: string
+          default: ''''''
         - name: command
           type: DataContractSpec
           optional: true
+          default: None
         - name: query
           type: DataContractSpec
           optional: true
+          default: None
         - name: result
           type: DataContractSpec
           optional: true
+          default: None
         output:
           type: Any
     - name: ApplicationSpec
@@ -1612,12 +1697,15 @@ contexts:
       - name: use_cases
         type: UseCaseSpec
         container: list
+        default: Field(default_factory=list)
       - name: ports
         type: PortSpec
         container: list
+        default: Field(default_factory=list)
       - name: services
         type: ServiceSpec
         container: list
+        default: Field(default_factory=list)
     - name: EnumMemberSpec
       description: Specification of an enum member to be generated.
       attributes:
@@ -1625,9 +1713,11 @@ contexts:
         type: MacroString
       - name: value
         type: Any
+        default: Field(default=None)
         custom_type_string: str | int | None
       - name: description
         type: string
+        default: Field(default_factory=str)
     - name: ValueObjectSpec
       description: Specification of a value object to be generated.
       attributes:
@@ -1635,34 +1725,42 @@ contexts:
         type: PascalString
       - name: description
         type: string
+        default: Field(default_factory=str)
       - name: attributes
         type: AttributeSpec
         container: list
+        default: Field(default_factory=list)
       - name: behaviors
         type: MethodSpec
         container: list
+        default: Field(default_factory=list)
     - name: DataContractSpec
       description: Generic data contract specification for use case command/query/result.
       attributes:
       - name: name
         type: string
+        default: Field(default_factory=str)
       - name: description
         type: string
+        default: Field(default_factory=str)
       - name: attributes
         type: AttributeSpec
         container: list
+        default: Field(default_factory=list)
     - name: InfrastructureSpec
       description: Specification of an infrastructure to be generated.
       attributes:
       - name: implementations
         type: ImplementationSpec
         container: list
+        default: Field(default_factory=list)
     - name: ContainerSpec
       description: Specification for a container (dependency injection).
       attributes:
       - name: bindings
         type: PortBinding
         container: list
+        default: Field(default_factory=list)
     - name: MethodOutput
       description: Specification of the output of a method.
       attributes:
@@ -1694,28 +1792,35 @@ contexts:
       - name: default
         type: string
         optional: true
+        default: Field(default=None)
       - name: description
         type: string
+        default: Field(default='')
       - name: env_var
         type: string
         optional: true
+        default: Field(default=None)
     - name: ImplementationSpec
       description: Specification of an implementation to be generated.
       attributes:
       - name: name
         type: PascalString
+        default: Field(default_factory=str)
       - name: implements
         type: PascalString
       - name: technology
         type: SnakeString
       - name: description
         type: string
+        default: Field(default_factory=str)
       - name: attributes
         type: AttributeSpec
         container: list
+        default: Field(default_factory=list)
       - name: private_methods
         type: MethodSpec
         container: list
+        default: Field(default_factory=list)
       behaviors:
       - name: create
         inputs:
@@ -1727,14 +1832,17 @@ contexts:
           type: string
         - name: description
           type: string
+          default: ''''''
         - name: attributes
           type: AttributeSpec
           container: list
           optional: true
+          default: None
         - name: private_methods
           type: MethodSpec
           container: list
           optional: true
+          default: None
         output:
           type: Any
     - name: Blueprint
@@ -1746,11 +1854,14 @@ contexts:
         type: string
       - name: layout
         type: string
+        default: Field(default_factory=str)
       - name: contexts
         type: BoundedContext
         container: list
+        default: Field(default_factory=list)
       - name: bootstrap
         type: BootstrapSpec
+        default: Field(default_factory=BootstrapSpec)
       behaviors:
       - name: create
         inputs:
@@ -1761,13 +1872,16 @@ contexts:
           type: string
         - name: layout
           type: string
+          default: ''''''
         - name: contexts
           type: BoundedContext
           container: list
           optional: true
+          default: None
         - name: bootstrap
           type: BootstrapSpec
           optional: true
+          default: None
         output:
           type: Any
     - name: MethodSpec
@@ -1777,9 +1891,11 @@ contexts:
         type: SnakeString
       - name: description
         type: string
+        default: Field(default_factory=str)
       - name: inputs
         type: AttributeSpec
         container: list
+        default: Field(default_factory=list)
       - name: output
         type: MethodOutput
       behaviors:
@@ -1800,21 +1916,27 @@ contexts:
       - name: aggregates
         type: AggregateSpec
         container: list
+        default: Field(default_factory=list)
       - name: enums
         type: EnumSpec
         container: list
+        default: Field(default_factory=list)
       - name: value_objects
         type: ValueObjectSpec
         container: list
+        default: Field(default_factory=list)
       - name: entities
         type: EntitySpec
         container: list
+        default: Field(default_factory=list)
       - name: services
         type: ServiceSpec
         container: list
+        default: Field(default_factory=list)
       - name: ports
         type: PortSpec
         container: list
+        default: Field(default_factory=list)
     - name: BoundedContext
       description: A logical boundary within the system.
       attributes:
@@ -1822,18 +1944,24 @@ contexts:
         type: PascalString
       - name: description
         type: string
+        default: Field(default_factory=str)
       - name: domain
         type: DomainSpec
+        default: Field(default_factory=DomainSpec)
       - name: application
         type: ApplicationSpec
+        default: Field(default_factory=ApplicationSpec)
       - name: infrastructure
         type: InfrastructureSpec
+        default: Field(default_factory=InfrastructureSpec)
       - name: config
         type: ConfigSpec
         optional: true
+        default: Field(default=None)
       - name: container
         type: ContainerSpec
         optional: true
+        default: Field(default=None)
       behaviors:
       - name: create
         inputs:
@@ -1841,21 +1969,27 @@ contexts:
           type: string
         - name: description
           type: string
+          default: ''''''
         - name: domain
           type: DomainSpec
           optional: true
+          default: None
         - name: application
           type: ApplicationSpec
           optional: true
+          default: None
         - name: infrastructure
           type: InfrastructureSpec
           optional: true
+          default: None
         - name: config
           type: ConfigSpec
           optional: true
+          default: None
         - name: container
           type: ContainerSpec
           optional: true
+          default: None
         output:
           type: Any
       - name: port_index
@@ -1874,12 +2008,15 @@ contexts:
         type: PascalString
       - name: description
         type: string
+        default: Field(default_factory=str)
       - name: dependencies
         type: AttributeSpec
         container: list
+        default: Field(default_factory=list)
       - name: operations
         type: MethodSpec
         container: list
+        default: Field(default_factory=list)
     - name: EntitySpec
       description: Specification of an entity.
       attributes:
@@ -1887,12 +2024,15 @@ contexts:
         type: PascalString
       - name: description
         type: string
+        default: Field(default_factory=str)
       - name: attributes
         type: AttributeSpec
         container: list
+        default: Field(default_factory=list)
       - name: behaviors
         type: MethodSpec
         container: list
+        default: Field(default_factory=list)
     - name: AttributeSpec
       description: Standard specification for a class attribute.
       attributes:
@@ -1900,18 +2040,23 @@ contexts:
         type: SnakeString
       - name: description
         type: string
+        default: Field(default_factory=str)
       - name: type
         type: string
       - name: container
         type: ContainerType
+        default: Field(default=ContainerType.NONE)
       - name: optional
         type: boolean
+        default: Field(default_factory=bool)
       - name: default
         type: string
         optional: true
+        default: Field(default=None)
       - name: custom_type_string
         type: string
         optional: true
+        default: Field(default=None)
       behaviors:
       - name: create
         inputs:
@@ -1921,6 +2066,7 @@ contexts:
           type: string
         - name: optional
           type: boolean
+          default: 'False'
         output:
           type: Any
     - name: PortSpec
@@ -1930,14 +2076,17 @@ contexts:
         type: PascalString
       - name: description
         type: string
+        default: Field(default_factory=str)
       - name: kind
         type: PortType
       - name: aggregate
         type: PascalString
         optional: true
+        default: None
       - name: operations
         type: MethodSpec
         container: list
+        default: Field(default_factory=list)
       behaviors:
       - name: create
         inputs:
@@ -1948,13 +2097,16 @@ contexts:
           custom_type_string: Union[PortType, str]
         - name: description
           type: string
+          default: ''''''
         - name: aggregate
           type: string
           optional: true
+          default: None
         - name: operations
           type: MethodSpec
           container: list
           optional: true
+          default: None
         output:
           type: PortSpec
       - name: get_final_operations
@@ -1976,6 +2128,7 @@ contexts:
         type: PascalString
       - name: description
         type: string
+        default: Field(default_factory=str)
       - name: members
         type: EnumMemberSpec
         container: list
@@ -1986,35 +2139,44 @@ contexts:
         type: PascalString
       - name: description
         type: string
+        default: Field(default_factory=str)
       - name: attributes
         type: AttributeSpec
         container: list
+        default: Field(default_factory=list)
       - name: behaviors
         type: MethodSpec
         container: list
+        default: Field(default_factory=list)
     - name: BootstrapSpec
       description: Specification of the bootstrap configuration.
       attributes:
       - name: config
         type: ConfigSpec
         optional: true
+        default: Field(default=None)
       - name: container
         type: ContainerSpec
         optional: true
+        default: Field(default=None)
     - name: ConfigSpec
       description: Specification for a configuration object (AppSettings or ContextSettings).
       attributes:
       - name: class_name
         type: PascalString
         optional: true
+        default: Field(default=None)
       - name: env_prefix
         type: string
+        default: Field(default='')
       - name: env_file
         type: string
         optional: true
+        default: Field(default=None)
       - name: fields
         type: ConfigFieldSpec
         container: list
+        default: Field(default_factory=list)
     services:
     - name: BlueprintPathResolver
       description: "Parses path expressions and resolves them against Blueprint/Pydantic\
@@ -2023,7 +2185,8 @@ contexts:
         \ by name in list: \"contexts.DomainDefinition\" (finds by 'name' field)"
       dependencies:
       - name: _SEGMENT_PATTERN
-        type: any
+        type: Any
+        default: re.compile('([a-zA-Z_][a-zA-Z0-9_]*)?(?:\\[(\\d+)\\])?')
       operations:
       - name: parse
         inputs:
@@ -2074,7 +2237,20 @@ contexts:
       description: Responsible for finding any component within a BoundedContext.
       dependencies:
       - name: _FIND_HANDLERS
-        type: any
+        type: Any
+        default: '{''aggregate'': lambda ctx, name: next((x for x in ctx.domain.aggregates
+          if str(x.name) == name), None), ''entity'': lambda ctx, name: next((x for
+          x in ctx.domain.entities if str(x.name) == name), None), ''value_object'':
+          lambda ctx, name: next((x for x in ctx.domain.value_objects if str(x.name)
+          == name), None), ''valueobject'': lambda ctx, name: next((x for x in ctx.domain.value_objects
+          if str(x.name) == name), None), ''service'': lambda ctx, name: next((x for
+          x in ctx.domain.services if str(x.name) == name), None), ''enum'': lambda
+          ctx, name: next((x for x in ctx.domain.enums if str(x.name) == name), None),
+          ''use_case'': lambda ctx, name: next((x for x in ctx.application.use_cases
+          if str(x.name) == name), None), ''usecase'': lambda ctx, name: next((x for
+          x in ctx.application.use_cases if str(x.name) == name), None), ''implementation'':
+          lambda ctx, name: next((x for x in ctx.infrastructure.implementations if
+          str(x.name) == name), None)}'
       operations:
       - name: _find_port_strategy
         inputs:
@@ -2121,6 +2297,7 @@ contexts:
           type: any
         - name: append
           type: boolean
+          default: 'False'
         output:
           type: Any
       - name: remove_value
@@ -2237,6 +2414,7 @@ contexts:
       - name: index
         type: integer
         optional: true
+        default: None
       operations:
       - name: is_index_access
         output:
@@ -2272,6 +2450,7 @@ contexts:
           type: any
         - name: append
           type: boolean
+          default: 'False'
     - name: RemoveValue
       kind: command
       dependencies:
@@ -2304,6 +2483,7 @@ contexts:
         - name: node
           type: string
           optional: true
+          default: None
       result:
         attributes:
         - name: blueprint
