@@ -3,7 +3,7 @@ import ast
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.python_gen.domain.value_objects.type_annotation_spec import TypeAnnotationSpec
-from codegen.python_gen.infrastructure.adapters.ast_parsers import type_parser
+from codegen.python_gen.infrastructure.adapters.ast_parsers import type_parser, assignment_parser
 # Need FieldSpec logic? Reusing parsers?
 # ParameterSpec definition has logic for defaults?
 # ParameterSpec logic is limited. 
@@ -53,14 +53,7 @@ def parse_function(node: ast.FunctionDef | ast.AsyncFunctionDef) -> FunctionSpec
             default_index = i - defaults_count
             default_node = node.args.defaults[default_index]
             
-            from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
-            from codegen.python_gen.domain.enums import AssignmentFlavor
-            
-            code = ast.unparse(default_node)
-            assignment = AssignmentSpec(
-                flavor=AssignmentFlavor.CODE,
-                code=code
-            )
+            assignment = assignment_parser.parse_assignment_value(default_node)
 
         anno = type_parser.parse_type(arg.annotation)
         params.append(VariableSpec.create(name=arg.arg, type_spec=anno, assignment=assignment))
@@ -111,13 +104,7 @@ def parse_parameter_from_assign(node: ast.AnnAssign | ast.Assign) -> list[Variab
             # We can capture the code for now.
             assignment = None
             if node.value:
-                from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
-                from codegen.python_gen.domain.enums import AssignmentFlavor
-                code = ast.unparse(node.value)
-                assignment = AssignmentSpec(
-                    flavor=AssignmentFlavor.CODE,
-                    code=code
-                )
+                assignment = assignment_parser.parse_assignment_value(node.value)
             
             ps = VariableSpec.create(
                 name=name, 
@@ -134,13 +121,7 @@ def parse_parameter_from_assign(node: ast.AnnAssign | ast.Assign) -> list[Variab
                  
                  assignment = None
                  if node.value:
-                    from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
-                    from codegen.python_gen.domain.enums import AssignmentFlavor
-                    code = ast.unparse(node.value)
-                    assignment = AssignmentSpec(
-                        flavor=AssignmentFlavor.CODE,
-                        code=code
-                    )
+                    assignment = assignment_parser.parse_assignment_value(node.value)
 
                  results.append(VariableSpec.create(
                      name=target.id,
