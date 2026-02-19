@@ -201,14 +201,14 @@ contexts:
       - name: files
         type: FileResult
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: stats
         type: BuildStats
-        default: Field(default_factory=BuildStats)
+        optional: true
       - name: messages
         type: string
         container: list
-        default: Field(default_factory=list)
+        optional: true
       behaviors:
       - name: add_file_result
         inputs:
@@ -225,10 +225,10 @@ contexts:
         type: FileStatus
       - name: message
         type: string
-        default: Field(default_factory=str)
+        optional: true
       - name: diff
         type: string
-        default: Field(default_factory=str)
+        optional: true
     - name: BuildStats
       description: Aggregated statistics for a build operation.
       attributes:
@@ -265,10 +265,10 @@ contexts:
       dependencies:
       - name: attribute_mapper
         type: AttributeMapper
-        default: field(default_factory=AttributeMapper)
+        optional: true
       - name: method_mapper
         type: MethodMapper
-        default: field(default_factory=MethodMapper)
+        optional: true
       operations:
       - name: to_module_spec
         inputs:
@@ -323,10 +323,10 @@ contexts:
       dependencies:
       - name: attribute_mapper
         type: AttributeMapper
-        default: field(default_factory=AttributeMapper)
+        optional: true
       - name: method_mapper
         type: MethodMapper
-        default: field(default_factory=MethodMapper)
+        optional: true
       operations:
       - name: to_module_spec
         inputs:
@@ -357,10 +357,10 @@ contexts:
       dependencies:
       - name: attribute_mapper
         type: AttributeMapper
-        default: field(default_factory=AttributeMapper)
+        optional: true
       - name: method_mapper
         type: MethodMapper
-        default: field(default_factory=MethodMapper)
+        optional: true
       operations:
       - name: to_module_spec
         inputs:
@@ -391,22 +391,22 @@ contexts:
       dependencies:
       - name: aggregate_mapper
         type: AggregateMapper
-        default: field(default_factory=AggregateMapper)
+        optional: true
       - name: entity_mapper
         type: EntityMapper
-        default: field(default_factory=EntityMapper)
+        optional: true
       - name: value_object_mapper
         type: ValueObjectMapper
-        default: field(default_factory=ValueObjectMapper)
+        optional: true
       - name: service_mapper
         type: ServiceMapper
-        default: field(default_factory=ServiceMapper)
+        optional: true
       - name: port_mapper
         type: PortMapper
-        default: field(default_factory=PortMapper)
+        optional: true
       - name: enum_mapper
         type: EnumMapper
-        default: field(default_factory=EnumMapper)
+        optional: true
       operations:
       - name: to_package_spec
         inputs:
@@ -424,13 +424,13 @@ contexts:
       dependencies:
       - name: domain_mapper
         type: DomainMapper
-        default: field(default_factory=DomainMapper)
+        optional: true
       - name: application_mapper
         type: ApplicationMapper
-        default: field(default_factory=ApplicationMapper)
+        optional: true
       - name: infrastructure_mapper
         type: InfrastructureMapper
-        default: field(default_factory=InfrastructureMapper)
+        optional: true
       operations:
       - name: to_package_spec
         inputs:
@@ -457,7 +457,7 @@ contexts:
       dependencies:
       - name: implementation_mapper
         type: ImplementationMapper
-        default: field(default_factory=ImplementationMapper)
+        optional: true
       operations:
       - name: to_package_spec
         inputs:
@@ -478,10 +478,10 @@ contexts:
       dependencies:
       - name: attribute_mapper
         type: AttributeMapper
-        default: field(default_factory=AttributeMapper)
+        optional: true
       - name: method_mapper
         type: MethodMapper
-        default: field(default_factory=MethodMapper)
+        optional: true
       operations:
       - name: to_module_spec
         inputs:
@@ -512,7 +512,7 @@ contexts:
       dependencies:
       - name: context_mapper
         type: ContextMapper
-        default: field(default_factory=ContextMapper)
+        optional: true
       operations:
       - name: to_package_spec
         inputs:
@@ -530,7 +530,7 @@ contexts:
       dependencies:
       - name: type_system_converter
         type: TypeSystemConverter
-        default: field(default_factory=TypeSystemConverter)
+        optional: true
       operations:
       - name: to_variable_spec
         inputs:
@@ -570,7 +570,7 @@ contexts:
       dependencies:
       - name: attribute_mapper
         type: AttributeMapper
-        default: field(default_factory=AttributeMapper)
+        optional: true
       operations:
       - name: to_function_spec
         inputs:
@@ -597,10 +597,10 @@ contexts:
       dependencies:
       - name: attribute_mapper
         type: AttributeMapper
-        default: field(default_factory=AttributeMapper)
+        optional: true
       - name: method_mapper
         type: MethodMapper
-        default: field(default_factory=MethodMapper)
+        optional: true
       operations:
       - name: to_module_spec
         inputs:
@@ -673,10 +673,10 @@ contexts:
       dependencies:
       - name: attribute_mapper
         type: AttributeMapper
-        default: field(default_factory=AttributeMapper)
+        optional: true
       - name: method_mapper
         type: MethodMapper
-        default: field(default_factory=MethodMapper)
+        optional: true
       operations:
       - name: to_module_spec
         inputs:
@@ -694,10 +694,10 @@ contexts:
       dependencies:
       - name: use_case_mapper
         type: UseCaseMapper
-        default: field(default_factory=UseCaseMapper)
+        optional: true
       - name: port_mapper
         type: PortMapper
-        default: field(default_factory=PortMapper)
+        optional: true
       operations:
       - name: to_package_spec
         inputs:
@@ -715,10 +715,10 @@ contexts:
       dependencies:
       - name: attribute_mapper
         type: AttributeMapper
-        default: field(default_factory=AttributeMapper)
+        optional: true
       - name: method_mapper
         type: MethodMapper
-        default: field(default_factory=MethodMapper)
+        optional: true
       operations:
       - name: to_module_spec
         inputs:
@@ -756,7 +756,7 @@ contexts:
         type: GeneratePackage
       - name: mapper
         type: BlueprintMapper
-        default: field(default_factory=BlueprintMapper)
+        optional: true
       command:
         attributes:
         - name: overwrite
@@ -780,7 +780,7 @@ contexts:
         type: BlueprintStorage
       - name: mapper
         type: BlueprintMapper
-        default: field(default_factory=BlueprintMapper)
+        optional: true
       command:
         attributes:
         - name: path
@@ -871,23 +871,23 @@ contexts:
         type: PascalString
       - name: description
         type: string
-        default: Field(default='')
+        default: ''''''
       - name: decorators
         type: string
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: inheritance
         type: string
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: attributes
         type: VariableSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: methods
         type: FunctionSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       behaviors:
       - name: create
         inputs:
@@ -944,19 +944,19 @@ contexts:
       - name: decorators
         type: string
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: parameters
         type: VariableSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: return_annotation
         type: TypeAnnotationSpec
       - name: suite
         type: string
-        default: Field(default='')
+        default: ''''''
       - name: function_type
         type: FunctionType
-        default: Field(default=FunctionType.FUNCTION)
+        default: FunctionType.FUNCTION
       - name: is_private
         type: boolean
         default: 'False'
@@ -1011,7 +1011,7 @@ contexts:
       - name: args
         type: TypeAnnotationSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       behaviors:
       - name: render
         output:
@@ -1039,11 +1039,11 @@ contexts:
         type: MacroString
       - name: value
         type: Any
-        default: Field(default=None)
+        optional: true
         custom_type_string: str | int | None
       - name: description
         type: string
-        default: Field(default_factory=str)
+        optional: true
       behaviors:
       - name: create
         inputs:
@@ -1066,29 +1066,23 @@ contexts:
       - name: literal
         type: LiteralSpec
         optional: true
-        default: Field(default=None)
       - name: reference
         type: ReferenceSpec
         optional: true
-        default: Field(default=None)
       - name: call
         type: CallSpec
         optional: true
-        default: Field(default=None)
       - name: list_items
         type: AssignmentSpec
         container: list
         optional: true
-        default: Field(default=None)
       - name: dict_items
         type: AssignmentSpec
         container: map
         optional: true
-        default: Field(default=None)
       - name: code
         type: string
         optional: true
-        default: Field(default=None)
       behaviors:
       - name: from_code
         inputs:
@@ -1159,27 +1153,27 @@ contexts:
       - name: functions
         type: FunctionSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: classes
         type: ClassSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: imports
         type: ImportFromSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: enums
         type: PythonEnumSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: assignments
         type: ModuleAssignmentSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: extra_code
         type: RawCodeSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       behaviors:
       - name: create
         inputs:
@@ -1273,11 +1267,11 @@ contexts:
       - name: modules
         type: ModuleSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: sub_packages
         type: PackageSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       behaviors:
       - name: create
         inputs:
@@ -1382,11 +1376,9 @@ contexts:
       - name: type_spec
         type: TypeAnnotationSpec
         optional: true
-        default: Field(default=None)
       - name: assignment
         type: AssignmentSpec
         optional: true
-        default: Field(default=None)
       behaviors:
       - name: create
         inputs:
@@ -1408,18 +1400,18 @@ contexts:
         type: PascalString
       - name: description
         type: string
-        default: Field(default_factory=str)
+        optional: true
       - name: decorators
         type: string
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: base_class
         type: string
-        default: Field(default_factory=str)
+        optional: true
       - name: members
         type: PythonEnumMemberSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       behaviors:
       - name: create
         inputs:
@@ -1587,10 +1579,9 @@ contexts:
         - name: node
           type: string
           optional: true
-          default: field(default=None)
         - name: root_path
           type: string
-          default: field(default='')
+          default: ''''''
       result:
         attributes:
         - name: result
@@ -1648,19 +1639,19 @@ contexts:
       - name: dependencies
         type: AttributeSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: description
         type: string
-        default: Field(default_factory=str)
+        optional: true
       - name: command
         type: DataContractSpec
-        default: Field(default_factory=DataContractSpec)
+        optional: true
       - name: query
         type: DataContractSpec
-        default: Field(default_factory=DataContractSpec)
+        optional: true
       - name: result
         type: DataContractSpec
-        default: Field(default_factory=DataContractSpec)
+        optional: true
       behaviors:
       - name: create
         inputs:
@@ -1697,15 +1688,15 @@ contexts:
       - name: use_cases
         type: UseCaseSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: ports
         type: PortSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: services
         type: ServiceSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
     - name: EnumMemberSpec
       description: Specification of an enum member to be generated.
       attributes:
@@ -1713,11 +1704,11 @@ contexts:
         type: MacroString
       - name: value
         type: Any
-        default: Field(default=None)
+        optional: true
         custom_type_string: str | int | None
       - name: description
         type: string
-        default: Field(default_factory=str)
+        optional: true
     - name: ValueObjectSpec
       description: Specification of a value object to be generated.
       attributes:
@@ -1725,42 +1716,42 @@ contexts:
         type: PascalString
       - name: description
         type: string
-        default: Field(default_factory=str)
+        optional: true
       - name: attributes
         type: AttributeSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: behaviors
         type: MethodSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
     - name: DataContractSpec
       description: Generic data contract specification for use case command/query/result.
       attributes:
       - name: name
         type: string
-        default: Field(default_factory=str)
+        optional: true
       - name: description
         type: string
-        default: Field(default_factory=str)
+        optional: true
       - name: attributes
         type: AttributeSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
     - name: InfrastructureSpec
       description: Specification of an infrastructure to be generated.
       attributes:
       - name: implementations
         type: ImplementationSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
     - name: ContainerSpec
       description: Specification for a container (dependency injection).
       attributes:
       - name: bindings
         type: PortBinding
         container: list
-        default: Field(default_factory=list)
+        optional: true
     - name: MethodOutput
       description: Specification of the output of a method.
       attributes:
@@ -1792,35 +1783,33 @@ contexts:
       - name: default
         type: string
         optional: true
-        default: Field(default=None)
       - name: description
         type: string
-        default: Field(default='')
+        default: ''''''
       - name: env_var
         type: string
         optional: true
-        default: Field(default=None)
     - name: ImplementationSpec
       description: Specification of an implementation to be generated.
       attributes:
       - name: name
         type: PascalString
-        default: Field(default_factory=str)
+        optional: true
       - name: implements
         type: PascalString
       - name: technology
         type: SnakeString
       - name: description
         type: string
-        default: Field(default_factory=str)
+        optional: true
       - name: attributes
         type: AttributeSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: private_methods
         type: MethodSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       behaviors:
       - name: create
         inputs:
@@ -1854,14 +1843,14 @@ contexts:
         type: string
       - name: layout
         type: string
-        default: Field(default_factory=str)
+        optional: true
       - name: contexts
         type: BoundedContext
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: bootstrap
         type: BootstrapSpec
-        default: Field(default_factory=BootstrapSpec)
+        optional: true
       behaviors:
       - name: create
         inputs:
@@ -1891,11 +1880,11 @@ contexts:
         type: SnakeString
       - name: description
         type: string
-        default: Field(default_factory=str)
+        optional: true
       - name: inputs
         type: AttributeSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: output
         type: MethodOutput
       behaviors:
@@ -1916,27 +1905,27 @@ contexts:
       - name: aggregates
         type: AggregateSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: enums
         type: EnumSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: value_objects
         type: ValueObjectSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: entities
         type: EntitySpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: services
         type: ServiceSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: ports
         type: PortSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
     - name: BoundedContext
       description: A logical boundary within the system.
       attributes:
@@ -1944,24 +1933,22 @@ contexts:
         type: PascalString
       - name: description
         type: string
-        default: Field(default_factory=str)
+        optional: true
       - name: domain
         type: DomainSpec
-        default: Field(default_factory=DomainSpec)
+        optional: true
       - name: application
         type: ApplicationSpec
-        default: Field(default_factory=ApplicationSpec)
+        optional: true
       - name: infrastructure
         type: InfrastructureSpec
-        default: Field(default_factory=InfrastructureSpec)
+        optional: true
       - name: config
         type: ConfigSpec
         optional: true
-        default: Field(default=None)
       - name: container
         type: ContainerSpec
         optional: true
-        default: Field(default=None)
       behaviors:
       - name: create
         inputs:
@@ -2008,15 +1995,15 @@ contexts:
         type: PascalString
       - name: description
         type: string
-        default: Field(default_factory=str)
+        optional: true
       - name: dependencies
         type: AttributeSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: operations
         type: MethodSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
     - name: EntitySpec
       description: Specification of an entity.
       attributes:
@@ -2024,15 +2011,15 @@ contexts:
         type: PascalString
       - name: description
         type: string
-        default: Field(default_factory=str)
+        optional: true
       - name: attributes
         type: AttributeSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: behaviors
         type: MethodSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
     - name: AttributeSpec
       description: Standard specification for a class attribute.
       attributes:
@@ -2040,23 +2027,21 @@ contexts:
         type: SnakeString
       - name: description
         type: string
-        default: Field(default_factory=str)
+        optional: true
       - name: type
         type: string
       - name: container
         type: ContainerType
-        default: Field(default=ContainerType.NONE)
+        default: ContainerType.NONE
       - name: optional
         type: boolean
-        default: Field(default_factory=bool)
+        optional: true
       - name: default
         type: string
         optional: true
-        default: Field(default=None)
       - name: custom_type_string
         type: string
         optional: true
-        default: Field(default=None)
       behaviors:
       - name: create
         inputs:
@@ -2076,7 +2061,7 @@ contexts:
         type: PascalString
       - name: description
         type: string
-        default: Field(default_factory=str)
+        optional: true
       - name: kind
         type: PortType
       - name: aggregate
@@ -2086,7 +2071,7 @@ contexts:
       - name: operations
         type: MethodSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       behaviors:
       - name: create
         inputs:
@@ -2128,7 +2113,7 @@ contexts:
         type: PascalString
       - name: description
         type: string
-        default: Field(default_factory=str)
+        optional: true
       - name: members
         type: EnumMemberSpec
         container: list
@@ -2139,44 +2124,40 @@ contexts:
         type: PascalString
       - name: description
         type: string
-        default: Field(default_factory=str)
+        optional: true
       - name: attributes
         type: AttributeSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
       - name: behaviors
         type: MethodSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
     - name: BootstrapSpec
       description: Specification of the bootstrap configuration.
       attributes:
       - name: config
         type: ConfigSpec
         optional: true
-        default: Field(default=None)
       - name: container
         type: ContainerSpec
         optional: true
-        default: Field(default=None)
     - name: ConfigSpec
       description: Specification for a configuration object (AppSettings or ContextSettings).
       attributes:
       - name: class_name
         type: PascalString
         optional: true
-        default: Field(default=None)
       - name: env_prefix
         type: string
-        default: Field(default='')
+        default: ''''''
       - name: env_file
         type: string
         optional: true
-        default: Field(default=None)
       - name: fields
         type: ConfigFieldSpec
         container: list
-        default: Field(default_factory=list)
+        optional: true
     services:
     - name: BlueprintPathResolver
       description: "Parses path expressions and resolves them against Blueprint/Pydantic\
