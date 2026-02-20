@@ -119,9 +119,18 @@ def build_parameter_as_attribute(param_spec) -> ast.AnnAssign:
     if param_spec.assignment:
          value = build_assignment_value(param_spec.assignment)
                 
+    if annotation is None:
+        # If there's no annotation, we must use ast.Assign instead of ast.AnnAssign
+        return ast.Assign(
+            targets=[target],
+            value=value,
+            lineno=0
+        )
+        
     return ast.AnnAssign(
         target=target,
         annotation=annotation,
         value=value,
-        simple=1
+        simple=1,
+        lineno=0
     )

@@ -25,7 +25,7 @@ class ContextMapper:
     config_mapper: ConfigMapper = field(default_factory=ConfigMapper)
     container_mapper: ContainerMapper = field(default_factory=ContainerMapper)
 
-    def to_package_spec(self, context: BoundedContext) -> PackageSpec:
+    def to_package_spec(self, context: BoundedContext, project_name: str = "") -> PackageSpec:
         domain_pkg = self.domain_mapper.to_package_spec(context.domain)
         application_pkg = self.application_mapper.to_package_spec(context.application)
         class_specs: dict[str, ClassSpec] = {}
@@ -49,12 +49,25 @@ class ContextMapper:
             )
             modules.append(config_module)
 
-        # Generate container module if context has container
-        if context.container:
-            container_module = self.container_mapper.to_module_spec(
-                context.container, context=context, class_name="Container"
-            )
-            modules.append(container_module)
+        # Generate container module
+        container_spec = context.container
+        if not container_spec:
+            from codegen.domain_definition.domain.value_objects.port_binding import PortBinding
+            from codegen.domain_definition.domain.value_objects.container_spec import ContainerSpec
+
+            bindings: list[PortBinding] = []
+            seen_ports = set()
+            for impl in context.infrastructure.implementations:
+                if impl.implements not in seen_ports:
+                    bindings.append(PortBinding(port=impl.implements, implementation=impl.name))
+                    seen_ports.add(impl.implements)
+            
+            container_spec = ContainerSpec(bindings=bindings)
+
+        container_module = self.container_mapper.to_module_spec(
+            container_spec, context=context, class_name="Container", project_name=project_name
+        )
+        modules.append(container_module)
 
         return PackageSpec.create(
             name=context.name,
