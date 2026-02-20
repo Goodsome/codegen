@@ -11,8 +11,9 @@ class BlueprintMapper:
     bootstrap_mapper: BootstrapMapper = field(default_factory=BootstrapMapper)
 
     def to_package_spec(self, blueprint: Blueprint) -> PackageSpec:
+        project_name = blueprint.name.to_snake()
         context_packages = [
-            self.context_mapper.to_package_spec(c) for c in blueprint.contexts
+            self.context_mapper.to_package_spec(c, project_name=project_name) for c in blueprint.contexts
         ]
 
         # Generate bootstrap package if blueprint has bootstrap spec

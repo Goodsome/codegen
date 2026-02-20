@@ -67,9 +67,9 @@ class ContainerMapper:
         )
 
     def _create_provider_assignment(self, implementation_class: str) -> AssignmentSpec:
-        """Creates a providers.Factory(...) assignment."""
+        """Creates a Factory(...) assignment."""
         return AssignmentSpec.from_call(
-            func_name="providers.Factory",
+            func_name="Factory",
             args=[AssignmentSpec.from_code(implementation_class)],
         )
 
@@ -85,6 +85,7 @@ class ContainerMapper:
         container_spec: ContainerSpec,
         context: BoundedContext,
         class_name: str = "Container",
+        project_name: str = "",
     ) -> ModuleSpec:
         """
         Creates a ModuleSpec containing the Container class with required imports.
@@ -93,6 +94,7 @@ class ContainerMapper:
             container_spec: The container specification
             context: The bounded context to resolve implementations
             class_name: The name of the container class
+            project_name: The root name of the project to create absolute imports
 
         Returns:
             ModuleSpec for container.py
@@ -110,10 +112,14 @@ class ContainerMapper:
             ),
         ]
 
+        import_module = "..infrastructure.adapters"
+        if project_name:
+            import_module = f"{project_name}.{context.name.lower()}.infrastructure.adapters"
+
         for binding in container_spec.bindings:
             imports.append(
                 ImportFromSpec.create(
-                    module="..infrastructure.adapters",
+                    module=import_module,
                     names=[binding.implementation],
                 )
             )
