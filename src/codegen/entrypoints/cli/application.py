@@ -9,12 +9,14 @@ from codegen.entrypoints.cli.commands.set import set_cmd
 from codegen.entrypoints.cli.commands.rm import rm
 from codegen.entrypoints.cli.commands.tree import tree_cmd
 from codegen.entrypoints.cli.commands.mcp_cmd import mcp_cmd
+from codegen.entrypoints.cli.commands.init import init
 
 app = typer.Typer(
     name="codegen",
     help="""Codegen CLI - DDD Project Scaffolding Tool.
 
 **Core Commands (Lifecycle)**:
+  init       Initialize a new codegen.yaml blueprint
   build      Compile codegen.yaml into Python code
   reverse    Reverse-engineer Python code into codegen.yaml
   schema     Output JSON schema for the blueprint
@@ -32,6 +34,7 @@ app = typer.Typer(
   --help              Show this message
 
 **Examples**:
+  $ codegen init
   $ codegen build --overwrite
   $ codegen set "project.version" '"1.2.0"'
   $ codegen get "contexts.DomainDefinition.domain.aggregates"
@@ -50,6 +53,7 @@ For more information, see: https://github.com/Goodsome/codegen
 app.command()(build)
 app.command()(reverse)
 app.command()(schema)
+app.command()(init)
 app.command(name="tree")(tree_cmd)
 app.command(name="get")(get_cmd)
 app.command(name="set")(set_cmd)
