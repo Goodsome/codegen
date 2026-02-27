@@ -41,6 +41,24 @@ class AssignmentSpec(ValueObject):
             )
         )
 
+    def get_required_types(self) -> set[str]:
+        types: set[str] = set()
+        if self.flavor == AssignmentFlavor.CALL and self.call:
+            types.add(self.call.callee)
+            for arg in self.call.args:
+                types.update(arg.get_required_types())
+            for kwarg in self.call.kwargs.values():
+                types.update(kwarg.get_required_types())
+        elif self.flavor == AssignmentFlavor.SYMBOL and self.reference:
+            types.add(self.reference.name)
+        elif self.list_items:
+            for item in self.list_items:
+                types.update(item.get_required_types())
+        elif self.dict_items:
+            for item in self.dict_items.values():
+                types.update(item.get_required_types())
+        return types
+
 # Resolve forward references
 from codegen.python_gen.domain.value_objects.call_spec import CallSpec
 CallSpec.model_rebuild()

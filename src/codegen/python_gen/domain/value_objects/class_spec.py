@@ -71,8 +71,7 @@ class ClassSpec(ValueObject):
         types.update(self.inheritance)
         types.update(self.decorators)
         for attribute in self.attributes:
-            if attribute.type_spec:
-                 types.update(attribute.type_spec.get_all_referenced_names())
+            types.update(attribute.get_required_types())
         for method in self.methods:
             types.update(method.get_required_types())
         return types
