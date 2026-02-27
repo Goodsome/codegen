@@ -22,3 +22,11 @@ class VariableSpec(ValueObject):
             type_spec=type_spec,
             assignment=assignment,
         )
+
+    def get_required_types(self) -> set[str]:
+        types: set[str] = set()
+        if self.type_spec:
+            types.update(self.type_spec.get_all_referenced_names())
+        if self.assignment:
+            types.update(self.assignment.get_required_types())
+        return types

@@ -33,11 +33,11 @@ class UseCaseMapper:
             command_name = f"{use_case.name}Command"
             cmd_attributes = self.attribute_mapper.to_variable_specs(
                 use_case.command.attributes,
-                default_field_flavor=FieldFlavor.DATACLASS,
+                default_field_flavor=FieldFlavor.PYDANTIC,
             )
             command_class = ClassSpec.create(
                 name=command_name,
-                decorators=["dataclass(frozen=True)"],
+                inheritance=["BaseModel"],
                 attributes=cmd_attributes,
             )
             # Create param for execute method
@@ -50,11 +50,11 @@ class UseCaseMapper:
             query_name = f"{use_case.name}Query"
             query_attributes = self.attribute_mapper.to_variable_specs(
                 use_case.query.attributes,
-                default_field_flavor=FieldFlavor.DATACLASS,
+                default_field_flavor=FieldFlavor.PYDANTIC,
             )
             query_class = ClassSpec.create(
                 name=query_name,
-                decorators=["dataclass(frozen=True)"],
+                inheritance=["BaseModel"],
                 attributes=query_attributes,
             )
             param = VariableSpec.create(
@@ -68,11 +68,11 @@ class UseCaseMapper:
         result_name = f"{use_case.name}Result"
         result_attributes = self.attribute_mapper.to_variable_specs(
             use_case.result.attributes,
-            default_field_flavor=FieldFlavor.DATACLASS,
+            default_field_flavor=FieldFlavor.PYDANTIC,
         )
         result_class = ClassSpec.create(
             name=f"{use_case.name}Result",
-            decorators=["dataclass(frozen=True)"],
+            inheritance=["BaseModel"],
             attributes=result_attributes,
         )
         classes.append(result_class)
