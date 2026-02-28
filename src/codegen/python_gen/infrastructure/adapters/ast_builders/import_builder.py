@@ -16,5 +16,5 @@ def build_import(import_spec: ImportFromSpec) -> ast.Import | ast.ImportFrom:
     return ast.ImportFrom(
         module=import_spec.module,
         names=names,
-        level=0
+        level=import_spec.level
     )

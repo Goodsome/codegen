@@ -127,6 +127,11 @@ def build(
             "--out",
             help="Custom output directory (overrides --build/--no-build default locations)",
         ),
+        skip_tests: bool = typer.Option(
+            False,
+            "--skip-tests",
+            help="Generate unit test skeletons in tests/unit/ alongside source code",
+        ),
 ):
     """
     Build: Compile codegen.yaml into Python code.
@@ -154,7 +159,10 @@ def build(
         if out:
             root_path = str(out).replace("/", ".").replace("\\", ".")
 
-        cmd = GenerateProjectCommand(overwrite=overwrite, node=node, root_path=root_path)
+        cmd = GenerateProjectCommand(
+            overwrite=overwrite, node=node, root_path=root_path,
+            generate_tests=not skip_tests,
+        )
 
         # --- Change Starts Here ---
         try:

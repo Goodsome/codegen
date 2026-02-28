@@ -745,6 +745,53 @@ contexts:
           type: PackageSpec
         output:
           type: list[ServiceSpec]
+    - name: TestSkeletonMapper
+      description: 'Generates parametrized test skeleton ModuleSpecs from domain metadata.
+        Produces two files per component: test_*.py (regenerable skeleton) and cases_*.py
+        (hand-edited test data, never overwritten).'
+      operations:
+      - name: to_cases_module_spec
+        inputs:
+        - name: component_name
+          type: string
+        - name: methods
+          type: MethodSpec
+          container: list
+        output:
+          type: ModuleSpec
+      - name: to_service_test_module_spec
+        inputs:
+        - name: service
+          type: ServiceSpec
+        - name: context_name
+          type: string
+        - name: project_name
+          type: string
+        output:
+          type: ModuleSpec
+      - name: to_behavior_test_module_spec
+        inputs:
+        - name: name
+          type: string
+        - name: behaviors
+          type: MethodSpec
+          container: list
+        - name: context_name
+          type: string
+        - name: project_name
+          type: string
+        - name: component_type
+          type: string
+        output:
+          type: ModuleSpec
+      - name: to_test_package_spec
+        inputs:
+        - name: context
+          type: BoundedContext
+        - name: project_name
+          type: string
+        output:
+          type: PackageSpec
   application:
     use_cases:
     - name: GenerateProject

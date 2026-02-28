@@ -6,20 +6,15 @@ from pathlib import Path
 import shutil
 import os
 
-def test_domain_definition_generation(cli_runner, monkeypatch):
+def test_domain_definition_generation(cli_runner, monkeypatch, tmp_path):
     """
     Scenario: Domain Definition Generation
     Given: A valid blueprint with Aggregate, Entity, Value Object, and Enum
-    When: Running 'codegen build'
-    Then: The domain artifacts are generated correctly in tests/e2e/generated/domain_definition.
+    When: Running 'codegen build --skip-tests'
+    Then: The domain artifacts are generated correctly.
     """
-    # Define output directory
-    base_dir = Path(__file__).parent / "generated" / "domain_definition"
-    
-    # Clean up verification
-    if base_dir.exists():
-        shutil.rmtree(base_dir)
-    base_dir.mkdir(parents=True, exist_ok=True)
+    base_dir = tmp_path / "domain_def"
+    base_dir.mkdir()
 
     # Copy blueprint
     fixture_dir = Path(__file__).parent / "fixtures" / "domain_definition"
@@ -27,14 +22,13 @@ def test_domain_definition_generation(cli_runner, monkeypatch):
     if not source_blueprint.exists():
         pytest.fail(f"Blueprint not found at {source_blueprint}")
     
-    target_blueprint = base_dir / "codegen.yaml"
-    shutil.copy(source_blueprint, target_blueprint)
+    shutil.copy(source_blueprint, base_dir / "codegen.yaml")
 
     # Switch to the working directory
     monkeypatch.chdir(base_dir)
 
     # Run the build command
-    result = cli_runner.invoke(app, ["build"])
+    result = cli_runner.invoke(app, ["build", "--skip-tests"])
 
     if result.exit_code != 0:
         print(result.stdout)
