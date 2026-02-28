@@ -11,10 +11,11 @@ class ImportFromSpec(ValueObject):
     names: list[ImportedName]
 
     type_checking: bool = False
+    level: int = 0  # 0 = absolute, 1 = from ., 2 = from .., etc.
 
     @classmethod
     def create(
-        cls, module: str, names: list[str], type_checking: bool = False
+        cls, module: str, names: list[str], type_checking: bool = False, level: int = 0
     ) -> "ImportFromSpec":
         _names: list[ImportedName] = []
         for name in names:
@@ -23,6 +24,7 @@ class ImportFromSpec(ValueObject):
             module=module,
             names=_names,
             type_checking=type_checking,
+            level=level,
         )
 
 
