@@ -40,6 +40,11 @@ class ContainerMapper:
             if provider_var:
                 attributes.append(provider_var)
 
+        for use_case in context.application.use_cases:
+            provider_var = self._create_use_case_provider_variable(use_case, container_spec.bindings)
+            if provider_var:
+                attributes.append(provider_var)
+
         return ClassSpec.create(
             name=class_name,
             inheritance=["DeclarativeContainer"],
@@ -59,6 +64,35 @@ class ContainerMapper:
         provider_name = self._to_snake_case(implementation_name)
 
         assignment = self._create_provider_assignment(implementation_name)
+
+        return VariableSpec.create(
+            name=provider_name,
+            type_spec=None,
+            assignment=assignment,
+        )
+
+    def _create_use_case_provider_variable(
+        self, use_case: "UseCaseSpec", bindings: list[PortBinding]
+    ) -> VariableSpec | None:
+        from codegen.domain_definition.domain.value_objects.use_case_spec import UseCaseSpec
+        use_case_name = use_case.name
+        provider_name = self._to_snake_case(use_case_name)
+
+        # map kwargs by matching the binding
+        kwargs: dict[str, AssignmentSpec] = {}
+        for dep in use_case.dependencies:
+            # find corresponding binding
+            for binding in bindings:
+                if binding.port == dep.type:
+                    kwarg_impl_name = self._to_snake_case(binding.implementation)
+                    kwargs[dep.name] = AssignmentSpec.from_symbol(kwarg_impl_name)
+                    break
+
+        assignment = AssignmentSpec.from_call(
+            func_name="Factory",
+            args=[AssignmentSpec.from_symbol(use_case_name)],
+            kwargs=kwargs,
+        )
 
         return VariableSpec.create(
             name=provider_name,
