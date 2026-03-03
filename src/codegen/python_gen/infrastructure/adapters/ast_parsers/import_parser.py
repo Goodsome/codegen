@@ -7,12 +7,10 @@ def parse_import(node: ast.Import | ast.ImportFrom) -> ImportFromSpec:
     """Parses an AST import node into an ImportFromSpec."""
     
     # Extract names from ast.alias objects
-    imported_names: list[ImportedName] = []
-    for alias in node.names:
-        # ast.alias has 'name' and 'asname' (optional)
-        imported_names.append(
-            ImportedName(name=alias.name, alias=alias.asname)
-        )
+    imported_names = frozenset(
+        ImportedName(name=alias.name, alias=alias.asname)
+        for alias in node.names
+    )
     
     if isinstance(node, ast.ImportFrom) and node.module:
         module = node.module

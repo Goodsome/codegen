@@ -120,12 +120,12 @@ class ModuleSpec(ValueObject):
         imports_bag: dict[str, ImportFromSpec] = {}
         for i in self.imports:
             if i.module in imports_bag:
-                imports_bag[i.module].names.extend(i.names)
+                imports_bag[i.module] = imports_bag[i.module].merge(i)
             else:
                 imports_bag[i.module] = i
         for i in other.imports:
             if i.module in imports_bag:
-                imports_bag[i.module].names.extend(i.names)
+                imports_bag[i.module] = imports_bag[i.module].merge(i)
             else:
                 imports_bag[i.module] = i
         

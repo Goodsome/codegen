@@ -57,7 +57,7 @@ contexts:
 
     content = container_file.read_text()
     
-    assert "from auto_container_project.core.infrastructure.adapters import EmailNotificationAdapter" in content
+    assert "from auto_container_project.core.infrastructure.adapters.email_notification_adapter import (\n    EmailNotificationAdapter,\n)" in content
     
     # Verify the Container class is generated
     assert "class Container(DeclarativeContainer):" in content

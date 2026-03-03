@@ -70,7 +70,7 @@ class ContainerMapper:
         """Creates a Factory(...) assignment."""
         return AssignmentSpec.from_call(
             func_name="Factory",
-            args=[AssignmentSpec.from_code(implementation_class)],
+            args=[AssignmentSpec.from_symbol(implementation_class)],
         )
 
     def _to_snake_case(self, name: str) -> str:
@@ -100,32 +100,7 @@ class ContainerMapper:
             ModuleSpec for container.py
         """
         class_spec = self.to_class_spec(container_spec, context, class_name)
-
-        imports = [
-            ImportFromSpec.create(
-                module="dependency_injector.containers",
-                names=["DeclarativeContainer"],
-            ),
-            ImportFromSpec.create(
-                module="dependency_injector.providers",
-                names=["Factory", "Singleton", "Configuration"],
-            ),
-        ]
-
-        import_module = "..infrastructure.adapters"
-        if project_name:
-            import_module = f"{project_name}.{context.name.lower()}.infrastructure.adapters"
-
-        for binding in container_spec.bindings:
-            imports.append(
-                ImportFromSpec.create(
-                    module=import_module,
-                    names=[binding.implementation],
-                )
-            )
-
         return ModuleSpec.create(
             name="container",
             classes=[class_spec],
-            imports=imports,
         )

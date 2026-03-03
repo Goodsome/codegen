@@ -44,6 +44,10 @@ GLOBAL_REGISTRY = {
     "abstractmethod": "abc",
     "datetime": "datetime",
     "UUID": "uuid",
+    "DeclarativeContainer": "dependency_injector.conatiners",
+    "Factory": "dependency_injector.providers",
+    "Singleton": "dependency_injector.providers",
+    "Configuration": "dependency_injector.providers",
 }
 
 TEMPORARY_MAPPING = {"dataclass(frozen=True)": "dataclass"}
@@ -79,8 +83,8 @@ class DependencyResolver:
             module_path = self.global_registry[rt]
             if module_path not in import_spec_bags:
                 import_spec_bags[module_path] = ImportFromSpec(
-                    module=module_path, names=[]
+                    module=module_path, names=frozenset()
                 )
-            import_spec_bags[module_path].add_name(rt)
+            import_spec_bags[module_path] = import_spec_bags[module_path].add_name(rt)
 
         return import_spec_bags.values()

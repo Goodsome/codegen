@@ -1,10 +1,11 @@
 
 import ast
+from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.enums import FunctionType, AssignmentFlavor
 from codegen.python_gen.infrastructure.adapters.ast_builders import type_builder
 
-def build_assignment_value(assignment) -> ast.expr:
+def build_assignment_value(assignment: AssignmentSpec) -> ast.expr:
     """Builds an AST expression from an AssignmentSpec."""
     if not assignment:
         return ast.Constant(value=None)
@@ -15,6 +16,12 @@ def build_assignment_value(assignment) -> ast.expr:
          except SyntaxError:
              pass
              
+    if assignment.reference:
+        try:
+            return ast.parse(assignment.reference.name, mode='eval').body
+        except SyntaxError:
+            pass
+            
     if assignment.literal:
         return ast.Constant(value=assignment.literal.value)
         
