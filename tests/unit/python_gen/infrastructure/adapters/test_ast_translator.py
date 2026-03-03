@@ -35,7 +35,7 @@ class TestAstTranslatorBuilders:
         source_code = translator.render_module(module_spec, imports)
         # Since implementation is stubbed, this will likely fail or return None, but assertion is here.
         assert isinstance(source_code, str)
-        assert "from typing import List, Dict" in source_code
+        assert "from typing import Dict, List" in source_code
 
     def test_render_module_with_classes_and_functions(self):
         translator = AstTranslator()

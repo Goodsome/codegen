@@ -6,8 +6,8 @@ def build_import(import_spec: ImportFromSpec) -> ast.Import | ast.ImportFrom:
     """Builds an AST import node from an ImportFromSpec."""
     
     names = [
-        ast.alias(name=n.name, asname=n.alias if n.alias else None) 
-        for n in import_spec.names
+        ast.alias(name=n.name, asname=n.alias if n.alias else None)
+        for n in sorted(import_spec.names, key=lambda x: x.name)
     ]
     
     if import_spec.module == "__root__":

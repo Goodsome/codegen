@@ -1,3 +1,5 @@
+from pydoc import classname
+from codegen.domain_definition.domain.value_objects.aggregate_spec import AggregateSpec
 from codegen.python_gen.domain.enums import AssignmentFlavor
 from pydantic import Field
 from codegen.shared.models import ValueObject
@@ -27,6 +29,13 @@ class AssignmentSpec(ValueObject):
         return cls(
             flavor=AssignmentFlavor.LITERAL,
             literal=LiteralSpec(value=value)
+        )
+    
+    @classmethod
+    def from_symbol(cls, symbol: str) -> "AssignmentSpec":
+        return cls(
+            flavor=AssignmentFlavor.SYMBOL,
+            reference=ReferenceSpec(name=symbol)
         )
 
     @classmethod
