@@ -44,6 +44,7 @@ GLOBAL_REGISTRY = {
     "abstractmethod": "abc",
     "datetime": "datetime",
     "UUID": "uuid",
+    "Enum": "enum",
     "DeclarativeContainer": "dependency_injector.containers",
     "Factory": "dependency_injector.providers",
     "Singleton": "dependency_injector.providers",
