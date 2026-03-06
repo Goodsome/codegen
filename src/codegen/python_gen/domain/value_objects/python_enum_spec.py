@@ -34,4 +34,11 @@ class PythonEnumSpec(ValueObject):
             members=members or [],
         )
 
+    def get_required_types(self) -> set[str]:
+        """收集本 Enum 需要的类型名称"""
+        types: set[str] = set()
+        if self.base_class:
+            types.add(self.base_class)
+        return types
+
 

@@ -83,6 +83,8 @@ class ModuleSpec(ValueObject):
             types.update(cls.get_required_types())
         for f in self.functions:
             types.update(f.get_required_types())
+        for e in self.enums:
+            types.update(e.get_required_types())
         return types
 
     def has_class(self, class_name: str) -> bool:
