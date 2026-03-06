@@ -67,10 +67,31 @@ def test_build_generates_test_skeletons_by_default(cli_runner, monkeypatch, tmp_
     assert "class TestOrder" in test_content
     assert "def test_add_item" in test_content
     assert "from .cases_order import" in test_content
+    # 应为具名导入，不应使用 import *
+    assert "import *" not in test_content, "cases import 不应使用 import *"
+    assert "TEST_CASES_ADD_ITEM" in test_content
 
     # Verify cases file content
     cases_content = cases_order.read_text()
     assert "TEST_CASES_ADD_ITEM" in cases_content
+
+    # Verify use_case test skeletons generated under application/use_cases/
+    uc_dir = tests_dir / "sales" / "application" / "use_cases"
+    assert uc_dir.exists(), f"application/use_cases/ not found under tests/unit/sales/"
+
+    test_create_order = uc_dir / "test_create_order.py"
+    cases_create_order = uc_dir / "cases_create_order.py"
+    assert test_create_order.exists(), "test_create_order.py not generated"
+    assert cases_create_order.exists(), "cases_create_order.py not generated"
+
+    uc_content = test_create_order.read_text()
+    assert "class TestCreateOrder" in uc_content
+    assert "def test_execute" in uc_content
+    assert "TEST_CASES_EXECUTE" in uc_content
+    assert "import *" not in uc_content, "use_case test cases import 不应使用 import *"
+
+    cases_uc_content = cases_create_order.read_text()
+    assert "TEST_CASES_EXECUTE" in cases_uc_content
 
     # Verify import pytest is BEFORE the class definition
     import_line = test_content.index("import pytest")
@@ -131,4 +152,69 @@ def test_cases_files_are_not_overwritten(cli_runner, monkeypatch, tmp_path):
     assert "custom_product" in preserved_content, (
         "cases_order.py was overwritten! Content after second build: "
         + preserved_content
+    )
+
+
+def test_cases_files_support_incremental_update(cli_runner, monkeypatch, tmp_path):
+    """
+    Scenario: Adding a new behavior and rebuilding adds new TEST_CASES variable
+              without losing hand-edited data in the existing case.
+    Given: A blueprint with Order.add_item behavior.
+    When: First build creates cases_order.py with TEST_CASES_ADD_ITEM.
+          User writes custom data into TEST_CASES_ADD_ITEM.
+          Blueprint adds Order.remove_item behavior.
+          Second build runs.
+    Then: cases_order.py now has BOTH TEST_CASES_ADD_ITEM (preserved) AND
+          TEST_CASES_REMOVE_ITEM (newly added).
+    """
+    import yaml
+
+    base_dir = _setup_blueprint(tmp_path)
+    monkeypatch.chdir(base_dir)
+
+    # First build: only add_item
+    result1 = cli_runner.invoke(app, ["build"])
+    assert result1.exit_code == 0, result1.stdout
+
+    agg_dir = base_dir / "tests" / "unit" / "sales" / "domain" / "aggregates"
+    cases_file = agg_dir / "cases_order.py"
+    assert cases_file.exists()
+
+    # User writes custom test data
+    cases_file.write_text(
+        'TEST_CASES_ADD_ITEM: list = [("prod_1", 2, None)]\n'
+    )
+
+    # Add remove_item behavior to blueprint
+    blueprint_file = base_dir / "codegen.yaml"
+    with blueprint_file.open() as f:
+        blueprint = yaml.safe_load(f)
+
+    for ctx in blueprint["contexts"]:
+        if ctx.get("name") == "Sales":
+            order_agg = next(
+                a for a in ctx["domain"]["aggregates"] if a["name"] == "Order"
+            )
+            order_agg["behaviors"].append({
+                "name": "remove_item",
+                "inputs": [{"name": "product_id", "type": "str"}],
+                "output": {"type": "None"},
+            })
+
+    with blueprint_file.open("w") as f:
+        yaml.dump(blueprint, f)
+
+    # Second build: should add TEST_CASES_REMOVE_ITEM without losing custom data
+    result2 = cli_runner.invoke(app, ["build"])
+    assert result2.exit_code == 0, result2.stdout
+
+    updated_content = cases_file.read_text()
+    assert "TEST_CASES_ADD_ITEM" in updated_content, (
+        "TEST_CASES_ADD_ITEM 应被保留"
+    )
+    assert "prod_1" in updated_content, (
+        "用户自定义的测试数据应被保留"
+    )
+    assert "TEST_CASES_REMOVE_ITEM" in updated_content, (
+        "新增 behavior 对应的 TEST_CASES_REMOVE_ITEM 应被自动添加"
     )

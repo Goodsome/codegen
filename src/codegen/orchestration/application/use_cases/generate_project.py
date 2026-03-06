@@ -83,8 +83,11 @@ class GenerateProject:
             cases_packages.append(self._filter_package(ctx_pkg, prefix="cases_"))
             test_packages.append(self._filter_package(ctx_pkg, prefix="test_"))
 
-        # Pass 1: cases files (never overwrite — preserve hand-edited data)
-        # Uses test_generator which writes to project root
+        # Pass 1: cases files (merge into existing file — preserves hand-edited data,
+        #         while adding newly introduced TEST_CASES variables for new behaviors)
+        # NOTE: overwrite=True is intentional here. generate_package already merges the
+        #       new ModuleSpec with the existing file on disk, so user-edited test data
+        #       is preserved while new TEST_CASES_XXX variables are appended.
         if cases_packages:
             unit_pkg = PackageSpec.create(
                 name="unit", sub_packages=cases_packages,
@@ -96,7 +99,7 @@ class GenerateProject:
                 GeneratePackageCommand(
                     package_spec=cases_root,
                     node=None,
-                    overwrite=False,
+                    overwrite=True,
                 )
             )
 
