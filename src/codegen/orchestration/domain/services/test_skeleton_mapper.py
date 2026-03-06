@@ -14,6 +14,7 @@ from codegen.domain_definition.domain.value_objects.bounded_context import (
 )
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
 from codegen.domain_definition.domain.value_objects.service_spec import ServiceSpec
+from codegen.domain_definition.domain.value_objects.use_case_spec import UseCaseSpec
 from codegen.domain_definition.domain.value_objects.value_object_spec import (
     ValueObjectSpec,
 )
@@ -56,6 +57,12 @@ def _is_testable_method(method: MethodSpec) -> bool:
 def _cases_var_name(method_name: str) -> str:
     """Generate the TEST_CASES variable name for a method."""
     return f"TEST_CASES_{method_name.upper()}"
+
+
+def _make_execute_method() -> MethodSpec:
+    """Create a virtual 'execute' MethodSpec for use case test case generation."""
+    from codegen.domain_definition.domain.value_objects.method_output import MethodOutput
+    return MethodSpec(name="execute", inputs=[], output=MethodOutput(type="Any"))
 
 
 @dataclass
@@ -127,10 +134,11 @@ class TestSkeletonMapper:
         if not testable:
             return ModuleSpec.create(name=f"test_{service_snake}")
 
-        # import pytest + from .cases_* import * — both go at top via ImportFromSpec
+        # import pytest + from .cases_* import TEST_CASES_xxx (具名导入)
+        cases_var_names = [_cases_var_name(str(m.name)) for m in testable]
         imports = [
             ImportFromSpec.create("__root__", ["pytest"]),
-            ImportFromSpec.create(f"cases_{service_snake}", ["*"], level=1),
+            ImportFromSpec.create(f"cases_{service_snake}", cases_var_names, level=1),
         ]
 
         # Build the import path for the service under test
@@ -203,9 +211,11 @@ class TestSkeletonMapper:
         if not testable:
             return ModuleSpec.create(name=f"test_{component_snake}")
 
+        # 具名导入每个 testable method 对应的 TEST_CASES 变量
+        cases_var_names = [_cases_var_name(str(m.name)) for m in testable]
         imports = [
             ImportFromSpec.create("__root__", ["pytest"]),
-            ImportFromSpec.create(f"cases_{component_snake}", ["*"], level=1),
+            ImportFromSpec.create(f"cases_{component_snake}", cases_var_names, level=1),
         ]
 
         src_module = (
@@ -255,6 +265,70 @@ class TestSkeletonMapper:
 
         return ModuleSpec.create(
             name=f"test_{component_snake}",
+            imports=imports,
+            classes=[test_class],
+        )
+
+    # ------------------------------------------------------------------ #
+    #  Use Case test module: test_{name}.py
+    # ------------------------------------------------------------------ #
+
+    def to_use_case_test_module_spec(
+        self,
+        use_case: UseCaseSpec,
+        context_name: str,
+        project_name: str,
+    ) -> ModuleSpec:
+        """Generate the test_*.py skeleton for an application use case."""
+        uc_snake = self._to_snake(str(use_case.name))
+        execute_var = _cases_var_name("execute")
+
+        imports = [
+            ImportFromSpec.create("__root__", ["pytest"]),
+            ImportFromSpec.create(f"cases_{uc_snake}", [execute_var], level=1),
+        ]
+
+        src_module = (
+            f"{project_name}.{context_name}.application.use_cases.{uc_snake}"
+        )
+
+        # Fixture：实例化 use case
+        fixture_body = (
+            f"from {src_module} import {use_case.name}\n"
+            f"return {use_case.name}()"
+        )
+        fixture_func = FunctionSpec.create(
+            name="use_case",
+            return_annotation=TypeAnnotationSpec(name="None"),
+            decorators=["pytest.fixture"],
+            parameters=[],
+            suite=fixture_body,
+            function_type=FunctionType.INSTANCE_METHOD,
+        )
+
+        # test_execute 方法
+        test_execute = FunctionSpec.create(
+            name="test_execute",
+            return_annotation=TypeAnnotationSpec(name="None"),
+            decorators=[
+                f'pytest.mark.parametrize("input_args,expected", {execute_var})'
+            ],
+            parameters=[
+                VariableSpec.create(name="use_case", type_spec=None),
+                VariableSpec.create(name="input_args", type_spec=None),
+                VariableSpec.create(name="expected", type_spec=None),
+            ],
+            suite="result = use_case.execute(**input_args)\nassert result == expected",
+            function_type=FunctionType.INSTANCE_METHOD,
+        )
+
+        test_class = ClassSpec.create(
+            name=f"Test{use_case.name}",
+            methods=[fixture_func, test_execute],
+        )
+
+        return ModuleSpec.create(
+            name=f"test_{uc_snake}",
             imports=imports,
             classes=[test_class],
         )
@@ -380,9 +454,34 @@ class TestSkeletonMapper:
             sub_packages=[services_pkg, value_objects_pkg, aggregates_pkg, entities_pkg],
         )
 
+        # --- application/use_cases ---
+        uc_test_modules: list[ModuleSpec] = []
+        uc_cases_modules: list[ModuleSpec] = []
+        application = context.application
+        for uc in (application.use_cases if application else []):
+            uc_test_modules.append(
+                self.to_use_case_test_module_spec(uc, context_snake, project_name)
+            )
+            uc_cases_modules.append(
+                self.to_cases_module_spec(
+                    self._to_snake(str(uc.name)),
+                    # use_case 只有一个 execute 方法需要测试
+                    [_make_execute_method()],
+                )
+            )
+
+        use_cases_pkg = PackageSpec.create(
+            name="use_cases",
+            modules=uc_test_modules + uc_cases_modules,
+        )
+        application_pkg = PackageSpec.create(
+            name="application",
+            sub_packages=[use_cases_pkg],
+        )
+
         return PackageSpec.create(
             name=context_snake,
-            sub_packages=[domain_pkg],
+            sub_packages=[domain_pkg, application_pkg],
         )
 
     @staticmethod

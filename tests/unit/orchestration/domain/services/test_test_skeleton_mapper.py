@@ -12,11 +12,12 @@ from codegen.domain_definition.domain.value_objects.value_object_spec import (
 )
 from codegen.domain_definition.domain.value_objects.aggregate_spec import AggregateSpec
 from codegen.domain_definition.domain.value_objects.entity_spec import EntitySpec
+from codegen.domain_definition.domain.value_objects.use_case_spec import UseCaseSpec
+from codegen.domain_definition.domain.value_objects.application_spec import ApplicationSpec
 from codegen.domain_definition.domain.value_objects.bounded_context import (
     BoundedContext,
 )
 from codegen.domain_definition.domain.value_objects.domain_spec import DomainSpec
-
 
 @pytest.fixture
 def mapper():
@@ -187,10 +188,13 @@ class TestServiceTestModuleSpec:
             service, "shared", "proj"
         )
 
-        # Cases import should be a relative import (level=1)
+        # Cases import 应为具名导入（不是 import *）
         cases_imports = [i for i in result.imports if i.level == 1]
         assert len(cases_imports) == 1
         assert "cases_simple" in cases_imports[0].module
+        # 应显式导入具体的 TEST_CASES 变量名
+        assert cases_imports[0].has_name("TEST_CASES_GO")
+        assert not cases_imports[0].has_name("*"), "cases import 不应该使用 import *"
 
     def test_empty_operations_produces_empty_test_class(self, mapper):
         service = _make_service("NoOps", operations=[])
@@ -225,6 +229,23 @@ class TestBehaviorTestModuleSpec:
         # fixture + 2 testable methods (create excluded)
         assert len(test_class.methods) == 3
 
+    def test_cases_import_is_named_not_wildcard(self, mapper):
+        """cases import 应为具名导入，而非 import *，且包含所有 testable method。"""
+        behaviors = [
+            _make_method("add_item", ["product_id"]),
+            _make_method("remove_item", ["product_id"]),
+        ]
+        result = mapper.to_behavior_test_module_spec(
+            "Order", behaviors,
+            "sales", "my_project", "aggregates",
+        )
+
+        cases_imports = [i for i in result.imports if i.level == 1]
+        assert len(cases_imports) == 1
+        assert not cases_imports[0].has_name("*"), "cases import 不应使用 import *"
+        assert cases_imports[0].has_name("TEST_CASES_ADD_ITEM")
+        assert cases_imports[0].has_name("TEST_CASES_REMOVE_ITEM")
+
     def test_fixture_points_to_correct_import(self, mapper):
         result = mapper.to_behavior_test_module_spec(
             "Address", [_make_method("validate")],
@@ -236,8 +257,58 @@ class TestBehaviorTestModuleSpec:
 
 
 # ============================================================
-# Full context package generation
+# Use Case test module generation
 # ============================================================
+
+
+class TestUseCaseTestModuleSpec:
+    """Tests for to_use_case_test_module_spec."""
+
+    def test_generates_test_class_with_execute_method(self, mapper):
+        uc = UseCaseSpec.create(
+            name="CreateOrder",
+            kind="command",
+        )
+        result = mapper.to_use_case_test_module_spec(uc, "sales", "my_project")
+
+        assert str(result.name) == "test_create_order"
+        assert len(result.classes) == 1
+        cls = result.classes[0]
+        assert str(cls.name) == "TestCreateOrder"
+        # fixture + test_execute
+        assert len(cls.methods) == 2
+        assert str(cls.methods[0].name) == "use_case"
+        assert str(cls.methods[1].name) == "test_execute"
+
+    def test_fixture_imports_correct_use_case_module(self, mapper):
+        uc = UseCaseSpec.create(name="PlaceOrder", kind="command")
+        result = mapper.to_use_case_test_module_spec(uc, "sales", "my_project")
+
+        fixture = result.classes[0].methods[0]
+        assert "my_project.sales.application.use_cases.place_order" in fixture.suite
+        assert "PlaceOrder" in fixture.suite
+
+    def test_cases_import_contains_test_cases_execute(self, mapper):
+        uc = UseCaseSpec.create(name="CreateOrder", kind="command")
+        result = mapper.to_use_case_test_module_spec(uc, "sales", "my_project")
+
+        cases_imports = [i for i in result.imports if i.level == 1]
+        assert len(cases_imports) == 1
+        assert "cases_create_order" in cases_imports[0].module
+        assert cases_imports[0].has_name("TEST_CASES_EXECUTE")
+        assert not cases_imports[0].has_name("*"), "cases import 不应使用 import *"
+
+    def test_cases_module_spec_has_execute_assignment(self, mapper):
+        uc = UseCaseSpec.create(name="CreateOrder", kind="command")
+        # cases module 包含 TEST_CASES_EXECUTE 变量
+        from codegen.orchestration.domain.services.test_skeleton_mapper import _make_execute_method
+        cases_mod = mapper.to_cases_module_spec(
+            "create_order", [_make_execute_method()]
+        )
+        assert len(cases_mod.assignments) == 1
+        assert cases_mod.assignments[0].name == "TEST_CASES_EXECUTE"
+
+
 
 
 class TestPackageSpec:
@@ -276,18 +347,44 @@ class TestPackageSpec:
         result = mapper.to_test_package_spec(context, "my_project")
 
         assert str(result.name) == "sales"
-        # domain sub-package
-        domain_pkg = result.sub_packages[0]
-        assert str(domain_pkg.name) == "domain"
+        # 应包含 domain + application 两个子包
+        pkg_names = {str(p.name) for p in result.sub_packages}
+        assert "domain" in pkg_names
+        assert "application" in pkg_names
+
+        domain_pkg = next(p for p in result.sub_packages if str(p.name) == "domain")
         # 4 sub-packages: services, value_objects, aggregates, entities
         assert len(domain_pkg.sub_packages) == 4
 
-        services_pkg = domain_pkg.sub_packages[0]
-        assert str(services_pkg.name) == "services"
+        services_pkg = next(p for p in domain_pkg.sub_packages if str(p.name) == "services")
         # test + cases for OrderService (+ __init__)
         module_names = {str(m.name) for m in services_pkg.modules}
         assert "test_order_service" in module_names
         assert "cases_order_service" in module_names
+
+    def test_generates_use_cases_under_application(self, mapper):
+        """use_case 应在 application/use_cases/ 目录下生成测试骨架。"""
+        context = BoundedContext.create(
+            name="Sales",
+            application=ApplicationSpec(
+                use_cases=[
+                    UseCaseSpec.create(name="CreateOrder", kind="command"),
+                    UseCaseSpec.create(name="CancelOrder", kind="command"),
+                ]
+            ),
+        )
+        result = mapper.to_test_package_spec(context, "my_project")
+
+        pkg_names = {str(p.name) for p in result.sub_packages}
+        assert "application" in pkg_names
+
+        app_pkg = next(p for p in result.sub_packages if str(p.name) == "application")
+        uc_pkg = next(p for p in app_pkg.sub_packages if str(p.name) == "use_cases")
+        module_names = {str(m.name) for m in uc_pkg.modules}
+        assert "test_create_order" in module_names
+        assert "cases_create_order" in module_names
+        assert "test_cancel_order" in module_names
+        assert "cases_cancel_order" in module_names
 
     def test_skips_context_without_domain(self, mapper):
         context = BoundedContext.create(name="Empty")
@@ -313,8 +410,8 @@ class TestPackageSpec:
         )
 
         result = mapper.to_test_package_spec(context, "proj")
-        domain_pkg = result.sub_packages[0]
-        services_pkg = domain_pkg.sub_packages[0]
+        domain_pkg = next(p for p in result.sub_packages if str(p.name) == "domain")
+        services_pkg = next(p for p in domain_pkg.sub_packages if str(p.name) == "services")
         # No testable operations → only __init__ module
         non_init = [m for m in services_pkg.modules if str(m.name) != "__init__"]
         assert len(non_init) == 0

@@ -57,3 +57,19 @@ contexts:
               value: "shipped"
             - name: DELIVERED
               value: "delivered"
+
+    application:
+      use_cases:
+        - name: CreateOrder
+          kind: command
+          description: "Create a new order"
+          command:
+            attributes:
+              - name: customer_id
+                type: str
+              - name: total_amount
+                type: float
+          result:
+            attributes:
+              - name: order_id
+                type: str
