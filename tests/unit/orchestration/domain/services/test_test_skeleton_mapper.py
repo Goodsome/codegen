@@ -69,7 +69,7 @@ class TestCasesModuleSpec:
         assert len(result.assignments) == 2
         assert result.assignments[0].name == "TEST_CASES_DO_SOMETHING"
         assert result.assignments[1].name == "TEST_CASES_DO_ANOTHER"
-        assert "list" == result.assignments[0].type_annotation
+        assert "list[DoSomethingCase]" == result.assignments[0].type_annotation
 
     def test_excludes_private_methods(self, mapper):
         methods = [
@@ -103,8 +103,11 @@ class TestCasesModuleSpec:
         result = mapper.to_cases_module_spec("converter", methods)
 
         value = result.assignments[0].value
-        assert '"source"' in value
-        assert '"target"' in value
+        assert "[]" == value
+        extra_src = "\n".join(code.code for code in result.extra_code)
+        assert "class ConvertCase(NamedTuple):" in extra_src
+        assert "source: string" in extra_src
+        assert "target: string" in extra_src
 
 
 # ============================================================
@@ -226,8 +229,8 @@ class TestBehaviorTestModuleSpec:
         assert str(result.name) == "test_type_annotation_spec"
         test_class = result.classes[0]
         assert str(test_class.name) == "TestTypeAnnotationSpec"
-        # fixture + 2 testable methods (create excluded)
-        assert len(test_class.methods) == 3
+        # 2 testable methods (create excluded, fixture removed in V2)
+        assert len(test_class.methods) == 2
 
     def test_cases_import_is_named_not_wildcard(self, mapper):
         """cases import 应为具名导入，而非 import *，且包含所有 testable method。"""
@@ -246,14 +249,15 @@ class TestBehaviorTestModuleSpec:
         assert cases_imports[0].has_name("TEST_CASES_ADD_ITEM")
         assert cases_imports[0].has_name("TEST_CASES_REMOVE_ITEM")
 
-    def test_fixture_points_to_correct_import(self, mapper):
-        result = mapper.to_behavior_test_module_spec(
-            "Address", [_make_method("validate")],
-            "sales", "my_project", "value_objects",
+    def test_imports_domain_model_in_cases(self, mapper):
+        result = mapper.to_cases_module_spec(
+            "address", [_make_method("validate")], 
+            component_type="behavior",
+            src_module="my_project.sales.domain.value_objects.address",
+            class_name="Address",
         )
-
-        fixture = result.classes[0].methods[0]
-        assert "my_project.sales.domain.value_objects.address" in fixture.suite
+        assert "my_project.sales.domain.value_objects.address" == result.imports[1].module
+        assert result.imports[1].has_name("Address")
 
 
 # ============================================================

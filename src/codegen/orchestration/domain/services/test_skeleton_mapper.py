@@ -20,6 +20,9 @@ from codegen.domain_definition.domain.value_objects.value_object_spec import (
 )
 from codegen.domain_definition.domain.value_objects.aggregate_spec import AggregateSpec
 from codegen.domain_definition.domain.value_objects.entity_spec import EntitySpec
+from codegen.domain_definition.domain.value_objects.implementation_spec import (
+    ImplementationSpec,
+)
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
@@ -59,10 +62,18 @@ def _cases_var_name(method_name: str) -> str:
     return f"TEST_CASES_{method_name.upper()}"
 
 
-def _make_execute_method() -> MethodSpec:
+def _make_execute_method(uc: UseCaseSpec | None = None) -> MethodSpec:
     """Create a virtual 'execute' MethodSpec for use case test case generation."""
     from codegen.domain_definition.domain.value_objects.method_output import MethodOutput
-    return MethodSpec(name="execute", inputs=[], output=MethodOutput(type="Any"))
+    from codegen.domain_definition.domain.enums import UseCaseKind
+    inputs = []
+    if uc:
+        if uc.kind == UseCaseKind.COMMAND and uc.command:
+            inputs = uc.command.attributes
+        elif uc.kind == UseCaseKind.QUERY and uc.query:
+            inputs = uc.query.attributes
+            
+    return MethodSpec(name="execute", inputs=inputs, output=MethodOutput(type="Any"))
 
 
 @dataclass
@@ -80,37 +91,90 @@ class TestSkeletonMapper:
         self,
         component_name: str,
         methods: list[MethodSpec],
+        component_type: str = "behavior",
+        src_module: str | None = None,
+        class_name: str | None = None,
     ) -> ModuleSpec:
-        """Generate the cases_*.py module with empty TEST_CASES lists."""
+        """Generate the cases_*.py module with explicitly typed case structures."""
         testable = [m for m in methods if _is_testable_method(m)]
         if not testable:
             return ModuleSpec.create(name=f"cases_{component_name}")
 
-        header = RawCodeSpec.create(
-            "# 测试用例数据文件 - 此文件不会被代码生成覆盖\n"
-            "# 开发者在此填充测试用例\n"
-        )
+        imports = [
+            ImportFromSpec.create("typing", ["Any", "Callable", "NamedTuple", "TypedDict"])
+        ]
 
+        extra_code = [
+            RawCodeSpec.create(
+                "# 测试用例数据文件 - 此文件不会被代码生成覆盖\n"
+                "# 开发者在此填充测试用例\n"
+            )
+        ]
+        
         assignments = []
-        for method in testable:
-            var_name = _cases_var_name(str(method.name))
-            # Build a comment hint showing the expected input params
-            input_hint = ", ".join(
-                f'"{attr.name}": ...' for attr in method.inputs
-            )
-            assignments.append(
-                ModuleAssignmentSpec.create(
-                    name=var_name,
-                    value="[\n"
-                    f'    # pytest.param({{{input_hint}}}, expected_result, id="case_name"),\n'
-                    "]",
-                    type_annotation="list",
+
+        if component_type == "behavior":
+            if src_module and class_name:
+                imports.append(ImportFromSpec.create(src_module, [class_name]))
+
+            for method in testable:
+                var_name = _cases_var_name(str(method.name))
+                method_pascal = self._to_pascal(str(method.name))
+                
+                # 生成 Case NamedTuple
+                case_tuple_name = f"{method_pascal}Case"
+                
+                fields = []
+                if class_name:
+                    fields.append(f"    instance: {class_name}")
+                else:
+                    fields.append(f"    instance: Any")
+                    
+                for attr in method.inputs:
+                    fields.append(f"    {attr.name}: {attr.custom_type_string or attr.type}")
+                    
+                fields.append("    expected: Any")
+                
+                case_code = f"class {case_tuple_name}(NamedTuple):\n" + "\n".join(fields) + "\n"
+                extra_code.append(RawCodeSpec.create(case_code))
+                
+                assignments.append(
+                    ModuleAssignmentSpec.create(
+                        name=var_name,
+                        value="[]",
+                        type_annotation=f"list[{case_tuple_name}]",
+                    )
                 )
-            )
+
+        else:
+            # Component type is service, use_case, infrastructure
+            # We generate a strict NamedTuple for each method's test cases
+            for method in testable:
+                var_name = _cases_var_name(str(method.name))
+                method_pascal = self._to_pascal(str(method.name))
+                
+                case_tuple_name = f"{method_pascal}Case"
+                
+                fields = ["    mocks_setup: Callable"]
+                for attr in method.inputs:
+                    fields.append(f"    {attr.name}: {attr.custom_type_string or attr.type}")
+                fields.append("    expected: Any")
+                
+                case_code = f"class {case_tuple_name}(NamedTuple):\n" + "\n".join(fields) + "\n"
+                extra_code.append(RawCodeSpec.create(case_code))
+                
+                assignments.append(
+                    ModuleAssignmentSpec.create(
+                        name=var_name,
+                        value="[]",
+                        type_annotation=f"list[{case_tuple_name}]",
+                    )
+                )
 
         return ModuleSpec.create(
             name=f"cases_{component_name}",
-            extra_code=[header],
+            extra_code=extra_code,
+            imports=imports,
             assignments=assignments,
         )
 
@@ -134,10 +198,10 @@ class TestSkeletonMapper:
         if not testable:
             return ModuleSpec.create(name=f"test_{service_snake}")
 
-        # import pytest + from .cases_* import TEST_CASES_xxx (具名导入)
         cases_var_names = [_cases_var_name(str(m.name)) for m in testable]
         imports = [
             ImportFromSpec.create("__root__", ["pytest"]),
+            ImportFromSpec.create("unittest.mock", ["MagicMock"]),
             ImportFromSpec.create(f"cases_{service_snake}", cases_var_names, level=1),
         ]
 
@@ -146,18 +210,40 @@ class TestSkeletonMapper:
             f"{project_name}.{context_name}.domain.services.{service_snake}"
         )
 
+        # Dependency mock fixtures
+        dep_fixtures: list[FunctionSpec] = []
+        dep_names = []
+        for dep in service.dependencies:
+            dep_name = self._to_snake(str(dep.name))
+            dep_names.append(dep_name)
+            
+            dep_fixture = FunctionSpec.create(
+                name=dep_name,
+                return_annotation=TypeAnnotationSpec(name="None"),
+                decorators=["pytest.fixture"],
+                parameters=[],
+                suite="return MagicMock()",
+                function_type=FunctionType.INSTANCE_METHOD,
+            )
+            dep_fixtures.append(dep_fixture)
+
         # Fixture method: instantiate the service
+        kw_args = ", ".join(f"{name}={name}" for name in dep_names)
         fixture_body_lines = [
             f"from {src_module} import {service.name}",
-            f"return {service.name}()",
+            f"return {service.name}({kw_args})",
         ]
         fixture_body = "\n".join(fixture_body_lines)
+        
+        fixture_params = [
+            VariableSpec.create(name=name, type_spec=None) for name in dep_names
+        ]
 
         fixture_func = FunctionSpec.create(
             name="service",
             return_annotation=TypeAnnotationSpec(name="None"),
             decorators=["pytest.fixture"],
-            parameters=[],
+            parameters=fixture_params,
             suite=fixture_body,
             function_type=FunctionType.INSTANCE_METHOD,
         )
@@ -168,25 +254,44 @@ class TestSkeletonMapper:
             var_name = _cases_var_name(str(method.name))
             method_name = str(method.name)
 
+            # For Services, we unroll the NamedTuple into our markers
+            param_names = ["mocks_setup"] + [attr.name for attr in method.inputs] + ["expected"]
+            param_str = ", ".join(param_names)
+
+            kwargs = ", ".join(f"{attr.name}={attr.name}" for attr in method.inputs)
+            suite_lines = [
+                f"mocks_setup({', '.join(dep_names)})" if dep_names else "mocks_setup()",
+                f"result = service.{method_name}({kwargs})",
+                "if callable(expected):",
+                "    expected(service)",
+                "else:",
+                "    assert result == expected",
+            ]
+            
+            test_params = [
+                VariableSpec.create(name="service", type_spec=None),
+            ]
+            test_params.extend([
+                VariableSpec.create(name=name, type_spec=None) for name in dep_names
+            ])
+            for p in param_names:
+                test_params.append(VariableSpec.create(name=p, type_spec=None))
+
             test_func = FunctionSpec.create(
                 name=f"test_{method_name}",
                 return_annotation=TypeAnnotationSpec(name="None"),
                 decorators=[
-                    f'pytest.mark.parametrize("input_args,expected", {var_name})'
+                    f'pytest.mark.parametrize("{param_str}", {var_name})'
                 ],
-                parameters=[
-                    VariableSpec.create(name="service", type_spec=None),
-                    VariableSpec.create(name="input_args", type_spec=None),
-                    VariableSpec.create(name="expected", type_spec=None),
-                ],
-                suite=f"result = service.{method_name}(**input_args)\nassert result == expected",
+                parameters=test_params,
+                suite="\n".join(suite_lines),
                 function_type=FunctionType.INSTANCE_METHOD,
             )
             test_methods.append(test_func)
 
         test_class = ClassSpec.create(
             name=f"Test{service.name}",
-            methods=[fixture_func] + test_methods,
+            methods=dep_fixtures + [fixture_func] + test_methods,
         )
 
         return ModuleSpec.create(
@@ -222,45 +327,42 @@ class TestSkeletonMapper:
             f"{project_name}.{context_name}.domain.{component_type}.{component_snake}"
         )
 
-        # Fixture: create instance
-        fixture_body = (
-            f"from {src_module} import {name}\n"
-            f"return {name}"
-        )
-
-        fixture_func = FunctionSpec.create(
-            name="target_class",
-            return_annotation=TypeAnnotationSpec(name="None"),
-            decorators=["pytest.fixture"],
-            parameters=[],
-            suite=fixture_body,
-            function_type=FunctionType.INSTANCE_METHOD,
-        )
-
         test_methods = []
         for method in testable:
             var_name = _cases_var_name(str(method.name))
             method_name = str(method.name)
 
+            param_names = ["instance"] + [attr.name for attr in method.inputs] + ["expected"]
+            param_str = ", ".join(param_names)
+
+            kwargs = ", ".join(f"{attr.name}={attr.name}" for attr in method.inputs)
+            suite_lines = [
+                f"actual = instance.{method_name}({kwargs})",
+                "if callable(expected):",
+                "    expected(instance)  # 验证对象状态而非返回值",
+                "else:",
+                "    assert actual == expected",
+            ]
+
+            test_params = []
+            for p in param_names:
+                test_params.append(VariableSpec.create(name=p, type_spec=None))
+
             test_func = FunctionSpec.create(
                 name=f"test_{method_name}",
                 return_annotation=TypeAnnotationSpec(name="None"),
                 decorators=[
-                    f'pytest.mark.parametrize("input_args,expected", {var_name})'
+                    f'pytest.mark.parametrize("{param_str}", {var_name})'
                 ],
-                parameters=[
-                    VariableSpec.create(name="target_class", type_spec=None),
-                    VariableSpec.create(name="input_args", type_spec=None),
-                    VariableSpec.create(name="expected", type_spec=None),
-                ],
-                suite=f"result = target_class(**input_args)\nassert result == expected",
+                parameters=test_params,
+                suite="\n".join(suite_lines),
                 function_type=FunctionType.INSTANCE_METHOD,
             )
             test_methods.append(test_func)
 
         test_class = ClassSpec.create(
             name=f"Test{name}",
-            methods=[fixture_func] + test_methods,
+            methods=test_methods,
         )
 
         return ModuleSpec.create(
@@ -285,6 +387,7 @@ class TestSkeletonMapper:
 
         imports = [
             ImportFromSpec.create("__root__", ["pytest"]),
+            ImportFromSpec.create("unittest.mock", ["MagicMock", "AsyncMock"]),
             ImportFromSpec.create(f"cases_{uc_snake}", [execute_var], level=1),
         ]
 
@@ -292,43 +395,215 @@ class TestSkeletonMapper:
             f"{project_name}.{context_name}.application.use_cases.{uc_snake}"
         )
 
+        # Dependency mock fixtures
+        dep_fixtures: list[FunctionSpec] = []
+        dep_names = []
+        for dep in use_case.dependencies:
+            dep_name = self._to_snake(str(dep.name))
+            dep_names.append(dep_name)
+            
+            dep_fixture = FunctionSpec.create(
+                name=dep_name,
+                return_annotation=TypeAnnotationSpec(name="None"),
+                decorators=["pytest.fixture"],
+                parameters=[],
+                suite="return MagicMock()",
+                function_type=FunctionType.INSTANCE_METHOD,
+            )
+            dep_fixtures.append(dep_fixture)
+
         # Fixture：实例化 use case
+        kw_args = ", ".join(f"{name}={name}" for name in dep_names)
         fixture_body = (
             f"from {src_module} import {use_case.name}\n"
-            f"return {use_case.name}()"
+            f"return {use_case.name}({kw_args})"
         )
+        
+        fixture_params = [
+            VariableSpec.create(name=name, type_spec=None) for name in dep_names
+        ]
+        
         fixture_func = FunctionSpec.create(
             name="use_case",
             return_annotation=TypeAnnotationSpec(name="None"),
             decorators=["pytest.fixture"],
-            parameters=[],
+            parameters=fixture_params,
             suite=fixture_body,
             function_type=FunctionType.INSTANCE_METHOD,
         )
 
         # test_execute 方法
+        execute_method = _make_execute_method(use_case)
+        param_names = ["mocks_setup"] + [attr.name for attr in execute_method.inputs] + ["expected"]
+        param_str = ", ".join(param_names)
+
+        kwargs = ", ".join(f"{attr.name}={attr.name}" for attr in execute_method.inputs)
+        
+        suite_lines = [
+            f"mocks_setup({', '.join(dep_names)})" if dep_names else "mocks_setup()",
+            f"result = use_case.execute({kwargs})",
+            "assert result == expected",
+        ]
+        
+        test_params = [
+            VariableSpec.create(name="use_case", type_spec=None),
+        ]
+        test_params.extend([
+            VariableSpec.create(name=name, type_spec=None) for name in dep_names
+        ])
+        for p in param_names:
+            test_params.append(VariableSpec.create(name=p, type_spec=None))
+
         test_execute = FunctionSpec.create(
             name="test_execute",
             return_annotation=TypeAnnotationSpec(name="None"),
             decorators=[
-                f'pytest.mark.parametrize("input_args,expected", {execute_var})'
+                f'pytest.mark.parametrize("{param_str}", {execute_var})'
             ],
-            parameters=[
-                VariableSpec.create(name="use_case", type_spec=None),
-                VariableSpec.create(name="input_args", type_spec=None),
-                VariableSpec.create(name="expected", type_spec=None),
-            ],
-            suite="result = use_case.execute(**input_args)\nassert result == expected",
+            parameters=test_params,
+            suite="\n".join(suite_lines),
             function_type=FunctionType.INSTANCE_METHOD,
         )
 
         test_class = ClassSpec.create(
             name=f"Test{use_case.name}",
-            methods=[fixture_func, test_execute],
+            methods=dep_fixtures + [fixture_func, test_execute],
         )
 
         return ModuleSpec.create(
             name=f"test_{uc_snake}",
+            imports=imports,
+            classes=[test_class],
+        )
+
+    # ------------------------------------------------------------------ #
+    #  Infrastructure Implementation test module: test_{name}.py
+    # ------------------------------------------------------------------ #
+
+    def to_infrastructure_test_module_spec(
+        self,
+        impl: ImplementationSpec,
+        context: BoundedContext,
+        project_name: str,
+    ) -> ModuleSpec:
+        """Generate the test_*.py skeleton for an infrastructure implementation."""
+        impl_snake = self._to_snake(str(impl.name))
+        
+        try:
+            port_spec = context.get_port_spec(str(impl.implements))
+            testable = [m for m in port_spec.get_final_operations() if _is_testable_method(m)]
+        except ValueError:
+            # If the port isn't found, we can't generate specific tests for it
+            testable = []
+
+        if not testable:
+            return ModuleSpec.create(name=f"test_{impl_snake}")
+
+        context_snake = self._to_snake(str(context.name))
+        cases_var_names = [_cases_var_name(str(m.name)) for m in testable]
+        
+        imports = [
+            ImportFromSpec.create("__root__", ["pytest"]),
+            ImportFromSpec.create("unittest.mock", ["MagicMock"]),
+            ImportFromSpec.create(f"cases_{impl_snake}", cases_var_names, level=1),
+        ]
+
+        src_module = (
+            f"{project_name}.{context_snake}.infrastructure.{impl_snake}"
+        )
+
+        # Dependency mock fixtures (Infrastructure implementations often lack explicit deps in schema, 
+        # but if they have them via attributes, we mock them)
+        dep_fixtures: list[FunctionSpec] = []
+        dep_names = []
+        for attr in impl.attributes:
+            dep_name = self._to_snake(str(attr.name))
+            dep_names.append(dep_name)
+            
+            dep_fixture = FunctionSpec.create(
+                name=dep_name,
+                return_annotation=TypeAnnotationSpec(name="None"),
+                decorators=["pytest.fixture"],
+                parameters=[],
+                suite="return MagicMock()",
+                function_type=FunctionType.INSTANCE_METHOD,
+            )
+            dep_fixtures.append(dep_fixture)
+
+        # Fixture method: instantiate the implementation
+        kw_args = ", ".join(f"{name}={name}" for name in dep_names)
+        if kw_args:
+            fixture_body_lines = [
+                f"from {src_module} import {impl.name}",
+                f"return {impl.name}({kw_args})",
+            ]
+        else:
+            fixture_body_lines = [
+                f"from {src_module} import {impl.name}",
+                f"return {impl.name}()",
+            ]
+        fixture_body = "\n".join(fixture_body_lines)
+        
+        fixture_params = [
+            VariableSpec.create(name=name, type_spec=None) for name in dep_names
+        ]
+
+        fixture_func = FunctionSpec.create(
+            name=impl_snake,
+            return_annotation=TypeAnnotationSpec(name="None"),
+            decorators=["pytest.fixture"],
+            parameters=fixture_params,
+            suite=fixture_body,
+            function_type=FunctionType.INSTANCE_METHOD,
+        )
+
+        # Test methods
+        test_methods = []
+        for method in testable:
+            var_name = _cases_var_name(str(method.name))
+            method_name = str(method.name)
+
+            param_names = ["mocks_setup"] + [attr.name for attr in method.inputs] + ["expected"]
+            param_str = ", ".join(param_names)
+
+            kwargs = ", ".join(f"{attr.name}={attr.name}" for attr in method.inputs)
+            suite_lines = [
+                f"mocks_setup({', '.join(dep_names)})" if dep_names else "mocks_setup()",
+                f"result = {impl_snake}.{method_name}({kwargs})",
+                "if callable(expected):",
+                f"    expected({impl_snake})",
+                "else:",
+                "    assert result == expected",
+            ]
+            
+            test_params = [
+                VariableSpec.create(name=impl_snake, type_spec=None),
+            ]
+            test_params.extend([
+                VariableSpec.create(name=name, type_spec=None) for name in dep_names
+            ])
+            for p in param_names:
+                test_params.append(VariableSpec.create(name=p, type_spec=None))
+
+            test_func = FunctionSpec.create(
+                name=f"test_{method_name}",
+                return_annotation=TypeAnnotationSpec(name="None"),
+                decorators=[
+                    f'pytest.mark.parametrize("{param_str}", {var_name})'
+                ],
+                parameters=test_params,
+                suite="\n".join(suite_lines),
+                function_type=FunctionType.INSTANCE_METHOD,
+            )
+            test_methods.append(test_func)
+
+        test_class = ClassSpec.create(
+            name=f"Test{impl.name}",
+            methods=dep_fixtures + [fixture_func] + test_methods,
+        )
+
+        return ModuleSpec.create(
+            name=f"test_{impl_snake}",
             imports=imports,
             classes=[test_class],
         )
@@ -363,6 +638,7 @@ class TestSkeletonMapper:
                 self.to_cases_module_spec(
                     self._to_snake(str(service.name)),
                     service.operations,
+                    component_type="service",
                 )
             )
 
@@ -380,6 +656,9 @@ class TestSkeletonMapper:
             testable = [m for m in vo.behaviors if _is_testable_method(m)]
             if not testable:
                 continue
+            vo_snake = self._to_snake(str(vo.name))
+            src_module = f"{project_name}.{context_snake}.domain.value_objects.{vo_snake}"
+            
             vo_test_modules.append(
                 self.to_behavior_test_module_spec(
                     str(vo.name), vo.behaviors,
@@ -388,7 +667,8 @@ class TestSkeletonMapper:
             )
             vo_cases_modules.append(
                 self.to_cases_module_spec(
-                    self._to_snake(str(vo.name)), vo.behaviors,
+                    vo_snake, vo.behaviors, component_type="behavior",
+                    src_module=src_module, class_name=str(vo.name)
                 )
             )
 
@@ -406,6 +686,9 @@ class TestSkeletonMapper:
             testable = [m for m in agg.behaviors if _is_testable_method(m)]
             if not testable:
                 continue
+            agg_snake = self._to_snake(str(agg.name))
+            src_module = f"{project_name}.{context_snake}.domain.aggregates.{agg_snake}"
+
             agg_test_modules.append(
                 self.to_behavior_test_module_spec(
                     str(agg.name), agg.behaviors,
@@ -414,7 +697,8 @@ class TestSkeletonMapper:
             )
             agg_cases_modules.append(
                 self.to_cases_module_spec(
-                    self._to_snake(str(agg.name)), agg.behaviors,
+                    agg_snake, agg.behaviors, component_type="behavior",
+                    src_module=src_module, class_name=str(agg.name)
                 )
             )
 
@@ -432,6 +716,9 @@ class TestSkeletonMapper:
             testable = [m for m in entity.behaviors if _is_testable_method(m)]
             if not testable:
                 continue
+            ent_snake = self._to_snake(str(entity.name))
+            src_module = f"{project_name}.{context_snake}.domain.entities.{ent_snake}"
+
             entity_test_modules.append(
                 self.to_behavior_test_module_spec(
                     str(entity.name), entity.behaviors,
@@ -440,7 +727,8 @@ class TestSkeletonMapper:
             )
             entity_cases_modules.append(
                 self.to_cases_module_spec(
-                    self._to_snake(str(entity.name)), entity.behaviors,
+                    ent_snake, entity.behaviors, component_type="behavior",
+                    src_module=src_module, class_name=str(entity.name)
                 )
             )
 
@@ -465,8 +753,8 @@ class TestSkeletonMapper:
             uc_cases_modules.append(
                 self.to_cases_module_spec(
                     self._to_snake(str(uc.name)),
-                    # use_case 只有一个 execute 方法需要测试
-                    [_make_execute_method()],
+                    [_make_execute_method(uc)],
+                    component_type="use_case",
                 )
             )
 
@@ -479,10 +767,44 @@ class TestSkeletonMapper:
             sub_packages=[use_cases_pkg],
         )
 
+        # --- infrastructure/implementations ---
+        infra_test_modules: list[ModuleSpec] = []
+        infra_cases_modules: list[ModuleSpec] = []
+        infrastructure = context.infrastructure
+        for impl in (infrastructure.implementations if infrastructure else []):
+            try:
+                port_spec = context.get_port_spec(str(impl.implements))
+                testable_ops = [m for m in port_spec.get_final_operations() if _is_testable_method(m)]
+            except ValueError:
+                testable_ops = []
+
+            if not testable_ops:
+                continue
+
+            infra_test_modules.append(
+                self.to_infrastructure_test_module_spec(impl, context, project_name)
+            )
+            infra_cases_modules.append(
+                self.to_cases_module_spec(
+                    self._to_snake(str(impl.name)),
+                    testable_ops,
+                    component_type="infrastructure",
+                )
+            )
+
+        infrastructure_pkg = PackageSpec.create(
+            name="infrastructure",
+            modules=infra_test_modules + infra_cases_modules,
+        )
+
         return PackageSpec.create(
             name=context_snake,
-            sub_packages=[domain_pkg, application_pkg],
+            sub_packages=[domain_pkg, application_pkg, infrastructure_pkg],
         )
+
+    @staticmethod
+    def _to_pascal(snake_name: str) -> str:
+        return "".join(word.capitalize() for word in snake_name.split("_"))
 
     @staticmethod
     def _to_snake(pascal_name: str) -> str:
