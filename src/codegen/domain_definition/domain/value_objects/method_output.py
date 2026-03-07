@@ -1,7 +1,5 @@
-from codegen.shared.models import ValueObject
+from codegen.domain_definition.domain.value_objects.type_definition import TypeDefinition
 
 
-class MethodOutput(ValueObject):
+class MethodOutput(TypeDefinition):
     """Specification of the output of a method."""
-
-    type: str

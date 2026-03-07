@@ -6,8 +6,8 @@ Description: 通用类型系统与 Python 类型系统的双向转换器
 
 from dataclasses import dataclass
 
-from codegen.domain_definition.domain.value_objects.attribute_spec import (
-    AttributeSpec,
+from codegen.domain_definition.domain.value_objects.type_definition import (
+    TypeDefinition,
 )
 from codegen.python_gen.domain.value_objects.type_annotation_spec import (
     TypeAnnotationSpec,
@@ -42,20 +42,20 @@ REVERSE_PRIMITIVE_MAP: dict[str, str] = {
 class TypeSystemConverter:
     """通用类型系统与 Python 类型系统的双向转换器"""
 
-    def to_python_annotation(self, attribute: AttributeSpec) -> TypeAnnotationSpec:
-        """将 AttributeSpec 转换为 TypeAnnotationSpec"""
+    def to_python_annotation(self, type_def: TypeDefinition) -> TypeAnnotationSpec:
+        """将 TypeDefinition（含 AttributeSpec、MethodOutput）转换为 TypeAnnotationSpec"""
         # 步骤 0: 检查 custom_type_string
-        if attribute.custom_type_string:
-            return TypeAnnotationSpec(name=attribute.custom_type_string)
+        if type_def.custom_type_string:
+            return TypeAnnotationSpec(name=type_def.custom_type_string)
 
         # 步骤 1: 映射核心类型名称
-        python_type_name = PRIMITIVE_MAP.get(attribute.type, attribute.type)
+        python_type_name = PRIMITIVE_MAP.get(type_def.type, type_def.type)
 
         # 步骤 2: 根据 container 包装类型
-        annotation = self._apply_container(python_type_name, attribute.container)
+        annotation = self._apply_container(python_type_name, type_def.container)
 
         # 步骤 3: 如果是可选类型，包装为 Union
-        if attribute.optional:
+        if type_def.optional:
             annotation = self._make_optional(annotation)
 
         return annotation

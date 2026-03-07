@@ -5,13 +5,8 @@ from codegen.python_gen.domain.value_objects.function_spec import (
     FunctionSpec,
 )
 from codegen.python_gen.domain.enums import FunctionType
-from codegen.python_gen.domain.value_objects.type_annotation_spec import (
-    TypeAnnotationSpec,
-)
 from codegen.domain_definition.domain.value_objects.method_output import MethodOutput
 from dataclasses import dataclass, field
-
-from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import parse_type_str
 
 
 @dataclass
@@ -40,11 +35,16 @@ class MethodMapper:
         function_name = method.name
         if is_private and not function_name.startswith("_"):
             function_name = "_" + function_name
+
+        # 使用 TypeSystemConverter 统一转换 MethodOutput → TypeAnnotationSpec
+        converter = self.attribute_mapper.type_system_converter
+        return_annotation = converter.to_python_annotation(method.output)
+
         return FunctionSpec.create(
             name=function_name,
             parameters=parameters,
             decorators=decorators,
-            return_annotation=parse_type_str(method.output.type),
+            return_annotation=return_annotation,
             function_type=function_type,
             suite="...",
             is_private=is_private,
@@ -59,8 +59,20 @@ class MethodMapper:
             ):
                 continue
             inputs.append(self.attribute_mapper.to_attribute(param))
+
+        # 使用 TypeSystemConverter 从返回注解提取结构化类型信息
+        converter = self.attribute_mapper.type_system_converter
+        generic_type, container, is_optional, custom_type_string = (
+            converter.from_python_annotation(function_spec.return_annotation)
+        )
+
         return MethodSpec(
             name=function_spec.name,
             inputs=inputs,
-            output=MethodOutput(type=function_spec.return_annotation.render()),
+            output=MethodOutput(
+                type=generic_type,
+                container=container,
+                optional=is_optional,
+                custom_type_string=custom_type_string,
+            ),
         )
