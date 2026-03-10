@@ -33,7 +33,17 @@ def build_module(module_spec: ModuleSpec, imports: list[ImportFromSpec]) -> ast.
         )
         body.append(type_checking_node)
 
-    # 1.5 Assignments
+    # 1.5 Extra Code (type definitions, comments, etc.)
+    for raw in module_spec.extra_code:
+        try:
+             # Parse raw code string back to AST nodes
+             nodes = ast.parse(raw.code).body
+             body.extend(nodes)
+        except SyntaxError:
+             # Should not happen if it came from valid source, but safety first.
+             pass
+
+    # 2. Assignments (must come after extra_code so type references are resolved)
     for assignment in module_spec.assignments:
         if assignment.type_annotation:
             # AnnAssign
@@ -51,27 +61,17 @@ def build_module(module_spec: ModuleSpec, imports: list[ImportFromSpec]) -> ast.
             )
         body.append(stmt)
         
-    # 2. Enums
+    # 3. Enums
     for enum_spec in module_spec.enums:
         body.append(enum_builder.build_enum(enum_spec))
         
-    # 3. Classes
+    # 4. Classes
     for class_spec in module_spec.classes:
         body.append(class_builder.build_class(class_spec))
         
-    # 4. Functions
+    # 5. Functions
     for func_spec in module_spec.functions:
         body.append(function_builder.build_function(func_spec))
-
-    # 5. Extra Code
-    for raw in module_spec.extra_code:
-        try:
-             # Parse raw code string back to AST nodes
-             nodes = ast.parse(raw.code).body
-             body.extend(nodes)
-        except SyntaxError:
-             # Should not happen if it came from valid source, but safety first.
-             pass
              
     # Edge case: Empty body
     # ast.Module requires a body list, but empty is valid in Python (empty file).
