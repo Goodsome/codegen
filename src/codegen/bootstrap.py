@@ -31,7 +31,6 @@ from codegen.python_gen.infrastructure.adapters.black_code_formatter import (
     BlackCodeFormatter,
 )
 from codegen.python_gen.infrastructure.adapters.ast_translator import AstTranslator
-from codegen.shared.infrastructure.adapters.jinja_adapter import JinjaAdapter
 from codegen.shared.infrastructure.adapters.os_file_system import OSFileSystem
 
 
@@ -48,7 +47,6 @@ class Container(containers.DeclarativeContainer):
             encoding=config.encoding,
         ),
     )
-    template_port_provider = Singleton(JinjaAdapter, config=config)
     ast_translator_provider = Singleton(AstTranslator)
 
     blueprint_loader_provider = Singleton(YamlBlueprintStorage, config=config)
