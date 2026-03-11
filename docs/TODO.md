@@ -1,8 +1,3 @@
-# 测试
-
-* 制定一个测试代码风格标准
-* 支持测试
-
 # Feature
 
 * 增加tree get set的能力，不要再直接查询 codegen.yaml
@@ -28,3 +23,15 @@ src/codegen
 ├── entrypoints/
 ├── domain_definition/
 └── ...
+
+## RENAME
+
+什么时候你才真正需要记录“元数据”？
+只有在一个极其特殊的痛点下，纯靠目录约定会失效：重命名（Renaming）追踪。
+如果开发者在代码里把 CreateOrderUseCase 改成了 PlaceOrderUseCase，纯按名称匹配的逆向解析器可能会认为：旧的被删除了，同时新建了一个。它无法把修改前的 YAML 节点和修改后的代码关联起来。
+
+即使未来要解决这个问题，更好的做法也不是在业务代码里写元数据，而是：
+
+外置状态文件：类似 .codegen.lock 或 .codegen.state.json，在项目根目录维护一个文件 ID 到当前 AST 签名的映射字典（对业务代码零侵入）。
+
+基于特征的启发式匹配：比较 AST 树的相似度（比如类里的方法没变，只是类名变了，判定为 Rename）。
