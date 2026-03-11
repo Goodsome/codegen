@@ -1,0 +1,724 @@
+# Interfaces 层设计文档
+
+## 概述
+
+本设计文档描述了 Codegen 项目如何支持 **Interfaces 层** 的代码生成和逆向工程。Interfaces 层是 DDD 四层架构的最外层，负责将 Application Layer 的 Use Case 暴露给外部世界。
+
+---
+
+## 1. 目录结构
+
+### 1.1 目标代码结构
+
+```
+src/
+├── bootstrap/
+│   ├── container.py        # Root Container（组合根）
+│   └── config.py           # 全局配置（AppSettings）
+├── shared/
+│   ├── container.py        # Shared Container
+│   └── ...
+├── context_a/
+│   ├── domain/
+│   ├── application/
+│   │   └── use_cases/
+│   │       ├── authenticate_user.py
+│   │       └── get_user.py
+│   ├── infrastructure/
+│   ├── container.py        # ContextA Container
+│   └── interfaces/         # 【新增】接口层
+│       ├── cli/
+│       │   ├── __init__.py
+│       │   ├── login.py
+│       │   └── get_user.py
+│       ├── mcp/
+│       │   ├── __init__.py
+│       │   ├── auth_login.py
+│       │   └── get_user.py
+│       └── http/
+│           ├── __init__.py
+│           ├── login.py
+│           └── get_user.py
+├── context_b/
+│   └── interfaces/         # 【新增】
+└── entrypoints/            # 【新增】统一入口
+    ├── cli_main.py         # 主 CLI 入口
+    └── mcp_main.py         # 主 MCP 入口
+```
+
+### 1.2 设计原则
+
+1. **高内聚**：每个 Context 的 interfaces 位于各自目录下，直接引用同级 `container.py`
+2. **统一入口**：`entrypoints/` 负责聚合所有 Context 的接口
+3. **一个接口一个文件**：与 `use_cases/` 类似，每个 CLI 命令/MCP Tool/HTTP Endpoint 独立文件
+4. **依赖注入**：interfaces 层通过 Container 获取 UseCase，不直接实例化
+5. **参数推导**：接口参数从 UseCase 的 Command/Query/Result 自动推导，无需重复定义
+
+---
+
+## 2. DSL 设计
+
+### 2.1 codegen.yaml 扩展
+
+在 `BoundedContext` 级别添加 `interfaces` 节点：
+
+```yaml
+name: MyProject
+description: 示例项目
+contexts:
+  - name: Auth
+    description: 认证上下文
+    domain:
+      # ... domain 定义
+    application:
+      use_cases:
+        - name: AuthenticateUser
+          kind: command
+          command:
+            name: AuthenticateUserCommand
+            attributes:
+              - name: username
+                type: str
+              - name: password
+                type: str
+          result:
+            name: AuthenticateUserResult
+            attributes:
+              - name: user_id
+                type: str
+              - name: token
+                type: str
+
+        - name: GetUser
+          kind: query
+          query:
+            name: GetUserQuery
+            attributes:
+              - name: user_id
+                type: str
+          result:
+            name: GetUserResult
+            attributes:
+              - name: user_id
+                type: str
+              - name: username
+                type: str
+              - name: email
+                type: str
+
+    # 【新增】Interfaces 层定义
+    interfaces:
+      cli:
+        commands:
+          - name: login
+            use_case: AuthenticateUser
+            description: 用户登录
+
+          - name: get-user
+            use_case: GetUser
+            description: 获取用户信息
+
+      mcp:
+        tools:
+          - name: auth_login
+            use_case: AuthenticateUser
+            description: 用户登录 (MCP Tool)
+
+          - name: get_user
+            use_case: GetUser
+            description: 获取用户信息
+
+      http:
+        endpoints:
+          - path: /auth/login
+            method: POST
+            use_case: AuthenticateUser
+            description: 用户登录接口
+
+          - path: /users/{user_id}
+            method: GET
+            use_case: GetUser
+            description: 获取用户信息
+```
+
+### 2.2 类型定义
+
+```python
+# interface_spec.py
+
+from codegen.shared.models import ValueObject
+
+class CliCommandSpec(ValueObject):
+    """CLI 命令规范"""
+    name: str              # 命令名 (kebab-case，用于文件名)
+    use_case: str          # 关联的 UseCase 类名 (PascalCase)
+    description: str = ""  # 可选描述
+
+class CliInterfaceSpec(ValueObject):
+    """CLI 接口层规范"""
+    commands: list[CliCommandSpec]
+
+class McpToolSpec(ValueObject):
+    """MCP Tool 规范"""
+    name: str              # Tool 名 (snake_case，用于文件名)
+    use_case: str          # 关联的 UseCase 类名
+    description: str = ""
+
+class McpInterfaceSpec(ValueObject):
+    """MCP 接口层规范"""
+    tools: list[McpToolSpec]
+
+class HttpEndpointSpec(ValueObject):
+    """HTTP Endpoint 规范"""
+    path: str              # URL 路径
+    method: str            # HTTP Method (GET/POST/PUT/DELETE/PATCH)
+    use_case: str          # 关联的 UseCase 类名
+    description: str = ""
+
+class HttpInterfaceSpec(ValueObject):
+    """HTTP 接口层规范"""
+    endpoints: list[HttpEndpointSpec]
+
+class InterfaceSpec(ValueObject):
+    """接口层总规范"""
+    cli: CliInterfaceSpec | None
+    mcp: McpInterfaceSpec | None
+    http: HttpInterfaceSpec | None
+```
+
+### 2.3 与 UseCaseSpec 的关系
+
+Interfaces 层复用了 UseCase 中定义的 `DataContractSpec`：
+
+```
+UseCaseSpec (Command 类型)
+├── command: DataContractSpec    → 接口参数来源 (request)
+└── result: DataContractSpec     → 接口返回值来源 (response)
+
+UseCaseSpec (Query 类型)
+├── query: DataContractSpec      → 接口参数来源 (request)
+└── result: DataContractSpec     → 接口返回值来源 (response)
+
+Interfaces 层只指定 use_case 名称，参数从 UseCase 自动推导。
+```
+
+---
+
+## 3. 代码生成
+
+### 3.1 CLI 生成
+
+#### `context_a/interfaces/cli/login.py`
+
+```python
+"""
+Login CLI Command.
+
+Auto-generated by codegen.
+"""
+import typer
+from context_a.container import ContextAContainer
+from context_a.application.use_cases.authenticate_user import (
+    AuthenticateUser,
+    AuthenticateUserCommand,
+)
+
+container = ContextAContainer()
+
+
+def login(username: str, password: str):
+    """用户登录"""
+    use_case = container.authenticate_user_use_case()
+    cmd = AuthenticateUserCommand(username=username, password=password)
+    result = use_case.execute(cmd)
+    typer.echo(f"Login successful: {result}")
+    return result
+```
+
+#### `context_a/interfaces/cli/__init__.py`
+
+```python
+"""
+ContextA CLI Commands.
+
+Auto-generated by codegen.
+"""
+import typer
+from context_a.interfaces.cli.login import login
+
+app = typer.Typer(help="认证上下文 CLI")
+
+app.command("login")(login)
+```
+
+### 3.2 MCP 生成
+
+#### `context_a/interfaces/mcp/auth_login.py`
+
+```python
+"""
+Auth Login MCP Tool.
+
+Auto-generated by codegen.
+"""
+from mcp.server.fastmcp import FastMCP
+from context_a.container import ContextAContainer
+from context_a.application.use_cases.authenticate_user import (
+    AuthenticateUser,
+    AuthenticateUserCommand,
+    AuthenticateUserResult,
+)
+
+container = ContextAContainer()
+mcp = FastMCP("ContextA MCP")
+
+
+@mcp.tool()
+def auth_login(cmd: AuthenticateUserCommand) -> AuthenticateUserResult:
+    """用户登录 (MCP Tool)"""
+    use_case = container.authenticate_user_use_case()
+    return use_case.execute(cmd)
+```
+
+#### `context_a/interfaces/mcp/get_user.py`
+
+```python
+"""
+Get User MCP Tool.
+
+Auto-generated by codegen.
+"""
+from context_a.container import ContextAContainer
+from context_a.application.use_cases.get_user import (
+    GetUser,
+    GetUserQuery,
+    GetUserResult,
+)
+
+container = ContextAContainer()
+
+
+def get_user(query: GetUserQuery) -> GetUserResult:
+    """获取用户信息"""
+    use_case = container.get_user_use_case()
+    return use_case.execute(query)
+```
+
+#### `context_a/interfaces/mcp/__init__.py`
+
+```python
+"""
+ContextA MCP Tools.
+
+Auto-generated by codegen.
+"""
+from mcp.server.fastmcp import FastMCP
+from context_a.interfaces.mcp.auth_login import auth_login
+from context_a.interfaces.mcp.get_user import get_user
+
+# 创建 MCP 实例并注册所有 tools
+mcp = FastMCP("ContextA MCP")
+mcp.tool()(auth_login)
+mcp.tool()(get_user)
+```
+
+### 3.3 HTTP 生成
+
+#### `context_a/interfaces/http/login.py`
+
+```python
+"""
+Login HTTP Endpoint.
+
+Auto-generated by codegen.
+"""
+from fastapi import APIRouter
+from context_a.container import ContextAContainer
+from context_a.application.use_cases.authenticate_user import (
+    AuthenticateUser,
+    AuthenticateUserCommand,
+    AuthenticateUserResult,
+)
+
+container = ContextAContainer()
+router = APIRouter()
+
+
+@router.post("/auth/login")
+def login(cmd: AuthenticateUserCommand) -> AuthenticateUserResult:
+    """用户登录接口"""
+    use_case = container.authenticate_user_use_case()
+    return use_case.execute(cmd)
+```
+
+#### `context_a/interfaces/http/get_user.py`
+
+```python
+"""
+Get User HTTP Endpoint.
+
+Auto-generated by codegen.
+"""
+from fastapi import APIRouter
+from context_a.container import ContextAContainer
+from context_a.application.use_cases.get_user import (
+    GetUser,
+    GetUserQuery,
+    GetUserResult,
+)
+
+container = ContextAContainer()
+router = APIRouter()
+
+
+@router.get("/users/{user_id}")
+def get_user(query: GetUserQuery) -> GetUserResult:
+    """获取用户信息"""
+    use_case = container.get_user_use_case()
+    return use_case.execute(query)
+```
+
+#### `context_a/interfaces/http/__init__.py`
+
+```python
+"""
+ContextA HTTP API.
+
+Auto-generated by codegen.
+"""
+from fastapi import APIRouter
+from context_a.interfaces.http.login import router as login_router
+from context_a.interfaces.http.get_user import router as get_user_router
+
+app = APIRouter(prefix="/api")
+
+# 注册所有 routers
+app.include_router(login_router)
+app.include_router(get_user_router)
+```
+
+### 3.4 统一 Entrypoints 生成
+
+#### `entrypoints/cli_main.py`
+
+```python
+"""
+Main CLI Entrypoint.
+
+Aggregates all context CLI commands.
+Auto-generated by codegen.
+"""
+import typer
+from context_a.interfaces.cli import app as context_a_app
+from context_b.interfaces.cli import app as context_b_app
+
+app = typer.Typer(name="MyApp")
+
+app.add_typer(context_a_app, name="auth")
+app.add_typer(context_b_app, name="other")
+
+
+if __name__ == "__main__":
+    app()
+```
+
+#### `entrypoints/mcp_main.py`
+
+```python
+"""
+Main MCP Entrypoint.
+
+Aggregates all context MCP tools.
+Auto-generated by codegen.
+"""
+from mcp.server.fastmcp import FastMCP
+from context_a.interfaces.mcp import mcp as context_a_mcp
+from context_b.interfaces.mcp import mcp as context_b_mcp
+
+# 创建主 MCP 实例
+main_mcp = FastMCP("MyApp MCP")
+
+# 注册所有 context 的 tools
+# 注意：需要将各 context 的 mcp 实例中的 tools 注册到主实例
+# 这可以通过遍历 context_a_mcp._tools 等方式实现
+```
+
+#### `entrypoints/http_main.py`
+
+```python
+"""
+Main HTTP Entrypoint.
+
+Aggregates all context HTTP APIs.
+Auto-generated by codegen.
+"""
+from fastapi import FastAPI
+from context_a.interfaces.http import app as context_a_app
+from context_b.interfaces.http import app as context_b_app
+
+app = FastAPI(title="MyApp API")
+
+app.include_router(context_a_app)
+app.include_router(context_b_app)
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+```
+
+---
+
+## 4. Reverse 工程设计
+
+### 4.1 检测策略
+
+采用 **纯目录约定** 策略：
+
+| 路径模式 | 映射目标 |
+|---------|---------|
+| `src/{context}/interfaces/cli/{name}.py` | `interfaces.cli.commands[]` |
+| `src/{context}/interfaces/mcp/{name}.py` | `interfaces.mcp.tools[]` |
+| `src/{context}/interfaces/http/{name}.py` | `interfaces.http.endpoints[]` |
+
+### 4.2 AST 解析规则
+
+#### CLI 检测
+
+```python
+# 文件：src/auth/interfaces/cli/login.py
+# → command name: "login" (从文件名和 @app.command 推断)
+
+@app.command("login")
+def login(username: str, password: str):
+    use_case = container.authenticate_user_use_case()
+    # → use_case: "AuthenticateUser"
+```
+
+#### MCP 检测
+
+```python
+# 文件：src/auth/interfaces/mcp/auth_login.py
+# → tool name: "auth_login" (从文件名推断)
+
+@mcp.tool()
+def auth_login(username: str, password: str):
+    use_case = container.authenticate_user_use_case()
+    # → use_case: "AuthenticateUser"
+```
+
+#### HTTP 检测
+
+```python
+# 文件：src/auth/interfaces/http/login.py
+# → endpoint: path="/auth/login", method="POST"
+
+@router.post("/auth/login")
+def login(username: str, password: str):
+    use_case = container.authenticate_user_use_case()
+    # → use_case: "AuthenticateUser"
+```
+
+### 4.3 UseCase 推断策略
+
+Reverse 工程时，UseCase 名称**从代码中的 container 调用推断**：
+
+```python
+use_case = container.authenticate_user_use_case()
+# → UseCase: "AuthenticateUser"
+```
+
+然后从 `BoundedContext.application.use_cases` 中查找对应的 UseCaseSpec，获取参数和返回类型：
+
+```yaml
+contexts:
+  - name: Auth
+    application:
+      use_cases:
+        - name: AuthenticateUser
+          kind: command
+          command:
+            name: AuthenticateUserCommand
+            attributes:
+              - name: username
+                type: str
+              - name: password
+                type: str
+          result:
+            name: AuthenticateUserResult
+            attributes:
+              - name: user_id
+                type: str
+```
+
+Reverse 输出时，只需要记录 `use_case` 名称，参数信息已经定义在 UseCase 中，无需重复。
+
+### 4.4 Reverse 输出示例
+
+扫描 `src/auth/interfaces/cli/login.py` 后生成：
+
+```yaml
+interfaces:
+  cli:
+    commands:
+      - name: login
+        use_case: AuthenticateUser
+```
+
+---
+
+## 5. Schema 扩展
+
+> **注意**：本节内容将在代码实现完成后通过 `codegen schema` 命令自动生成。
+
+### 5.1 新增定义
+
+在 `codegen.schema.json` 的 `$defs` 中将添加：
+
+- `CliCommandSpec`
+- `CliInterfaceSpec`
+- `McpToolSpec`
+- `McpInterfaceSpec`
+- `HttpEndpointSpec`
+- `HttpInterfaceSpec`
+- `InterfaceSpec`
+
+### 5.2 BoundedContext 扩展
+
+在 `BoundedContext` 的 `properties` 中将添加：
+
+```json
+"interfaces": {
+  "anyOf": [
+    { "$ref": "#/$defs/InterfaceSpec" },
+    { "type": "null" }
+  ],
+  "default": null
+}
+```
+
+---
+
+## 6. 实现文件清单
+
+### 6.1 新增文件
+
+| 文件路径 | 目的 |
+|---------|------|
+| `src/codegen/domain_definition/domain/value_objects/interface_spec.py` | InterfaceSpec 值对象 |
+| `src/codegen/orchestration/domain/services/interface_mapper.py` | Interfaces 代码生成器 |
+| `src/codegen/orchestration/domain/services/entrypoint_mapper.py` | Entrypoints 代码生成器 |
+| `src/codegen/orchestration/domain/services/interface_reverse_mapper.py` | Interfaces Reverse 解析器 |
+
+### 6.2 修改文件
+
+| 文件路径 | 修改内容 |
+|---------|---------|
+| `codegen.schema.json` | 添加 InterfaceSpec 相关 schema |
+| `src/codegen/domain_definition/domain/value_objects/bounded_context.py` | 添加 `interfaces` 字段 |
+| `src/codegen/orchestration/application/use_cases/generate_project.py` | 集成 InterfaceMapper |
+| `src/codegen/orchestration/domain/services/context_mapper.py` | 集成 interfaces reverse 逻辑 |
+
+---
+
+## 7. 验收标准
+
+### 7.1 DSL 层面
+
+- [ ] `codegen.yaml` 支持 `interfaces` 节点（cli/mcp/http）
+- [ ] Schema 验证通过
+
+### 7.2 Build 层面
+
+- [ ] 生成 `context/interfaces/cli/{name}.py` - 一个命令一个文件
+- [ ] 生成 `context/interfaces/mcp/{name}.py` - 一个 tool 一个文件
+- [ ] 生成 `context/interfaces/http/{name}.py` - 一个 endpoint 一个文件
+- [ ] 生成 `context/interfaces/{cli,mcp,http}/__init__.py` - 聚合导出
+- [ ] 生成 `entrypoints/{cli_main.py,mcp_main.py}`
+- [ ] 生成的代码能正确导入 Container 并获取 UseCase
+- [ ] 生成的代码无语法错误，可被 Python 解析
+
+### 7.3 Reverse 层面
+
+- [ ] 扫描 `interfaces/{cli,mcp,http}/*.py` 文件
+- [ ] 正确提取 CLI commands / MCP tools / HTTP endpoints
+- [ ] 正确映射回 YAML（use_case 名称）
+
+---
+
+## 8. 使用示例
+
+### 8.1 完整示例
+
+```yaml
+# codegen.yaml
+name: DemoApp
+description: 示例应用
+
+contexts:
+  - name: Auth
+    description: 认证上下文
+    application:
+      use_cases:
+        - name: AuthenticateUser
+          kind: command
+          command:
+            name: AuthenticateUserCommand
+            attributes:
+              - name: username
+                type: str
+              - name: password
+                type: str
+          result:
+            name: AuthenticateUserResult
+            attributes:
+              - name: user_id
+                type: str
+              - name: token
+                type: str
+
+    interfaces:
+      cli:
+        commands:
+          - name: login
+            use_case: AuthenticateUser
+            description: 用户登录
+
+      mcp:
+        tools:
+          - name: auth_login
+            use_case: AuthenticateUser
+            description: 用户登录
+
+      http:
+        endpoints:
+          - path: /auth/login
+            method: POST
+            use_case: AuthenticateUser
+            description: 用户登录接口
+```
+
+### 8.2 运行命令
+
+```bash
+# 生成代码
+codegen build
+
+# 运行 CLI
+python -m src.entrypoints.cli_main auth login --username admin --password secret
+
+# 运行 MCP
+python -m src.entrypoints.mcp_main
+
+# 运行 HTTP (需手动添加 main.py)
+uvicorn src.entrypoints.http_main:app --reload
+```
+
+---
+
+## 9. 注意事项
+
+1. **循环依赖风险**：interfaces 层只能依赖同级的 `container.py`，不能反向依赖 bootstrap
+2. **UseCase 命名约定**：Reverse 时从代码推断 UseCase 名称可能存在歧义
+3. **多 Context 聚合**：entrypoints 需正确导入和注册所有 Context 的接口
+4. **文件命名**：CLI 使用 kebab-case，MCP/HTTP 使用 snake_case 作为文件名
