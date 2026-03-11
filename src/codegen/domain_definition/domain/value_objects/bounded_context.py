@@ -13,6 +13,7 @@ from codegen.domain_definition.domain.value_objects.infrastructure_spec import (
 from codegen.domain_definition.domain.value_objects.config_spec import ConfigSpec
 from codegen.domain_definition.domain.value_objects.container_spec import ContainerSpec
 from codegen.domain_definition.domain.value_objects.port_spec import PortSpec
+from codegen.domain_definition.domain.value_objects.interface_spec import InterfaceSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.models import ValueObject
 
@@ -27,6 +28,7 @@ class BoundedContext(ValueObject):
     infrastructure: InfrastructureSpec = Field(default_factory=InfrastructureSpec)
     config: ConfigSpec | None = Field(default=None)
     container: ContainerSpec | None = Field(default=None)
+    interfaces: InterfaceSpec | None = Field(default=None)
 
     @classmethod
     def create(
@@ -38,6 +40,7 @@ class BoundedContext(ValueObject):
         infrastructure: InfrastructureSpec | None = None,
         config: ConfigSpec | None = None,
         container: ContainerSpec | None = None,
+        interfaces: InterfaceSpec | None = None,
     ) -> Any:
 
         if domain is None:
@@ -54,6 +57,7 @@ class BoundedContext(ValueObject):
             infrastructure=infrastructure,
             config=config,
             container=container,
+            interfaces=interfaces,
         )
 
     @cached_property

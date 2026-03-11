@@ -13,6 +13,7 @@ from codegen.orchestration.domain.services.infrastructure_mapper import (
 )
 from codegen.orchestration.domain.services.config_mapper import ConfigMapper
 from codegen.orchestration.domain.services.container_mapper import ContainerMapper
+from codegen.orchestration.domain.services.interface_mapper import InterfaceMapper
 
 
 @dataclass
@@ -24,6 +25,7 @@ class ContextMapper:
     )
     config_mapper: ConfigMapper = field(default_factory=ConfigMapper)
     container_mapper: ContainerMapper = field(default_factory=ContainerMapper)
+    interface_mapper: InterfaceMapper = field(default_factory=InterfaceMapper)
 
     def to_package_spec(self, context: BoundedContext, project_name: str = "") -> PackageSpec:
         domain_pkg = self.domain_mapper.to_package_spec(context.domain)
@@ -37,6 +39,7 @@ class ContextMapper:
         )
 
         modules: list[ModuleSpec] = []
+        sub_packages: list[PackageSpec] = [domain_pkg, application_pkg, infrastructure_pkg]
 
         # Add shared models for Shared context
         if context.name == "Shared":
@@ -61,7 +64,7 @@ class ContextMapper:
                 if impl.implements not in seen_ports:
                     bindings.append(PortBinding(port=impl.implements, implementation=impl.name))
                     seen_ports.add(impl.implements)
-            
+
             container_spec = ContainerSpec(bindings=bindings)
 
         container_module = self.container_mapper.to_module_spec(
@@ -69,9 +72,18 @@ class ContextMapper:
         )
         modules.append(container_module)
 
+        # Generate interfaces package if context has interfaces
+        if context.interfaces:
+            interfaces_pkg = self.interface_mapper.to_package_spec(
+                interfaces=context.interfaces,
+                context_name=str(context.name),
+                use_cases=context.application.use_cases,
+            )
+            sub_packages.append(interfaces_pkg)
+
         return PackageSpec.create(
             name=context.name,
-            sub_packages=[domain_pkg, application_pkg, infrastructure_pkg],
+            sub_packages=sub_packages,
             modules=modules,
         )
 
