@@ -8,7 +8,6 @@ dependencies = [
     "black>=25.12.0",
     "case-converter>=1.2.0",
     "dependency-injector>=4.48.3",
-    "jinja2>=3.1.6",
     "mcp>=1.26.0",
     "path>=17.1.1",
     "pydantic>=2.12.5",
@@ -36,6 +35,4 @@ build-backend = "hatchling.build"
 packages = ["src/codegen"]
 
 [tool.hatch.build.targets.sdist]
-include = [
-    "/src/codegen/python_gen/templates",
-]
+include = []
