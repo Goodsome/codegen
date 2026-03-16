@@ -94,19 +94,6 @@ contexts:
         output:
           type: Any
     ports:
-    - name: TemplatePort
-      description: Port for generating templates.
-      kind: adapter
-      operations:
-      - name: render
-        inputs:
-        - name: template_path
-          type: string
-        - name: context
-          type: any
-          container: map
-        output:
-          type: str
     - name: FileSystemPort
       description: Port for interacting with the file system.
       kind: adapter
@@ -164,10 +151,6 @@ contexts:
       implements: FileSystemPort
       technology: os
       description: OS file system adapter for reading/writing files.
-    - name: JinjaAdapter
-      implements: TemplatePort
-      technology: jinja
-      description: Jinja-based template rendering adapter.
 - name: Orchestration
   domain:
     enums:
