@@ -73,6 +73,11 @@ def build_function(func_spec: FunctionSpec) -> ast.FunctionDef | ast.AsyncFuncti
     
     # 2. Body
     body = []
+
+    # Add docstring if description exists
+    if func_spec.description:
+        body.append(ast.Expr(value=ast.Constant(value=func_spec.description)))
+
     if func_spec.suite:
         try:
              # Parse suite code.

@@ -28,6 +28,7 @@ class FunctionSpec(ValueObject):
     suite: str = Field(default="")
     function_type: FunctionType = Field(default=FunctionType.FUNCTION)
     is_private: bool = False
+    description: str | None = None
 
     @classmethod
     def create(
@@ -39,6 +40,7 @@ class FunctionSpec(ValueObject):
         suite: str = "",
         function_type: FunctionType = FunctionType.FUNCTION,
         is_private: bool = False,
+        description: str | None = None,
     ):
         return cls(
             name=SnakeString(name),
@@ -48,6 +50,7 @@ class FunctionSpec(ValueObject):
             return_annotation=return_annotation,
             function_type=function_type,
             is_private=is_private,
+            description=description,
         )
 
 
@@ -76,6 +79,7 @@ class FunctionSpec(ValueObject):
         suite = self.suite
         if not suite or suite == "...":
             suite = other.suite
+        description = self.description or other.description
         return self.__class__.create(
             name=self.name,
             decorators=self.decorators,
@@ -84,6 +88,7 @@ class FunctionSpec(ValueObject):
             return_annotation=self.return_annotation,
             function_type=self.function_type,
             is_private=self.is_private,
+            description=description,
         )
 
     def is_init_method(self) -> bool:
