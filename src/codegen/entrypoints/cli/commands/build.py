@@ -128,7 +128,7 @@ def build(
             help="Custom output directory (overrides --build/--no-build default locations)",
         ),
         skip_tests: bool = typer.Option(
-            False,
+            True,
             "--skip-tests",
             help="Generate unit test skeletons in tests/unit/ alongside source code",
         ),
