@@ -103,73 +103,60 @@ def print_build_report(result: BuildResult):
 
 @app.command()
 def build(
-        overwrite: bool = typer.Option(
-            False, "--overwrite", help="Overwrite existing files without prompting"
-        ),
-        build_dir: bool = typer.Option(
-            True,
-            "--build/--no-build",
-            help="Output to src directory (default: --build). Use --no-build to output to target directory",
-        ),
-        node: Optional[str] = typer.Option(
-            None,
-            "--node",
-            help="Generate only a specific bounded context or component by name (e.g., 'DomainDefinition')",
-        ),
-        config_file: Path = typer.Option(
-            Path("codegen.yaml"),
-            "--config",
-            "-c",
-            help="Path to the codegen.yaml blueprint file",
-        ),
-        out: Path | None = typer.Option(
-            None,
-            "--out",
-            help="Custom output directory (overrides --build/--no-build default locations)",
-        ),
-        skip_tests: bool = typer.Option(
-            True,
-            "--skip-tests",
-            help="Generate unit test skeletons in tests/unit/ alongside source code",
-        ),
+    output: str = typer.Option(
+        "src",
+        "--output", "-o",
+        help='Output directory: "src" (default) or custom path (relative or absolute)',
+    ),
+    overwrite: bool = typer.Option(
+        False, "--overwrite", help="Overwrite existing files without prompting"
+    ),
+    node: Optional[str] = typer.Option(
+        None,
+        "--node",
+        help="Generate only a specific bounded context or component by name (e.g., 'DomainDefinition')",
+    ),
+    config_file: Path = typer.Option(
+        Path("codegen.yaml"),
+        "--config",
+        "-c",
+        help="Path to the codegen.yaml blueprint file",
+    ),
+    skip_tests: bool = typer.Option(
+        False,
+        "--skip-tests",
+        help="Skip generating unit test skeletons",
+    ),
 ):
     """
     Build: Compile codegen.yaml into Python code.
-    
+
     This is the primary code generation command. It reads your blueprint
     file and generates Python code based on DDD patterns.
-    
+
     Examples:
         $ codegen build
         $ codegen build --overwrite
         $ codegen build --node DomainDefinition
-        $ codegen build --no-build --out ./generated
+        $ codegen build -o ./generated
     """
-    subdir = "src" if build_dir else "target"
-
-    # Using specific error handling style or just standard flow
-    with get_container(config_file=config_file, out=out, subdir=subdir) as container:
+    with get_container(config_file=config_file, output=output) as container:
         use_case = container.generate_project_use_case()
 
         if node is not None:
-            # Logic from original code: imply overwrite if node is specific
             overwrite = True
 
-        root_path = ""
-        if out:
-            root_path = str(out).replace("/", ".").replace("\\", ".")
+        root_path = "" if output == "src" else output.replace("/", ".").replace("\\", ".")
 
         cmd = GenerateProjectCommand(
             overwrite=overwrite, node=node, root_path=root_path,
             generate_tests=not skip_tests,
         )
 
-        # --- Change Starts Here ---
         try:
             with console.status("[bold green]Generating code...[/]"):
                 project_result = use_case.execute(cmd)
 
-            # The use_case returns GenerateProjectResult, containing a .result (BuildResult)
             print_build_report(project_result.result)
 
             if project_result.result.status == BuildStatus.FAILURE:
@@ -179,4 +166,3 @@ def build(
             console.print_exception()
             typer.echo(f"An error occurred: {e}")
             raise typer.Exit(code=1)
-        # --- Change Ends Here ---
