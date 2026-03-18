@@ -29,21 +29,22 @@ class InterfaceMapper:
         interfaces: InterfaceSpec,
         context_name: str,
         use_cases: list[UseCaseSpec],
+        project_name: str = "",
     ) -> PackageSpec:
         """将 InterfaceSpec 转换为 PackageSpec"""
         use_case_index = {uc.name: uc for uc in use_cases}
         sub_packages: list[PackageSpec] = []
 
         if interfaces.cli:
-            cli_pkg = self._map_cli_interface(interfaces.cli, context_name, use_case_index)
+            cli_pkg = self._map_cli_interface(interfaces.cli, context_name, use_case_index, project_name)
             sub_packages.append(cli_pkg)
 
         if interfaces.mcp:
-            mcp_pkg = self._map_mcp_interface(interfaces.mcp, context_name, use_case_index)
+            mcp_pkg = self._map_mcp_interface(interfaces.mcp, context_name, use_case_index, project_name)
             sub_packages.append(mcp_pkg)
 
         if interfaces.http:
-            http_pkg = self._map_http_interface(interfaces.http, context_name, use_case_index)
+            http_pkg = self._map_http_interface(interfaces.http, context_name, use_case_index, project_name)
             sub_packages.append(http_pkg)
 
         return PackageSpec.create(
@@ -56,18 +57,19 @@ class InterfaceMapper:
         cli_spec: Any,
         context_name: str,
         use_case_index: dict[str, UseCaseSpec],
+        project_name: str = "",
     ) -> PackageSpec:
         """生成 CLI 接口包"""
         modules: list[ModuleSpec] = []
         function_names: list[str] = []
 
         for cmd in cli_spec.commands:
-            module = self._map_cli_command(cmd, context_name, use_case_index)
+            module = self._map_cli_command(cmd, context_name, use_case_index, project_name)
             modules.append(module)
             function_names.append(cmd.name.replace("-", "_"))
 
         # 生成 __init__.py
-        init_module = self._create_cli_init_module(context_name, function_names)
+        init_module = self._create_cli_init_module(context_name, function_names, project_name)
         modules.append(init_module)
 
         return PackageSpec.create(
@@ -80,6 +82,7 @@ class InterfaceMapper:
         cmd: CliCommandSpec,
         context_name: str,
         use_case_index: dict[str, UseCaseSpec],
+        project_name: str = "",
     ) -> ModuleSpec:
         """生成单个 CLI 命令模块"""
         use_case = use_case_index.get(cmd.use_case)
@@ -98,6 +101,9 @@ class InterfaceMapper:
         func_name = cmd.name.replace("-", "_")
         uc_snake = self._to_snake_case(use_case.name)
         ctx_snake = self._to_snake_case(context_name)
+
+        # 构建完整包路径前缀
+        pkg_prefix = f"{project_name}." if project_name else ""
 
         # 生成函数体
         suite = f"use_case = container.{uc_snake}_use_case()\nreturn use_case.execute({param_name})"
@@ -120,12 +126,8 @@ class InterfaceMapper:
             imports=[
                 ImportFromSpec.create(module="__root__", names=["typer"]),
                 ImportFromSpec.create(
-                    module=f"{ctx_snake}.container",
+                    module=f"{pkg_prefix}{ctx_snake}.container",
                     names=["Container"],
-                ),
-                ImportFromSpec.create(
-                    module=f"{ctx_snake}.application.use_cases.{uc_snake}",
-                    names=[use_case.name, param_type, result_type],
                 ),
             ],
             extra_code=[
@@ -137,16 +139,18 @@ class InterfaceMapper:
         self,
         context_name: str,
         function_names: list[str],
+        project_name: str = "",
     ) -> ModuleSpec:
         """生成 CLI __init__.py"""
         ctx_snake = self._to_snake_case(context_name)
+        pkg_prefix = f"{project_name}." if project_name else ""
         imports: list[ImportFromSpec] = [
             ImportFromSpec.create(module="__root__", names=["typer"]),
         ]
         for func_name in function_names:
             imports.append(
                 ImportFromSpec.create(
-                    module=f"{ctx_snake}.interfaces.cli.{func_name}",
+                    module=f"{pkg_prefix}{ctx_snake}.interfaces.cli.{func_name}",
                     names=[func_name],
                 )
             )
@@ -168,18 +172,19 @@ class InterfaceMapper:
         mcp_spec: Any,
         context_name: str,
         use_case_index: dict[str, UseCaseSpec],
+        project_name: str = "",
     ) -> PackageSpec:
         """生成 MCP 接口包"""
         modules: list[ModuleSpec] = []
         function_names: list[str] = []
 
         for tool in mcp_spec.tools:
-            module = self._map_mcp_tool(tool, context_name, use_case_index)
+            module = self._map_mcp_tool(tool, context_name, use_case_index, project_name)
             modules.append(module)
             function_names.append(tool.name)
 
         # 生成 __init__.py
-        init_module = self._create_mcp_init_module(context_name, function_names)
+        init_module = self._create_mcp_init_module(context_name, function_names, project_name)
         modules.append(init_module)
 
         return PackageSpec.create(
@@ -192,6 +197,7 @@ class InterfaceMapper:
         tool: McpToolSpec,
         context_name: str,
         use_case_index: dict[str, UseCaseSpec],
+        project_name: str = "",
     ) -> ModuleSpec:
         """生成单个 MCP tool 模块"""
         use_case = use_case_index.get(tool.use_case)
@@ -209,6 +215,9 @@ class InterfaceMapper:
         result_type = f"{use_case.name}Result"
         uc_snake = self._to_snake_case(use_case.name)
         ctx_snake = self._to_snake_case(context_name)
+
+        # 构建完整包路径前缀
+        pkg_prefix = f"{project_name}." if project_name else ""
 
         # 生成函数体
         suite = f"use_case = container.{uc_snake}_use_case()\nreturn use_case.execute({param_name})"
@@ -230,12 +239,8 @@ class InterfaceMapper:
             functions=[func],
             imports=[
                 ImportFromSpec.create(
-                    module=f"{ctx_snake}.container",
+                    module=f"{pkg_prefix}{ctx_snake}.container",
                     names=["Container"],
-                ),
-                ImportFromSpec.create(
-                    module=f"{ctx_snake}.application.use_cases.{uc_snake}",
-                    names=[use_case.name, param_type, result_type],
                 ),
             ],
             extra_code=[
@@ -247,16 +252,18 @@ class InterfaceMapper:
         self,
         context_name: str,
         function_names: list[str],
+        project_name: str = "",
     ) -> ModuleSpec:
         """生成 MCP __init__.py"""
         ctx_snake = self._to_snake_case(context_name)
+        pkg_prefix = f"{project_name}." if project_name else ""
         imports: list[ImportFromSpec] = [
             ImportFromSpec.create(module="mcp.server.fastmcp", names=["FastMCP"]),
         ]
         for func_name in function_names:
             imports.append(
                 ImportFromSpec.create(
-                    module=f"{ctx_snake}.interfaces.mcp.{func_name}",
+                    module=f"{pkg_prefix}{ctx_snake}.interfaces.mcp.{func_name}",
                     names=[func_name],
                 )
             )
@@ -278,20 +285,20 @@ class InterfaceMapper:
         http_spec: Any,
         context_name: str,
         use_case_index: dict[str, UseCaseSpec],
+        project_name: str = "",
     ) -> PackageSpec:
         """生成 HTTP 接口包"""
         modules: list[ModuleSpec] = []
-        endpoint_names: list[str] = []
+        module_names: list[str] = []
 
         for endpoint in http_spec.endpoints:
-            module = self._map_http_endpoint(endpoint, context_name, use_case_index)
+            module = self._map_http_endpoint(endpoint, context_name, use_case_index, project_name)
             modules.append(module)
-            # 使用路径生成模块名
-            ep_name = endpoint.path.replace("/", "_").strip("_") or "root"
-            endpoint_names.append(ep_name)
+            # 使用 use_case 名称生成模块名 (snake_case)
+            module_names.append(module.name)
 
         # 生成 __init__.py
-        init_module = self._create_http_init_module(context_name, endpoint_names)
+        init_module = self._create_http_init_module(context_name, module_names, project_name)
         modules.append(init_module)
 
         return PackageSpec.create(
@@ -304,6 +311,7 @@ class InterfaceMapper:
         endpoint: HttpEndpointSpec,
         context_name: str,
         use_case_index: dict[str, UseCaseSpec],
+        project_name: str = "",
     ) -> ModuleSpec:
         """生成单个 HTTP endpoint 模块"""
         use_case = use_case_index.get(endpoint.use_case)
@@ -322,8 +330,11 @@ class InterfaceMapper:
         uc_snake = self._to_snake_case(use_case.name)
         ctx_snake = self._to_snake_case(context_name)
 
-        # 生成函数名和装饰器
-        func_name = endpoint.path.replace("/", "_").strip("_") or "root"
+        # 构建完整包路径前缀
+        pkg_prefix = f"{project_name}." if project_name else ""
+
+        # 生成函数名和模块名 (基于 use_case 名称)
+        func_name = uc_snake
         decorator = f'router.{endpoint.method.lower()}("{endpoint.path}")'
 
         # 生成函数体
@@ -348,12 +359,8 @@ class InterfaceMapper:
             imports=[
                 ImportFromSpec.create(module="fastapi", names=["APIRouter"]),
                 ImportFromSpec.create(
-                    module=f"{ctx_snake}.container",
+                    module=f"{pkg_prefix}{ctx_snake}.container",
                     names=["Container"],
-                ),
-                ImportFromSpec.create(
-                    module=f"{ctx_snake}.application.use_cases.{uc_snake}",
-                    names=[use_case.name, param_type, result_type],
                 ),
             ],
             extra_code=[
@@ -365,26 +372,28 @@ class InterfaceMapper:
     def _create_http_init_module(
         self,
         context_name: str,
-        endpoint_names: list[str],
+        module_names: list[str],
+        project_name: str = "",
     ) -> ModuleSpec:
         """生成 HTTP __init__.py"""
         ctx_snake = self._to_snake_case(context_name)
+        pkg_prefix = f"{project_name}." if project_name else ""
         imports: list[ImportFromSpec] = [
             ImportFromSpec.create(module="fastapi", names=["APIRouter"]),
         ]
-        for ep_name in endpoint_names:
+        for module_name in module_names:
             imports.append(
                 ImportFromSpec.create(
-                    module=f"{ctx_snake}.interfaces.http.{ep_name}",
-                    names=[f"router as {ep_name}_router"],
+                    module=f"{pkg_prefix}{ctx_snake}.interfaces.http.{module_name}",
+                    names=[f"router as {module_name}_router"],
                 )
             )
 
         extra_code_lines = [
             'app = APIRouter(prefix="/api")',
         ]
-        for ep_name in endpoint_names:
-            extra_code_lines.append(f"app.include_router({ep_name}_router)")
+        for module_name in module_names:
+            extra_code_lines.append(f"app.include_router({module_name}_router)")
 
         return ModuleSpec.create(
             name="__init__",

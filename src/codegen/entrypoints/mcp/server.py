@@ -137,6 +137,7 @@ def build(
         build_dir: bool = True,
         node: str | None = None,
         out: str | None = None,
+        overwrite: bool = False,
 ) -> BuildResult:
     """
     Build: Compile codegen.yaml into Python code.
@@ -150,6 +151,7 @@ def build(
         build_dir: Output to src directory (True) or target directory (False)
         node: Generate only a specific component by name, overwrite mode.
         out: Custom output directory
+        overwrite: Overwrite existing files without prompting
     """
     root_path = Path(work_dir).resolve()
     config_path = Path(config_file) # Will be joined with root_path in _get_container if relative
@@ -165,7 +167,7 @@ def build(
     )
     use_case = container.generate_project_use_case()
 
-    overwrite = False
+    # If node is specified, imply overwrite mode
     if node is not None:
         overwrite = True
 

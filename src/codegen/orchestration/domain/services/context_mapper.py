@@ -78,6 +78,7 @@ class ContextMapper:
                 interfaces=context.interfaces,
                 context_name=str(context.name),
                 use_cases=context.application.use_cases,
+                project_name=project_name,
             )
             sub_packages.append(interfaces_pkg)
 
