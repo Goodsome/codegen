@@ -45,14 +45,26 @@ mcp = FastMCP("Codegen MCP Server")
 def _get_container(
         config_file: Path,
         root_path: Path,
-        out: Path | None = None,
-        subdir: str | None = None,
+        output: str = "src",
 ) -> Container:
-    """Create a configured container instance using a specific root path."""
+    """Create a configured container instance using a specific root path.
+
+    Args:
+        config_file: Path to codegen.yaml (relative or absolute)
+        root_path: Project root directory
+        output: Output directory - "src" (default) or custom path
+    """
     cwd = root_path
 
     yaml_path = config_file if config_file.is_absolute() else (cwd / config_file)
-    output_dir = out or (cwd / subdir if subdir else cwd)
+
+    # Resolve output directory
+    if output == "src":
+        output_dir = cwd / "src"
+    else:
+        output_path = Path(output)
+        output_dir = output_path if output_path.is_absolute() else (cwd / output_path)
+
     template_root = resources.files("codegen") / "python_gen" / "templates"
 
     with resources.as_file(template_root) as path:
@@ -134,9 +146,8 @@ def _parse_value(value_str: str) -> Any:
 def build(
         work_dir: str,
         config_file: str = "codegen.yaml",
-        build_dir: bool = True,
+        output: str = "src",
         node: str | None = None,
-        out: str | None = None,
         overwrite: bool = False,
 ) -> BuildResult:
     """
@@ -148,32 +159,24 @@ def build(
     Args:
         work_dir: Absolute path to the project root directory
         config_file: Path to the codegen.yaml blueprint file (relative to work_dir)
-        build_dir: Output to src directory (True) or target directory (False)
+        output: Output directory - "src" (default) or custom path (relative or absolute)
         node: Generate only a specific component by name, overwrite mode.
-        out: Custom output directory
         overwrite: Overwrite existing files without prompting
     """
     root_path = Path(work_dir).resolve()
-    config_path = Path(config_file) # Will be joined with root_path in _get_container if relative
-
-    output_path = Path(out) if out else None
-    subdir = "src" if build_dir else "target"
+    config_path = Path(config_file)
 
     container = _get_container(
         config_file=config_path,
         root_path=root_path,
-        out=output_path,
-        subdir=subdir
+        output=output,
     )
     use_case = container.generate_project_use_case()
 
-    # If node is specified, imply overwrite mode
     if node is not None:
         overwrite = True
 
-    root_path_str = ""
-    if output_path:
-        root_path_str = str(output_path).replace("/", ".").replace("\\", ".")
+    root_path_str = "" if output == "src" else output.replace("/", ".").replace("\\", ".")
 
     cmd = GenerateProjectCommand(overwrite=overwrite, node=node, root_path=root_path_str)
     r = use_case.execute(cmd)

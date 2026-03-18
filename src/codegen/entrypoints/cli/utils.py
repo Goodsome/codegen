@@ -22,12 +22,25 @@ def version_callback(value: bool):
 @contextmanager
 def get_container(
     config_file: Path = Path("codegen.yaml"),
-    out: Path | None = None,
-    subdir: str | None = None,
+    output: str = "src",
 ):
+    """
+    Create a configured container instance.
+
+    Args:
+        config_file: Path to codegen.yaml (relative to cwd or absolute)
+        output: Output directory - "src" (default) or custom path (relative to cwd or absolute)
+    """
     cwd = Path.cwd()
     yaml_path = config_file if config_file.is_absolute() else (cwd / config_file)
-    output_dir = out or (cwd / subdir if subdir else cwd)
+
+    # Resolve output directory
+    if output == "src":
+        output_dir = cwd / "src"
+    else:
+        output_path = Path(output)
+        output_dir = output_path if output_path.is_absolute() else (cwd / output_path)
+
     template_root = resources.files("codegen") / "python_gen" / "templates"
 
     with resources.as_file(template_root) as path:
