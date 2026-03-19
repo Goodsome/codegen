@@ -14,6 +14,17 @@ from codegen.orchestration.domain.services.type_system_converter import (
 class AttributeMapper:
     type_system_converter: TypeSystemConverter = field(default_factory=TypeSystemConverter)
 
+    def _default_to_assignment(self, default_value: str) -> AssignmentSpec:
+        """Convert a default value string to an AssignmentSpec.
+
+        Handles the case where the default is an empty string (''), which
+        represents an actual empty string value, not empty code.
+        """
+        if default_value == "":
+            # Empty string is a value, not code - use literal
+            return AssignmentSpec.from_literal("")
+        return AssignmentSpec.from_code(default_value)
+
     def to_variable_spec(
         self,
         attribute: AttributeSpec,
@@ -24,8 +35,8 @@ class AttributeMapper:
         assignment = None
         if attribute.default is not None:
             # Explicit default value takes precedence
-            assignment = AssignmentSpec.from_code(attribute.default)
-            
+            assignment = self._default_to_assignment(attribute.default)
+
             # If default_field_flavor is set and optional, wrap it?
             # If we have an explicit default, we generally trust it.
             # But if it is a Pydantic model, we might need Field(default=...).

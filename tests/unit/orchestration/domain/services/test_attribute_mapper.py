@@ -359,3 +359,57 @@ class TestAttributeMapperBatch:
         assert len(attrs) == 2
         assert attrs[0].type == "integer"
         assert attrs[1].type == "string"
+
+
+class TestAttributeMapperDefaults:
+    """测试 AttributeSpec 默认值处理"""
+
+    @pytest.fixture
+    def mapper(self):
+        return AttributeMapper()
+
+    def test_forward_empty_string_default(self, mapper):
+        """测试空字符串默认值应渲染为 Field(default='') 而非 Field(default=None)"""
+        from codegen.python_gen.domain.enums import FieldFlavor
+        from codegen.python_gen.infrastructure.adapters.ast_translator import AstTranslator
+        from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
+        from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
+
+        # Simulates YAML: default: ''
+        attr = AttributeSpec(
+            name="error",
+            type="string",
+            default="",  # Empty string from YAML parsing
+        )
+
+        var_spec = mapper.to_variable_spec(attr, default_field_flavor=FieldFlavor.PYDANTIC)
+
+        # Render to verify output
+        cls_spec = ClassSpec.create(
+            name="Result",
+            inheritance=["BaseModel"],
+            attributes=[var_spec],
+        )
+        translator = AstTranslator()
+        code = translator.render_module(ModuleSpec(name="test", classes=[cls_spec]), [])
+
+        # Should render as Field(default=''), NOT Field(default=None)
+        assert "error: str = Field(default='')" in code
+
+    def test_forward_code_default(self, mapper):
+        """测试代码形式的默认值（如列表、字典）"""
+        from codegen.python_gen.domain.enums import FieldFlavor
+
+        # Simulates YAML: default: '[]'
+        attr = AttributeSpec(
+            name="items",
+            type="string",
+            container=ContainerType.LIST,
+            default="[]",  # Python code for empty list
+        )
+
+        var_spec = mapper.to_variable_spec(attr, default_field_flavor=FieldFlavor.PYDANTIC)
+
+        assert var_spec.assignment is not None
+        assert var_spec.assignment.call is not None
+        assert var_spec.assignment.call.callee == "Field"
