@@ -38,6 +38,7 @@ GLOBAL_REGISTRY = {
     "Iterable": "typing",
     "Iterator": "typing",
     "ClassVar": "typing",
+    "Self": "typing",
     "dataclass": "dataclasses",
     "field": "dataclasses",
     "ABC": "abc",

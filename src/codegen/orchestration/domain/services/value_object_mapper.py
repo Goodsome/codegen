@@ -37,6 +37,7 @@ class ValueObjectMapper:
             func_spec = self.method_mapper.to_function_spec(
                 method=method,
                 function_type=func_type,
+                class_name=str(value_object.name),
             )
             methods.append(func_spec)
         class_spec = ClassSpec.create(
