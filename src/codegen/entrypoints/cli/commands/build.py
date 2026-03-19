@@ -122,10 +122,10 @@ def build(
         "-c",
         help="Path to the codegen.yaml blueprint file",
     ),
-    skip_tests: bool = typer.Option(
+    generate_tests: bool = typer.Option(
         False,
-        "--skip-tests",
-        help="Skip generating unit test skeletons",
+        "--generate-tests",
+        help="Generate unit test skeletons (skipped by default)",
     ),
 ):
     """
@@ -150,7 +150,7 @@ def build(
 
         cmd = GenerateProjectCommand(
             overwrite=overwrite, node=node, root_path=root_path,
-            generate_tests=not skip_tests,
+            generate_tests=generate_tests,
         )
 
         try:
