@@ -44,6 +44,7 @@ class ContextMapper:
         # Add shared models for Shared context
         if context.name == "Shared":
             modules.append(ModuleSpec.create_shared_models())
+            modules.append(ModuleSpec.create_shared_events())
 
         # Generate config module if context has config
         if context.config:
