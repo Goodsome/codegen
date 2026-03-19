@@ -10,7 +10,7 @@ def test_domain_definition_generation(cli_runner, monkeypatch, tmp_path):
     """
     Scenario: Domain Definition Generation
     Given: A valid blueprint with Aggregate, Entity, Value Object, and Enum
-    When: Running 'codegen build --skip-tests'
+    When: Running 'codegen build'
     Then: The domain artifacts are generated correctly.
     """
     base_dir = tmp_path / "domain_def"
@@ -28,7 +28,7 @@ def test_domain_definition_generation(cli_runner, monkeypatch, tmp_path):
     monkeypatch.chdir(base_dir)
 
     # Run the build command
-    result = cli_runner.invoke(app, ["build", "--skip-tests"])
+    result = cli_runner.invoke(app, ["build"])
 
     if result.exit_code != 0:
         print(result.stdout)

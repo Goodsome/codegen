@@ -19,17 +19,17 @@ def _setup_blueprint(tmp_path, fixture_name="domain_definition"):
     return base_dir
 
 
-def test_build_generates_test_skeletons_by_default(cli_runner, monkeypatch, tmp_path):
+def test_build_generates_test_skeletons_with_flag(cli_runner, monkeypatch, tmp_path):
     """
-    Scenario: Default build generates test skeletons.
+    Scenario: Build with --generate-tests generates test skeletons.
     Given: A valid blueprint with Aggregate and Service behaviors.
-    When: Running 'codegen build' (without --skip-tests).
+    When: Running 'codegen build --generate-tests'.
     Then: test_*.py and cases_*.py are generated in tests/unit/.
     """
     base_dir = _setup_blueprint(tmp_path)
     monkeypatch.chdir(base_dir)
 
-    result = cli_runner.invoke(app, ["build"])
+    result = cli_runner.invoke(app, ["build", "--generate-tests"])
 
     if result.exit_code != 0:
         print(result.stdout)
@@ -105,21 +105,21 @@ def test_build_generates_test_skeletons_by_default(cli_runner, monkeypatch, tmp_
     )
 
 
-def test_build_skip_tests_flag(cli_runner, monkeypatch, tmp_path):
+def test_build_default_skips_tests(cli_runner, monkeypatch, tmp_path):
     """
-    Scenario: Build with --skip-tests does NOT generate test skeletons.
+    Scenario: Default build (without --generate-tests) does NOT generate test skeletons.
     """
     base_dir = _setup_blueprint(tmp_path)
     monkeypatch.chdir(base_dir)
 
-    result = cli_runner.invoke(app, ["build", "--skip-tests"])
+    result = cli_runner.invoke(app, ["build"])
 
     assert result.exit_code == 0
 
     # tests/ directory should NOT exist
     tests_dir = base_dir / "tests"
     assert not tests_dir.exists(), (
-        f"tests/ should not be created with --skip-tests. "
+        f"tests/ should not be created by default. "
         f"Found: {list(tests_dir.iterdir()) if tests_dir.exists() else 'N/A'}"
     )
 
@@ -131,8 +131,8 @@ def test_cases_files_are_not_overwritten(cli_runner, monkeypatch, tmp_path):
     base_dir = _setup_blueprint(tmp_path)
     monkeypatch.chdir(base_dir)
 
-    # First build
-    result1 = cli_runner.invoke(app, ["build"])
+    # First build with test generation
+    result1 = cli_runner.invoke(app, ["build", "--generate-tests"])
     assert result1.exit_code == 0
 
     # Write custom test data in the cases file
@@ -145,7 +145,7 @@ def test_cases_files_are_not_overwritten(cli_runner, monkeypatch, tmp_path):
     cases_file.write_text(custom_content)
 
     # Second build — should NOT overwrite cases file
-    result2 = cli_runner.invoke(app, ["build"])
+    result2 = cli_runner.invoke(app, ["build", "--generate-tests"])
     assert result2.exit_code == 0
 
     preserved_content = cases_file.read_text()
@@ -173,7 +173,7 @@ def test_cases_files_support_incremental_update(cli_runner, monkeypatch, tmp_pat
     monkeypatch.chdir(base_dir)
 
     # First build: only add_item
-    result1 = cli_runner.invoke(app, ["build"])
+    result1 = cli_runner.invoke(app, ["build", "--generate-tests"])
     assert result1.exit_code == 0, result1.stdout
 
     agg_dir = base_dir / "tests" / "unit" / "sales" / "domain" / "aggregates"
@@ -205,7 +205,7 @@ def test_cases_files_support_incremental_update(cli_runner, monkeypatch, tmp_pat
         yaml.dump(blueprint, f)
 
     # Second build: should add TEST_CASES_REMOVE_ITEM without losing custom data
-    result2 = cli_runner.invoke(app, ["build"])
+    result2 = cli_runner.invoke(app, ["build", "--generate-tests"])
     assert result2.exit_code == 0, result2.stdout
 
     updated_content = cases_file.read_text()
