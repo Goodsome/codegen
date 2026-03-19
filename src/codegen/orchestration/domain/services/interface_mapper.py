@@ -66,7 +66,7 @@ class InterfaceMapper:
         for cmd in cli_spec.commands:
             module = self._map_cli_command(cmd, context_name, use_case_index, project_name)
             modules.append(module)
-            function_names.append(cmd.name.replace("-", "_"))
+            function_names.append(self._sanitize_identifier(cmd.name))
 
         # 生成 __init__.py
         init_module = self._create_cli_init_module(context_name, function_names, project_name)
@@ -98,7 +98,7 @@ class InterfaceMapper:
             param_name = "query"
 
         result_type = f"{use_case.name}Result"
-        func_name = cmd.name.replace("-", "_")
+        func_name = self._sanitize_identifier(cmd.name)
         uc_snake = self._to_snake_case(use_case.name)
         ctx_snake = self._to_snake_case(context_name)
 
@@ -181,7 +181,7 @@ class InterfaceMapper:
         for tool in mcp_spec.tools:
             module = self._map_mcp_tool(tool, context_name, use_case_index, project_name)
             modules.append(module)
-            function_names.append(tool.name)
+            function_names.append(self._sanitize_identifier(tool.name))
 
         # 生成 __init__.py
         init_module = self._create_mcp_init_module(context_name, function_names, project_name)
@@ -224,7 +224,7 @@ class InterfaceMapper:
 
         # 生成函数
         func = FunctionSpec.create(
-            name=tool.name,
+            name=self._sanitize_identifier(tool.name),
             description=tool.description,
             parameters=[
                 VariableSpec.create(name=param_name, type_spec=parse_type_str(param_type)),
@@ -235,7 +235,7 @@ class InterfaceMapper:
         )
 
         return ModuleSpec.create(
-            name=tool.name,
+            name=self._sanitize_identifier(tool.name),
             functions=[func],
             imports=[
                 ImportFromSpec.create(
@@ -400,6 +400,14 @@ class InterfaceMapper:
             imports=imports,
             extra_code=[RawCodeSpec.create("\n".join(extra_code_lines))],
         )
+
+    @staticmethod
+    def _sanitize_identifier(name: str) -> str:
+        """Sanitize a name to be a valid Python identifier.
+
+        Replaces spaces and hyphens with underscores.
+        """
+        return name.replace(" ", "_").replace("-", "_")
 
     @staticmethod
     def _to_snake_case(name: str) -> str:
