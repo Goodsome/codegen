@@ -131,14 +131,14 @@ class TestRoundTrip:
     def test_render_function_with_default_call(self):
         translator = AstTranslator()
         from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
-        
+
         assignment = AssignmentSpec.from_call(
             func_name="Field",
             kwargs={"default": AssignmentSpec.from_literal("test")}
         )
-        
+
         from codegen.python_gen.domain.enums import FunctionType
-        
+
         func_spec = FunctionSpec.create(
             name="create_field",
             return_annotation=TypeAnnotationSpec(name="Any"),
@@ -151,11 +151,40 @@ class TestRoundTrip:
                 )
             ]
         )
-        
-        
+
+
         code = translator.render_module(ModuleSpec(name="test", classes=[
              ClassSpec.create(name="TestClass", methods=[func_spec])
         ]), [])
-        
-        
+
+
         assert "def create_field(self, field_config: FieldConfig=Field(default='test')) -> Any:" in code
+
+    def test_render_field_with_empty_string_default(self):
+        """Test that empty string default renders correctly as Field(default='')."""
+        translator = AstTranslator()
+        from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
+
+        # This simulates the YAML case: default: ''
+        assignment = AssignmentSpec.from_call(
+            func_name="Field",
+            kwargs={"default": AssignmentSpec.from_code("''")}
+        )
+
+        cls_spec = ClassSpec.create(
+            name="Result",
+            inheritance=["BaseModel"],
+            attributes=[
+                VariableSpec.create(
+                    name="error",
+                    type_spec=TypeAnnotationSpec(name="str"),
+                    assignment=assignment
+                )
+            ]
+        )
+
+        code = translator.render_module(ModuleSpec(name="test", classes=[cls_spec]), [])
+
+        # Should render as: error: str = Field(default='')
+        # NOT: error: str = Field(default=None)
+        assert "error: str = Field(default='')" in code
