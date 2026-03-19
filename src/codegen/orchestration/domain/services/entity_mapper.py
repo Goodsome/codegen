@@ -34,7 +34,8 @@ class EntityMapper:
         methods = [
             self.method_mapper.to_function_spec(
                 method,
-                function_type=FunctionType.INSTANCE_METHOD
+                function_type=FunctionType.INSTANCE_METHOD,
+                class_name=str(entity.name),
             )
             for method in entity.behaviors
         ]

@@ -4,6 +4,9 @@ from codegen.domain_definition.domain.value_objects.method_spec import MethodSpe
 from codegen.python_gen.domain.value_objects.function_spec import (
     FunctionSpec,
 )
+from codegen.python_gen.domain.value_objects.type_annotation_spec import (
+    TypeAnnotationSpec,
+)
 from codegen.python_gen.domain.enums import FunctionType
 from codegen.domain_definition.domain.value_objects.method_output import MethodOutput
 from dataclasses import dataclass, field
@@ -20,6 +23,7 @@ class MethodMapper:
         function_type: FunctionType = FunctionType.FUNCTION,
         is_abstract: bool = False,
         is_private: bool = False,
+        class_name: str | None = None,
     ) -> FunctionSpec:
         parameters = [
             self.attribute_mapper.to_variable_spec(attr) for attr in method.inputs
@@ -31,14 +35,26 @@ class MethodMapper:
             decorators.append("classmethod")
         elif function_type is FunctionType.STATIC_METHOD:
             decorators.append("staticmethod")
-            
+
         function_name = method.name
         if is_private and not function_name.startswith("_"):
             function_name = "_" + function_name
 
         # 使用 TypeSystemConverter 统一转换 MethodOutput → TypeAnnotationSpec
         converter = self.attribute_mapper.type_system_converter
-        return_annotation = converter.to_python_annotation(method.output)
+
+        # Check if return type matches class name for Self type
+        return_type = method.output.custom_type_string or method.output.type
+        if class_name and return_type == class_name:
+            # Use Self type for factory methods returning the same class
+            return_annotation = TypeAnnotationSpec(name="Self")
+            if method.output.optional:
+                return_annotation = TypeAnnotationSpec(
+                    name="Union",
+                    args=[TypeAnnotationSpec(name="Self"), TypeAnnotationSpec(name="None")],
+                )
+        else:
+            return_annotation = converter.to_python_annotation(method.output)
 
         return FunctionSpec.create(
             name=function_name,

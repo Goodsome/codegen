@@ -1,4 +1,3 @@
-from pydoc import classname
 from codegen.domain_definition.domain.value_objects.aggregate_spec import AggregateSpec
 from codegen.python_gen.domain.enums import AssignmentFlavor
 from pydantic import Field
