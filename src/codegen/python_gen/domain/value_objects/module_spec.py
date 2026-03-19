@@ -59,6 +59,14 @@ class ModuleSpec(ValueObject):
             ClassSpec.create_aggregate(),
         ]
         return cls.create(name=name, classes=classes)
+    
+    @classmethod
+    def create_shared_events(cls) -> "ModuleSpec":
+        name = "events"
+        classes = [
+            ClassSpec.create_event(),
+        ]
+        return cls.create(name=name, classes=classes)
 
     @classmethod
     def get_init_module(cls) -> "ModuleSpec":

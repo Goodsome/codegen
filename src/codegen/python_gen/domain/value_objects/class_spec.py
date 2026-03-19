@@ -6,6 +6,8 @@ Description: Represents a class in a Python module.
 
 
 
+from calendar import c
+import re
 from pydantic.fields import Field
 
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
@@ -45,26 +47,26 @@ class ClassSpec(ValueObject):
 
     @classmethod
     def create_value_object(cls) -> "ClassSpec":
-        return cls.create(
-            name="ValueObject",
-            inheritance=["BaseModel"],
-        )
+        return cls._create_base_model("ValueObject")
 
     @classmethod
     def create_aggregate(cls) -> "ClassSpec":
-        return cls.create(
-            name="Aggregate",
-            inheritance=["BaseModel"],
-        )
+        return cls._create_base_model("Aggregate")
     
     @classmethod
     def create_entity(cls) -> "ClassSpec":
+        return cls._create_base_model("Entity")
+
+    @classmethod
+    def create_event(cls) -> "ClassSpec":
+        return cls._create_base_model("DomainEvent")
+    
+    @classmethod
+    def _create_base_model(cls, name: str) -> "ClassSpec":
         return cls.create(
-            name="Entity",
+            name=name,
             inheritance=["BaseModel"],
         )
-
-
 
     def get_required_types(self) -> set[str]:
         types: set[str] = set()
