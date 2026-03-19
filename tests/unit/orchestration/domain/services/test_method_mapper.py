@@ -263,3 +263,60 @@ class TestMethodMapper:
         assert restored_method.output.type == original.type
         assert restored_method.output.container == original.container
         assert restored_method.output.optional == original.optional
+
+    # ============ Self type for factory methods tests ============
+
+    def test_to_function_spec_returns_self_when_return_type_matches_class_name(
+        self, mapper
+    ):
+        """当返回类型与类名相同时，应使用 Self 类型"""
+        method = MethodSpec.create(
+            name="create",
+            inputs=[],
+            output=MethodOutput(type="Any", custom_type_string="Order"),
+        )
+        func = mapper.to_function_spec(method, class_name="Order")
+        assert func.return_annotation.render() == "Self"
+
+    def test_to_function_spec_returns_self_in_required_types(self, mapper):
+        """使用 Self 时，Self 应出现在 required_types 中以触发导入"""
+        method = MethodSpec.create(
+            name="create",
+            inputs=[],
+            output=MethodOutput(type="Any", custom_type_string="Order"),
+        )
+        func = mapper.to_function_spec(method, class_name="Order")
+        assert "Self" in func.get_required_types()
+
+    def test_to_function_spec_no_self_when_return_type_differs(self, mapper):
+        """当返回类型与类名不同时，不应使用 Self 类型"""
+        method = MethodSpec.create(
+            name="create",
+            inputs=[],
+            output=MethodOutput(type="Any", custom_type_string="OtherClass"),
+        )
+        func = mapper.to_function_spec(method, class_name="Order")
+        assert func.return_annotation.render() == "OtherClass"
+        assert "Self" not in func.get_required_types()
+
+    def test_to_function_spec_no_self_when_class_name_not_provided(self, mapper):
+        """当未提供 class_name 时，不应使用 Self 类型"""
+        method = MethodSpec.create(
+            name="create",
+            inputs=[],
+            output=MethodOutput(type="Any", custom_type_string="Order"),
+        )
+        func = mapper.to_function_spec(method)  # no class_name
+        assert func.return_annotation.render() == "Order"
+        assert "Self" not in func.get_required_types()
+
+    def test_to_function_spec_self_with_optional_return(self, mapper):
+        """可选返回类型也应使用 Self"""
+        method = MethodSpec.create(
+            name="try_create",
+            inputs=[],
+            output=MethodOutput(type="Any", custom_type_string="Order", optional=True),
+        )
+        func = mapper.to_function_spec(method, class_name="Order")
+        assert func.return_annotation.render() == "Self | None"
+        assert "Self" in func.get_required_types()
