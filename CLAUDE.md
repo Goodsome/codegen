@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Install dependencies**: `uv sync` or `pip install -e ".[dev]"` (Python 3.13+, uses `uv.lock`)
 - **Format code**: `black .`
 - **Lint code**: `ruff check .`
-- **Run tests**: `pytest`
+- **Run tests**: `uv run pytest`
 - **Run a single test**: `pytest tests/path/to/test_file.py::test_function_name`
 - **Build code**: `codegen build` (compiles `codegen.yaml` into Python code)
 - **Reverse engineer**: `codegen reverse` (updates `codegen.yaml` from Python code)
