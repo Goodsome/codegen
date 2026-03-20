@@ -3,14 +3,19 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Commands
-- **Install dependencies**: `uv sync` or `pip install -e ".[dev]"` (The project uses Python 3.13+ and has a `pyproject.toml` and `uv.lock`)
+- **Install dependencies**: `uv sync` or `pip install -e ".[dev]"` (Python 3.13+, uses `uv.lock`)
 - **Format code**: `black .`
 - **Lint code**: `ruff check .`
 - **Run tests**: `pytest`
 - **Run a single test**: `pytest tests/path/to/test_file.py::test_function_name`
-- **Generate code**: `codegen generate` (uses `codegen.yaml`)
-- **Run the CLI**: `codegen [command]` (e.g., `codegen add context Billing`)
-- **Run MCP Server**: `codegen-mcp`
+- **Build code**: `codegen build` (compiles `codegen.yaml` into Python code)
+- **Reverse engineer**: `codegen reverse` (updates `codegen.yaml` from Python code)
+- **Output schema**: `codegen schema` (outputs JSON schema for the blueprint)
+- **Initialize blueprint**: `codegen init` (creates a new `codegen.yaml`)
+- **View blueprint**: `codegen tree` (displays blueprint as visual tree)
+- **Query blueprint**: `codegen get <path>` (e.g., `codegen get contexts.sales`)
+- **Update blueprint**: `codegen set <path> <value>` or `codegen rm <path>`
+- **Run MCP Server**: `codegen mcp`
 
 ## Project Vision
 
@@ -20,7 +25,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Codegen is a CLI tool that generates Domain-Driven Design (DDD) boilerplate code in Python from a single blueprint file (`codegen.yaml`).
 
 - `codegen.yaml`: The central blueprint defining the domain models, bounded contexts, aggregates, entities, value objects, ports, and enums. It strongly uses a JSON schema (`codegen.schema.json`) for validation.
-- `src/codegen/entrypoints/`: Contains the entry points for the application, specifically the `cli` (using Typer) and `mcp` interfaces.
+- `src/codegen/entrypoints/`: Contains entry points for the application - `cli` (using Typer) and `mcp` interfaces.
+- `src/codegen/bootstrap.py`: Main dependency injection container wiring all components.
 - `src/codegen/domain_definition/`: Contains the parsers and Pydantic models for representing the blueprint defined in `codegen.yaml`.
 - `src/codegen/python_gen/`: Contains the logic and AST translators for generating the actual Python code from the domain definition.
 - **Dependency Injection**: The project uses `dependency-injector` for wiring up components.
