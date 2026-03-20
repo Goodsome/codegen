@@ -5,9 +5,6 @@ from codegen.domain_definition.application.use_cases.load_blueprint import (
     LoadBlueprintCommand,
 )
 from codegen.orchestration.domain.services.blueprint_mapper import BlueprintMapper
-from codegen.orchestration.domain.services.test_skeleton_mapper import (
-    TestSkeletonMapper,
-)
 from codegen.python_gen.application.use_cases.generate_package import (
     GeneratePackage,
     GeneratePackageCommand,
@@ -36,9 +33,7 @@ class GenerateProject:
 
     loader: LoadBlueprint
     generator: GeneratePackage
-    test_generator: GeneratePackage  # writes to project root (for tests/)
     mapper: BlueprintMapper = field(default_factory=BlueprintMapper)
-    test_mapper: TestSkeletonMapper = field(default_factory=TestSkeletonMapper)
 
     def execute(self, cmd: GenerateProjectCommand) -> GenerateProjectResult:
 
@@ -53,8 +48,9 @@ class GenerateProject:
             )
         )
 
-        if cmd.generate_tests:
-            self._generate_test_skeletons(load_result.blueprint)
+        # Test skeleton generation temporarily disabled - awaiting BDD test rewrite
+        # if cmd.generate_tests:
+        #     self._generate_test_skeletons(load_result.blueprint)
 
         return GenerateProjectResult(result=gen_result.result)
 

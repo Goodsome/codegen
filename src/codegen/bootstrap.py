@@ -84,25 +84,10 @@ class Container(containers.DeclarativeContainer):
         translator=python_syntax_translator_provider,
     )
 
-    # Test file generation: separate translator + generator writing to project root
-    test_python_syntax_translator_provider = Singleton(
-        PythonSyntaxTranslator,
-        source_code_port=ast_translator_provider,
-        file_system_port=project_root_file_port,
-    )
-
-    test_generate_package_use_case: Factory[GeneratePackage] = Factory(
-        GeneratePackage,
-        translator=test_python_syntax_translator_provider,
-        file_system_port=project_root_file_port,
-        code_formatter=code_formatter_provider,
-    )
-
     generate_project_use_case: Factory[GenerateProject] = Factory(
         GenerateProject,
         loader=load_blueprint_use_case,
         generator=generate_package_use_case,
-        test_generator=test_generate_package_use_case,
     )
 
     update_blueprint_use_case: Factory[GenerateBlueprint] = Factory(
