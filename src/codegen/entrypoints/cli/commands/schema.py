@@ -26,7 +26,7 @@ def schema():
         $ codegen schema
     """
     with get_container() as container:
-        use_case = GenerateSchemaJson(file_system_port=container.os_file_port())
+        use_case = GenerateSchemaJson(file_system_port=container.project_root_file_port())
         cmd = GenerateSchemaJsonCommand()
         use_case.execute(cmd)
         typer.echo("Schema generated successfully.")
