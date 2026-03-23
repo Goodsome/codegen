@@ -13,7 +13,7 @@ def merge_project_files(root_dir: str = ".", output_file: str = "project_context
 
     with open(output_file, "w", encoding="utf-8") as outfile:
         # 写入文件头信息
-        outfile.write(f"# Project Snapshot generated for AI Context\n")
+        outfile.write("# Project Snapshot generated for AI Context\n")
         outfile.write(f"# Root: {root_path.name}\n\n")
 
         for file_path in root_path.rglob("*"):

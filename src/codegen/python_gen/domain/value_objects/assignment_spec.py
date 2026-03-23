@@ -1,7 +1,7 @@
 from codegen.python_gen.domain.enums import AssignmentFlavor
 from pydantic import Field
 from codegen.shared.models import ValueObject
-from typing import Any, Union
+from typing import Any
 from codegen.python_gen.domain.value_objects.reference_spec import ReferenceSpec
 from codegen.python_gen.domain.value_objects.call_spec import CallSpec
 from codegen.python_gen.domain.value_objects.literal_spec import LiteralSpec

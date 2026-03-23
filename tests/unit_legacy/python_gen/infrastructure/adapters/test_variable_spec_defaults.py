@@ -1,5 +1,4 @@
 
-import pytest
 from codegen.python_gen.infrastructure.adapters.ast_translator import AstTranslator
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec

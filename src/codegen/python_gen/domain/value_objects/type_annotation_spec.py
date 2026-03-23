@@ -62,7 +62,6 @@ class TypeAnnotationSpec(ValueObject):
         Returns:
             TypeAnnotationSpec representing the type
         """
-        import ast
         import re
 
         if not raw_type or raw_type.strip() == "":

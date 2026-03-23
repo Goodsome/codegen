@@ -31,14 +31,7 @@ class HttpInterfaceSpec(ValueObject):
         Returns:
             PackageSpec for http package
         """
-        from codegen.domain_definition.domain.enums import UseCaseKind
         from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
-        from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
-        from codegen.python_gen.domain.enums import FunctionType
-        from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
-        from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
-        from codegen.python_gen.domain.value_objects.raw_code_spec import RawCodeSpec
-        from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import parse_type_str
 
         use_case_index = {uc.name: uc for uc in use_cases}
         modules: list[ModuleSpec] = []

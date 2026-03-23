@@ -1,4 +1,3 @@
-import pytest
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.python_gen.domain.value_objects.type_annotation_spec import TypeAnnotationSpec
 from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec

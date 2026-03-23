@@ -1,7 +1,5 @@
 
-import pytest
 from codegen.entrypoints.cli.application import app
-from pathlib import Path
 
 def test_reproduce_reverse_issue(cli_runner, working_dir, simple_project_blueprint, monkeypatch):
     """

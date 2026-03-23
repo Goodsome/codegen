@@ -1,7 +1,6 @@
 from codegen.shared.domain.enums import ContainerType
 from pydantic import Field
 from codegen.shared.models import ValueObject
-from typing import Self
 from codegen.python_gen.domain.value_objects.type_annotation_spec import (
     TypeAnnotationSpec,
 )

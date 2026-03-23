@@ -1,6 +1,6 @@
 from typing import Iterable, Self
 
-from pydantic import Field, model_validator
+from pydantic import Field
 
 from codegen.domain_definition.domain.enums import PortType
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec

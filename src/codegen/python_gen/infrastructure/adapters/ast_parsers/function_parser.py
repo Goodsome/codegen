@@ -2,7 +2,6 @@
 import ast
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
-from codegen.python_gen.domain.value_objects.type_annotation_spec import TypeAnnotationSpec
 from codegen.python_gen.infrastructure.adapters.ast_parsers import type_parser, assignment_parser
 # Need FieldSpec logic? Reusing parsers?
 # ParameterSpec definition has logic for defaults?

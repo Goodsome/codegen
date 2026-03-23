@@ -6,7 +6,6 @@ from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.type_annotation_spec import TypeAnnotationSpec
 from codegen.python_gen.domain.enums import FunctionType
 from codegen.domain_definition.domain.value_objects.type_definition import TypeDefinition
-from typing import Any, Self, Union
 from pydantic import Field
 
 

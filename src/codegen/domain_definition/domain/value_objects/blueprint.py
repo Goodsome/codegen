@@ -65,7 +65,6 @@ class Blueprint(ValueObject):
     @classmethod
     def from_package_spec(cls, package_spec: "PackageSpec") -> "Blueprint":
         """Create a Blueprint from a PackageSpec."""
-        from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 
         contexts = [
             BoundedContext.from_package_spec(p) for p in package_spec.sub_packages

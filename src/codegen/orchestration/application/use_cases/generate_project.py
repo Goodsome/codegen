@@ -9,7 +9,6 @@ from codegen.python_gen.application.use_cases.generate_package import (
     GeneratePackageCommand,
 )
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
-from typing import Union
 
 
 @dataclass(frozen=True)

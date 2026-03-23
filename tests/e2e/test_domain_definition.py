@@ -4,7 +4,6 @@ from codegen.entrypoints.cli.application import app
 from pathlib import Path
 
 import shutil
-import os
 
 def test_domain_definition_generation(cli_runner, monkeypatch, tmp_path):
     """
