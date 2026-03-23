@@ -9,14 +9,14 @@ from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromS
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.shared.domain.value_objects.snake_string import SnakeString
-from codegen.shared.models import ValueObject
+from codegen.shared.models import Entity
 
 if TYPE_CHECKING:
-    from codegen.domain_definition.domain.value_objects.bounded_context import BoundedContext
-    from codegen.domain_definition.domain.value_objects.use_case_spec import UseCaseSpec
+    from codegen.domain_definition.domain.entities.bounded_context import BoundedContext
+    from codegen.domain_definition.domain.entities.use_case_spec import UseCaseSpec
 
 
-class ContainerSpec(ValueObject):
+class ContainerSpec(Entity):
     """Specification for a container (dependency injection)."""
 
     bindings: list[PortBinding] = Field(default_factory=list)
@@ -59,7 +59,7 @@ class ContainerSpec(ValueObject):
 
     def to_app_container_module(self) -> ModuleSpec:
         """创建 app-level Container 模块"""
-        from codegen.domain_definition.domain.value_objects.bounded_context import BoundedContext
+        from codegen.domain_definition.domain.entities.bounded_context import BoundedContext
 
         dummy_context = BoundedContext.create(name="App")
         container_class = self.to_class_spec(

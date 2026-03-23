@@ -1,12 +1,12 @@
-from codegen.domain_definition.domain.value_objects.port_spec import PortSpec
-from codegen.domain_definition.domain.value_objects.service_spec import ServiceSpec
-from codegen.domain_definition.domain.value_objects.use_case_spec import UseCaseSpec
+from codegen.domain_definition.domain.entities.port_spec import PortSpec
+from codegen.domain_definition.domain.entities.service_spec import ServiceSpec
+from codegen.domain_definition.domain.entities.use_case_spec import UseCaseSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
-from codegen.shared.models import ValueObject
+from codegen.shared.models import Entity
 from pydantic import Field
 
 
-class ApplicationSpec(ValueObject):
+class ApplicationSpec(Entity):
     """Specification of an application to be generated."""
 
     use_cases: list[UseCaseSpec] = Field(default_factory=list)

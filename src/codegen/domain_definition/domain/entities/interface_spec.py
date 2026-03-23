@@ -1,16 +1,16 @@
 from typing import TYPE_CHECKING
 
-from codegen.shared.models import ValueObject
-from codegen.domain_definition.domain.value_objects.cli_interface_spec import CliInterfaceSpec
-from codegen.domain_definition.domain.value_objects.mcp_interface_spec import McpInterfaceSpec
-from codegen.domain_definition.domain.value_objects.http_interface_spec import HttpInterfaceSpec
+from codegen.shared.models import Entity
+from codegen.domain_definition.domain.entities.cli_interface_spec import CliInterfaceSpec
+from codegen.domain_definition.domain.entities.mcp_interface_spec import McpInterfaceSpec
+from codegen.domain_definition.domain.entities.http_interface_spec import HttpInterfaceSpec
 
 if TYPE_CHECKING:
-    from codegen.domain_definition.domain.value_objects.use_case_spec import UseCaseSpec
+    from codegen.domain_definition.domain.entities.use_case_spec import UseCaseSpec
     from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 
 
-class InterfaceSpec(ValueObject):
+class InterfaceSpec(Entity):
     """接口层总规范"""
 
     cli: CliInterfaceSpec | None = None

@@ -10,11 +10,11 @@ from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import parse_type_str
 from codegen.shared.domain.value_objects.pascal_string import PascalString
-from codegen.shared.models import ValueObject
+from codegen.shared.models import Entity
 from pydantic import Field
 
 
-class UseCaseSpec(ValueObject):
+class UseCaseSpec(Entity):
     """Specification of a use case to be generated."""
 
     name: PascalString

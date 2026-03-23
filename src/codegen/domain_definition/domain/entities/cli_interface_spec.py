@@ -4,7 +4,7 @@ from pydantic import Field
 
 from codegen.domain_definition.domain.enums import UseCaseKind
 from codegen.domain_definition.domain.value_objects.cli_command_spec import CliCommandSpec
-from codegen.domain_definition.domain.value_objects.use_case_spec import UseCaseSpec
+from codegen.domain_definition.domain.entities.use_case_spec import UseCaseSpec
 from codegen.python_gen.domain.enums import FunctionType
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
@@ -13,10 +13,10 @@ from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.python_gen.domain.value_objects.raw_code_spec import RawCodeSpec
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import parse_type_str
-from codegen.shared.models import ValueObject
+from codegen.shared.models import Entity
 
 
-class CliInterfaceSpec(ValueObject):
+class CliInterfaceSpec(Entity):
     """CLI 接口层规范"""
 
     commands: list[CliCommandSpec] = Field(default_factory=list)

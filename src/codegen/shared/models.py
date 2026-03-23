@@ -27,26 +27,16 @@ class Entity(BaseModel):
     4. 使用 UTC 时区记录时间
     """
 
-    id: UUID = Field(default_factory=uuid4, description="实体唯一标识")
-    created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
-        description="创建时间（UTC）",
-    )
-    updated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
-        description="更新时间（UTC）",
-    )
-
     model_config = ConfigDict(extra="forbid")
 
-    def __eq__(self, other: Any) -> bool:
-        """实体相等性基于 ID 判断"""
-        if not isinstance(other, Entity):
-            return False
-        return self.id == other.id
+    # def __eq__(self, other: Any) -> bool:
+    #     """实体相等性基于 ID 判断"""
+    #     if not isinstance(other, Entity):
+    #         return False
+    #     return self.id == other.id
 
-    def __hash__(self) -> int:
-        return hash(self.id)
+    # def __hash__(self) -> int:
+    #     return hash(self.id)
 
 
 class ValueObject(BaseModel):

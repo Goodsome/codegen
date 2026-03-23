@@ -1,16 +1,16 @@
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
-from codegen.domain_definition.domain.value_objects.port_spec import PortSpec
+from codegen.domain_definition.domain.entities.port_spec import PortSpec
 from codegen.python_gen.domain.enums import FunctionType
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.value_objects.snake_string import SnakeString
-from codegen.shared.models import ValueObject
+from codegen.shared.models import Entity
 from pydantic import Field
 
 
-class ImplementationSpec(ValueObject):
+class ImplementationSpec(Entity):
     """Specification of an implementation to be generated."""
 
     name: PascalString = Field(default_factory=str)

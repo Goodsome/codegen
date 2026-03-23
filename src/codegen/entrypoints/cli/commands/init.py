@@ -9,7 +9,7 @@ from rich.console import Console
 
 from codegen.entrypoints.cli.utils import get_container
 from codegen.domain_definition.domain.aggregates.blueprint import Blueprint
-from codegen.domain_definition.domain.value_objects.bounded_context import BoundedContext
+from codegen.domain_definition.domain.entities.bounded_context import BoundedContext
 
 app = typer.Typer(name="init", help="Initialize a new codegen.yaml blueprint")
 console = Console()

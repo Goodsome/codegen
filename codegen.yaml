@@ -1185,6 +1185,56 @@ contexts:
       technology: black
 - name: DomainDefinition
   domain:
+    aggregates:
+    - name: Blueprint
+      description: Root of the generation model. Represents the entire project definition.
+      attributes:
+      - type: PascalString
+        name: name
+      - type: string
+        name: description
+      - type: string
+        optional: true
+        name: layout
+      - type: BoundedContext
+        container: list
+        optional: true
+        name: contexts
+      - type: BootstrapSpec
+        optional: true
+        name: bootstrap
+      behaviors:
+      - name: create
+        inputs:
+        - type: Any
+          custom_type_string: Union[str, PascalString]
+          name: name
+        - type: string
+          name: description
+        - type: string
+          name: layout
+          default: ''''''
+        - type: BoundedContext
+          container: list
+          optional: true
+          name: contexts
+          default: None
+        - type: BootstrapSpec
+          optional: true
+          name: bootstrap
+          default: None
+        output:
+          type: any
+      - name: to_package_spec
+        inputs: []
+        output:
+          type: PackageSpec
+      - name: from_package_spec
+        inputs:
+        - type: PackageSpec
+          name: package_spec
+        output:
+          type: Self
     enums:
     - name: PortType
       members:
@@ -1217,6 +1267,233 @@ contexts:
       - name: PYTEST
         value: pytest
     value_objects:
+    - name: EnumMemberSpec
+      description: Specification of an enum member to be generated.
+      attributes:
+      - type: MacroString
+        name: name
+      - type: Any
+        optional: true
+        custom_type_string: str | int | None
+        name: value
+      - type: string
+        optional: true
+        name: description
+    - name: DataContractSpec
+      description: Generic data contract specification for use case command/query/result.
+      attributes:
+      - type: string
+        optional: true
+        name: name
+      - type: string
+        optional: true
+        name: description
+      - type: AttributeSpec
+        container: list
+        optional: true
+        name: attributes
+    - name: MethodOutput
+      description: Specification of the output of a method.
+    - name: MapperSpec
+      description: Base class for value object mappers.
+      attributes:
+      - type: string
+        name: source
+      - type: string
+        name: target
+      - type: MappingDirection
+        name: direction
+    - name: PortBinding
+      description: Binding between a port and an adapter.
+      attributes:
+      - type: string
+        name: port
+      - type: string
+        name: implementation
+    - name: ConfigFieldSpec
+      description: Specification for a single configuration field.
+      attributes:
+      - type: SnakeString
+        name: name
+      - type: string
+        name: type
+      - type: string
+        optional: true
+        name: default
+      - type: string
+        name: description
+        default: ''''''
+      - type: string
+        optional: true
+        name: env_var
+      behaviors:
+      - name: to_variable_spec
+        inputs: []
+        output:
+          type: VariableSpec
+    - name: CliCommandSpec
+      description: CLI 命令规范
+      attributes:
+      - type: string
+        name: name
+      - type: string
+        name: use_case
+      - type: string
+        optional: true
+        name: description
+    - name: MethodSpec
+      description: Standard specification for a class method.
+      attributes:
+      - type: SnakeString
+        name: name
+      - type: string
+        optional: true
+        name: description
+      - type: AttributeSpec
+        container: list
+        optional: true
+        name: inputs
+      - type: MethodOutput
+        name: output
+      behaviors:
+      - name: create
+        inputs:
+        - type: string
+          name: name
+        - type: AttributeSpec
+          container: list
+          name: inputs
+        - type: MethodOutput
+          name: output
+        output:
+          type: MethodSpec
+      - name: to_function_spec
+        inputs:
+        - type: FunctionType
+          name: type
+        - type: string
+          optional: true
+          name: class_name
+          default: None
+        output:
+          type: FunctionSpec
+      - name: from_function_spec
+        inputs:
+        - type: FunctionSpec
+          name: function_spec
+        output:
+          type: MethodSpec
+    - name: TypeDefinition
+      description: 类型定义的公共部分，被 AttributeSpec 和 MethodOutput 共同继承。
+      attributes:
+      - type: string
+        name: type
+      - type: ContainerType
+        name: container
+        default: ContainerType.NONE
+      - type: boolean
+        optional: true
+        name: optional
+      - type: string
+        optional: true
+        name: custom_type_string
+      behaviors:
+      - name: to_python_annotation
+        inputs: []
+        output:
+          type: TypeAnnotationSpec
+      - name: _apply_container
+        inputs:
+        - type: string
+          name: core_type
+        output:
+          type: TypeAnnotationSpec
+      - name: _make_optional
+        inputs:
+        - type: TypeAnnotationSpec
+          name: annotation
+        output:
+          type: TypeAnnotationSpec
+      - name: from_python_annotation
+        inputs:
+        - type: TypeAnnotationSpec
+          name: annotation
+        output:
+          type: TypeDefinition
+      - name: _extract_optional
+        inputs:
+        - type: TypeAnnotationSpec
+          name: annotation
+        output:
+          type: Any
+          custom_type_string: tuple[bool, TypeAnnotationSpec]
+      - name: _extract_container_and_type
+        inputs:
+        - type: TypeAnnotationSpec
+          name: annotation
+        output:
+          type: Any
+          custom_type_string: tuple[ContainerType, str]
+    - name: HttpEndpointSpec
+      description: HTTP Endpoint 规范
+      attributes:
+      - type: string
+        name: path
+      - type: string
+        name: method
+      - type: string
+        name: use_case
+      - type: string
+        optional: true
+        name: description
+    - name: AttributeSpec
+      description: Standard specification for a class attribute.
+      attributes:
+      - type: SnakeString
+        name: name
+      - type: string
+        optional: true
+        name: description
+      - type: string
+        optional: true
+        name: default
+      behaviors:
+      - name: create
+        inputs:
+        - type: string
+          name: name
+        - type: string
+          name: type
+        - type: boolean
+          name: optional
+          default: 'False'
+        output:
+          type: AttributeSpec
+      - name: to_variable_spec
+        inputs:
+        - type: FieldFlavor
+          optional: true
+          name: flavor
+          default: None
+        output:
+          type: VariableSpec
+      - name: from_variable_spec
+        inputs:
+        - type: VariableSpec
+          name: variable_spec
+        output:
+          type: AttributeSpec
+    - name: McpToolSpec
+      description: MCP Tool 规范
+      attributes:
+      - type: string
+        name: name
+      - type: string
+        name: use_case
+      - type: string
+        optional: true
+        name: description
+    entities:
     - name: UseCaseSpec
       description: Specification of a use case to be generated.
       attributes:
@@ -1343,18 +1620,6 @@ contexts:
           name: use_cases
         output:
           type: InterfaceSpec
-    - name: EnumMemberSpec
-      description: Specification of an enum member to be generated.
-      attributes:
-      - type: MacroString
-        name: name
-      - type: Any
-        optional: true
-        custom_type_string: str | int | None
-        name: value
-      - type: string
-        optional: true
-        name: description
     - name: ValueObjectSpec
       description: Specification of a value object to be generated.
       attributes:
@@ -1396,19 +1661,6 @@ contexts:
         output:
           type: Self
           container: list
-    - name: DataContractSpec
-      description: Generic data contract specification for use case command/query/result.
-      attributes:
-      - type: string
-        optional: true
-        name: name
-      - type: string
-        optional: true
-        name: description
-      - type: AttributeSpec
-        container: list
-        optional: true
-        name: attributes
     - name: InfrastructureSpec
       description: Specification of an infrastructure to be generated.
       attributes:
@@ -1474,45 +1726,6 @@ contexts:
         output:
           type: VariableSpec
           optional: true
-    - name: MethodOutput
-      description: Specification of the output of a method.
-    - name: MapperSpec
-      description: Base class for value object mappers.
-      attributes:
-      - type: string
-        name: source
-      - type: string
-        name: target
-      - type: MappingDirection
-        name: direction
-    - name: PortBinding
-      description: Binding between a port and an adapter.
-      attributes:
-      - type: string
-        name: port
-      - type: string
-        name: implementation
-    - name: ConfigFieldSpec
-      description: Specification for a single configuration field.
-      attributes:
-      - type: SnakeString
-        name: name
-      - type: string
-        name: type
-      - type: string
-        optional: true
-        name: default
-      - type: string
-        name: description
-        default: ''''''
-      - type: string
-        optional: true
-        name: env_var
-      behaviors:
-      - name: to_variable_spec
-        inputs: []
-        output:
-          type: VariableSpec
     - name: ImplementationSpec
       description: Specification of an implementation to be generated.
       attributes:
@@ -1576,107 +1789,6 @@ contexts:
         inputs: []
         output:
           type: string
-    - name: Blueprint
-      description: Root of the generation model. Represents the entire project definition.
-      attributes:
-      - type: PascalString
-        name: name
-      - type: string
-        name: description
-      - type: string
-        optional: true
-        name: layout
-      - type: BoundedContext
-        container: list
-        optional: true
-        name: contexts
-      - type: BootstrapSpec
-        optional: true
-        name: bootstrap
-      behaviors:
-      - name: create
-        inputs:
-        - type: Any
-          custom_type_string: Union[str, PascalString]
-          name: name
-        - type: string
-          name: description
-        - type: string
-          name: layout
-          default: ''''''
-        - type: BoundedContext
-          container: list
-          optional: true
-          name: contexts
-          default: None
-        - type: BootstrapSpec
-          optional: true
-          name: bootstrap
-          default: None
-        output:
-          type: any
-      - name: to_package_spec
-        inputs: []
-        output:
-          type: PackageSpec
-      - name: from_package_spec
-        inputs:
-        - type: PackageSpec
-          name: package_spec
-        output:
-          type: Self
-    - name: CliCommandSpec
-      description: CLI 命令规范
-      attributes:
-      - type: string
-        name: name
-      - type: string
-        name: use_case
-      - type: string
-        optional: true
-        name: description
-    - name: MethodSpec
-      description: Standard specification for a class method.
-      attributes:
-      - type: SnakeString
-        name: name
-      - type: string
-        optional: true
-        name: description
-      - type: AttributeSpec
-        container: list
-        optional: true
-        name: inputs
-      - type: MethodOutput
-        name: output
-      behaviors:
-      - name: create
-        inputs:
-        - type: string
-          name: name
-        - type: AttributeSpec
-          container: list
-          name: inputs
-        - type: MethodOutput
-          name: output
-        output:
-          type: MethodSpec
-      - name: to_function_spec
-        inputs:
-        - type: FunctionType
-          name: type
-        - type: string
-          optional: true
-          name: class_name
-          default: None
-        output:
-          type: FunctionSpec
-      - name: from_function_spec
-        inputs:
-        - type: FunctionSpec
-          name: function_spec
-        output:
-          type: MethodSpec
     - name: McpInterfaceSpec
       description: MCP 接口层规范
       attributes:
@@ -1883,57 +1995,6 @@ contexts:
           name: port_name
         output:
           type: PortSpec
-    - name: TypeDefinition
-      description: 类型定义的公共部分，被 AttributeSpec 和 MethodOutput 共同继承。
-      attributes:
-      - type: string
-        name: type
-      - type: ContainerType
-        name: container
-        default: ContainerType.NONE
-      - type: boolean
-        optional: true
-        name: optional
-      - type: string
-        optional: true
-        name: custom_type_string
-      behaviors:
-      - name: to_python_annotation
-        inputs: []
-        output:
-          type: TypeAnnotationSpec
-      - name: _apply_container
-        inputs:
-        - type: string
-          name: core_type
-        output:
-          type: TypeAnnotationSpec
-      - name: _make_optional
-        inputs:
-        - type: TypeAnnotationSpec
-          name: annotation
-        output:
-          type: TypeAnnotationSpec
-      - name: from_python_annotation
-        inputs:
-        - type: TypeAnnotationSpec
-          name: annotation
-        output:
-          type: TypeDefinition
-      - name: _extract_optional
-        inputs:
-        - type: TypeAnnotationSpec
-          name: annotation
-        output:
-          type: Any
-          custom_type_string: tuple[bool, TypeAnnotationSpec]
-      - name: _extract_container_and_type
-        inputs:
-        - type: TypeAnnotationSpec
-          name: annotation
-        output:
-          type: Any
-          custom_type_string: tuple[ContainerType, str]
     - name: ServiceSpec
       description: Specification of a domain service to be generated.
       attributes:
@@ -2050,18 +2111,6 @@ contexts:
         output:
           type: string
           optional: true
-    - name: HttpEndpointSpec
-      description: HTTP Endpoint 规范
-      attributes:
-      - type: string
-        name: path
-      - type: string
-        name: method
-      - type: string
-        name: use_case
-      - type: string
-        optional: true
-        name: description
     - name: EntitySpec
       description: Specification of an entity.
       attributes:
@@ -2103,43 +2152,6 @@ contexts:
         output:
           type: Self
           container: list
-    - name: AttributeSpec
-      description: Standard specification for a class attribute.
-      attributes:
-      - type: SnakeString
-        name: name
-      - type: string
-        optional: true
-        name: description
-      - type: string
-        optional: true
-        name: default
-      behaviors:
-      - name: create
-        inputs:
-        - type: string
-          name: name
-        - type: string
-          name: type
-        - type: boolean
-          name: optional
-          default: 'False'
-        output:
-          type: AttributeSpec
-      - name: to_variable_spec
-        inputs:
-        - type: FieldFlavor
-          optional: true
-          name: flavor
-          default: None
-        output:
-          type: VariableSpec
-      - name: from_variable_spec
-        inputs:
-        - type: VariableSpec
-          name: variable_spec
-        output:
-          type: AttributeSpec
     - name: PortSpec
       description: Specification of a domain port to be generated.
       attributes:
@@ -2439,16 +2451,6 @@ contexts:
           name: contexts
         output:
           type: ModuleSpec
-    - name: McpToolSpec
-      description: MCP Tool 规范
-      attributes:
-      - type: string
-        name: name
-      - type: string
-        name: use_case
-      - type: string
-        optional: true
-        name: description
     services:
     - name: BlueprintPathResolver
       description: "Parses path expressions and resolves them against Blueprint/Pydantic\
