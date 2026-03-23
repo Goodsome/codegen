@@ -31,9 +31,3 @@ Codegen is a CLI tool that generates Domain-Driven Design (DDD) boilerplate code
 - `src/codegen/python_gen/`: Contains the logic and AST translators for generating the actual Python code from the domain definition.
 - **Dependency Injection**: The project uses `dependency-injector` for wiring up components.
 - **String Case Conversion**: Extensive use of `case-converter` is made for handling naming conventions (PascalCase, snake_case, camelCase) via types like `NamingString`, `SnakeString`, and `PascalString` defined in the exact blueprint.
-
-## Special Rules and Context
-- **Context-Dependent Source of Truth**:
-  - **For the `DomainDefinition` context (Core Models)**: The Python source code (in `src/codegen/domain_definition/`) is the absolute source of truth. When modifying or adding new domain component types or blueprint structures, you must modify the Python Pydantic models first. The generator cannot bootstrap its own domain models. After updating the Python models, run `codegen reverse` to update `codegen.yaml` and `codegen schema` to update `codegen.schema.json`.
-  - **For other contexts / normal usage**: The `codegen.yaml` file is the absolute source of truth. Changes to those domain architectures should be reflected in the YAML first (or managed via `codegen add/update/delete` commands) to generate the corresponding code.
-- **Naming Conventions**: Different parts of the code require specific casing. Pay attention to how `case-converter` or the custom string types (e.g., `NamingString`) are used to transform names between string representations.
