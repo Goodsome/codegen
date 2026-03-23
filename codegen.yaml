@@ -61,18 +61,23 @@ contexts:
       description: 基于 case-converter 的增强型字符串
       behaviors:
       - name: to_pascal
+        inputs: []
         output:
           type: string
       - name: to_snake
+        inputs: []
         output:
           type: string
       - name: to_kebab
+        inputs: []
         output:
           type: string
       - name: to_camel
+        inputs: []
         output:
           type: string
       - name: to_macro
+        inputs: []
         output:
           type: string
       - name: __get_pydantic_core_schema__
@@ -94,19 +99,6 @@ contexts:
         output:
           type: any
     ports:
-    - name: TemplatePort
-      description: Port for generating templates.
-      kind: adapter
-      operations:
-      - name: render
-        inputs:
-        - type: string
-          name: template_path
-        - type: any
-          container: map
-          name: context
-        output:
-          type: string
     - name: FileSystemPort
       description: Port for interacting with the file system.
       kind: adapter
@@ -258,806 +250,6 @@ contexts:
           name: result
         output:
           type: any
-    services:
-    - name: ImplementationMapper
-      dependencies:
-      - type: AttributeMapper
-        optional: true
-        name: attribute_mapper
-      - type: MethodMapper
-        optional: true
-        name: method_mapper
-      operations:
-      - name: to_module_spec
-        inputs:
-        - type: ImplementationSpec
-          name: implementation
-        - type: PortSpec
-          name: port
-        output:
-          type: ModuleSpec
-      - name: to_implementation
-        inputs:
-        - type: ModuleSpec
-          name: module_spec
-        - type: string
-          name: technology
-        output:
-          type: ImplementationSpec
-      - name: _get_class_name
-        inputs:
-        - type: ImplementationSpec
-          name: implementation
-        output:
-          type: string
-    - name: EnumMapper
-      operations:
-      - name: to_python_enum_spec
-        inputs:
-        - type: EnumSpec
-          name: meta_enum
-        output:
-          type: PythonEnumSpec
-      - name: to_enum_spec
-        inputs:
-        - type: PythonEnumSpec
-          name: enum_spec
-        output:
-          type: EnumSpec
-      - name: to_module_spec
-        inputs:
-        - type: EnumSpec
-          container: iterable
-          name: enums
-        output:
-          type: ModuleSpec
-      - name: to_meta_enums
-        inputs:
-        - type: ModuleSpec
-          name: module_spec
-        output:
-          type: EnumSpec
-          container: iterable
-    - name: ValueObjectMapper
-      dependencies:
-      - type: AttributeMapper
-        optional: true
-        name: attribute_mapper
-      - type: MethodMapper
-        optional: true
-        name: method_mapper
-      operations:
-      - name: to_module_spec
-        inputs:
-        - type: ValueObjectSpec
-          name: value_object
-        output:
-          type: ModuleSpec
-      - name: to_package_spec
-        inputs:
-        - type: ValueObjectSpec
-          container: iterable
-          name: value_objects
-        output:
-          type: PackageSpec
-      - name: module_spec_to_value_objects
-        inputs:
-        - type: ModuleSpec
-          name: module_spec
-        output:
-          type: ValueObjectSpec
-          container: list
-      - name: to_value_objects
-        inputs:
-        - type: PackageSpec
-          name: package_spec
-        output:
-          type: ValueObjectSpec
-          container: list
-    - name: EntityMapper
-      dependencies:
-      - type: AttributeMapper
-        optional: true
-        name: attribute_mapper
-      - type: MethodMapper
-        optional: true
-        name: method_mapper
-      operations:
-      - name: to_module_spec
-        inputs:
-        - type: EntitySpec
-          name: entity
-        output:
-          type: ModuleSpec
-      - name: to_package_spec
-        inputs:
-        - type: EntitySpec
-          container: iterable
-          name: entities
-        output:
-          type: PackageSpec
-      - name: to_entity
-        inputs:
-        - type: ModuleSpec
-          name: module
-        output:
-          type: EntitySpec
-      - name: to_entities
-        inputs:
-        - type: PackageSpec
-          name: package
-        output:
-          type: EntitySpec
-          container: list
-    - name: ContainerMapper
-      description: Maps ContainerSpec to PythonGen ClassSpec for generating dependency_injector
-        containers.
-      operations:
-      - name: to_class_spec
-        inputs:
-        - type: ContainerSpec
-          name: container_spec
-        - type: BoundedContext
-          name: context
-        - type: string
-          name: class_name
-          default: '''Container'''
-        output:
-          type: ClassSpec
-      - name: _create_provider_variable
-        inputs:
-        - type: PortBinding
-          name: binding
-        - type: BoundedContext
-          name: context
-        output:
-          type: VariableSpec
-          optional: true
-      - name: _create_use_case_provider_variable
-        inputs:
-        - type: UseCaseSpec
-          name: use_case
-        - type: PortBinding
-          container: list
-          name: bindings
-        output:
-          type: VariableSpec
-          optional: true
-      - name: _create_provider_assignment
-        inputs:
-        - type: string
-          name: implementation_class
-        output:
-          type: AssignmentSpec
-      - name: _to_snake_case
-        inputs:
-        - type: string
-          name: name
-        output:
-          type: string
-      - name: to_module_spec
-        inputs:
-        - type: ContainerSpec
-          name: container_spec
-        - type: BoundedContext
-          name: context
-        - type: string
-          name: class_name
-          default: '''Container'''
-        - type: string
-          name: project_name
-          default: ''''''
-        output:
-          type: ModuleSpec
-    - name: InterfaceMapper
-      description: Interfaces 层代码生成器
-      operations:
-      - name: to_package_spec
-        inputs:
-        - type: InterfaceSpec
-          name: interfaces
-        - type: string
-          name: context_name
-        - type: UseCaseSpec
-          container: list
-          name: use_cases
-        - type: string
-          name: project_name
-          default: ''''''
-        output:
-          type: PackageSpec
-      - name: _map_cli_interface
-        inputs:
-        - type: any
-          name: cli_spec
-        - type: string
-          name: context_name
-        - type: UseCaseSpec
-          container: map
-          name: use_case_index
-        - type: string
-          name: project_name
-          default: ''''''
-        output:
-          type: PackageSpec
-      - name: _map_cli_command
-        inputs:
-        - type: CliCommandSpec
-          name: cmd
-        - type: string
-          name: context_name
-        - type: UseCaseSpec
-          container: map
-          name: use_case_index
-        - type: string
-          name: project_name
-          default: ''''''
-        output:
-          type: ModuleSpec
-      - name: _create_cli_init_module
-        inputs:
-        - type: string
-          name: context_name
-        - type: string
-          container: list
-          name: function_names
-        - type: string
-          name: project_name
-          default: ''''''
-        output:
-          type: ModuleSpec
-      - name: _map_mcp_interface
-        inputs:
-        - type: any
-          name: mcp_spec
-        - type: string
-          name: context_name
-        - type: UseCaseSpec
-          container: map
-          name: use_case_index
-        - type: string
-          name: project_name
-          default: ''''''
-        output:
-          type: PackageSpec
-      - name: _map_mcp_tool
-        inputs:
-        - type: McpToolSpec
-          name: tool
-        - type: string
-          name: context_name
-        - type: UseCaseSpec
-          container: map
-          name: use_case_index
-        - type: string
-          name: project_name
-          default: ''''''
-        output:
-          type: ModuleSpec
-      - name: _create_mcp_init_module
-        inputs:
-        - type: string
-          name: context_name
-        - type: string
-          container: list
-          name: function_names
-        - type: string
-          name: project_name
-          default: ''''''
-        output:
-          type: ModuleSpec
-      - name: _map_http_interface
-        inputs:
-        - type: any
-          name: http_spec
-        - type: string
-          name: context_name
-        - type: UseCaseSpec
-          container: map
-          name: use_case_index
-        - type: string
-          name: project_name
-          default: ''''''
-        output:
-          type: PackageSpec
-      - name: _map_http_endpoint
-        inputs:
-        - type: HttpEndpointSpec
-          name: endpoint
-        - type: string
-          name: context_name
-        - type: UseCaseSpec
-          container: map
-          name: use_case_index
-        - type: string
-          name: project_name
-          default: ''''''
-        output:
-          type: ModuleSpec
-      - name: _create_http_init_module
-        inputs:
-        - type: string
-          name: context_name
-        - type: string
-          container: list
-          name: module_names
-        - type: string
-          name: project_name
-          default: ''''''
-        output:
-          type: ModuleSpec
-      - name: _sanitize_identifier
-        inputs:
-        - type: string
-          name: name
-        output:
-          type: string
-      - name: _to_snake_case
-        inputs:
-        - type: string
-          name: name
-        output:
-          type: string
-    - name: DomainMapper
-      dependencies:
-      - type: AggregateMapper
-        optional: true
-        name: aggregate_mapper
-      - type: EntityMapper
-        optional: true
-        name: entity_mapper
-      - type: ValueObjectMapper
-        optional: true
-        name: value_object_mapper
-      - type: ServiceMapper
-        optional: true
-        name: service_mapper
-      - type: PortMapper
-        optional: true
-        name: port_mapper
-      - type: EnumMapper
-        optional: true
-        name: enum_mapper
-      operations:
-      - name: to_package_spec
-        inputs:
-        - type: DomainSpec
-          name: domain
-        output:
-          type: PackageSpec
-      - name: to_domain
-        inputs:
-        - type: PackageSpec
-          name: package_spec
-        output:
-          type: DomainSpec
-    - name: InfrastructureMapper
-      dependencies:
-      - type: ImplementationMapper
-        optional: true
-        name: implementation_mapper
-      operations:
-      - name: to_package_spec
-        inputs:
-        - type: InfrastructureSpec
-          name: infrastructure
-        - type: PortSpec
-          container: callable
-          name: port_finder
-        output:
-          type: PackageSpec
-      - name: to_infrastructure
-        inputs:
-        - type: PackageSpec
-          name: package_spec
-        output:
-          type: InfrastructureSpec
-    - name: AggregateMapper
-      dependencies:
-      - type: AttributeMapper
-        optional: true
-        name: attribute_mapper
-      - type: MethodMapper
-        optional: true
-        name: method_mapper
-      operations:
-      - name: to_module_spec
-        inputs:
-        - type: AggregateSpec
-          name: aggregate
-        output:
-          type: ModuleSpec
-      - name: to_package_spec
-        inputs:
-        - type: AggregateSpec
-          container: iterable
-          name: aggregates
-        output:
-          type: PackageSpec
-      - name: to_aggregate
-        inputs:
-        - type: ModuleSpec
-          name: module
-        output:
-          type: AggregateSpec
-      - name: to_aggregates
-        inputs:
-        - type: PackageSpec
-          name: package
-        output:
-          type: AggregateSpec
-          container: list
-    - name: AttributeMapper
-      dependencies:
-      - type: TypeSystemConverter
-        optional: true
-        name: type_system_converter
-      operations:
-      - name: _default_to_assignment
-        inputs:
-        - type: string
-          name: default_value
-        output:
-          type: AssignmentSpec
-      - name: to_variable_spec
-        inputs:
-        - type: AttributeSpec
-          name: attribute
-        - type: FieldFlavor
-          optional: true
-          name: default_field_flavor
-          default: None
-        output:
-          type: VariableSpec
-      - name: to_attribute
-        inputs:
-        - type: VariableSpec
-          name: variable_spec
-        output:
-          type: AttributeSpec
-      - name: to_variable_specs
-        inputs:
-        - type: AttributeSpec
-          container: list
-          name: attributes
-        - type: FieldFlavor
-          optional: true
-          name: default_field_flavor
-          default: None
-        output:
-          type: VariableSpec
-          container: list
-      - name: to_attributes
-        inputs:
-        - type: VariableSpec
-          container: list
-          name: variable_specs
-        output:
-          type: AttributeSpec
-          container: list
-    - name: MethodMapper
-      dependencies:
-      - type: AttributeMapper
-        optional: true
-        name: attribute_mapper
-      operations:
-      - name: to_function_spec
-        inputs:
-        - type: MethodSpec
-          name: method
-        - type: FunctionType
-          name: function_type
-          default: FunctionType.FUNCTION
-        - type: boolean
-          name: is_abstract
-          default: 'False'
-        - type: boolean
-          name: is_private
-          default: 'False'
-        - type: string
-          optional: true
-          name: class_name
-          default: None
-        output:
-          type: FunctionSpec
-      - name: to_method
-        inputs:
-        - type: FunctionSpec
-          name: function_spec
-        output:
-          type: MethodSpec
-    - name: BootstrapMapper
-      description: Maps BootstrapSpec to PythonGen PackageSpec for generating bootstrap
-        code.
-      dependencies:
-      - type: ConfigMapper
-        optional: true
-        name: config_mapper
-      - type: ContainerMapper
-        optional: true
-        name: container_mapper
-      operations:
-      - name: to_package_spec
-        inputs:
-        - type: Blueprint
-          name: blueprint
-        output:
-          type: PackageSpec
-          optional: true
-      - name: _create_app_config_module
-        inputs:
-        - type: ConfigSpec
-          name: bootstrap_config
-        - type: BoundedContext
-          container: list
-          name: contexts
-        output:
-          type: ModuleSpec
-      - name: _create_app_container_module
-        inputs:
-        - type: ContainerSpec
-          name: bootstrap_container
-        - type: BoundedContext
-          container: list
-          name: contexts
-        output:
-          type: ModuleSpec
-      - name: _to_snake_case
-        inputs:
-        - type: string
-          name: name
-        output:
-          type: string
-    - name: PortMapper
-      dependencies:
-      - type: AttributeMapper
-        optional: true
-        name: attribute_mapper
-      - type: MethodMapper
-        optional: true
-        name: method_mapper
-      operations:
-      - name: to_module_spec
-        inputs:
-        - type: PortSpec
-          name: port
-        output:
-          type: ModuleSpec
-      - name: to_package_spec
-        inputs:
-        - type: PortSpec
-          container: iterable
-          name: ports
-        output:
-          type: PackageSpec
-      - name: to_port
-        inputs:
-        - type: ModuleSpec
-          name: module_spec
-        output:
-          type: PortSpec
-      - name: to_ports
-        inputs:
-        - type: PackageSpec
-          name: package_spec
-        output:
-          type: PortSpec
-          container: list
-    - name: TypeSystemConverter
-      description: 通用类型系统与 Python 类型系统的双向转换器
-      operations:
-      - name: to_python_annotation
-        inputs:
-        - type: TypeDefinition
-          name: type_def
-        output:
-          type: TypeAnnotationSpec
-      - name: from_python_annotation
-        inputs:
-        - type: TypeAnnotationSpec
-          optional: true
-          name: annotation
-        output:
-          type: Any
-          custom_type_string: tuple[str, ContainerType, bool, str | None]
-      - name: _apply_container
-        inputs:
-        - type: string
-          name: core_type
-        - type: ContainerType
-          name: container
-        output:
-          type: TypeAnnotationSpec
-      - name: _make_optional
-        inputs:
-        - type: TypeAnnotationSpec
-          name: annotation
-        output:
-          type: TypeAnnotationSpec
-      - name: _extract_optional
-        inputs:
-        - type: TypeAnnotationSpec
-          name: annotation
-        output:
-          type: Any
-          custom_type_string: tuple[bool, TypeAnnotationSpec]
-      - name: _extract_container_and_type
-        inputs:
-        - type: TypeAnnotationSpec
-          name: annotation
-        output:
-          type: Any
-          custom_type_string: tuple[ContainerType, str]
-    - name: UseCaseMapper
-      dependencies:
-      - type: AttributeMapper
-        optional: true
-        name: attribute_mapper
-      - type: MethodMapper
-        optional: true
-        name: method_mapper
-      operations:
-      - name: to_module_spec
-        inputs:
-        - type: UseCaseSpec
-          name: use_case
-        output:
-          type: ModuleSpec
-      - name: to_use_case
-        inputs:
-        - type: ModuleSpec
-          name: module_spec
-        output:
-          type: UseCaseSpec
-    - name: InterfaceReverseMapper
-      description: Interfaces Reverse 解析器，从目录和文件名推断接口定义
-      operations:
-      - name: to_interface_spec
-        inputs:
-        - type: PackageSpec
-          name: interfaces_pkg
-        - type: UseCaseSpec
-          container: list
-          name: use_cases
-        output:
-          type: InterfaceSpec
-      - name: _parse_cli_interface
-        inputs:
-        - type: PackageSpec
-          name: cli_pkg
-        - type: UseCaseSpec
-          container: map
-          name: use_case_index
-        output:
-          type: CliInterfaceSpec
-      - name: _parse_mcp_interface
-        inputs:
-        - type: PackageSpec
-          name: mcp_pkg
-        - type: UseCaseSpec
-          container: map
-          name: use_case_index
-        output:
-          type: McpInterfaceSpec
-      - name: _parse_http_interface
-        inputs:
-        - type: PackageSpec
-          name: http_pkg
-        - type: UseCaseSpec
-          container: map
-          name: use_case_index
-        output:
-          type: HttpInterfaceSpec
-      - name: _infer_use_case_from_suite
-        inputs:
-        - type: string
-          name: suite
-        - type: UseCaseSpec
-          container: map
-          name: use_case_index
-        output:
-          type: string
-          optional: true
-      - name: _parse_route_decorator
-        inputs:
-        - type: string
-          container: list
-          name: decorators
-        output:
-          type: Any
-          custom_type_string: tuple[str | None, str | None]
-    - name: ApplicationMapper
-      dependencies:
-      - type: UseCaseMapper
-        optional: true
-        name: use_case_mapper
-      - type: PortMapper
-        optional: true
-        name: port_mapper
-      operations:
-      - name: to_package_spec
-        inputs:
-        - type: ApplicationSpec
-          name: application
-        output:
-          type: PackageSpec
-      - name: to_application
-        inputs:
-        - type: PackageSpec
-          name: package_spec
-        output:
-          type: ApplicationSpec
-    - name: ServiceMapper
-      dependencies:
-      - type: AttributeMapper
-        optional: true
-        name: attribute_mapper
-      - type: MethodMapper
-        optional: true
-        name: method_mapper
-      operations:
-      - name: to_module_spec
-        inputs:
-        - type: ServiceSpec
-          name: service
-        output:
-          type: ModuleSpec
-      - name: to_package_spec
-        inputs:
-        - type: ServiceSpec
-          container: iterable
-          name: services
-        output:
-          type: PackageSpec
-      - name: to_service
-        inputs:
-        - type: ModuleSpec
-          name: module_spec
-        output:
-          type: ServiceSpec
-      - name: to_services
-        inputs:
-        - type: PackageSpec
-          name: package_spec
-        output:
-          type: ServiceSpec
-          container: list
-    - name: ConfigMapper
-      description: Maps ConfigSpec to PythonGen ClassSpec for generating Pydantic
-        BaseSettings classes.
-      operations:
-      - name: to_class_spec
-        inputs:
-        - type: ConfigSpec
-          name: config_spec
-        - type: string
-          optional: true
-          name: class_name
-          default: None
-        output:
-          type: ClassSpec
-      - name: _map_field_to_variable
-        inputs:
-        - type: ConfigFieldSpec
-          name: field_spec
-        output:
-          type: VariableSpec
-      - name: _create_model_config_attribute
-        inputs:
-        - type: ConfigSpec
-          name: config_spec
-        output:
-          type: VariableSpec
-      - name: to_module_spec
-        inputs:
-        - type: ConfigSpec
-          name: config_spec
-        - type: string
-          optional: true
-          name: class_name
-          default: None
-        output:
-          type: ModuleSpec
   application:
     use_cases:
     - name: GenerateProject
@@ -1229,15 +421,19 @@ contexts:
         output:
           type: ClassSpec
       - name: create_value_object
+        inputs: []
         output:
           type: ClassSpec
       - name: create_aggregate
+        inputs: []
         output:
           type: ClassSpec
       - name: create_entity
+        inputs: []
         output:
           type: ClassSpec
       - name: create_event
+        inputs: []
         output:
           type: ClassSpec
       - name: _create_base_model
@@ -1247,6 +443,7 @@ contexts:
         output:
           type: ClassSpec
       - name: get_required_types
+        inputs: []
         output:
           type: string
           container: set
@@ -1317,10 +514,12 @@ contexts:
         output:
           type: any
       - name: get_required_types
+        inputs: []
         output:
           type: string
           container: set
       - name: is_instance_method
+        inputs: []
         output:
           type: boolean
       - name: merge
@@ -1330,6 +529,7 @@ contexts:
         output:
           type: FunctionSpec
       - name: is_init_method
+        inputs: []
         output:
           type: boolean
     - name: TypeAnnotationSpec
@@ -1343,13 +543,16 @@ contexts:
         name: args
       behaviors:
       - name: render
+        inputs: []
         output:
           type: string
       - name: get_all_referenced_names
+        inputs: []
         output:
           type: string
           container: set
       - name: is_nullable
+        inputs: []
         output:
           type: boolean
       - name: from_raw
@@ -1455,6 +658,7 @@ contexts:
         output:
           type: AssignmentSpec
       - name: get_required_types
+        inputs: []
         output:
           type: string
           container: set
@@ -1489,6 +693,7 @@ contexts:
         default: None
       behaviors:
       - name: render
+        inputs: []
         output:
           type: string
     - name: ModuleSpec
@@ -1558,18 +763,23 @@ contexts:
         output:
           type: ModuleSpec
       - name: create_shared_models
+        inputs: []
         output:
           type: ModuleSpec
       - name: create_shared_events
+        inputs: []
         output:
           type: ModuleSpec
       - name: get_init_module
+        inputs: []
         output:
           type: ModuleSpec
       - name: filename
+        inputs: []
         output:
           type: string
       - name: is_init_module
+        inputs: []
         output:
           type: boolean
       - name: is_match_name
@@ -1579,6 +789,7 @@ contexts:
         output:
           type: boolean
       - name: get_required_types
+        inputs: []
         output:
           type: string
           container: set
@@ -1601,6 +812,7 @@ contexts:
         output:
           type: boolean
       - name: collect_class_spec
+        inputs: []
         output:
           type: ClassSpec
           container: map
@@ -1641,6 +853,7 @@ contexts:
         output:
           type: any
       - name: is_empty
+        inputs: []
         output:
           type: boolean
       - name: get_global_registry
@@ -1661,6 +874,7 @@ contexts:
         output:
           type: any
       - name: collect_class_spec
+        inputs: []
         output:
           type: ClassSpec
           container: map
@@ -1713,12 +927,15 @@ contexts:
         output:
           type: ImportFromSpec
       - name: render
+        inputs: []
         output:
           type: string
       - name: render_from_expression
+        inputs: []
         output:
           type: string
       - name: render_names
+        inputs: []
         output:
           type: string
       - name: merge
@@ -1753,6 +970,7 @@ contexts:
         output:
           type: VariableSpec
       - name: get_required_types
+        inputs: []
         output:
           type: string
           container: set
@@ -1799,6 +1017,7 @@ contexts:
         output:
           type: PythonEnumSpec
       - name: get_required_types
+        inputs: []
         output:
           type: string
           container: set
@@ -2051,6 +1270,16 @@ contexts:
           default: None
         output:
           type: any
+      - name: to_module_spec
+        inputs: []
+        output:
+          type: ModuleSpec
+      - name: from_module_spec
+        inputs:
+        - type: ModuleSpec
+          name: module
+        output:
+          type: UseCaseSpec
     - name: ApplicationSpec
       description: Specification of an application to be generated.
       attributes:
@@ -2066,6 +1295,17 @@ contexts:
         container: list
         optional: true
         name: services
+      behaviors:
+      - name: to_package_spec
+        inputs: []
+        output:
+          type: PackageSpec
+      - name: from_package_spec
+        inputs:
+        - type: PackageSpec
+          name: package_spec
+        output:
+          type: ApplicationSpec
     - name: InterfaceSpec
       description: 接口层总规范
       attributes:
@@ -2081,6 +1321,28 @@ contexts:
         optional: true
         name: http
         default: None
+      behaviors:
+      - name: to_package_spec
+        inputs:
+        - type: string
+          name: context_name
+        - type: UseCaseSpec
+          container: list
+          name: use_cases
+        - type: string
+          name: project_name
+          default: ''''''
+        output:
+          type: PackageSpec
+      - name: from_package_spec
+        inputs:
+        - type: PackageSpec
+          name: interfaces_pkg
+        - type: UseCaseSpec
+          container: list
+          name: use_cases
+        output:
+          type: InterfaceSpec
     - name: EnumMemberSpec
       description: Specification of an enum member to be generated.
       attributes:
@@ -2109,6 +1371,31 @@ contexts:
         container: list
         optional: true
         name: behaviors
+      behaviors:
+      - name: to_module_spec
+        inputs: []
+        output:
+          type: ModuleSpec
+      - name: to_package_spec
+        inputs:
+        - type: Self
+          container: iterable
+          name: value_objects
+        output:
+          type: PackageSpec
+      - name: from_module_spec
+        inputs:
+        - type: ModuleSpec
+          name: module
+        output:
+          type: Self
+      - name: from_package_spec
+        inputs:
+        - type: PackageSpec
+          name: package
+        output:
+          type: Self
+          container: list
     - name: DataContractSpec
       description: Generic data contract specification for use case command/query/result.
       attributes:
@@ -2129,6 +1416,20 @@ contexts:
         container: list
         optional: true
         name: implementations
+      behaviors:
+      - name: to_package_spec
+        inputs:
+        - type: PortSpec
+          container: callable
+          name: port_finder
+        output:
+          type: PackageSpec
+      - name: from_package_spec
+        inputs:
+        - type: PackageSpec
+          name: package_spec
+        output:
+          type: InfrastructureSpec
     - name: ContainerSpec
       description: Specification for a container (dependency injection).
       attributes:
@@ -2136,6 +1437,43 @@ contexts:
         container: list
         optional: true
         name: bindings
+      behaviors:
+      - name: to_class_spec
+        inputs:
+        - type: BoundedContext
+          name: context
+        - type: string
+          name: class_name
+          default: '''Container'''
+        output:
+          type: ClassSpec
+      - name: to_module_spec
+        inputs:
+        - type: BoundedContext
+          name: context
+        - type: string
+          name: class_name
+          default: '''Container'''
+        output:
+          type: ModuleSpec
+      - name: to_app_container_module
+        inputs: []
+        output:
+          type: ModuleSpec
+      - name: _create_provider_variable
+        inputs:
+        - type: PortBinding
+          name: binding
+        output:
+          type: VariableSpec
+          optional: true
+      - name: _create_use_case_provider_variable
+        inputs:
+        - type: UseCaseSpec
+          name: use_case
+        output:
+          type: VariableSpec
+          optional: true
     - name: MethodOutput
       description: Specification of the output of a method.
     - name: MapperSpec
@@ -2170,6 +1508,11 @@ contexts:
       - type: string
         optional: true
         name: env_var
+      behaviors:
+      - name: to_variable_spec
+        inputs: []
+        output:
+          type: VariableSpec
     - name: ImplementationSpec
       description: Specification of an implementation to be generated.
       attributes:
@@ -2215,6 +1558,24 @@ contexts:
           default: None
         output:
           type: any
+      - name: to_module_spec
+        inputs:
+        - type: PortSpec
+          name: port
+        output:
+          type: ModuleSpec
+      - name: from_module_spec
+        inputs:
+        - type: ModuleSpec
+          name: module_spec
+        - type: string
+          name: technology
+        output:
+          type: ImplementationSpec
+      - name: _get_class_name
+        inputs: []
+        output:
+          type: string
     - name: Blueprint
       description: Root of the generation model. Represents the entire project definition.
       attributes:
@@ -2254,6 +1615,16 @@ contexts:
           default: None
         output:
           type: any
+      - name: to_package_spec
+        inputs: []
+        output:
+          type: PackageSpec
+      - name: from_package_spec
+        inputs:
+        - type: PackageSpec
+          name: package_spec
+        output:
+          type: Self
     - name: CliCommandSpec
       description: CLI 命令规范
       attributes:
@@ -2279,72 +1650,33 @@ contexts:
       - type: MethodOutput
         name: output
       behaviors:
-      - description: Factory method to create MethodSpec
+      - name: create
         inputs:
         - type: string
           name: name
-          description: ''
-          container: none
-          optional: false
-          custom_type_string: null
-          default: null
-        - type: list[AttributeSpec]
+        - type: AttributeSpec
+          container: list
           name: inputs
-          description: ''
-          container: none
-          optional: false
-          custom_type_string: null
-          default: null
         - type: MethodOutput
           name: output
-          description: ''
-          container: none
-          optional: false
-          custom_type_string: null
-          default: null
-        name: create
         output:
-          type: any
-          container: none
-          optional: false
-          custom_type_string: null
-      - description: 将 MethodSpec 转换为 PythonGen FunctionSpec
+          type: MethodSpec
+      - name: to_function_spec
         inputs:
         - type: FunctionType
           name: type
-          description: 函数类型
-          container: none
-          optional: false
-          custom_type_string: null
-          default: null
         - type: string
-          name: class_name
-          description: 所属类名，用于判断 Self 返回类型
-          container: none
           optional: true
-          custom_type_string: null
-          default: null
-        name: to_function_spec
+          name: class_name
+          default: None
         output:
           type: FunctionSpec
-          container: none
-          optional: false
-          custom_type_string: null
-      - description: 从 PythonGen FunctionSpec 逆向解析为 MethodSpec
+      - name: from_function_spec
         inputs:
         - type: FunctionSpec
           name: function_spec
-          description: ''
-          container: none
-          optional: false
-          custom_type_string: null
-          default: null
-        name: from_function_spec
         output:
           type: MethodSpec
-          container: none
-          optional: false
-          custom_type_string: null
     - name: McpInterfaceSpec
       description: MCP 接口层规范
       attributes:
@@ -2352,6 +1684,74 @@ contexts:
         container: list
         optional: true
         name: tools
+      behaviors:
+      - name: to_package_spec
+        inputs:
+        - type: string
+          name: context_name
+        - type: UseCaseSpec
+          container: list
+          name: use_cases
+        - type: string
+          name: project_name
+          default: ''''''
+        output:
+          type: PackageSpec
+      - name: _create_mcp_tool_module
+        inputs:
+        - type: McpToolSpec
+          name: tool
+        - type: string
+          name: context_name
+        - type: UseCaseSpec
+          container: map
+          name: use_case_index
+        - type: string
+          name: project_name
+        output:
+          type: ModuleSpec
+      - name: _create_mcp_init_module
+        inputs:
+        - type: string
+          name: context_name
+        - type: string
+          container: list
+          name: function_names
+        - type: string
+          name: project_name
+        output:
+          type: ModuleSpec
+      - name: _sanitize_identifier
+        inputs:
+        - type: string
+          name: name
+        output:
+          type: string
+      - name: _to_snake_case
+        inputs:
+        - type: string
+          name: name
+        output:
+          type: string
+      - name: from_package_spec
+        inputs:
+        - type: PackageSpec
+          name: mcp_pkg
+        - type: UseCaseSpec
+          container: list
+          name: use_cases
+        output:
+          type: Self
+      - name: _infer_use_case_from_suite
+        inputs:
+        - type: string
+          name: suite
+        - type: UseCaseSpec
+          container: map
+          name: use_case_index
+        output:
+          type: string
+          optional: true
     - name: DomainSpec
       description: Specification of a domain to be generated.
       attributes:
@@ -2379,6 +1779,17 @@ contexts:
         container: list
         optional: true
         name: ports
+      behaviors:
+      - name: to_package_spec
+        inputs: []
+        output:
+          type: PackageSpec
+      - name: from_package_spec
+        inputs:
+        - type: PackageSpec
+          name: package_spec
+        output:
+          type: DomainSpec
     - name: BoundedContext
       description: A logical boundary within the system.
       attributes:
@@ -2406,6 +1817,28 @@ contexts:
         optional: true
         name: interfaces
       behaviors:
+      - name: to_package_spec
+        inputs:
+        - type: string
+          name: project_name
+          default: ''''''
+        output:
+          type: PackageSpec
+      - name: _collect_class_specs_in_ports
+        inputs:
+        - type: ClassSpec
+          container: map
+          name: class_specs
+        - type: PackageSpec
+          name: package_spec
+        output:
+          type: None
+      - name: from_package_spec
+        inputs:
+        - type: PackageSpec
+          name: package_spec
+        output:
+          type: Self
       - name: create
         inputs:
         - type: string
@@ -2440,6 +1873,7 @@ contexts:
         output:
           type: any
       - name: port_index
+        inputs: []
         output:
           type: PortSpec
           container: map
@@ -2465,16 +1899,41 @@ contexts:
         name: custom_type_string
       behaviors:
       - name: to_python_annotation
-        description: 将 TypeDefinition 转换为 Python 类型注解
+        inputs: []
+        output:
+          type: TypeAnnotationSpec
+      - name: _apply_container
+        inputs:
+        - type: string
+          name: core_type
+        output:
+          type: TypeAnnotationSpec
+      - name: _make_optional
+        inputs:
+        - type: TypeAnnotationSpec
+          name: annotation
         output:
           type: TypeAnnotationSpec
       - name: from_python_annotation
-        description: 从 Python 类型注解逆向解析为 TypeDefinition
         inputs:
         - type: TypeAnnotationSpec
           name: annotation
         output:
           type: TypeDefinition
+      - name: _extract_optional
+        inputs:
+        - type: TypeAnnotationSpec
+          name: annotation
+        output:
+          type: Any
+          custom_type_string: tuple[bool, TypeAnnotationSpec]
+      - name: _extract_container_and_type
+        inputs:
+        - type: TypeAnnotationSpec
+          name: annotation
+        output:
+          type: Any
+          custom_type_string: tuple[ContainerType, str]
     - name: ServiceSpec
       description: Specification of a domain service to be generated.
       attributes:
@@ -2491,6 +1950,31 @@ contexts:
         container: list
         optional: true
         name: operations
+      behaviors:
+      - name: to_module_spec
+        inputs: []
+        output:
+          type: ModuleSpec
+      - name: to_package_spec
+        inputs:
+        - type: Self
+          container: iterable
+          name: services
+        output:
+          type: PackageSpec
+      - name: from_module_spec
+        inputs:
+        - type: ModuleSpec
+          name: module
+        output:
+          type: Self
+      - name: from_package_spec
+        inputs:
+        - type: PackageSpec
+          name: package
+        output:
+          type: Self
+          container: list
     - name: CliInterfaceSpec
       description: CLI 接口层规范
       attributes:
@@ -2498,6 +1982,74 @@ contexts:
         container: list
         optional: true
         name: commands
+      behaviors:
+      - name: to_package_spec
+        inputs:
+        - type: string
+          name: context_name
+        - type: UseCaseSpec
+          container: list
+          name: use_cases
+        - type: string
+          name: project_name
+          default: ''''''
+        output:
+          type: PackageSpec
+      - name: _create_cli_command_module
+        inputs:
+        - type: CliCommandSpec
+          name: cmd
+        - type: string
+          name: context_name
+        - type: UseCaseSpec
+          container: map
+          name: use_case_index
+        - type: string
+          name: project_name
+        output:
+          type: ModuleSpec
+      - name: _create_cli_init_module
+        inputs:
+        - type: string
+          name: context_name
+        - type: string
+          container: list
+          name: function_names
+        - type: string
+          name: project_name
+        output:
+          type: ModuleSpec
+      - name: _sanitize_identifier
+        inputs:
+        - type: string
+          name: name
+        output:
+          type: string
+      - name: _to_snake_case
+        inputs:
+        - type: string
+          name: name
+        output:
+          type: string
+      - name: from_package_spec
+        inputs:
+        - type: PackageSpec
+          name: cli_pkg
+        - type: UseCaseSpec
+          container: list
+          name: use_cases
+        output:
+          type: Self
+      - name: _infer_use_case_from_suite
+        inputs:
+        - type: string
+          name: suite
+        - type: UseCaseSpec
+          container: map
+          name: use_case_index
+        output:
+          type: string
+          optional: true
     - name: HttpEndpointSpec
       description: HTTP Endpoint 规范
       attributes:
@@ -2526,6 +2078,31 @@ contexts:
         container: list
         optional: true
         name: behaviors
+      behaviors:
+      - name: to_module_spec
+        inputs: []
+        output:
+          type: ModuleSpec
+      - name: to_package_spec
+        inputs:
+        - type: Self
+          container: iterable
+          name: entities
+        output:
+          type: PackageSpec
+      - name: from_module_spec
+        inputs:
+        - type: ModuleSpec
+          name: module
+        output:
+          type: Self
+      - name: from_package_spec
+        inputs:
+        - type: PackageSpec
+          name: package
+        output:
+          type: Self
+          container: list
     - name: AttributeSpec
       description: Standard specification for a class attribute.
       attributes:
@@ -2539,7 +2116,6 @@ contexts:
         name: default
       behaviors:
       - name: create
-        description: Factory method to create AttributeSpec
         inputs:
         - type: string
           name: name
@@ -2549,17 +2125,16 @@ contexts:
           name: optional
           default: 'False'
         output:
-          type: any
+          type: AttributeSpec
       - name: to_variable_spec
-        description: 将 AttributeSpec 转换为 PythonGen VariableSpec
         inputs:
         - type: FieldFlavor
+          optional: true
           name: flavor
-          description: 指定属性如何定义默认值
+          default: None
         output:
           type: VariableSpec
       - name: from_variable_spec
-        description: 从 PythonGen VariableSpec 逆向解析为 AttributeSpec
         inputs:
         - type: VariableSpec
           name: variable_spec
@@ -2605,19 +2180,47 @@ contexts:
           default: None
         output:
           type: PortSpec
+      - name: to_module_spec
+        inputs: []
+        output:
+          type: ModuleSpec
+      - name: to_package_spec
+        inputs:
+        - type: Self
+          container: iterable
+          name: ports
+        output:
+          type: PackageSpec
+      - name: from_module_spec
+        inputs:
+        - type: ModuleSpec
+          name: module
+        output:
+          type: Self
+      - name: from_package_spec
+        inputs:
+        - type: PackageSpec
+          name: package
+        output:
+          type: Self
+          container: list
       - name: get_final_operations
+        inputs: []
         output:
           type: MethodSpec
           container: list
       - name: get_save_method_spec
+        inputs: []
         output:
           type: MethodSpec
           optional: true
       - name: get_delete_method_spec
+        inputs: []
         output:
           type: MethodSpec
           optional: true
       - name: get_find_by_id_method_spec
+        inputs: []
         output:
           type: MethodSpec
           optional: true
@@ -2632,6 +2235,31 @@ contexts:
       - type: EnumMemberSpec
         container: list
         name: members
+      behaviors:
+      - name: to_python_enum_spec
+        inputs: []
+        output:
+          type: PythonEnumSpec
+      - name: from_python_enum_spec
+        inputs:
+        - type: PythonEnumSpec
+          name: enum_spec
+        output:
+          type: EnumSpec
+      - name: to_module_spec
+        inputs:
+        - type: EnumSpec
+          container: iterable
+          name: enums
+        output:
+          type: ModuleSpec
+      - name: from_module_spec
+        inputs:
+        - type: ModuleSpec
+          name: module_spec
+        output:
+          type: EnumSpec
+          container: list
     - name: AggregateSpec
       description: Specification of a domain aggregate to be generated.
       attributes:
@@ -2648,6 +2276,31 @@ contexts:
         container: list
         optional: true
         name: behaviors
+      behaviors:
+      - name: to_module_spec
+        inputs: []
+        output:
+          type: ModuleSpec
+      - name: to_package_spec
+        inputs:
+        - type: Self
+          container: iterable
+          name: aggregates
+        output:
+          type: PackageSpec
+      - name: from_module_spec
+        inputs:
+        - type: ModuleSpec
+          name: module
+        output:
+          type: Self
+      - name: from_package_spec
+        inputs:
+        - type: PackageSpec
+          name: package
+        output:
+          type: Self
+          container: list
     - name: BootstrapSpec
       description: Specification of the bootstrap configuration.
       attributes:
@@ -2657,6 +2310,14 @@ contexts:
       - type: ContainerSpec
         optional: true
         name: container
+      behaviors:
+      - name: to_package_spec
+        inputs:
+        - type: BoundedContext
+          container: list
+          name: contexts
+        output:
+          type: PackageSpec | None
     - name: HttpInterfaceSpec
       description: HTTP 接口层规范
       attributes:
@@ -2664,6 +2325,76 @@ contexts:
         container: list
         optional: true
         name: endpoints
+      behaviors:
+      - name: to_package_spec
+        inputs:
+        - type: string
+          name: context_name
+        - type: UseCaseSpec
+          container: list
+          name: use_cases
+        - type: string
+          name: project_name
+          default: ''''''
+        output:
+          type: PackageSpec
+      - name: _create_http_endpoint_module
+        inputs:
+        - type: HttpEndpointSpec
+          name: endpoint
+        - type: string
+          name: context_name
+        - type: UseCaseSpec
+          container: map
+          name: use_case_index
+        - type: string
+          name: project_name
+        output:
+          type: ModuleSpec
+      - name: _create_http_init_module
+        inputs:
+        - type: string
+          name: context_name
+        - type: string
+          container: list
+          name: module_names
+        - type: string
+          name: project_name
+        output:
+          type: ModuleSpec
+      - name: _to_snake_case
+        inputs:
+        - type: string
+          name: name
+        output:
+          type: string
+      - name: from_package_spec
+        inputs:
+        - type: PackageSpec
+          name: http_pkg
+        - type: UseCaseSpec
+          container: list
+          name: use_cases
+        output:
+          type: Self
+      - name: _infer_use_case_from_suite
+        inputs:
+        - type: string
+          name: suite
+        - type: UseCaseSpec
+          container: map
+          name: use_case_index
+        output:
+          type: string
+          optional: true
+      - name: _parse_route_decorator
+        inputs:
+        - type: string
+          container: list
+          name: decorators
+        output:
+          type: Any
+          custom_type_string: tuple[str | None, str | None]
     - name: ConfigSpec
       description: Specification for a configuration object (AppSettings or ContextSettings).
       attributes:
@@ -2680,6 +2411,34 @@ contexts:
         container: list
         optional: true
         name: fields
+      behaviors:
+      - name: to_class_spec
+        inputs:
+        - type: string
+          optional: true
+          name: class_name
+          default: None
+        output:
+          type: ClassSpec
+      - name: _create_model_config_attribute
+        inputs: []
+        output:
+          type: VariableSpec
+      - name: to_module_spec
+        inputs:
+        - type: string
+          optional: true
+          name: class_name
+          default: None
+        output:
+          type: ModuleSpec
+      - name: to_app_config_module
+        inputs:
+        - type: BoundedContext
+          container: list
+          name: contexts
+        output:
+          type: ModuleSpec
     - name: McpToolSpec
       description: MCP Tool 规范
       attributes:
@@ -2933,6 +2692,7 @@ contexts:
         default: None
       operations:
       - name: is_index_access
+        inputs: []
         output:
           type: boolean
     ports:
@@ -2941,6 +2701,7 @@ contexts:
       kind: adapter
       operations:
       - name: load
+        inputs: []
         output:
           type: Blueprint
           optional: true

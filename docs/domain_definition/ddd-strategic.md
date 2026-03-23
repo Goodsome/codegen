@@ -68,7 +68,6 @@
 | **上游 (Upstream)** | Shared | Shared Kernel | 共享基础类型、命名字符串、端口抽象 |
 | **上游 (Upstream)** | PythonGen | **顺从者 (Conformist)** | DomainDefinition 是高阶模型，依赖 PythonGen 的低阶模型，具备自我转换为 PythonGen 模型的能力 |
 | **下游 (Downstream)** | Orchestration | Open Host Service | 提供用例接口加载和操作蓝图 |
-| **接口层** | Entrypoints | 接口暴露层 | 属于 DomainDefinition 上下文的 InterfaceSpec 层，暴露 CLI/MCP 接口供直接操作蓝图（如 get/set/rm 命令） |
 
 ### 3.2 上下文映射图
 
@@ -118,7 +117,7 @@ graph TB
 - **共享内容**：
   - 基础类型：`ValueObject`、`Entity`、`AggregateRoot`
   - 命名字符串：`PascalString`、`SnakeString`、`NamingString`
-  - 端口抽象：`FileSystemPort`、`TemplatePort`
+  - 端口抽象：`FileSystemPort`
   - 通用枚举：`ContainerType`
 
 - **依赖方式**：直接导入 Python 模块
