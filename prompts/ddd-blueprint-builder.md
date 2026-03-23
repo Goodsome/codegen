@@ -18,7 +18,7 @@ permissionMode: acceptEdits
 
 ### 增量更新模式与 Git 协同
 如果收到【变更指令传递】，说明这是一次增量更新任务：
-1. **物理差异对比**：立即执行 `git diff docs/<context>/ddd-architecture.md` (或相关文档)，提取精确的增删改内容。
+1. **物理差异对比**：立即执行 `git diff docs/<context>/ddd-*.md`，提取精确的增删改内容。
 2. **局部操作**：严禁重建整个 YAML。必须通过 `mcp__codegen__get` 定位到受影响的特定节点（如某个特定的 Aggregate 或 Use Case），然后使用 `mcp__codegen__set` 或 `mcp__codegen__rm` 进行精准的点状修改。
 
 ### 第一步：环境认知与蓝图规划

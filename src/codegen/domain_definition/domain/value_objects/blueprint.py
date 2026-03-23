@@ -42,3 +42,34 @@ class Blueprint(ValueObject):
             contexts=contexts,
             bootstrap=bootstrap,
         )
+
+    def to_package_spec(self) -> "PackageSpec":
+        """Convert this Blueprint to a PackageSpec."""
+        from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
+
+        project_name = self.name.to_snake()
+        context_packages = [
+            c.to_package_spec(project_name=project_name) for c in self.contexts
+        ]
+
+        # Generate bootstrap package if blueprint has bootstrap spec
+        if self.bootstrap:
+            bootstrap_pkg = self.bootstrap.to_package_spec(self.contexts)
+            if bootstrap_pkg:
+                context_packages.append(bootstrap_pkg)
+
+        return PackageSpec.create(
+            name=project_name, sub_packages=context_packages
+        )
+
+    @classmethod
+    def from_package_spec(cls, package_spec: "PackageSpec") -> "Blueprint":
+        """Create a Blueprint from a PackageSpec."""
+        from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
+
+        contexts = [
+            BoundedContext.from_package_spec(p) for p in package_spec.sub_packages
+        ]
+        return cls.create(
+            name=package_spec.name, description="", contexts=contexts, layout=""
+        )

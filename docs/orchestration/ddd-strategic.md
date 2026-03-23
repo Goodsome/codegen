@@ -31,8 +31,6 @@ Codegen 工具涉及多个限界上下文的协作：
 | FileResult | 文件结果 | 单个文件的生成结果（路径、状态、消息） |
 | BuildStatus | 构建状态枚举 | SUCCESS / FAILURE / WARNING 三种状态 |
 | FileStatus | 文件状态枚举 | CREATED / UPDATED / SKIPPED / FAILED 四种状态 |
-| BlueprintMapper | 蓝图映射器 | 负责 Blueprint ↔ PackageSpec 双向转换的编排服务 |
-| ContextMapper | 上下文映射器 | 负责单个 BoundedContext → PackageSpec 的转换 |
 | GenerateProject | 生成项目用例 | Command 用例：编排 LoadBlueprint + GeneratePackage |
 | GenerateBlueprint | 生成蓝图用例 | Command 用例：编排 ParsePackage + UpdateBlueprint |
 
@@ -52,7 +50,7 @@ Codegen 工具涉及多个限界上下文的协作：
 ### 集成模式
 
 - **开放主机服务 (OHS)**：`GenerateProject` 和 `GenerateBlueprint` 作为核心用例，暴露给 CLI/MCP 接口
-- **防腐层 (ACL)**：通过 `BlueprintMapper` 隔离 DomainDefinition 上下文，通过 `ParsePackage`/`GeneratePackage` 隔离 PythonGen 上下文
+- **防腐层 (ACL)**：通过 `Blueprint` 隔离 DomainDefinition 上下文，通过 `ParsePackage`/`GeneratePackage` 隔离 PythonGen 上下文
 - **发布/订阅**：暂不涉及
 
 ### 上下文映射简图
@@ -67,7 +65,6 @@ graph LR
     subgraph Orchestration
         A["GenerateProject"]
         B["GenerateBlueprint"]
-        C["BlueprintMapper"]
     end
 
     subgraph DomainDefinition
@@ -101,8 +98,7 @@ graph LR
 - `GenerateBlueprint` 编排 `ParsePackage` 和 `BlueprintStorage`，本身不执行业务逻辑
 
 **Mapper 模式**：
-- `BlueprintMapper` 协调多个子 Mapper（如 `ContextMapper`、`DomainMapper`）
-- 每个子 Mapper 负责将特定领域对象转换为 `PackageSpec`
+- `DomainMapper` 等子 Mapper 负责将特定领域对象转换为 `PackageSpec`
 
 **双向映射能力**：
 - **正向**：`Blueprint` → `PackageSpec`（生成代码）
