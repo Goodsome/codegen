@@ -6,7 +6,7 @@ from codegen.bootstrap import Container
 from codegen.domain_definition.application.use_cases.load_blueprint import (
     LoadBlueprintCommand,
 )
-from codegen.domain_definition.domain.value_objects.blueprint import Blueprint
+from codegen.domain_definition.domain.aggregates.blueprint import Blueprint
 
 
 @pytest.fixture(scope="session")
