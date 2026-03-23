@@ -1,5 +1,5 @@
 from functools import cached_property
-from typing import Any
+from typing import Any, Self
 
 from pydantic import Field
 
@@ -15,6 +15,9 @@ from codegen.domain_definition.domain.value_objects.container_spec import Contai
 from codegen.domain_definition.domain.value_objects.port_binding import PortBinding
 from codegen.domain_definition.domain.value_objects.port_spec import PortSpec
 from codegen.domain_definition.domain.value_objects.interface_spec import InterfaceSpec
+from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
+from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
+from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.models import ValueObject
 
@@ -31,12 +34,8 @@ class BoundedContext(ValueObject):
     container: ContainerSpec | None = Field(default=None)
     interfaces: InterfaceSpec | None = Field(default=None)
 
-    def to_package_spec(self, project_name: str = "") -> "PackageSpec":
+    def to_package_spec(self, project_name: str = "") -> PackageSpec:
         """Convert this BoundedContext to a PackageSpec."""
-        from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
-        from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
-        from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
-
         domain_pkg = self.domain.to_package_spec()
         application_pkg = self.application.to_package_spec()
         class_specs: dict[str, ClassSpec] = {}
@@ -93,7 +92,7 @@ class BoundedContext(ValueObject):
         )
 
     def _collect_class_specs_in_ports(
-        self, class_specs: dict[str, "ClassSpec"], package_spec: "PackageSpec"
+        self, class_specs: dict[str, ClassSpec], package_spec: PackageSpec
     ) -> None:
         """Recursively collect class specs from ports packages."""
 
@@ -104,7 +103,7 @@ class BoundedContext(ValueObject):
                 self._collect_class_specs_in_ports(class_specs, pkg)
 
     @classmethod
-    def from_package_spec(cls, package_spec: "PackageSpec") -> "BoundedContext":
+    def from_package_spec(cls, package_spec: PackageSpec) -> Self:
         """Create a BoundedContext from a PackageSpec."""
 
         domain = None

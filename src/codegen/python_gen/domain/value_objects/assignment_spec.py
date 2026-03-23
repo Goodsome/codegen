@@ -38,7 +38,6 @@ class AssignmentSpec(ValueObject):
 
     @classmethod
     def from_call(cls, func_name: str, args: list["AssignmentSpec"] | None = None, kwargs: dict[str, "AssignmentSpec"] | None = None) -> "AssignmentSpec":
-        from codegen.python_gen.domain.value_objects.call_spec import CallSpec
         return cls(
             flavor=AssignmentFlavor.CALL,
             call=CallSpec(
@@ -65,8 +64,3 @@ class AssignmentSpec(ValueObject):
             for item in self.dict_items.values():
                 types.update(item.get_required_types())
         return types
-
-# Resolve forward references
-from codegen.python_gen.domain.value_objects.call_spec import CallSpec
-CallSpec.model_rebuild()
-AssignmentSpec.model_rebuild()
