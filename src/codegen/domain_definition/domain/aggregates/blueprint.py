@@ -8,10 +8,10 @@ from codegen.domain_definition.domain.value_objects.bounded_context import (
 )
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
-from codegen.shared.models import ValueObject
+from codegen.shared.models import AggregateRoot
 
 
-class Blueprint(ValueObject):
+class Blueprint(AggregateRoot):
     """Root of the generation model. Represents the entire project definition."""
 
     name: PascalString

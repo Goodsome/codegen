@@ -5,7 +5,7 @@ from codegen.python_gen.application.use_cases.parse_package import (
 )
 from pathlib import Path
 from codegen.domain_definition.domain.ports.blueprint_storage import BlueprintStorage
-from codegen.domain_definition.domain.value_objects.blueprint import Blueprint
+from codegen.domain_definition.domain.aggregates.blueprint import Blueprint
 
 
 @dataclass(frozen=True)

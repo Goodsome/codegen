@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 from codegen.shared.domain.ports.file_system_port import FileSystemPort
-from codegen.domain_definition.domain.value_objects.blueprint import Blueprint
+from codegen.domain_definition.domain.aggregates.blueprint import Blueprint
 from dataclasses import dataclass
 
 

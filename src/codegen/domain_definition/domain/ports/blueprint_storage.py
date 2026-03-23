@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from codegen.domain_definition.domain.value_objects.blueprint import Blueprint
+from codegen.domain_definition.domain.aggregates.blueprint import Blueprint
 
 
 class BlueprintStorage(ABC):
