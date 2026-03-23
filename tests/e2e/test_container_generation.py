@@ -7,8 +7,6 @@ def test_container_generation_default(cli_runner, working_dir, monkeypatch):
     When: Running 'codegen build'
     Then: container.py is generated correctly and binds the first implementation to the port.
     """
-    project_name = "AutoContainerProject"
-    project_dir = "auto_container_project"
     blueprint_content = """
 name: "AutoContainerProject"
 description: "Test auto generation of container"

@@ -26,7 +26,6 @@ def parse_function(node: ast.FunctionDef | ast.AsyncFunctionDef) -> FunctionSpec
 
     # Determine type
     # Logic copied/adapted from FunctionSpec.parse_ast
-    function_type = "function" # enum value string? No, use Enum.
     # To avoid importing Domain Enum, we can perform checks.
     # But FunctionSpec expects FunctionType enum.
     # We should import it.
@@ -70,9 +69,12 @@ def parse_function(node: ast.FunctionDef | ast.AsyncFunctionDef) -> FunctionSpec
     # Need to map to FunctionType enum.
     from codegen.python_gen.domain.enums import FunctionType
     ft = FunctionType.FUNCTION
-    if is_class_method: ft = FunctionType.CLASS_METHOD
-    elif is_static_method: ft = FunctionType.STATIC_METHOD
-    elif is_instance: ft = FunctionType.INSTANCE_METHOD
+    if is_class_method:
+        ft = FunctionType.CLASS_METHOD
+    elif is_static_method:
+        ft = FunctionType.STATIC_METHOD
+    elif is_instance:
+        ft = FunctionType.INSTANCE_METHOD
     
     is_private = node.name.startswith("_") and not node.name.startswith("__")
     

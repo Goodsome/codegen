@@ -4,11 +4,7 @@ from codegen.domain_definition.domain.value_objects.type_definition import (
 from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.python_gen.domain.enums import FieldFlavor
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
-from typing import TYPE_CHECKING
 from pydantic import Field
-
-if TYPE_CHECKING:
-    pass
 
 
 class AttributeSpec(TypeDefinition):

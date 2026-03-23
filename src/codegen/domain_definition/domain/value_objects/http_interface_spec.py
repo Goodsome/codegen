@@ -1,13 +1,19 @@
-from typing import TYPE_CHECKING
+from typing import Self
 
 from pydantic import Field
 
-from codegen.shared.models import ValueObject
+from codegen.domain_definition.domain.enums import UseCaseKind
 from codegen.domain_definition.domain.value_objects.http_endpoint_spec import HttpEndpointSpec
-
-if TYPE_CHECKING:
-    from codegen.domain_definition.domain.value_objects.use_case_spec import UseCaseSpec
-    from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
+from codegen.domain_definition.domain.value_objects.use_case_spec import UseCaseSpec
+from codegen.python_gen.domain.enums import FunctionType
+from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
+from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
+from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
+from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
+from codegen.python_gen.domain.value_objects.raw_code_spec import RawCodeSpec
+from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
+from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import parse_type_str
+from codegen.shared.models import ValueObject
 
 
 class HttpInterfaceSpec(ValueObject):
@@ -18,9 +24,9 @@ class HttpInterfaceSpec(ValueObject):
     def to_package_spec(
         self,
         context_name: str,
-        use_cases: list["UseCaseSpec"],
+        use_cases: list[UseCaseSpec],
         project_name: str = "",
-    ) -> "PackageSpec":
+    ) -> PackageSpec:
         """将 HttpInterfaceSpec 转换为 PackageSpec
 
         Args:
@@ -31,8 +37,6 @@ class HttpInterfaceSpec(ValueObject):
         Returns:
             PackageSpec for http package
         """
-        from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
-
         use_case_index = {uc.name: uc for uc in use_cases}
         modules: list[ModuleSpec] = []
         module_names: list[str] = []
@@ -56,18 +60,10 @@ class HttpInterfaceSpec(ValueObject):
         self,
         endpoint: HttpEndpointSpec,
         context_name: str,
-        use_case_index: dict[str, "UseCaseSpec"],
+        use_case_index: dict[str, UseCaseSpec],
         project_name: str,
-    ) -> "ModuleSpec":
+    ) -> ModuleSpec:
         """生成单个 HTTP endpoint 模块"""
-        from codegen.domain_definition.domain.enums import UseCaseKind
-        from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
-        from codegen.python_gen.domain.enums import FunctionType
-        from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
-        from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
-        from codegen.python_gen.domain.value_objects.raw_code_spec import RawCodeSpec
-        from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import parse_type_str
-
         use_case = use_case_index.get(endpoint.use_case)
         if not use_case:
             raise ValueError(f"UseCase '{endpoint.use_case}' not found for HTTP endpoint '{endpoint.path}'")
@@ -128,11 +124,8 @@ class HttpInterfaceSpec(ValueObject):
         context_name: str,
         module_names: list[str],
         project_name: str,
-    ) -> "ModuleSpec":
+    ) -> ModuleSpec:
         """生成 HTTP __init__.py"""
-        from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
-        from codegen.python_gen.domain.value_objects.raw_code_spec import RawCodeSpec
-
         ctx_snake = self._to_snake_case(context_name)
         pkg_prefix = f"{project_name}." if project_name else ""
         imports: list[ImportFromSpec] = [
@@ -171,9 +164,9 @@ class HttpInterfaceSpec(ValueObject):
     @classmethod
     def from_package_spec(
         cls,
-        http_pkg: "PackageSpec",
-        use_cases: list["UseCaseSpec"],
-    ) -> "HttpInterfaceSpec":
+        http_pkg: PackageSpec,
+        use_cases: list[UseCaseSpec],
+    ) -> Self:
         """从 PackageSpec 逆向解析为 HttpInterfaceSpec
 
         Args:
@@ -209,7 +202,7 @@ class HttpInterfaceSpec(ValueObject):
     def _infer_use_case_from_suite(
         cls,
         suite: str,
-        use_case_index: dict[str, "UseCaseSpec"],
+        use_case_index: dict[str, UseCaseSpec],
     ) -> str | None:
         """从函数体推断 UseCase 名称"""
         import re

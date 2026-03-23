@@ -1,4 +1,4 @@
-from typing import Any, Union
+from typing import Any, Self, Union
 
 from pydantic import Field
 
@@ -6,6 +6,7 @@ from codegen.domain_definition.domain.value_objects.bootstrap_spec import Bootst
 from codegen.domain_definition.domain.value_objects.bounded_context import (
     BoundedContext,
 )
+from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.models import ValueObject
 
@@ -43,10 +44,8 @@ class Blueprint(ValueObject):
             bootstrap=bootstrap,
         )
 
-    def to_package_spec(self) -> "PackageSpec":
+    def to_package_spec(self) -> PackageSpec:
         """Convert this Blueprint to a PackageSpec."""
-        from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
-
         project_name = self.name.to_snake()
         context_packages = [
             c.to_package_spec(project_name=project_name) for c in self.contexts
@@ -63,7 +62,7 @@ class Blueprint(ValueObject):
         )
 
     @classmethod
-    def from_package_spec(cls, package_spec: "PackageSpec") -> "Blueprint":
+    def from_package_spec(cls, package_spec: PackageSpec) -> Self:
         """Create a Blueprint from a PackageSpec."""
 
         contexts = [

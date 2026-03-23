@@ -91,7 +91,8 @@ class GeneratePackage:
                     ))
 
         except Exception as e:
-            import traceback; traceback.print_exc()
+            import traceback
+            traceback.print_exc()
             logger.critical(f"Critical error during package generation: {e}")
             build_result.status = BuildStatus.FAILURE
             build_result.messages.append(str(e))

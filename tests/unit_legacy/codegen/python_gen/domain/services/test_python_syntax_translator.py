@@ -75,13 +75,7 @@ class TestPythonSyntaxTranslator(unittest.TestCase):
         self.assertEqual(subpkg.name, "subpkg")
         self.assertTrue(any(m.name == "__init__" for m in subpkg.modules))
 
-        # Verify calls to parse_module
-        expected_calls = [
-            (("init_code", "__init__"),),
-            (("module1_code", "module1"),),
-            (("subpkg_init_code", "__init__"),)
-        ]
-        # Since order might vary depending on list_directory_flat implementation, we check call counts
+        # Verify calls to parse_module - call count is verified since order may vary
         self.assertEqual(self.mock_source_code_port.parse_module.call_count, 3)
 
     def test_to_package_spec_not_directory(self):
