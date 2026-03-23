@@ -108,9 +108,6 @@ def build(
         "--output", "-o",
         help='Output directory: "src" (default) or custom path (relative or absolute)',
     ),
-    overwrite: bool = typer.Option(
-        False, "--overwrite", help="Overwrite existing files without prompting"
-    ),
     node: Optional[str] = typer.Option(
         None,
         "--node",
@@ -134,17 +131,18 @@ def build(
     This is the primary code generation command. It reads your blueprint
     file and generates Python code based on DDD patterns.
 
+    When --node is specified, overwrite mode is automatically enabled.
+
     Examples:
         $ codegen build
-        $ codegen build --overwrite
         $ codegen build --node DomainDefinition
         $ codegen build -o ./generated
     """
     with get_container(config_file=config_file, output=output) as container:
         use_case = container.generate_project_use_case()
 
-        if node is not None:
-            overwrite = True
+        # When node is specified, overwrite is automatically enabled
+        overwrite = node is not None
 
         root_path = "" if output == "src" else output.replace("/", ".").replace("\\", ".")
 

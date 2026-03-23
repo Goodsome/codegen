@@ -35,7 +35,8 @@ app = typer.Typer(
 
 **Examples**:
   $ codegen init
-  $ codegen build --overwrite
+  $ codegen build
+  $ codegen build --node DomainDefinition
   $ codegen set "project.version" '"1.2.0"'
   $ codegen get "contexts.DomainDefinition.domain.aggregates"
   $ codegen rm "contexts.Test"
