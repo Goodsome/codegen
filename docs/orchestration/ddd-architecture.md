@@ -13,17 +13,16 @@
 
 | 用例名称 | 中文名 | 核心逻辑 | 依赖的端口/聚合 | 事务边界 |
 |---------|--------|---------|---------------|---------|
-| **GenerateProject** | 生成项目 | Command 用例：编排 LoadBlueprint + GeneratePackage + TestSkeletonMapper。流程：① 加载蓝图 → ② 转换为 PackageSpec → ③ 生成代码 → ④ 生成测试骨架（如需要） | 依赖 `LoadBlueprint`（DomainDefinition）、`GeneratePackage`（PythonGen）、`TestSkeletonMapper` | 一次用例对应一个完整项目构建事务 |
-| **GenerateBlueprint** | 生成蓝图 | Command 用例：编排 ParsePackage + BlueprintStorage。流程：① 解析 Python 包 → ② 转换为 Blueprint → ③ 保存到文件 | 依赖 `ParsePackage`（PythonGen）、`BlueprintStorage`（DomainDefinition） | 一次用例对应一个逆向工程事务 |
+| **GenerateProject** | 生成项目 | Command 用例：编排 LoadBlueprint + GeneratePackage。流程：① 加载蓝图 → ② 调用 `Blueprint.to_package_spec()` 转换为 PackageSpec → ③ 生成代码 | 依赖 `LoadBlueprint`（DomainDefinition）、`GeneratePackage`（PythonGen） | 一次用例对应一个完整项目构建事务 |
+| **GenerateBlueprint** | 生成蓝图 | Command 用例：编排 ParsePackage + BlueprintStorage。流程：① 解析 Python 包 → ② 调用 `Blueprint.from_package_spec()` 转换为 Blueprint → ③ 保存到文件 | 依赖 `ParsePackage`（PythonGen）、`BlueprintStorage`（DomainDefinition） | 一次用例对应一个逆向工程事务 |
 
 ### 核心编排逻辑描述
 
 **GenerateProject 执行流程**：
 1. 调用 `LoadBlueprint.execute()` 加载 `codegen.yaml` 蓝图
-2. 调用 `Blueprint.to_package_spec()` 将 Blueprint 转换为 PackageSpec
+2. 调用 `blueprint.to_package_spec()` 将 Blueprint 转换为 PackageSpec
 3. 调用 `GeneratePackage.execute()` 生成 Python 代码文件
-4. 若 `generate_tests=True`，调用 `_generate_test_skeletons()` 生成测试骨架
-5. 返回 `GenerateProjectResult(result: BuildResult)`
+4. 返回 `GenerateProjectResult(result: BuildResult)`
 
 **GenerateBlueprint 执行流程**：
 1. 调用 `ParsePackage.execute()` 解析 Python 包为 PackageSpec
@@ -129,10 +128,6 @@ graph TB
     subgraph 领域层["领域层 (Domain Layer)"]
         BuildResult["BuildResult\n(聚合根)"]
 
-        subgraph 领域服务
-            TestSkeletonMapper["TestSkeletonMapper"]
-        end
-
         subgraph 值对象
             BuildStats["BuildStats"]
             FileResult["FileResult"]
@@ -153,7 +148,6 @@ graph TB
 
     GenerateProject --> LoadBlueprint
     GenerateProject --> GeneratePackage
-    GenerateProject --> TestSkeletonMapper
 
     GenerateBlueprint --> ParsePackage
     GenerateBlueprint --> BlueprintStorage
@@ -242,3 +236,4 @@ graph LR
 | 日期 | 修改人 | 修改内容 |
 |------|--------|----------|
 | 2026-03-20 | Claude | 逆向生成初始版本 |
+| 2026-03-23 | Claude | 移除 TestSkeletonMapper 依赖；更新 GenerateProject/GenerateBlueprint 执行流程，反映 Blueprint 充血模型的 `to_package_spec()` / `from_package_spec()` 方法 |

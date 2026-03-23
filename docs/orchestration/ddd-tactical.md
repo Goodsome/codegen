@@ -94,11 +94,16 @@ graph TB
 
 ## 4. 领域服务 (Domain Services)
 
-| 服务名称 | 中文名 | 核心逻辑 | 依赖聚合 | 无状态说明 |
-|---------|--------|---------|---------|-----------|
-| **TestSkeletonMapper** | 测试骨架映射器 | 生成单元测试骨架文件 | 无直接依赖聚合 | **无状态**：仅做转换逻辑 |
+**分析结论**：Orchestration 上下文中**不存在领域服务**。
 
-### 服务编排关系
+**理由**：
+- 映射逻辑已下沉至 DomainDefinition 上下文的 `Blueprint` 值对象（`to_package_spec()` / `from_package_spec()`）
+- 测试骨架生成逻辑已暂时禁用，待 BDD 测试重写
+
+### 服务编排关系（历史参考，已移除）
+
+> 以下为历史设计，`TestSkeletonMapper` 已从代码中移除，仅作记录保留：
+> ~~| **TestSkeletonMapper** | 测试骨架映射器 | 生成单元测试骨架文件 | 无直接依赖聚合 | **无状态**：仅做转换逻辑 |~~
 
 
 ---
@@ -126,3 +131,4 @@ Orchestration 依赖其他上下文的端口：
 | 日期 | 修改人 | 修改内容 |
 |------|--------|----------|
 | 2026-03-20 | Claude | 逆向生成初始版本 |
+| 2026-03-23 | Claude | 移除 TestSkeletonMapper 领域服务，映射逻辑已下沉至 DomainDefinition 上下文的 Blueprint 值对象 |

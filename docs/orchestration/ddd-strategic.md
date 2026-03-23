@@ -95,14 +95,12 @@ graph LR
 
 **编排而非执行**：
 - `GenerateProject` 编排 `LoadBlueprint` 和 `GeneratePackage`，本身不执行业务逻辑
-- `GenerateBlueprint` 编排 `ParsePackage` 和 `BlueprintStorage`，本身不执行业务逻辑
-
-**Mapper 模式**：
-- `DomainMapper` 等子 Mapper 负责将特定领域对象转换为 `PackageSpec`
+- `GenerateBlueprint` 编排 `ParsePackage` 和 `BlueprintStorage`，，本身不执行业务逻辑
 
 **双向映射能力**：
-- **正向**：`Blueprint` → `PackageSpec`（生成代码）
-- **逆向**：`PackageSpec` → `Blueprint`（逆向工程）
+- **正向**：`Blueprint` → `PackageSpec`（生成代码）：`Blueprint.to_package_spec()`
+- **逆向**：`PackageSpec` → `Blueprint`（逆向工程）：`Blueprint.from_package_spec()`
+- 映射逻辑由 `Blueprint` 值对象自身实现，属于 DomainDefinition 上下文的充血模型
 
 ---
 
@@ -111,3 +109,4 @@ graph LR
 | 日期 | 修改人 | 修改内容 |
 |------|--------|----------|
 | 2026-03-20 | Claude | 逆向生成初始版本 |
+| 2026-03-23 | Claude | 移除 Mapper 模式，映射逻辑下沉至 Blueprint 值对象的 `to_package_spec()` / `from_package_spec()` 方法 |
