@@ -96,7 +96,6 @@ class BoundedContext(ValueObject):
         self, class_specs: dict[str, "ClassSpec"], package_spec: "PackageSpec"
     ) -> None:
         """Recursively collect class specs from ports packages."""
-        from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 
         if package_spec.name == "ports":
             class_specs.update(package_spec.collect_class_spec())
@@ -107,7 +106,6 @@ class BoundedContext(ValueObject):
     @classmethod
     def from_package_spec(cls, package_spec: "PackageSpec") -> "BoundedContext":
         """Create a BoundedContext from a PackageSpec."""
-        from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 
         domain = None
         application = None

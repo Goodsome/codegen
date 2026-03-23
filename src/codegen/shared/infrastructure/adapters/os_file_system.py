@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, Iterator, override
+from typing import Any, Dict, Iterator
 
 from codegen.shared.domain.ports.file_system_port import FileSystemPort
 

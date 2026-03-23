@@ -1,5 +1,3 @@
-import pytest
-from pathlib import Path
 from codegen.entrypoints.cli.application import app
 
 def test_container_generation_default(cli_runner, working_dir, monkeypatch):

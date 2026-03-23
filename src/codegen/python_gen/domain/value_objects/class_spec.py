@@ -6,8 +6,6 @@ Description: Represents a class in a Python module.
 
 
 
-from calendar import c
-import re
 from pydantic.fields import Field
 
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec

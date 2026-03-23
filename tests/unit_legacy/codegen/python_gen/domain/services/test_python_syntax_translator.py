@@ -1,6 +1,6 @@
 import unittest
 from pathlib import Path
-from unittest.mock import Mock, MagicMock
+from unittest.mock import Mock
 
 from codegen.python_gen.domain.services.python_syntax_translator import PythonSyntaxTranslator
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec

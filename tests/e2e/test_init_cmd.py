@@ -1,6 +1,3 @@
-import os
-import pytest
-from pathlib import Path
 from codegen.entrypoints.cli.application import app
 
 def test_codegen_init_happy_path(cli_runner, tmp_path, monkeypatch):
