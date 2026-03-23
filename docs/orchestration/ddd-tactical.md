@@ -78,9 +78,6 @@ graph TB
 
 | 补充术语 | 中文名 | 补充定义 |
 |---------|--------|---------|
-| **BlueprintMapper** | 蓝图映射器 | 补充自应用层服务，作为编排服务负责 Blueprint ↔ PackageSpec 双向转换 |
-| **ContextMapper** | 上下文映射器 | 补充自应用层服务，负责单个 BoundedContext → PackageSpec |
-
 ---
 
 ## 3. 领域事件 (Domain Events)
@@ -99,25 +96,10 @@ graph TB
 
 | 服务名称 | 中文名 | 核心逻辑 | 依赖聚合 | 无状态说明 |
 |---------|--------|---------|---------|-----------|
-| **BlueprintMapper** | 蓝图映射器 | 双向映射：① `to_package_spec(blueprint) → PackageSpec`（生成代码）；② `to_blueprint(package_spec) → Blueprint`（逆向工程）。协调 ContextMapper、BootstrapMapper、EntrypointMapper | 无直接依赖聚合 | **无状态**：仅做转换逻辑 |
-| **ContextMapper** | 上下文映射器 | 将单个 BoundedContext 转换为 PackageSpec。协调 DomainMapper、ApplicationMapper、InfrastructureMapper、ContainerMapper、InterfaceMapper | 无直接依赖聚合 | **无状态**：仅做转换逻辑 |
 | **TestSkeletonMapper** | 测试骨架映射器 | 生成单元测试骨架文件 | 无直接依赖聚合 | **无状态**：仅做转换逻辑 |
 
 ### 服务编排关系
 
-```mermaid
-graph TB
-    BlueprintMapper --> ContextMapper
-    BlueprintMapper --> BootstrapMapper
-    BlueprintMapper --> EntrypointMapper
-
-    ContextMapper --> DomainMapper
-    ContextMapper --> ApplicationMapper
-    ContextMapper --> InfrastructureMapper
-    ContextMapper --> ConfigMapper
-    ContextMapper --> ContainerMapper
-    ContextMapper --> InterfaceMapper
-```
 
 ---
 

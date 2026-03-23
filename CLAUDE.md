@@ -70,13 +70,12 @@ The project uses DDD with 3 bounded contexts, each with design documents in `doc
 
 **Key Concepts**:
 - `BuildResult` (聚合根): Manages build status, file results, and statistics
-- `BlueprintMapper`: Orchestrates Blueprint ↔ PackageSpec bidirectional conversion
 - `GenerateProject`: Command that orchestrates LoadBlueprint → GeneratePackage
 - `GenerateBlueprint`: Command that orchestrates ParsePackage → UpdateBlueprint
 
 **Design Doc Summary**:
 - *ddd-strategic*: Acts as conductor; OHS pattern for CLI/MCP interfaces
-- *ddd-tactical*: Single aggregate (BuildResult), Value Objects (FileResult, BuildStats, BuildStatus), Domain Services (BlueprintMapper, ContextMapper, TestSkeletonMapper), no domain ports
+- *ddd-tactical*: Single aggregate (BuildResult), Value Objects (FileResult, BuildStats, BuildStatus), Domain Services (TestSkeletonMapper), no domain ports
 - *ddd-architecture*: Application layer (GenerateProject, GenerateBlueprint), Interface layer (CLI via Typer, MCP via FastMCP), Infrastructure (dependency-injector, Rich for output)
 
 ## Special Rules and Context

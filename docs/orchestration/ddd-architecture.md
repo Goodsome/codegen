@@ -13,21 +13,21 @@
 
 | 用例名称 | 中文名 | 核心逻辑 | 依赖的端口/聚合 | 事务边界 |
 |---------|--------|---------|---------------|---------|
-| **GenerateProject** | 生成项目 | Command 用例：编排 LoadBlueprint + BlueprintMapper + GeneratePackage + TestSkeletonMapper。流程：① 加载蓝图 → ② 转换为 PackageSpec → ③ 生成代码 → ④ 生成测试骨架（如需要） | 依赖 `LoadBlueprint`（DomainDefinition）、`GeneratePackage`（PythonGen）、`BlueprintMapper`、`TestSkeletonMapper` | 一次用例对应一个完整项目构建事务 |
-| **GenerateBlueprint** | 生成蓝图 | Command 用例：编排 ParsePackage + BlueprintMapper + BlueprintStorage。流程：① 解析 Python 包 → ② 转换为 Blueprint → ③ 保存到文件 | 依赖 `ParsePackage`（PythonGen）、`BlueprintMapper`、`BlueprintStorage`（DomainDefinition） | 一次用例对应一个逆向工程事务 |
+| **GenerateProject** | 生成项目 | Command 用例：编排 LoadBlueprint + GeneratePackage + TestSkeletonMapper。流程：① 加载蓝图 → ② 转换为 PackageSpec → ③ 生成代码 → ④ 生成测试骨架（如需要） | 依赖 `LoadBlueprint`（DomainDefinition）、`GeneratePackage`（PythonGen）、`TestSkeletonMapper` | 一次用例对应一个完整项目构建事务 |
+| **GenerateBlueprint** | 生成蓝图 | Command 用例：编排 ParsePackage + BlueprintStorage。流程：① 解析 Python 包 → ② 转换为 Blueprint → ③ 保存到文件 | 依赖 `ParsePackage`（PythonGen）、`BlueprintStorage`（DomainDefinition） | 一次用例对应一个逆向工程事务 |
 
 ### 核心编排逻辑描述
 
 **GenerateProject 执行流程**：
 1. 调用 `LoadBlueprint.execute()` 加载 `codegen.yaml` 蓝图
-2. 调用 `BlueprintMapper.to_package_spec()` 将 Blueprint 转换为 PackageSpec
+2. 调用 `Blueprint.to_package_spec()` 将 Blueprint 转换为 PackageSpec
 3. 调用 `GeneratePackage.execute()` 生成 Python 代码文件
 4. 若 `generate_tests=True`，调用 `_generate_test_skeletons()` 生成测试骨架
 5. 返回 `GenerateProjectResult(result: BuildResult)`
 
 **GenerateBlueprint 执行流程**：
 1. 调用 `ParsePackage.execute()` 解析 Python 包为 PackageSpec
-2. 调用 `BlueprintMapper.to_blueprint()` 将 PackageSpec 转换为 Blueprint
+2. 调用 `Blueprint.from_package_spec()` 将 PackageSpec 转换为 Blueprint
 3. 调用 `BlueprintStorage.save()` 保存到 `codegen.yaml`
 4. 返回 `GenerateBlueprintResult(result: str)`
 
@@ -130,8 +130,6 @@ graph TB
         BuildResult["BuildResult\n(聚合根)"]
 
         subgraph 领域服务
-            BlueprintMapper["BlueprintMapper"]
-            ContextMapper["ContextMapper"]
             TestSkeletonMapper["TestSkeletonMapper"]
         end
 
@@ -154,23 +152,11 @@ graph TB
     MCP -->|reverse| GenerateBlueprint
 
     GenerateProject --> LoadBlueprint
-    GenerateProject --> BlueprintMapper
     GenerateProject --> GeneratePackage
     GenerateProject --> TestSkeletonMapper
 
     GenerateBlueprint --> ParsePackage
-    GenerateBlueprint --> BlueprintMapper
     GenerateBlueprint --> BlueprintStorage
-
-    BlueprintMapper --> ContextMapper
-    BlueprintMapper --> BootstrapMapper
-    BlueprintMapper --> EntrypointMapper
-
-    ContextMapper --> DomainMapper
-    ContextMapper --> ApplicationMapper
-    ContextMapper --> InfrastructureMapper
-    ContextMapper --> ContainerMapper
-    ContextMapper --> InterfaceMapper
 
     GenerateProject --> BuildResult
     GeneratePackage --> BuildResult
@@ -192,7 +178,6 @@ graph LR
 
     subgraph 领域层["领域层"]
         BuildResult["BuildResult"]
-        BlueprintMapper["BlueprintMapper"]
     end
 
     subgraph 外部适配

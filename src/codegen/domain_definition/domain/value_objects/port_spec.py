@@ -1,9 +1,15 @@
+from typing import Iterable, Self
+
 from pydantic import Field, model_validator
 
 from codegen.domain_definition.domain.enums import PortType
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
 from codegen.domain_definition.domain.value_objects.method_output import MethodOutput
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
+from codegen.python_gen.domain.enums import FunctionType
+from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
+from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
+from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.models import ValueObject
 
@@ -35,6 +41,65 @@ class PortSpec(ValueObject):
             aggregate=aggregate and PascalString(aggregate),
             operations=operations or [],
         )
+
+    def to_module_spec(self) -> ModuleSpec:
+        """将 PortSpec 转换为 ModuleSpec"""
+        methods = [
+            method.to_function_spec(
+                type=FunctionType.INSTANCE_METHOD,
+                class_name=self.name,
+            )
+            for method in self.get_final_operations()
+        ]
+        for method in methods:
+            if "abstractmethod" not in method.decorators:
+                method.decorators.append("abstractmethod")
+        class_spec = ClassSpec.create(
+            name=self.name,
+            description=self.description,
+            inheritance=["ABC"],
+            methods=methods,
+        )
+        return ModuleSpec.create(name=self.name, classes=[class_spec])
+
+    @classmethod
+    def to_package_spec(cls, ports: Iterable[Self]) -> PackageSpec:
+        """将多个 PortSpec 转换为一个 'ports' 包"""
+        modules = [port.to_module_spec() for port in ports]
+        return PackageSpec.create(name="ports", modules=modules)
+
+    @classmethod
+    def from_module_spec(cls, module: ModuleSpec) -> Self:
+        """将 ModuleSpec 逆向解析为 PortSpec"""
+        cls_spec = module.classes[0]
+        operations = [
+            MethodSpec.from_function_spec(method) for method in cls_spec.methods
+        ]
+        if "Repository" in cls_spec.name:
+            kind = "repository"
+            aggregate = cls_spec.name.replace("Repository", "")
+        else:
+            kind = "adapter"
+            aggregate = None
+        return cls.create(
+            name=cls_spec.name,
+            kind=kind,
+            description=cls_spec.description,
+            aggregate=aggregate,
+            operations=operations,
+        )
+
+    @classmethod
+    def from_package_spec(cls, package: PackageSpec) -> list[Self]:
+        """将 'ports' 包逆向解析为 PortSpec 列表"""
+        if package.name != "ports":
+            return []
+        ports: list[Self] = []
+        for module in package.modules:
+            if module.is_init_module():
+                continue
+            ports.append(cls.from_module_spec(module))
+        return ports
 
     def get_final_operations(self) -> list[MethodSpec]:
         default_operations: list[MethodSpec] = self.operations

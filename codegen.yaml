@@ -631,96 +631,6 @@ contexts:
           name: package_spec
         output:
           type: DomainSpec
-    - name: ContextMapper
-      dependencies:
-      - type: DomainMapper
-        optional: true
-        name: domain_mapper
-      - type: ApplicationMapper
-        optional: true
-        name: application_mapper
-      - type: InfrastructureMapper
-        optional: true
-        name: infrastructure_mapper
-      - type: ConfigMapper
-        optional: true
-        name: config_mapper
-      - type: ContainerMapper
-        optional: true
-        name: container_mapper
-      - type: InterfaceMapper
-        optional: true
-        name: interface_mapper
-      operations:
-      - name: to_package_spec
-        inputs:
-        - type: BoundedContext
-          name: context
-        - type: string
-          name: project_name
-          default: ''''''
-        output:
-          type: PackageSpec
-      - name: to_context
-        inputs:
-        - type: PackageSpec
-          name: package_spec
-        output:
-          type: BoundedContext
-      - name: _collect_class_specs_in_ports
-        inputs:
-        - type: ClassSpec
-          container: map
-          name: class_specs
-        - type: PackageSpec
-          name: package_spec
-        output:
-          type: None
-    - name: EntrypointMapper
-      description: Entrypoints 代码生成器，聚合所有 Context 的接口
-      operations:
-      - name: to_package_spec
-        inputs:
-        - type: BoundedContext
-          container: list
-          name: contexts
-        - type: string
-          name: project_name
-        output:
-          type: PackageSpec
-      - name: _create_cli_main
-        inputs:
-        - type: BoundedContext
-          container: list
-          name: contexts
-        - type: string
-          name: project_name
-        output:
-          type: ModuleSpec
-      - name: _create_mcp_main
-        inputs:
-        - type: BoundedContext
-          container: list
-          name: contexts
-        - type: string
-          name: project_name
-        output:
-          type: ModuleSpec
-      - name: _create_http_main
-        inputs:
-        - type: BoundedContext
-          container: list
-          name: contexts
-        - type: string
-          name: project_name
-        output:
-          type: ModuleSpec
-      - name: _to_snake_case
-        inputs:
-        - type: string
-          name: name
-        output:
-          type: string
     - name: InfrastructureMapper
       dependencies:
       - type: ImplementationMapper
@@ -777,30 +687,6 @@ contexts:
         output:
           type: AggregateSpec
           container: list
-    - name: BlueprintMapper
-      dependencies:
-      - type: ContextMapper
-        optional: true
-        name: context_mapper
-      - type: BootstrapMapper
-        optional: true
-        name: bootstrap_mapper
-      - type: EntrypointMapper
-        optional: true
-        name: entrypoint_mapper
-      operations:
-      - name: to_package_spec
-        inputs:
-        - type: Blueprint
-          name: blueprint
-        output:
-          type: PackageSpec
-      - name: to_blueprint
-        inputs:
-        - type: PackageSpec
-          name: package_spec
-        output:
-          type: Blueprint
     - name: AttributeMapper
       dependencies:
       - type: TypeSystemConverter
@@ -1181,9 +1067,6 @@ contexts:
         name: loader
       - type: GeneratePackage
         name: generator
-      - type: BlueprintMapper
-        optional: true
-        name: mapper
       command:
         attributes:
         - type: boolean
@@ -1208,9 +1091,6 @@ contexts:
         name: parser
       - type: BlueprintStorage
         name: storage
-      - type: BlueprintMapper
-        optional: true
-        name: mapper
       command:
         attributes:
         - type: Path
@@ -2399,17 +2279,72 @@ contexts:
       - type: MethodOutput
         name: output
       behaviors:
-      - name: create
+      - description: Factory method to create MethodSpec
         inputs:
         - type: string
           name: name
-        - type: AttributeSpec
-          container: list
+          description: ''
+          container: none
+          optional: false
+          custom_type_string: null
+          default: null
+        - type: list[AttributeSpec]
           name: inputs
+          description: ''
+          container: none
+          optional: false
+          custom_type_string: null
+          default: null
         - type: MethodOutput
           name: output
+          description: ''
+          container: none
+          optional: false
+          custom_type_string: null
+          default: null
+        name: create
         output:
           type: any
+          container: none
+          optional: false
+          custom_type_string: null
+      - description: 将 MethodSpec 转换为 PythonGen FunctionSpec
+        inputs:
+        - type: FunctionType
+          name: type
+          description: 函数类型
+          container: none
+          optional: false
+          custom_type_string: null
+          default: null
+        - type: string
+          name: class_name
+          description: 所属类名，用于判断 Self 返回类型
+          container: none
+          optional: true
+          custom_type_string: null
+          default: null
+        name: to_function_spec
+        output:
+          type: FunctionSpec
+          container: none
+          optional: false
+          custom_type_string: null
+      - description: 从 PythonGen FunctionSpec 逆向解析为 MethodSpec
+        inputs:
+        - type: FunctionSpec
+          name: function_spec
+          description: ''
+          container: none
+          optional: false
+          custom_type_string: null
+          default: null
+        name: from_function_spec
+        output:
+          type: MethodSpec
+          container: none
+          optional: false
+          custom_type_string: null
     - name: McpInterfaceSpec
       description: MCP 接口层规范
       attributes:
@@ -2528,6 +2463,18 @@ contexts:
       - type: string
         optional: true
         name: custom_type_string
+      behaviors:
+      - name: to_python_annotation
+        description: 将 TypeDefinition 转换为 Python 类型注解
+        output:
+          type: TypeAnnotationSpec
+      - name: from_python_annotation
+        description: 从 Python 类型注解逆向解析为 TypeDefinition
+        inputs:
+        - type: TypeAnnotationSpec
+          name: annotation
+        output:
+          type: TypeDefinition
     - name: ServiceSpec
       description: Specification of a domain service to be generated.
       attributes:
@@ -2592,6 +2539,7 @@ contexts:
         name: default
       behaviors:
       - name: create
+        description: Factory method to create AttributeSpec
         inputs:
         - type: string
           name: name
@@ -2602,6 +2550,21 @@ contexts:
           default: 'False'
         output:
           type: any
+      - name: to_variable_spec
+        description: 将 AttributeSpec 转换为 PythonGen VariableSpec
+        inputs:
+        - type: FieldFlavor
+          name: flavor
+          description: 指定属性如何定义默认值
+        output:
+          type: VariableSpec
+      - name: from_variable_spec
+        description: 从 PythonGen VariableSpec 逆向解析为 AttributeSpec
+        inputs:
+        - type: VariableSpec
+          name: variable_spec
+        output:
+          type: AttributeSpec
     - name: PortSpec
       description: Specification of a domain port to be generated.
       attributes:

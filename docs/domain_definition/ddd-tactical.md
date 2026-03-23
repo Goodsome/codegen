@@ -211,7 +211,242 @@ classDiagram
 
 ---
 
-## 7. 战术设计决策记录
+## 7. 自我转换能力：Spec → PythonGen 模型（充血模型）
+
+### 7.1 设计背景
+
+根据战略设计，DomainDefinition 作为"顺从者（Conformist）"，依赖 PythonGen 的低阶模型（PackageSpec、ModuleSpec 等）。DomainDefinition 必须具备**自我转换为 PythonGen 模型的能力**，将转换知识沉淀在领域模型内部，而非泄露到 Orchestration 上下文。
+
+### 7.2 转换架构
+
+| 源模型（DomainDefinition） | 目标模型（PythonGen） | 转换方法 |
+|---------------------------|---------------------|----------|
+| AggregateSpec | ModuleSpec | to_module_spec() |
+| EntitySpec | ModuleSpec | to_module_spec() |
+| ValueObjectSpec | ModuleSpec | to_module_spec() |
+| PortSpec | ModuleSpec | to_module_spec() |
+| ServiceSpec | ModuleSpec | to_module_spec() |
+| EnumSpec | ModuleSpec | to_module_spec() |
+| AggregateSpec (批量) | PackageSpec | to_package_spec() |
+| EntitySpec (批量) | PackageSpec | to_package_spec() |
+| DomainSpec | PackageSpec | to_package_spec() |
+| BoundedContext | PackageSpec | to_package_spec() |
+
+### 7.3 转换方向
+
+| 方向 | 用途 | 方法命名 |
+|------|------|----------|
+| 正向转换 | Spec → PythonGen 模型（生成代码） | to_module_spec() / to_package_spec() |
+| 逆向转换 | PythonGen 模型 → Spec（逆向解析） | from_module_spec() / from_package_spec() |
+
+### 7.4 类型系统的双向转换
+
+**位置**：TypeDefinition（值对象的基类）
+
+**职责**：TypeDefinition 及其子类（AttributeSpec、MethodOutput）自己知道如何转换为 Python 类型注解，以及从 Python 类型注解逆向解析。
+
+**原语类型映射表：**
+
+| DomainDefinition 类型 | Python 类型 |
+|----------------------|-------------|
+| string | str |
+| integer | int |
+| float | float |
+| boolean | bool |
+| datetime | datetime |
+| uuid | UUID |
+| any | Any |
+
+**容器类型映射表：**
+
+| ContainerType | Python 容器语法 | 示例 |
+|---------------|----------------|------|
+| NONE | 无容器 | str |
+| LIST | list[T] | list[str] |
+| SET | set[T] | set[int] |
+| MAP | dict[str, T] | dict[str, User] |
+| ITERABLE | Iterable[T] | Iterable[str] |
+| CALLABLE | Callable[..., T] | Callable[[int], str] |
+
+**充血方法定义：**
+
+| 方法名 | 类型 | 输入 | 输出 | 说明 |
+|--------|------|------|------|------|
+| to_python_annotation() | 实例方法 | 无 | TypeAnnotationSpec | 将自身类型转换为 Python 类型注解 |
+| from_python_annotation() | 类方法 | TypeAnnotationSpec | TypeDefinition | 从 Python 类型注解逆向解析为 TypeDefinition |
+
+---
+
+## 8. 构建块规范的充血模型行为
+
+### 8.1 充血模型方法概述
+
+每个构建块规范（Spec）都具备以下自我转换能力：
+
+| Spec 类型 | 正向方法 | 逆向方法 | 转换目标 |
+|-----------|----------|----------|----------|
+| AggregateSpec | to_module_spec() | from_module_spec() | ModuleSpec |
+| EntitySpec | to_module_spec() | from_module_spec() | ModuleSpec |
+| ValueObjectSpec | to_module_spec() | from_module_spec() | ModuleSpec |
+| PortSpec | to_module_spec() | from_module_spec() | ModuleSpec |
+| ServiceSpec | to_module_spec() | from_module_spec() | ModuleSpec |
+| EnumSpec | to_module_spec() | from_module_spec() | ModuleSpec |
+| DomainSpec | to_package_spec() | from_package_spec() | PackageSpec |
+| BoundedContext | to_package_spec() | from_package_spec() | PackageSpec |
+
+### 8.2 继承关系规则
+
+不同 Spec 类型转换为 PythonGen 模型时，使用不同的继承关系：
+
+| Spec 类型 | PythonGen 继承 | 说明 |
+|-----------|---------------|------|
+| AggregateSpec | Aggregate | 继承自 Shared Kernel 的聚合根基类 |
+| EntitySpec | Entity | 继承自 Shared Kernel 的实体基类 |
+| ValueObjectSpec | ValueObject | 继承自 Shared Kernel 的值对象基类 |
+| PortSpec | ABC | Python 抽象基类 |
+| ServiceSpec | 无继承 | 普通类，无基类 |
+
+### 8.3 行为方法详解
+
+#### AggregateSpec 的充血行为
+
+**方法：to_module_spec()**
+
+| 步骤 | 操作 | 说明 |
+|------|------|------|
+| 1 | 属性映射 | 将 attributes 中的每个 AttributeSpec 转换为 VariableSpec，使用 Pydantic Field 包装 |
+| 2 | 行为映射 | 将 behaviors 中的每个 MethodSpec 转换为 FunctionSpec，根据第一个参数判断方法类型 |
+| 3 | 类创建 | 创建 ClassSpec，name 为聚合名称，inheritance 为 ["Aggregate"] |
+| 4 | 模块创建 | 创建 ModuleSpec，包含上述类定义 |
+
+**方法：from_module_spec()**
+
+| 步骤 | 操作 | 说明 |
+|------|------|------|
+| 1 | 提取类 | 从模块中获取第一个类定义 |
+| 2 | 属性逆向 | 将类的 attributes 逆向转换为 AttributeSpec 列表 |
+| 3 | 行为逆向 | 将类的方法逆向转换为 MethodSpec 列表 |
+| 4 | 构建对象 | 构建 AggregateSpec 实例 |
+
+#### EntitySpec 的充血行为
+
+**方法：to_module_spec()**
+
+与 AggregateSpec 类似，区别在于：
+- 继承关系为 ["Entity"] 而非 ["Aggregate"]
+- 属性使用 Pydantic Field 包装（因为 Entity 继承自 Pydantic BaseModel）
+
+#### ValueObjectSpec 的充血行为
+
+**方法：to_module_spec()**
+
+与 AggregateSpec 类似，区别在于：
+- 继承关系为 ["ValueObject"] 而非 ["Aggregate"]
+- 所有属性应支持 equality by value（值对象特性）
+
+#### PortSpec 的充血行为
+
+**方法：to_module_spec()**
+
+| 步骤 | 操作 | 说明 |
+|------|------|------|
+| 1 | 操作映射 | 将 operations 中的方法转换为 FunctionSpec，标记为抽象方法 |
+| 2 | 装饰器 | 为方法添加 @abstractmethod 装饰器 |
+| 3 | 类创建 | 创建 ClassSpec，inheritance 为 ["ABC"] |
+| 4 | 模块创建 | 创建 ModuleSpec |
+
+**kind 推断规则：**
+
+| 名称模式 | 推断 kind | 说明 |
+|----------|-----------|------|
+| 名称以 Repository 结尾 | repository | 仓库类型端口 |
+| 其他 | adapter | 适配器类型端口 |
+
+#### EnumSpec 的充血行为
+
+**方法：to_module_spec()**
+
+| 步骤 | 操作 | 说明 |
+|------|------|------|
+| 1 | 成员映射 | 将每个 EnumMemberSpec 转换为 PythonEnumMemberSpec |
+| 2 | 枚举创建 | 创建 PythonEnumSpec，包含所有成员 |
+| 3 | 模块创建 | 创建 ModuleSpec，enums 属性包含上述枚举 |
+
+### 8.4 AttributeSpec 的充血行为
+
+**方法：to_variable_spec(flavor)**
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| flavor | FieldFlavor | 指定属性如何定义默认值（PYDANTIC / DATACLASS / NONE） |
+
+**FieldFlavor 说明：**
+
+| 类型 | 说明 | 生成的代码形式 |
+|------|------|---------------|
+| PYDANTIC | Pydantic 模型属性 | Field(default=...) |
+| DATACLASS | Dataclass 属性 | field(default=...) |
+| NONE | 函数参数 | 无默认值语法 |
+
+### 8.5 MethodSpec 的充血行为
+
+**方法：to_function_spec(type, class_name)**
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| type | FunctionType | 函数类型（INSTANCE_METHOD / CLASS_METHOD / STATIC_METHOD / FUNCTION） |
+| class_name | str | 所属类名，用于判断 Self 返回类型 |
+
+**FunctionType 说明：**
+
+| 类型 | 装饰器 | 说明 |
+|------|--------|------|
+| INSTANCE_METHOD | 无 | 实例方法，第一个参数为 self |
+| CLASS_METHOD | @classmethod | 类方法，第一个参数为 cls |
+| STATIC_METHOD | @staticmethod | 静态方法，无隐式参数 |
+| FUNCTION | 无 | 普通函数 |
+
+---
+
+## 9. 聚合层级的充血模型
+
+### 9.1 DomainSpec 的充血行为
+
+**方法：to_package_spec()**
+
+将领域规范转换为完整的领域包（PackageSpec），包含以下子包：
+
+| 子包 | 来源 | 包名 |
+|------|------|------|
+| 聚合 | 调用 AggregateSpec.to_package_spec() | aggregates |
+| 实体 | 调用 EntitySpec.to_package_spec() | entities |
+| 值对象 | 调用 ValueObjectSpec.to_package_spec() | value_objects |
+| 服务 | 调用 ServiceSpec.to_package_spec() | services |
+| 端口 | 调用 PortSpec.to_package_spec() | ports |
+| 枚举 | 调用 EnumSpec.to_module_spec() | enums（作为模块） |
+
+### 9.2 BoundedContext 的充血行为
+
+**方法：to_package_spec()**
+
+将限界上下文转换为完整的上下文包，包含以下子包：
+
+| 子包 | 来源 | 包名 |
+|------|------|------|
+| 领域层 | 调用 DomainSpec.to_package_spec() | domain |
+| 应用层 | 调用 ApplicationSpec.to_package_spec() | application |
+| 基础设施层 | 调用 InfrastructureSpec.to_package_spec() | infrastructure |
+| 接口层 | InterfaceSpec 单独处理 | interfaces |
+
+### 9.3 Blueprint 的充血行为
+
+**方法：to_project_spec()**
+
+将蓝图转换为完整的项目规范（ProjectSpec），这是项目级别的根转换。
+
+---
+
+## 10. 战术设计决策记录
 
 ### 决策 1：聚合根采用值对象实现
 
@@ -246,8 +481,40 @@ classDiagram
 - 约定优于配置，提升开发效率
 - 可通过显式定义同名操作来覆盖默认行为
 
+### 决策 4：构建块规范采用充血模型实现
+
+**背景**：当前 Orchestration 上下文的 mapper 类（AggregateMapper、EntityMapper 等）承担了 Spec → PythonGen 模型转换的职责。根据战略设计，这份转换知识应该沉淀在 DomainDefinition 上下文内部。
+
+**决策**：将转换能力下沉到各构建块规范（AggregateSpec、EntitySpec、ValueObjectSpec 等）本身，作为充血模型的方法实现。
+
+**理由**：
+- **知识内聚**：DomainDefinition 作为"顺从者"，最了解自身如何被渲染为 PythonGen 模型
+- **职责清晰**：Orchestration 上下文仅负责编排，不再承担转换职责
+- **自我可描述**：Spec 类型具备"知道自己如何生成代码"的能力
+- **便于扩展**：新增 Spec 类型时，转换逻辑随类型定义内聚
+
+**迁移范围**：
+
+| 从 Orchestration 迁移到 | 迁移的方法 |
+|------------------------|-----------|
+| AggregateSpec | to_module_spec(), to_package_spec(), from_module_spec(), from_aggregates() |
+| EntitySpec | to_module_spec(), to_package_spec(), from_module_spec(), from_entities() |
+| ValueObjectSpec | to_module_spec(), to_package_spec(), from_module_spec(), from_value_objects() |
+| PortSpec | to_module_spec(), to_package_spec(), from_module_spec(), from_ports() |
+| ServiceSpec | to_module_spec(), to_package_spec(), from_module_spec(), from_services() |
+| EnumSpec | to_module_spec(), to_module_spec(), from_module_spec(), from_meta_enums() |
+| AttributeSpec | to_variable_spec(), to_attribute() |
+| MethodSpec | to_function_spec(), to_method() |
+| TypeDefinition | 内聚为 TypeDefinition 的实例方法 to_python_annotation() / from_python_annotation() |
+
+**过渡策略**：
+- 短期：Orchestration 的 mapper 继续存在，但内部委托给 Spec 的充血方法
+- 长期：逐步废弃 Orchestration mapper，最终由 Spec 充血方法完全承担转换职责
+
 ---
 
-*文档版本：1.0*
+*文档版本：1.2*
 *创建日期：2026-03-20*
+*最后修改：2026-03-22*
 *基于代码反向工程生成*
+*变更：新增第 7-9 章关于 Spec 充血模型自我转换能力的设计；类型系统转换内聚到 TypeDefinition 实例方法*

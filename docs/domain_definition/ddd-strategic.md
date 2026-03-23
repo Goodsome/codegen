@@ -6,15 +6,18 @@
 **DomainDefinition** (领域定义)
 
 ### 核心职责 (Core Responsibility)
-解析和管理领域定义蓝图（`codegen.yaml`），作为代码生成的**单一数据源**。负责将声明式的领域架构描述转化为可操作的领域模型对象。
+解析和管理领域定义蓝图（`codegen.yaml`），作为代码生成的**单一数据源**。负责将声明式的领域架构描述转化为可操作的领域模型对象，并**自我转换为 PythonGen 模型**（PackageSpec/ModuleSpec），成为"顺从的自我描述者"。
 
 ### 问题陈述 (Problem Statement)
 在 DDD 项目中，架构设计与代码实现往往存在"两张皮"问题——设计文档与代码逐渐脱节。`DomainDefinition` 上下文通过引入 YAML 蓝图作为"活文档"，让领域架构以声明式方式定义，并作为代码生成的权威输入，确保设计与实现的强制同步。
+
+更重要的是，在架构演进中，DomainDefinition 需要具备**自我转换为下游模型的能力**——它知道自己的领域对象如何被渲染为 PythonGen 的 PackageSpec，而不是将这份知识泄露到 Orchestration 上下文。
 
 ### 业务价值
 - **一致性保证**：蓝图即规范，生成代码必然符合蓝图定义
 - **可追溯性**：所有架构变更都有版本控制的 YAML 记录
 - **降低认知负担**：开发者只需关注蓝图定义，无需手写模板代码
+- **自我可描述性**：DomainDefinition 具备"将自己渲染为 PythonGen 模型"的顺从者能力
 
 ---
 
@@ -63,7 +66,7 @@
 | 上下游关系 | 对方上下文 | 集成模式 | 说明 |
 |------------|------------|----------|------|
 | **上游 (Upstream)** | Shared | Shared Kernel | 共享基础类型、命名字符串、端口抽象 |
-| **下游 (Downstream)** | PythonGen | Open Host Service | 通过 `Blueprint` 对象提供领域定义数据 |
+| **上游 (Upstream)** | PythonGen | **顺从者 (Conformist)** | DomainDefinition 是高阶模型，依赖 PythonGen 的低阶模型，具备自我转换为 PythonGen 模型的能力 |
 | **下游 (Downstream)** | Orchestration | Open Host Service | 提供用例接口加载和操作蓝图 |
 | **接口层** | Entrypoints | 接口暴露层 | 属于 DomainDefinition 上下文的 InterfaceSpec 层，暴露 CLI/MCP 接口供直接操作蓝图（如 get/set/rm 命令） |
 
@@ -79,11 +82,11 @@ graph TB
         end
 
         subgraph "Core Domain"
-            DD[DomainDefinition<br/>领域定义<br/>===<br/>核心上下文]
+            DD[DomainDefinition<br/>领域定义<br/>===<br/>高阶模型<br/>顺从者]
         end
 
         subgraph "Downstream Contexts"
-            PG[PythonGen<br/>代码生成]
+            PG[PythonGen<br/>代码生成<br/>低阶模型]
             ORCH[Orchestration<br/>协调编排]
         end
 
@@ -92,17 +95,20 @@ graph TB
         end
 
         SHARED -->|Shared Kernel| DD
-        DD -->|OHS: Blueprint 对象| PG
+        PG -->|上游: 低阶模型| DD
+        DD -->|自我转换| PG
         DD -->|OHS: Use Cases| ORCH
         ENT -->|暴露接口| DD
         SHARED -.->|Shared Kernel| PG
         SHARED -.->|Shared Kernel| ORCH
+        ORCH -->|协调| DD
         ORCH -->|协调| PG
         ENT -->|调用| ORCH
     end
 
     style DD fill:#e1f5fe,stroke:#01579b,stroke-width:3px
-    style SHARED fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style PG fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style SHARED fill:#f5f5f5,stroke:#9e9e9e,stroke-width:1px
 ```
 
 ### 3.3 集成模式详解
@@ -123,18 +129,18 @@ graph TB
 
 - **变更协调**：Shared 的变更需要所有消费方同意
 
-#### 与 PythonGen 的关系：Open Host Service（开放主机服务）
+#### 与 PythonGen 的关系：顺从者（Conformist）
 
-- **服务内容**：提供解析后的 `Blueprint` 对象
+- **关系说明**：PythonGen 定义了低阶模型（PackageSpec、ModuleSpec 等），DomainDefinition 依赖这些模型并具备自我转换为低阶模型的能力
 
-- **调用方式**：通过依赖注入获取用例
-  ```python
-  # PythonGen 通过 LoadBlueprint 用例获取蓝图
-  loader = container.load_blueprint()
-  blueprint = loader.execute(path="codegen.yaml")
-  ```
+- **DomainDefinition 作为顺从者**：
+  - 依赖 PythonGen 定义的 PackageSpec、ModuleSpec、ClassSpec 等低阶模型
+  - 自我实现"将 Spec 转换为 PackageSpec"的逻辑（转换知识沉淀在 DomainDefinition）
+  - 可逆向解析 PythonGen 模型回补自身的 Spec
 
-- **数据流向**：单向，DomainDefinition → PythonGen
+- **数据流向**：
+  - 正向：DomainDefinition Spec → 自我转换 → PackageSpec → PythonGen → Python Source
+  - 逆向：Python Source → PythonGen → PackageSpec → 自我解析 → DomainDefinition Spec
 
 #### 与 Orchestration 的关系：Open Host Service
 
@@ -155,7 +161,7 @@ graph TB
 
 ### 3.4 防腐层（ACL）说明
 
-当前设计中，`DomainDefinition` 作为核心上下文，**不直接依赖外部系统的模型**，因此暂不需要防腐层。所有外部交互通过 `Shared` 中定义的端口抽象进行解耦。
+`DomainDefinition` 作为核心上下文，通过**顺从者模式**直接依赖 PythonGen 的低阶模型，这是合理的架构决策——DomainDefinition 作为高阶模型，理应知道如何转换为低阶模型。转换知识沉淀在 DomainDefinition 内部，不会泄露到 Orchestration。
 
 ---
 
@@ -211,6 +217,13 @@ graph TB
 
 ---
 
-*文档版本：1.0*
+*文档版本：1.1*
 *创建日期：2026-03-20*
+*最后修改：2026-03-21*
 *基于代码反向工程生成*
+
+### 修改记录
+
+| 日期 | 修改人 | 修改内容 |
+|------|--------|----------|
+| 2026-03-21 | Claude | 确立 DomainDefinition 与 PythonGen 的顺从者关系；DomainDefinition 作为高阶模型具备自我转换为 PythonGen 低阶模型的能力 |

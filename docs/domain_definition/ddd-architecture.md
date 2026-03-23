@@ -2,9 +2,16 @@
 
 ## 前置确认
 
-- ✅ 战略设计文件：`docs/domain_definition/ddd-strategic.md`
-- ✅ 战术领域建模文件：`docs/domain_definition/ddd-tactical.md`
-- ✅ 技术选型：CLI + MCP 双入口，YAML 存储
+- ✅ 战略设计文件：`docs/domain_definition/ddd-strategic.md`（版本 1.1，含顺从者关系定义）
+- ✅ 战术领域建模文件：`docs/domain_definition/ddd-tactical.md`（版本 1.1，含 Spec 充血模型设计）
+- ✅ 技术选型：CLI + MCP 双入口，YAML 存储，PythonGen 低阶模型依赖
+
+### 增量更新说明
+
+本次更新基于 2026-03-22 战术设计变更：
+- 新增第 7-9 章：Spec 充血模型自我转换能力
+- 战略设计确立 DomainDefinition 与 PythonGen 的**顺从者（Conformist）**关系
+- 架构设计需反映：DomainDefinition 具备将 Spec 自我转换为 PythonGen 模型的能力
 
 ---
 
