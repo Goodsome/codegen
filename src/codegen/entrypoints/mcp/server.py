@@ -148,7 +148,6 @@ def build(
         config_file: str = "codegen.yaml",
         output: str = "src",
         node: str | None = None,
-        overwrite: bool = False,
 ) -> BuildResult:
     """
     Build: Compile codegen.yaml into Python code.
@@ -160,8 +159,7 @@ def build(
         work_dir: Absolute path to the project root directory
         config_file: Path to the codegen.yaml blueprint file (relative to work_dir)
         output: Output directory - "src" (default) or custom path (relative or absolute)
-        node: Generate only a specific component by name, overwrite mode.
-        overwrite: Overwrite existing files without prompting
+        node: Generate only a specific component by name (overwrite mode enabled).
     """
     root_path = Path(work_dir).resolve()
     config_path = Path(config_file)
@@ -173,8 +171,8 @@ def build(
     )
     use_case = container.generate_project_use_case()
 
-    if node is not None:
-        overwrite = True
+    # When node is specified, overwrite is automatically enabled
+    overwrite = node is not None
 
     root_path_str = "" if output == "src" else output.replace("/", ".").replace("\\", ".")
 
