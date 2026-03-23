@@ -10,13 +10,13 @@ from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.value_objects.snake_string import SnakeString
-from codegen.shared.models import ValueObject
+from codegen.shared.models import Entity
 
 if TYPE_CHECKING:
-    from codegen.domain_definition.domain.value_objects.bounded_context import BoundedContext
+    from codegen.domain_definition.domain.entities.bounded_context import BoundedContext
 
 
-class ConfigSpec(ValueObject):
+class ConfigSpec(Entity):
     """Specification for a configuration object (AppSettings or ContextSettings)."""
 
     class_name: PascalString | None = Field(default=None)

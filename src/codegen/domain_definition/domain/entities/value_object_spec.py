@@ -9,10 +9,10 @@ from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
-from codegen.shared.models import ValueObject
+from codegen.shared.models import Entity
 
 
-class ValueObjectSpec(ValueObject):
+class ValueObjectSpec(Entity):
     """Specification of a value object to be generated."""
 
     name: PascalString

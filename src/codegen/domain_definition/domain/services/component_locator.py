@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any
 
-from codegen.domain_definition.domain.value_objects.bounded_context import BoundedContext
+from codegen.domain_definition.domain.entities.bounded_context import BoundedContext
 
 
 @dataclass

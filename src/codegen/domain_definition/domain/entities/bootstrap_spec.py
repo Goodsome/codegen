@@ -2,16 +2,16 @@ from typing import TYPE_CHECKING
 
 from pydantic import Field
 
-from codegen.shared.models import ValueObject
-from codegen.domain_definition.domain.value_objects.config_spec import ConfigSpec
-from codegen.domain_definition.domain.value_objects.container_spec import ContainerSpec
+from codegen.shared.models import Entity
+from codegen.domain_definition.domain.entities.config_spec import ConfigSpec
+from codegen.domain_definition.domain.entities.container_spec import ContainerSpec
 
 if TYPE_CHECKING:
-    from codegen.domain_definition.domain.value_objects.bounded_context import BoundedContext
+    from codegen.domain_definition.domain.entities.bounded_context import BoundedContext
     from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 
 
-class BootstrapSpec(ValueObject):
+class BootstrapSpec(Entity):
     """Specification of the bootstrap configuration."""
 
     config: ConfigSpec | None = Field(default=None)

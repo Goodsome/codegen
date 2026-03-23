@@ -1,18 +1,18 @@
-from codegen.domain_definition.domain.value_objects.aggregate_spec import AggregateSpec
-from codegen.domain_definition.domain.value_objects.entity_spec import EntitySpec
-from codegen.domain_definition.domain.value_objects.enum_spec import EnumSpec
-from codegen.domain_definition.domain.value_objects.port_spec import PortSpec
-from codegen.domain_definition.domain.value_objects.service_spec import ServiceSpec
-from codegen.domain_definition.domain.value_objects.value_object_spec import (
+from codegen.domain_definition.domain.entities.aggregate_spec import AggregateSpec
+from codegen.domain_definition.domain.entities.entity_spec import EntitySpec
+from codegen.domain_definition.domain.entities.enum_spec import EnumSpec
+from codegen.domain_definition.domain.entities.port_spec import PortSpec
+from codegen.domain_definition.domain.entities.service_spec import ServiceSpec
+from codegen.domain_definition.domain.entities.value_object_spec import (
     ValueObjectSpec,
 )
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
-from codegen.shared.models import ValueObject
+from codegen.shared.models import Entity
 from pydantic import Field
 
 
-class DomainSpec(ValueObject):
+class DomainSpec(Entity):
     """Specification of a domain to be generated."""
 
     aggregates: list[AggregateSpec] = Field(default_factory=list)

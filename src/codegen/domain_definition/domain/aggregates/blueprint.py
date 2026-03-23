@@ -2,8 +2,8 @@ from typing import Any, Self, Union
 
 from pydantic import Field
 
-from codegen.domain_definition.domain.value_objects.bootstrap_spec import BootstrapSpec
-from codegen.domain_definition.domain.value_objects.bounded_context import (
+from codegen.domain_definition.domain.entities.bootstrap_spec import BootstrapSpec
+from codegen.domain_definition.domain.entities.bounded_context import (
     BoundedContext,
 )
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec

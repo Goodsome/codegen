@@ -3,16 +3,16 @@ from typing import Callable
 from pydantic import Field
 
 from codegen.domain_definition.domain.enums import PortType
-from codegen.domain_definition.domain.value_objects.implementation_spec import (
+from codegen.domain_definition.domain.entities.implementation_spec import (
     ImplementationSpec,
 )
-from codegen.domain_definition.domain.value_objects.port_spec import PortSpec
+from codegen.domain_definition.domain.entities.port_spec import PortSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
-from codegen.shared.models import ValueObject
+from codegen.shared.models import Entity
 
 
-class InfrastructureSpec(ValueObject):
+class InfrastructureSpec(Entity):
     """Specification of an infrastructure to be generated."""
 
     implementations: list[ImplementationSpec] = Field(default_factory=list)

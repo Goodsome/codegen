@@ -3,26 +3,26 @@ from typing import Any, Self
 
 from pydantic import Field
 
-from codegen.domain_definition.domain.value_objects.application_spec import (
+from codegen.domain_definition.domain.entities.application_spec import (
     ApplicationSpec,
 )
-from codegen.domain_definition.domain.value_objects.domain_spec import DomainSpec
-from codegen.domain_definition.domain.value_objects.infrastructure_spec import (
+from codegen.domain_definition.domain.entities.domain_spec import DomainSpec
+from codegen.domain_definition.domain.entities.infrastructure_spec import (
     InfrastructureSpec,
 )
-from codegen.domain_definition.domain.value_objects.config_spec import ConfigSpec
-from codegen.domain_definition.domain.value_objects.container_spec import ContainerSpec
+from codegen.domain_definition.domain.entities.config_spec import ConfigSpec
+from codegen.domain_definition.domain.entities.container_spec import ContainerSpec
 from codegen.domain_definition.domain.value_objects.port_binding import PortBinding
-from codegen.domain_definition.domain.value_objects.port_spec import PortSpec
-from codegen.domain_definition.domain.value_objects.interface_spec import InterfaceSpec
+from codegen.domain_definition.domain.entities.port_spec import PortSpec
+from codegen.domain_definition.domain.entities.interface_spec import InterfaceSpec
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
-from codegen.shared.models import ValueObject
+from codegen.shared.models import Entity
 
 
-class BoundedContext(ValueObject):
+class BoundedContext(Entity):
     """A logical boundary within the system."""
 
     name: PascalString
