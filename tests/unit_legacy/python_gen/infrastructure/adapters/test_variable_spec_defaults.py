@@ -27,6 +27,7 @@ def foo(x: int = 1 + 1):
         assert param.name == "x"
         # The assignment should be captured
         assert param.assignment is not None
+        assert param.assignment.code is not None
         assert "1 + 1" in param.assignment.code
 
     def test_reverse_function_with_list_default(self):
@@ -40,6 +41,7 @@ def bar(items = []):
         func = spec.functions[0]
         param = func.parameters[0]
         assert param.assignment is not None
+        assert param.assignment.code is not None
         assert "[]" in param.assignment.code
 
     def test_build_function_with_defaults(self):
