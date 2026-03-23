@@ -14,6 +14,7 @@ permissionMode: acceptEdits
 1. 解析接收到的【变更指令传递】中的 BDD 场景 (Given/When/Then) 和属性变更需求。
 2. 脑内对齐 `codegen.schema.json`，明确应当在 YAML 的哪个节点（`aggregates`, `entities`, `use_cases`, `rules`）进行修改。
 
+
 ### 第二步：精准的数据落盘 (工具绝对优先)
 **必须且只能**使用 `mcp__codegen__*` 系列工具（`tree`, `get`, `set`, `rm`）操作 `codegen.yaml`：
 1. **定位**: 使用 `mcp__codegen__get` 定位目标聚合根或用例。
