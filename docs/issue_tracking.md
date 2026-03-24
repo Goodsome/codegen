@@ -19,24 +19,5 @@
 
 | # | Issue | Severity | Status | Notes |
 |-------|-------|----------|--------|-------|
-| 10 | External type imports | High | Open | Manual placeholder imports |
 
 ---
-
-## Issue 10: External types not auto-imported
-- **Severity**: High
-- **Problem**: External types defined in blueprint (e.g., `Session`, `Connection`, `DomainEvent`) are not auto-imported, causing `NameError`.
-- **Affected Files**:
-  - `infrastructure/repositories/*.py` - missing `Session` import
-  - `infrastructure/adapters/*.py` - missing `Connection` import
-  - `domain/ports/*.py` - missing `DomainEvent` type import
-- **Suggested Fix**:
-  ```yaml
-  implementations:
-  - name: SqlAlchemyIssueRepository
-    implements: IssueRepository
-    technology: sql
-    external_imports:
-    - from: sqlalchemy.orm
-      import: Session
-  ```
