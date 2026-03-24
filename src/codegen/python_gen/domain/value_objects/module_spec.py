@@ -84,6 +84,10 @@ class ModuleSpec(ValueObject):
     def is_match_name(self, name: str) -> bool:
         return self.name == SnakeString(name)
 
+    def is_match_any_name(self, names: list[str]) -> bool:
+        """Check if module name matches any of the provided names."""
+        return any(self.name == SnakeString(n) for n in names)
+
     def get_required_types(self) -> set[str]:
         """收集本模块所有需要的类型名称"""
         types: set[str] = set()
