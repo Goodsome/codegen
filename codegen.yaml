@@ -1224,7 +1224,7 @@ contexts:
           name: bootstrap
           default: None
         output:
-          type: any
+          type: Self
       - name: to_package_spec
         inputs: []
         output:
@@ -1236,14 +1236,13 @@ contexts:
         output:
           type: Self
       - name: upsert_context
-        description: Upsert a BoundedContext by name. Only updates scalar fields if exists.
         inputs:
         - type: string
           name: name
         - type: string
           name: description
         output:
-          type: Blueprint
+          type: Self
     enums:
     - name: PortType
       members:
@@ -1998,6 +1997,12 @@ contexts:
         output:
           type: PortSpec
           container: map
+      - name: update_metadata
+        inputs:
+        - type: string
+          name: description
+        output:
+          type: None
       - name: get_port_spec
         inputs:
         - type: string
@@ -2740,6 +2745,21 @@ contexts:
         - type: boolean
           name: append
           default: 'False'
+    - name: UpsertContext
+      kind: command
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+      command:
+        attributes:
+        - type: string
+          name: name
+        - type: string
+          name: description
+      result:
+        attributes:
+        - type: Blueprint
+          name: blueprint
     - name: RemoveValue
       kind: command
       dependencies:
@@ -2777,17 +2797,6 @@ contexts:
         attributes:
         - type: Blueprint
           name: blueprint
-    - name: UpsertContext
-      kind: command
-      dependencies:
-      - type: BlueprintStorage
-        name: storage
-      command:
-        attributes:
-        - type: string
-          name: name
-        - type: string
-          name: description
   infrastructure:
     implementations:
     - name: YamlBlueprintStorage
