@@ -264,8 +264,9 @@ contexts:
         - type: boolean
           name: overwrite
         - type: string
+          container: list
           optional: true
-          name: node
+          name: nodes
         - type: string
           name: root_path
           default: ''''''
@@ -788,6 +789,13 @@ contexts:
           name: name
         output:
           type: boolean
+      - name: is_match_any_name
+        inputs:
+        - type: string
+          container: list
+          name: names
+        output:
+          type: boolean
       - name: get_required_types
         inputs: []
         output:
@@ -1072,8 +1080,9 @@ contexts:
         - type: PackageSpec
           name: package_spec
         - type: string
+          container: list
           optional: true
-          name: target_node
+          name: target_nodes
         - type: string
           name: root_path
           default: ''''''
@@ -1092,8 +1101,9 @@ contexts:
         - type: Path
           name: current_path
         - type: string
+          container: list
           optional: true
-          name: target_node
+          name: target_nodes
         output:
           type: None
     ports:
@@ -1165,8 +1175,9 @@ contexts:
         - type: boolean
           name: overwrite
         - type: string
+          container: list
           optional: true
-          name: node
+          name: nodes
         - type: string
           name: root_path
           default: ''''''
@@ -1331,7 +1342,7 @@ contexts:
         name: name
       - type: string
         name: type
-      - type: string
+      - type: any
         optional: true
         name: default
       - type: string
@@ -2735,6 +2746,19 @@ contexts:
           type: None
   application:
     use_cases:
+    - name: RemoveContext
+      kind: command
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+      command:
+        attributes:
+        - type: string
+          name: name
+      result:
+        attributes:
+        - type: Blueprint
+          name: blueprint
     - name: SetValue
       kind: command
       dependencies:
@@ -2762,19 +2786,6 @@ contexts:
           name: name
         - type: string
           name: description
-      result:
-        attributes:
-        - type: Blueprint
-          name: blueprint
-    - name: RemoveContext
-      kind: command
-      dependencies:
-      - type: BlueprintStorage
-        name: storage
-      command:
-        attributes:
-        - type: string
-          name: name
       result:
         attributes:
         - type: Blueprint
