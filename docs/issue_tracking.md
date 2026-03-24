@@ -19,17 +19,9 @@
 
 | # | Issue | Severity | Status | Notes |
 |-------|-------|----------|--------|-------|
-| 6 | Bulk node build | Low | Open | Batch build support |
 | 10 | External type imports | High | Open | Manual placeholder imports |
 
 ---
-
-## Issue 6: Bulk node build not supported
-- **Problem**: Using `codegen build --node <name>` requires multiple calls when updating multiple nodes (e.g., 11 Spec types = 11 calls).
-- **Suggestion**: Support batch node building via:
-  - Comma-separated list: `--nodes AggregateSpec,EntitySpec,ValueObjectSpec`
-  - Glob pattern: `--pattern "*Spec"`
-  - Config file: `--from-file update_specs.json`
 
 ## Issue 10: External types not auto-imported
 - **Severity**: High

@@ -20,7 +20,7 @@ class GeneratePackageCommand:
 
     package_spec: PackageSpec
     overwrite: bool
-    node: str | None = field(default=None)
+    nodes: list[str] | None = field(default=None)
     root_path: str = field(default="")
 
 
@@ -52,7 +52,7 @@ class GeneratePackage:
                 pkg = cmd.package_spec
             
             source_tree = self.translator.generate_source_tree(
-                package_spec=pkg, target_node=cmd.node, root_path=cmd.root_path
+                package_spec=pkg, target_nodes=cmd.nodes, root_path=cmd.root_path
             )
 
             for rel_path_str, content in source_tree.items():

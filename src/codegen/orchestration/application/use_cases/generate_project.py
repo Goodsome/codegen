@@ -15,7 +15,7 @@ from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 class GenerateProjectCommand:
 
     overwrite: bool
-    node: str | None
+    nodes: list[str] | None
     root_path: str = ""
     generate_tests: bool = False
 
@@ -34,12 +34,15 @@ class GenerateProject:
 
     def execute(self, cmd: GenerateProjectCommand) -> GenerateProjectResult:
 
-        load_result = self.loader.execute(LoadBlueprintCommand(node=cmd.node))
+        # For backward compatibility, pass first node as `node` for single-node scenarios
+        node = cmd.nodes[0] if cmd.nodes and len(cmd.nodes) == 1 else None
+
+        load_result = self.loader.execute(LoadBlueprintCommand(node=node))
         package_spec = load_result.blueprint.to_package_spec()
         gen_result = self.generator.execute(
             GeneratePackageCommand(
                 package_spec=package_spec,
-                node=cmd.node,
+                nodes=cmd.nodes,
                 overwrite=cmd.overwrite,
                 root_path=cmd.root_path,
             )
