@@ -6,9 +6,10 @@
 
 ## 如何添加新 Issue
 
-1. 使用下一个可用编号（在表格最后一行加 1）
+1. 新 Issue 使用 uuid 作为编号
 2. 在 Issue 列简述问题
-3. 在 Notes 列填写临时解决方案（如有）
+3. 在 Notes 列填相关描述
+4. 填写详细信息，比如 BUG 复现场景。
 
 ## 如何清理已处理的 Issue
 
@@ -18,15 +19,10 @@
 
 | # | Issue | Severity | Status | Notes |
 |-------|-------|----------|--------|-------|
-| 3 | Default field strings only | Low | Open | Pass as string |
 | 6 | Bulk node build | Low | Open | Batch build support |
 | 10 | External type imports | High | Open | Manual placeholder imports |
 
 ---
-
-## Issue 3: `default` field only accepts strings
-- **Problem**: `ConfigFieldSpec.default` field only accepts string type. Integer values must be converted to strings (e.g., `'10'`).
-- **Workaround**: Pass numeric defaults as strings.
 
 ## Issue 6: Bulk node build not supported
 - **Problem**: Using `codegen build --node <name>` requires multiple calls when updating multiple nodes (e.g., 11 Spec types = 11 calls).
