@@ -1365,6 +1365,37 @@ contexts:
       - type: string
         optional: true
         name: description
+      behaviors:
+      - name: to_module_spec
+        inputs:
+        - type: string
+          name: context_name
+        - type: UseCaseSpec
+          name: use_case
+        - type: string
+          name: project_name
+          default: ''''''
+        output:
+          type: ModuleSpec
+      - name: from_module_spec
+        inputs:
+        - type: ModuleSpec
+          name: module
+        - type: UseCaseSpec
+          container: map
+          name: use_case_index
+        output:
+          type: CliCommandSpec | None
+      - name: _infer_use_case_from_suite
+        inputs:
+        - type: string
+          name: suite
+        - type: UseCaseSpec
+          container: map
+          name: use_case_index
+        output:
+          type: string
+          optional: true
     - name: MethodSpec
       description: Standard specification for a class method.
       attributes:
@@ -2086,19 +2117,6 @@ contexts:
           default: ''''''
         output:
           type: PackageSpec
-      - name: _create_cli_command_module
-        inputs:
-        - type: CliCommandSpec
-          name: cmd
-        - type: string
-          name: context_name
-        - type: UseCaseSpec
-          container: map
-          name: use_case_index
-        - type: string
-          name: project_name
-        output:
-          type: ModuleSpec
       - name: _create_cli_init_module
         inputs:
         - type: string
@@ -2110,18 +2128,6 @@ contexts:
           name: project_name
         output:
           type: ModuleSpec
-      - name: _sanitize_identifier
-        inputs:
-        - type: string
-          name: name
-        output:
-          type: string
-      - name: _to_snake_case
-        inputs:
-        - type: string
-          name: name
-        output:
-          type: string
       - name: from_package_spec
         inputs:
         - type: PackageSpec
@@ -2131,16 +2137,6 @@ contexts:
           name: use_cases
         output:
           type: Self
-      - name: _infer_use_case_from_suite
-        inputs:
-        - type: string
-          name: suite
-        - type: UseCaseSpec
-          container: map
-          name: use_case_index
-        output:
-          type: string
-          optional: true
     - name: EntitySpec
       description: Specification of an entity.
       attributes:
