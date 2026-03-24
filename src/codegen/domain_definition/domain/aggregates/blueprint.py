@@ -56,6 +56,7 @@ class Blueprint(AggregateRoot):
         """Create a Blueprint from a PackageSpec."""
         contexts = [
             BoundedContext.from_package_spec(p) for p in package_spec.sub_packages
+            if p.name != "entrypoints"
         ]
         return cls.create(
             name=package_spec.name, description="", contexts=contexts, layout=""
