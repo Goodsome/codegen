@@ -1,3 +1,5 @@
+from typing import Any
+
 from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
 from codegen.python_gen.domain.value_objects.type_annotation_spec import TypeAnnotationSpec
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
@@ -11,7 +13,7 @@ class ConfigFieldSpec(ValueObject):
 
     name: SnakeString
     type: str
-    default: str | None = Field(default=None)
+    default: Any | None = Field(default=None)
     description: str = Field(default="")
     env_var: str | None = Field(default=None)
 
