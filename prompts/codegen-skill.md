@@ -111,11 +111,11 @@ mcp__codegen__set(
 mcp__codegen__build(work_dir="/path/to/project")
 ```
 
-When targeting a specific leaf node (filename/component), overwrite mode is automatically enabled:
+When targeting specific leaf nodes (filename/component), overwrite mode is automatically enabled. Pass a comma-separated list to generate multiple nodes at once:
 
 ```
 mcp__codegen__build(work_dir="/path/to/project", node="Order")
-mcp__codegen__build(work_dir="/path/to/project", node="CreateOrder")
+mcp__codegen__build(work_dir="/path/to/project", node="CreateOrder,UpdateOrder,DeleteOrder")
 ```
 
 This generates:
@@ -388,7 +388,7 @@ mcp__codegen__set(
   value='{"name": "ProductRepository", "kind": "repository", "aggregate": "Product"}'
 )
 
-# 3. Generate code (use --node to overwrite existing component)
+# 3. Generate code (use --node to overwrite existing component, comma-separated for multiple)
 mcp__codegen__build(work_dir="/path", node="Product")
 ```
 
