@@ -49,7 +49,7 @@ class ClassSpec(ValueObject):
 
     @classmethod
     def create_aggregate(cls) -> "ClassSpec":
-        return cls._create_base_model("Aggregate")
+        return cls._create_base_model("AggregateRoot")
     
     @classmethod
     def create_entity(cls) -> "ClassSpec":

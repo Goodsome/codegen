@@ -40,7 +40,7 @@ class AggregateSpec(Entity):
         class_spec = ClassSpec.create(
             name=self.name,
             description=self.description,
-            inheritance=["Aggregate"],
+            inheritance=["AggregateRoot"],
             attributes=attributes,
             methods=methods,
         )
