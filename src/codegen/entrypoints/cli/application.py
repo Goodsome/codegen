@@ -8,7 +8,6 @@ from codegen.entrypoints.cli.commands.get import get_cmd
 from codegen.entrypoints.cli.commands.set import set_cmd
 from codegen.entrypoints.cli.commands.rm import rm
 from codegen.entrypoints.cli.commands.tree import tree_cmd
-from codegen.entrypoints.cli.commands.mcp_cmd import mcp_cmd
 from codegen.entrypoints.cli.commands.init import init
 
 app = typer.Typer(
@@ -59,8 +58,6 @@ app.command(name="tree")(tree_cmd)
 app.command(name="get")(get_cmd)
 app.command(name="set")(set_cmd)
 app.command()(rm)
-app.command(name="mcp")(mcp_cmd)
-
 
 
 if __name__ == "__main__":
