@@ -50,7 +50,7 @@ class PythonSyntaxTranslator:
         return self.source_code_port.render_module(module_spec, list(imports))
 
     def generate_source_tree(
-        self, package_spec: PackageSpec, target_node: str | None, root_path: str = "",
+        self, package_spec: PackageSpec, target_nodes: list[str] | None, root_path: str = "",
     ) -> dict[Path, str]:
         """
         核心方法：将 PackageSpec 转换为虚拟文件树。
@@ -71,7 +71,7 @@ class PythonSyntaxTranslator:
             resolver=resolver,
             output_dict=virtual_files,
             current_path=Path(package_spec.name),  # 根目录名
-            target_node=target_node,
+            target_nodes=target_nodes,
         )
 
         return virtual_files
@@ -82,14 +82,14 @@ class PythonSyntaxTranslator:
         resolver: DependencyResolver,
         output_dict: dict[Path, str],
         current_path: Path,
-        target_node: str | None,
+        target_nodes: list[str] | None,
     ) -> None:
         if current_spec.is_empty():
             return
         # 处理当前包下的 Modules
         for module in current_spec.modules:
             # 过滤逻辑下沉到这里
-            if target_node and not module.is_match_name(target_node):
+            if target_nodes and not module.is_match_any_name(target_nodes):
                 continue
 
             # 解析导入依赖
@@ -109,5 +109,5 @@ class PythonSyntaxTranslator:
                 resolver=resolver,
                 output_dict=output_dict,
                 current_path=current_path / subpackage.name,
-                target_node=target_node,
+                target_nodes=target_nodes,
             )
