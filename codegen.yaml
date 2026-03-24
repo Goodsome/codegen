@@ -292,7 +292,6 @@ contexts:
         attributes:
         - type: string
           name: result
-- name: Entrypoints
 - name: PythonGen
   domain:
     enums:
