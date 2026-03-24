@@ -31,7 +31,7 @@ class PortSpec(Entity):
         description: str = "",
         aggregate: str | None = None,
         operations: list[MethodSpec] | None = None,
-    ) -> "PortSpec":
+    ) -> Self:
         if isinstance(kind, str):
             kind = PortType(kind)
         return cls(
