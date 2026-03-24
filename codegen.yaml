@@ -2221,7 +2221,7 @@ contexts:
           name: operations
           default: None
         output:
-          type: PortSpec
+          type: Self
       - name: to_module_spec
         inputs: []
         output:
