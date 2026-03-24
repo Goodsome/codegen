@@ -25,7 +25,6 @@ class Blueprint(AggregateRoot):
         contexts: list[BoundedContext] | None = None,
         bootstrap: BootstrapSpec | None = None,
     ) -> Self:
-
         if contexts is None:
             contexts = []
         if bootstrap is None:
@@ -64,14 +63,15 @@ class Blueprint(AggregateRoot):
 
     def upsert_context(self, name: str, description: str) -> Self:
         """Upsert a BoundedContext by name. Only updates scalar fields if exists."""
-        # Find existing context by name
         for ctx in self.contexts:
             if ctx.name == name:
-                # Update scalar fields only, preserve internal structure
                 ctx.update_metadata(description=description)
                 return self
-
-        # Create new context with initialized domain/application containers
         new_context = BoundedContext.create(name=name, description=description)
         self.contexts.append(new_context)
+        return self
+
+    def remove_context(self, name: str) -> Self:
+        """Remove a BoundedContext by name. Returns self for chaining."""
+        self.contexts = [ctx for ctx in self.contexts if ctx.name != name]
         return self
