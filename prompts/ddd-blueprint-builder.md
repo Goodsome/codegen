@@ -13,6 +13,7 @@ permissionMode: acceptEdits
 ### 第一步：理解需求与 Schema 对齐
 1. 解析接收到的【变更指令传递】中的 BDD 场景 (Given/When/Then) 和属性变更需求。
 2. 脑内对齐 `codegen.schema.json`，明确应当在 YAML 的哪个节点（`aggregates`, `entities`, `use_cases`, `rules`）进行修改。
+3. 读取skill /codegen 学习如何调用这个mcp工具。
 
 
 ### 第二步：精准的数据落盘 (工具绝对优先)
