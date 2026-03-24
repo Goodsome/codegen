@@ -22,13 +22,13 @@ class Blueprint(AggregateRoot):
 
     @classmethod
     def create(
-        cls: Any,
+        cls,
         name: Union[str, PascalString],
         description: str,
         layout: str = "",
         contexts: list[BoundedContext] | None = None,
         bootstrap: BootstrapSpec | None = None,
-    ) -> Any:
+    ) -> Self:
 
         if contexts is None:
             contexts = []
