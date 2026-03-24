@@ -1243,6 +1243,12 @@ contexts:
           name: description
         output:
           type: Self
+      - name: remove_context
+        inputs:
+        - type: string
+          name: name
+        output:
+          type: Self
     enums:
     - name: PortType
       members:
@@ -2756,6 +2762,19 @@ contexts:
           name: name
         - type: string
           name: description
+      result:
+        attributes:
+        - type: Blueprint
+          name: blueprint
+    - name: RemoveContext
+      kind: command
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+      command:
+        attributes:
+        - type: string
+          name: name
       result:
         attributes:
         - type: Blueprint
