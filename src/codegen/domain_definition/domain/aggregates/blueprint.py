@@ -1,11 +1,7 @@
 from typing import Any, Self, Union
-
 from pydantic import Field
-
 from codegen.domain_definition.domain.entities.bootstrap_spec import BootstrapSpec
-from codegen.domain_definition.domain.entities.bounded_context import (
-    BoundedContext,
-)
+from codegen.domain_definition.domain.entities.bounded_context import BoundedContext
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.models import AggregateRoot
@@ -50,24 +46,20 @@ class Blueprint(AggregateRoot):
         context_packages = [
             c.to_package_spec(project_name=project_name) for c in self.contexts
         ]
-
-        # Generate bootstrap package if blueprint has bootstrap spec
         if self.bootstrap:
             bootstrap_pkg = self.bootstrap.to_package_spec(self.contexts)
             if bootstrap_pkg:
                 context_packages.append(bootstrap_pkg)
-
-        return PackageSpec.create(
-            name=project_name, sub_packages=context_packages
-        )
+        return PackageSpec.create(name=project_name, sub_packages=context_packages)
 
     @classmethod
     def from_package_spec(cls, package_spec: PackageSpec) -> Self:
         """Create a Blueprint from a PackageSpec."""
-
         contexts = [
             BoundedContext.from_package_spec(p) for p in package_spec.sub_packages
         ]
         return cls.create(
             name=package_spec.name, description="", contexts=contexts, layout=""
         )
+
+    def upsert_context(self, name: str, description: str) -> Self: ...

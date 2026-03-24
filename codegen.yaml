@@ -1235,6 +1235,15 @@ contexts:
           name: package_spec
         output:
           type: Self
+      - name: upsert_context
+        description: Upsert a BoundedContext by name. Only updates scalar fields if exists.
+        inputs:
+        - type: string
+          name: name
+        - type: string
+          name: description
+        output:
+          type: Blueprint
     enums:
     - name: PortType
       members:
@@ -2768,6 +2777,17 @@ contexts:
         attributes:
         - type: Blueprint
           name: blueprint
+    - name: UpsertContext
+      kind: command
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+      command:
+        attributes:
+        - type: string
+          name: name
+        - type: string
+          name: description
   infrastructure:
     implementations:
     - name: YamlBlueprintStorage

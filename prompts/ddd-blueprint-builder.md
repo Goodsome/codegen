@@ -19,15 +19,7 @@ permissionMode: acceptEdits
 **必须且只能**使用 `mcp__codegen__*` 系列工具（`tree`, `get`, `set`, `rm`）操作 `codegen.yaml`：
 1. **定位**: 使用 `mcp__codegen__get` 定位目标聚合根或用例。
 2. **结构写入**: 如果需要新增属性、命令或依赖，使用 `mcp__codegen__set` 写入 `attributes`, `dependencies`。
-3. **规则下沉 (关键)**: 将接收到的 BDD 场景，严格按照规范写入对应行为或命令的 `rules` 节点下。例如：
-   ```yaml
-   rules:
-     - name: TitleFormatValidation
-       given: "用户处于 Issue 创建上下文"
-       when: "传入的 title 包含特殊字符"
-       then: "抛出 ValidationError 且不允许持久化"
-   ```
-4. **即时校验**：每次调用 `mcp__codegen__set` 或 `mcp__codegen__rm` 后，**必须**紧接着使用 `mcp__codegen__get` 或 `mcp__codegen__tree` 查询刚刚操作的 path，验证数据是否准确落盘且结构正确。
+3. **即时校验**：每次调用 `mcp__codegen__set` 或 `mcp__codegen__rm` 后，**必须**紧接着使用 `mcp__codegen__get` 或 `mcp__codegen__tree` 查询刚刚操作的 path，验证数据是否准确落盘且结构正确。
 
 ### 第三步：生成代码校验
 当所有元数据通过工具写入完毕后，调用 `mcp__codegen__build` 进行编译构建，检查是否能成功生成符合预期的底层代码结构。
