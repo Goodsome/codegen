@@ -62,4 +62,16 @@ class Blueprint(AggregateRoot):
             name=package_spec.name, description="", contexts=contexts, layout=""
         )
 
-    def upsert_context(self, name: str, description: str) -> Self: ...
+    def upsert_context(self, name: str, description: str) -> Self:
+        """Upsert a BoundedContext by name. Only updates scalar fields if exists."""
+        # Find existing context by name
+        for ctx in self.contexts:
+            if ctx.name == name:
+                # Update scalar fields only, preserve internal structure
+                ctx.update_metadata(description=description)
+                return self
+
+        # Create new context with initialized domain/application containers
+        new_context = BoundedContext.create(name=name, description=description)
+        self.contexts.append(new_context)
+        return self
