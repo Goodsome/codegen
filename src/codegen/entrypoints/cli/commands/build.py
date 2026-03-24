@@ -25,6 +25,13 @@ app = typer.Typer(name="build", help="Build Python code from blueprint")
 console = Console()
 
 
+def parse_nodes(nodes_str: str | None) -> list[str] | None:
+    """Parse comma-separated node string into a list."""
+    if nodes_str is None:
+        return None
+    return [n.strip() for n in nodes_str.split(",") if n.strip()]
+
+
 def print_build_report(result: BuildResult):
     """
     Renders a human-friendly report of the build execution.
@@ -111,7 +118,7 @@ def build(
     node: Optional[str] = typer.Option(
         None,
         "--node",
-        help="Generate only a specific bounded context or component by name (e.g., 'DomainDefinition')",
+        help="Generate only specific bounded contexts or components by name, comma-separated (e.g., 'DomainDefinition' or 'AggregateSpec,EntitySpec')",
     ),
     config_file: Path = typer.Option(
         Path("codegen.yaml"),
@@ -136,6 +143,7 @@ def build(
     Examples:
         $ codegen build
         $ codegen build --node DomainDefinition
+        $ codegen build --node AggregateSpec,EntitySpec,ValueObjectSpec
         $ codegen build -o ./generated
     """
     with get_container(config_file=config_file, output=output) as container:
@@ -143,11 +151,12 @@ def build(
 
         # When node is specified, overwrite is automatically enabled
         overwrite = node is not None
+        nodes = parse_nodes(node)
 
         root_path = "" if output == "src" else output.replace("/", ".").replace("\\", ".")
 
         cmd = GenerateProjectCommand(
-            overwrite=overwrite, node=node, root_path=root_path,
+            overwrite=overwrite, nodes=nodes, root_path=root_path,
             generate_tests=generate_tests,
         )
 
