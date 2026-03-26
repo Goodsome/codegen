@@ -8,11 +8,11 @@ from codegen.python_gen.domain.enums import FunctionType
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
-from codegen.python_gen.domain.value_objects.raw_code_spec import RawCodeSpec
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import parse_type_str
 from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.shared.models import ValueObject
+from codegen.python_gen.domain.value_objects.module_assignment_spec import ModuleAssignmentSpec
 
 
 class HttpEndpointSpec(ValueObject):
@@ -84,10 +84,16 @@ class HttpEndpointSpec(ValueObject):
                     names=["Container"],
                 ),
             ],
-            extra_code=[
-                RawCodeSpec.create("container = Container()"),
-                RawCodeSpec.create("router = APIRouter()"),
-            ],
+            assignments=[
+                ModuleAssignmentSpec.create(
+                    name="container",
+                    value="Container()",
+                ),
+                ModuleAssignmentSpec.create(
+                    name="router",
+                    value="APIRouter()",
+                ),
+            ]
         )
 
     @classmethod

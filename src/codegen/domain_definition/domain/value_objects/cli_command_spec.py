@@ -1,5 +1,6 @@
 import re
 
+from codegen.python_gen.domain.value_objects.module_assignment_spec import ModuleAssignmentSpec
 from pydantic import Field
 
 from codegen.domain_definition.domain.enums import UseCaseKind
@@ -146,8 +147,11 @@ class CliCommandSpec(ValueObject):
                     names=["Container"],
                 ),
             ],
-            extra_code=[
-                RawCodeSpec.create("container = Container()"),
+            assignments=[
+                ModuleAssignmentSpec.create(
+                    name="container",
+                    value="Container()",
+                )
             ],
         )
 
