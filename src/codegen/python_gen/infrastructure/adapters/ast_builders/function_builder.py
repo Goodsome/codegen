@@ -2,45 +2,11 @@
 import ast
 from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
-from codegen.python_gen.domain.enums import FunctionType, AssignmentFlavor
+from codegen.python_gen.domain.enums import FunctionType
 from codegen.python_gen.infrastructure.adapters.ast_builders import type_builder
-
-def build_assignment_value(assignment: AssignmentSpec) -> ast.expr:
-    """Builds an AST expression from an AssignmentSpec."""
-    if not assignment:
-        return ast.Constant(value=None)
-        
-    if assignment.code:
-         try:
-             return ast.parse(assignment.code, mode='eval').body
-         except SyntaxError:
-             pass
-             
-    if assignment.reference:
-        try:
-            return ast.parse(assignment.reference.name, mode='eval').body
-        except SyntaxError:
-            pass
-            
-    if assignment.literal:
-        return ast.Constant(value=assignment.literal.value)
-        
-    if assignment.flavor == AssignmentFlavor.CALL and assignment.call:
-        args = [build_assignment_value(arg) for arg in assignment.call.args]
-        keywords = [
-            ast.keyword(arg=k, value=build_assignment_value(v))
-            for k, v in assignment.call.kwargs.items()
-        ]
-        
-        # Determine func node (Name or Attribute)
-        try:
-            func_node = ast.parse(assignment.call.callee, mode='eval').body
-        except SyntaxError:
-            func_node = ast.Name(id=assignment.call.callee, ctx=ast.Load())
-            
-        return ast.Call(func=func_node, args=args, keywords=keywords)
-        
-    return ast.Constant(value=None)
+from codegen.python_gen.infrastructure.adapters.ast_builders.assignment_builder import (
+    build_assignment_expr as build_assignment_value,
+)
 
 def build_function(func_spec: FunctionSpec) -> ast.FunctionDef | ast.AsyncFunctionDef:
     """Builds an AST FunctionDef from a FunctionSpec."""
