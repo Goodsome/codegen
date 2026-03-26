@@ -1,3 +1,5 @@
+from typing import Any
+
 from pydantic import Field
 
 from codegen.domain_definition.domain.value_objects.type_definition import TypeDefinition
@@ -11,7 +13,7 @@ class ConfigFieldSpec(TypeDefinition):
 
     name: SnakeString
     type: str
-    default: str | None = Field(default=None)
+    default: Any | None = Field(default=None)
     description: str = Field(default="")
     env_var: str | None = Field(default=None)
 
