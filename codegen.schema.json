@@ -260,6 +260,22 @@
       "additionalProperties":false,
       "description":"Specification for a single configuration field.",
       "properties":{
+        "container":{
+          "$ref":"#/$defs/ContainerType",
+          "default":"none"
+        },
+        "custom_type_string":{
+          "anyOf":[
+            {
+              "type":"string"
+            },
+            {
+              "type":"null"
+            }
+          ],
+          "default":null,
+          "title":"Custom Type String"
+        },
         "default":{
           "anyOf":[
             {},
@@ -291,14 +307,18 @@
           "title":"Name",
           "type":"string"
         },
+        "optional":{
+          "title":"Optional",
+          "type":"boolean"
+        },
         "type":{
           "title":"Type",
           "type":"string"
         }
       },
       "required":[
-        "name",
-        "type"
+        "type",
+        "name"
       ],
       "title":"ConfigFieldSpec",
       "type":"object"

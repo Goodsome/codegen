@@ -4,9 +4,14 @@ Name: TypeAnnotationSpec
 Description: Represents a type annotation.
 """
 
+from typing import TYPE_CHECKING
+
 from pydantic import Field
 
 from codegen.shared.models import ValueObject
+
+if TYPE_CHECKING:
+    from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
 
 _TYPE_NAME_MAPPING: dict[str, str] = {
     "string": "str",
@@ -25,13 +30,17 @@ class TypeAnnotationSpec(ValueObject):
     """Represents a type annotation."""
 
     name: str
-    args: list["TypeAnnotationSpec"] = Field(default_factory=list)
+    args: list["TypeAnnotationSpec | AssignmentSpec"] = Field(default_factory=list)
 
     def render(self) -> str:
         """递归渲染类型字符串"""
         if not self.args:
             return self.name
-        sub_renders = [arg.render() for arg in self.args]
+        sub_renders = []
+        for arg in self.args:
+            if isinstance(arg, TypeAnnotationSpec):
+                sub_renders.append(arg.render())
+            # For AssignmentSpec (e.g., typer.Argument(...)), skip during render
         if self.name == "Union" and "None" in sub_renders:
             return " | ".join(sub_renders)
         args = ", ".join(sub_renders)
@@ -41,5 +50,7 @@ class TypeAnnotationSpec(ValueObject):
         """递归获取所有引用的类型名称"""
         names = {self.name}
         for arg in self.args:
-            names.update(arg.get_all_referenced_names())
+            if isinstance(arg, TypeAnnotationSpec):
+                names.update(arg.get_all_referenced_names())
+            # AssignmentSpec items are skipped (e.g., typer.Argument(...))
         return names

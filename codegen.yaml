@@ -619,7 +619,7 @@ contexts:
       attributes:
       - type: string
         name: name
-      - type: TypeAnnotationSpec
+      - type: TypeAnnotationSpec | AssignmentSpec
         container: list
         optional: true
         name: args
@@ -637,21 +637,6 @@ contexts:
         output:
           type: string
           container: set
-      - name: is_nullable
-        inputs:
-        - type: Self
-          name: self
-        output:
-          type: boolean
-      - name: from_raw
-        inputs:
-        - type: Self
-          container: type
-          name: cls
-        - type: string
-          name: raw_type
-        output:
-          type: TypeAnnotationSpec
     - name: ReferenceSpec
       description: 引用一个已存在的变量或符号 (对应 AST Name节点)。
       attributes:
