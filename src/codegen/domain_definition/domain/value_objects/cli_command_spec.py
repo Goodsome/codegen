@@ -124,34 +124,46 @@ class CliCommandSpec(ValueObject):
         # 构建命令构造表达式
         cmd_construct = f"{param_type_name}({', '.join(kwarg_parts)})"
 
-        # 构建函数体
-        suite = f"use_case = container.{uc_snake}_use_case()\ncmd = {cmd_construct}\nreturn use_case.execute(cmd)"
+        # 主函数体：构造命令并调用辅助函数
+        main_suite = f"cmd = {cmd_construct}\nreturn _do_{func_name}(cmd)"
 
-        # 生成函数
+        # 生成主函数
         func = FunctionSpec.create(
             name=func_name,
             description=self.description,
             parameters=parameters,
             return_annotation=parse_type_str(result_type),
             function_type=FunctionType.FUNCTION,
-            suite=suite,
+            suite=main_suite,
+        )
+
+        # 生成辅助函数：使用依赖注入
+        use_case_type = use_case.name
+        provider_path = f"{ctx_snake}_container.{uc_snake}_use_case"
+        do_func = FunctionSpec.create(
+            name=f"_do_{func_name}",
+            parameters=[
+                VariableSpec.create(
+                    name="cmd",
+                    type_spec=parse_type_str(param_type_name),
+                ),
+                VariableSpec.create(
+                    name="use_case",
+                    type_spec=parse_type_str(use_case_type),
+                    assignment=AssignmentSpec.from_code(f"Provide[{repr(provider_path)}]")
+                ),
+            ],
+            return_annotation=parse_type_str(result_type),
+            function_type=FunctionType.FUNCTION,
+            suite="return use_case.execute(cmd)",
+            decorators=["inject"]
         )
 
         return ModuleSpec.create(
             name=func_name,
-            functions=[func],
+            functions=[do_func, func],
             imports=[
                 ImportFromSpec.create(module="__root__", names=["typer"]),
-                ImportFromSpec.create(
-                    module=f"{pkg_prefix}{ctx_snake}.container",
-                    names=["Container"],
-                ),
-            ],
-            assignments=[
-                ModuleAssignmentSpec.create(
-                    name="container",
-                    value="Container()",
-                )
             ],
         )
 
