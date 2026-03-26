@@ -15,6 +15,8 @@ class ContainerType(Enum):
 
     CALLABLE = "callable"
 
+    TYPE = "type"
+
 
 class PrimitiveType(Enum):
     """通用原语类型，不依赖具体语言。"""
