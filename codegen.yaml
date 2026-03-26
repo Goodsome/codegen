@@ -57,6 +57,16 @@ contexts:
           name: value
         output:
           type: any
+    - name: KebabString
+      behaviors:
+      - name: __new__
+        inputs:
+        - type: any
+          name: cls
+        - type: string
+          name: value
+        output:
+          type: any
     - name: NamingString
       description: 基于 case-converter 的增强型字符串
       behaviors:
@@ -1358,9 +1368,9 @@ contexts:
     - name: CliCommandSpec
       description: CLI 命令规范
       attributes:
-      - type: string
+      - type: KebabString
         name: name
-      - type: string
+      - type: PascalString
         name: use_case
       - type: string
         optional: true
@@ -1501,6 +1511,45 @@ contexts:
       - type: string
         optional: true
         name: description
+      behaviors:
+      - name: to_module_spec
+        inputs:
+        - type: string
+          name: context_name
+        - type: UseCaseSpec
+          name: use_case
+        - type: string
+          name: project_name
+          default: ''''''
+        output:
+          type: ModuleSpec
+      - name: from_module_spec
+        inputs:
+        - type: ModuleSpec
+          name: module
+        - type: UseCaseSpec
+          container: map
+          name: use_case_index
+        output:
+          type: HttpEndpointSpec | None
+      - name: _infer_use_case_from_suite
+        inputs:
+        - type: string
+          name: suite
+        - type: UseCaseSpec
+          container: map
+          name: use_case_index
+        output:
+          type: string
+          optional: true
+      - name: _parse_route_decorator
+        inputs:
+        - type: string
+          container: list
+          name: decorators
+        output:
+          type: Any
+          custom_type_string: tuple[str | None, str | None]
     - name: AttributeSpec
       description: Standard specification for a class attribute.
       attributes:
@@ -1548,6 +1597,37 @@ contexts:
       - type: string
         optional: true
         name: description
+      behaviors:
+      - name: to_module_spec
+        inputs:
+        - type: string
+          name: context_name
+        - type: UseCaseSpec
+          name: use_case
+        - type: string
+          name: project_name
+          default: ''''''
+        output:
+          type: ModuleSpec
+      - name: from_module_spec
+        inputs:
+        - type: ModuleSpec
+          name: module
+        - type: UseCaseSpec
+          container: map
+          name: use_case_index
+        output:
+          type: McpToolSpec | None
+      - name: _infer_use_case_from_suite
+        inputs:
+        - type: string
+          name: suite
+        - type: UseCaseSpec
+          container: map
+          name: use_case_index
+        output:
+          type: string
+          optional: true
     entities:
     - name: UseCaseSpec
       description: Specification of a use case to be generated.
@@ -1864,19 +1944,6 @@ contexts:
           default: ''''''
         output:
           type: PackageSpec
-      - name: _create_mcp_tool_module
-        inputs:
-        - type: McpToolSpec
-          name: tool
-        - type: string
-          name: context_name
-        - type: UseCaseSpec
-          container: map
-          name: use_case_index
-        - type: string
-          name: project_name
-        output:
-          type: ModuleSpec
       - name: _create_mcp_init_module
         inputs:
         - type: string
@@ -1888,18 +1955,6 @@ contexts:
           name: project_name
         output:
           type: ModuleSpec
-      - name: _sanitize_identifier
-        inputs:
-        - type: string
-          name: name
-        output:
-          type: string
-      - name: _to_snake_case
-        inputs:
-        - type: string
-          name: name
-        output:
-          type: string
       - name: from_package_spec
         inputs:
         - type: PackageSpec
@@ -1909,16 +1964,6 @@ contexts:
           name: use_cases
         output:
           type: Self
-      - name: _infer_use_case_from_suite
-        inputs:
-        - type: string
-          name: suite
-        - type: UseCaseSpec
-          container: map
-          name: use_case_index
-        output:
-          type: string
-          optional: true
     - name: DomainSpec
       description: Specification of a domain to be generated.
       attributes:
@@ -2376,19 +2421,6 @@ contexts:
           default: ''''''
         output:
           type: PackageSpec
-      - name: _create_http_endpoint_module
-        inputs:
-        - type: HttpEndpointSpec
-          name: endpoint
-        - type: string
-          name: context_name
-        - type: UseCaseSpec
-          container: map
-          name: use_case_index
-        - type: string
-          name: project_name
-        output:
-          type: ModuleSpec
       - name: _create_http_init_module
         inputs:
         - type: string
@@ -2400,12 +2432,6 @@ contexts:
           name: project_name
         output:
           type: ModuleSpec
-      - name: _to_snake_case
-        inputs:
-        - type: string
-          name: name
-        output:
-          type: string
       - name: from_package_spec
         inputs:
         - type: PackageSpec
@@ -2415,24 +2441,6 @@ contexts:
           name: use_cases
         output:
           type: Self
-      - name: _infer_use_case_from_suite
-        inputs:
-        - type: string
-          name: suite
-        - type: UseCaseSpec
-          container: map
-          name: use_case_index
-        output:
-          type: string
-          optional: true
-      - name: _parse_route_decorator
-        inputs:
-        - type: string
-          container: list
-          name: decorators
-        output:
-          type: Any
-          custom_type_string: tuple[str | None, str | None]
     - name: ConfigSpec
       description: Specification for a configuration object (AppSettings or ContextSettings).
       attributes:
