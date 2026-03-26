@@ -67,26 +67,26 @@ class CliCommandSpec(ValueObject):
             type_annotation = parse_type_str(attr.type)
 
             if attr.default is None and not attr.optional:
-                # 必选参数: Annotated[type, typer.Argument(...)]
-                annotated_type = TypeAnnotationSpec(
-                    name="Annotated",
-                    args=[type_annotation, AssignmentSpec.from_call("typer.Argument", kwargs={})],
-                )
-                parameters.append(VariableSpec.create(name=param_name, type_spec=annotated_type))
-                kwarg_parts.append(f"{param_name}={param_name}")
+                assignment = AssignmentSpec.from_call("typer.Argument", kwargs={})
             else:
-                # 可选参数: type = typer.Option(default)
                 default_assignment = AssignmentSpec.from_literal(
                     None if attr.default is None else attr.default
                 )
-                option_assignment = AssignmentSpec.from_call(
+                assignment = AssignmentSpec.from_call(
                     "typer.Option",
-                    kwargs={"default": default_assignment},
+                    kwargs={
+                        "default": default_assignment,
+                    },
                 )
-                parameters.append(
-                    VariableSpec.create(name=param_name, type_spec=type_annotation, assignment=option_assignment)
-                )
-                kwarg_parts.append(f"{param_name}={param_name}")
+                
+            annotated_type = TypeAnnotationSpec(
+                name="Annotated",
+                args=[type_annotation, assignment],
+            )
+            parameters.append(
+                VariableSpec.create(name=param_name, type_spec=annotated_type)
+            )
+            kwarg_parts.append(f"{param_name}={param_name}")
 
         # 构建命令构造表达式
         cmd_construct = f"{param_type_name}({', '.join(kwarg_parts)})"
@@ -102,7 +102,6 @@ class CliCommandSpec(ValueObject):
             return_annotation=parse_type_str(result_type),
             function_type=FunctionType.FUNCTION,
             suite=suite,
-            decorators=["app.command"],
         )
 
         return ModuleSpec.create(
