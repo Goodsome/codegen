@@ -335,6 +335,12 @@ contexts:
         attributes:
         - type: string
           name: result
+          
+  interfaces:
+    cli:
+      commands:
+        - name: build
+          use_case: GenerateProject
 - name: PythonGen
   domain:
     enums:
