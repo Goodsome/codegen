@@ -11,6 +11,8 @@ from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.raw_code_spec import RawCodeSpec
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import parse_type_str
+from codegen.shared.domain.value_objects.kebab_string import KebabString
+from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.shared.models import ValueObject
 
@@ -18,8 +20,8 @@ from codegen.shared.models import ValueObject
 class CliCommandSpec(ValueObject):
     """CLI 命令规范"""
 
-    name: str
-    use_case: str
+    name: KebabString
+    use_case: PascalString
     description: str = Field(default_factory=str)
 
     def to_module_spec(
