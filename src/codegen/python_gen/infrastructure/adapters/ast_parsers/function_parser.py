@@ -35,15 +35,10 @@ def parse_function(node: ast.FunctionDef | ast.AsyncFunctionDef) -> FunctionSpec
     is_static_method = any("staticmethod" in d for d in decorators)
     is_instance = not is_class_method and not is_static_method and first_arg_name == "self"
     
-    # Filter args
-    clean_args = node.args.args
-    if is_instance or is_class_method:
-        clean_args = clean_args[1:] # Drop first arg
-        
-    for i, arg in enumerate(clean_args):
+    for i, arg in enumerate(node.args.args):
         # Default value?
         # defaults list aligns with end of args.
-        defaults_count = len(clean_args) - len(node.args.defaults)
+        defaults_count = len(node.args.args) - len(node.args.defaults)
         
         assignment = None
         if i >= defaults_count:

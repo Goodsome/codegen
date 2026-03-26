@@ -3,6 +3,7 @@ from codegen.domain_definition.domain.value_objects.attribute_spec import Attrib
 from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.shared.models import ValueObject
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
+from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.python_gen.domain.value_objects.type_annotation_spec import TypeAnnotationSpec
 from codegen.python_gen.domain.enums import FunctionType
 from codegen.domain_definition.domain.value_objects.type_definition import TypeDefinition
@@ -71,10 +72,22 @@ class MethodSpec(ValueObject):
         # 转换输入参数
         inputs: list[AttributeSpec] = []
         for param in function_spec.parameters:
-            if (
-                function_spec.function_type == FunctionType.INSTANCE_METHOD
-                and param.name == "self"
-            ):
+            # 将 self/cls 转换为正确的 Self/type[Self] 类型
+            if function_spec.function_type == FunctionType.INSTANCE_METHOD and param.name == "self":
+                self_var_spec = VariableSpec.create(
+                    name=param.name,
+                    type_spec=TypeAnnotationSpec(name="Self"),
+                    assignment=None,
+                )
+                inputs.append(AttributeSpec.from_variable_spec(self_var_spec))
+                continue
+            if function_spec.function_type == FunctionType.CLASS_METHOD and param.name == "cls":
+                cls_var_spec = VariableSpec.create(
+                    name=param.name,
+                    type_spec=TypeAnnotationSpec(name="type", args=[TypeAnnotationSpec(name="Self")]),
+                    assignment=None,
+                )
+                inputs.append(AttributeSpec.from_variable_spec(cls_var_spec))
                 continue
             inputs.append(AttributeSpec.from_variable_spec(param))
 

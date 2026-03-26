@@ -19,6 +19,8 @@ contexts:
         value: iterable
       - name: CALLABLE
         value: callable
+      - name: TYPE
+        value: type
     - name: PrimitiveType
       description: 通用原语类型，不依赖具体语言。
       members:
@@ -71,27 +73,40 @@ contexts:
       description: 基于 case-converter 的增强型字符串
       behaviors:
       - name: to_pascal
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: string
       - name: to_snake
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: string
       - name: to_kebab
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: string
       - name: to_camel
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: string
       - name: to_macro
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: string
       - name: __get_pydantic_core_schema__
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: any
           name: source_type
         - type: GetCoreSchemaHandler
@@ -115,12 +130,16 @@ contexts:
       operations:
       - name: read_file
         inputs:
+        - type: Self
+          name: self
         - type: Path
           name: path
         output:
           type: string
       - name: write_file
         inputs:
+        - type: Self
+          name: self
         - type: Path
           name: path
         - type: string
@@ -132,6 +151,8 @@ contexts:
           type: None
       - name: list_directory_recursively
         inputs:
+        - type: Self
+          name: self
         - type: Path
           name: path
         output:
@@ -139,6 +160,8 @@ contexts:
           container: iterable
       - name: list_directory_flat
         inputs:
+        - type: Self
+          name: self
         - type: Path
           name: path
         output:
@@ -146,18 +169,24 @@ contexts:
           container: iterable
       - name: is_directory
         inputs:
+        - type: Self
+          name: self
         - type: Path
           name: path
         output:
           type: boolean
       - name: is_file
         inputs:
+        - type: Self
+          name: self
         - type: Path
           name: path
         output:
           type: boolean
       - name: exists
         inputs:
+        - type: Self
+          name: self
         - type: Path
           name: path
         output:
@@ -212,6 +241,8 @@ contexts:
       behaviors:
       - name: add_file_result
         inputs:
+        - type: Self
+          name: self
         - type: FileResult
           name: result
         output:
@@ -256,6 +287,8 @@ contexts:
       behaviors:
       - name: add_result
         inputs:
+        - type: Self
+          name: self
         - type: FileResult
           name: result
         output:
@@ -354,6 +387,9 @@ contexts:
       behaviors:
       - name: create
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: string
           name: name
         - type: string
@@ -372,6 +408,9 @@ contexts:
       behaviors:
       - name: create
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: string
           name: code
         output:
@@ -403,6 +442,9 @@ contexts:
       behaviors:
       - name: create
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: string
           name: name
         - type: string
@@ -431,34 +473,53 @@ contexts:
         output:
           type: ClassSpec
       - name: create_value_object
-        inputs: []
+        inputs:
+        - type: Self
+          container: type
+          name: cls
         output:
           type: ClassSpec
       - name: create_aggregate
-        inputs: []
+        inputs:
+        - type: Self
+          container: type
+          name: cls
         output:
           type: ClassSpec
       - name: create_entity
-        inputs: []
+        inputs:
+        - type: Self
+          container: type
+          name: cls
         output:
           type: ClassSpec
       - name: create_event
-        inputs: []
+        inputs:
+        - type: Self
+          container: type
+          name: cls
         output:
           type: ClassSpec
       - name: _create_base_model
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: string
           name: name
         output:
           type: ClassSpec
       - name: get_required_types
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: string
           container: set
       - name: merge
         inputs:
+        - type: Self
+          name: self
         - type: ClassSpec
           name: other
         output:
@@ -494,6 +555,9 @@ contexts:
       behaviors:
       - name: create
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: string
           name: name
         - type: TypeAnnotationSpec
@@ -524,22 +588,30 @@ contexts:
         output:
           type: any
       - name: get_required_types
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: string
           container: set
       - name: is_instance_method
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: boolean
       - name: merge
         inputs:
+        - type: Self
+          name: self
         - type: FunctionSpec
           name: other
         output:
           type: FunctionSpec
       - name: is_init_method
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: boolean
     - name: TypeAnnotationSpec
@@ -553,20 +625,29 @@ contexts:
         name: args
       behaviors:
       - name: render
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: string
       - name: get_all_referenced_names
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: string
           container: set
       - name: is_nullable
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: boolean
       - name: from_raw
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: string
           name: raw_type
         output:
@@ -596,6 +677,9 @@ contexts:
       behaviors:
       - name: create
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: string
           name: name
         - type: Any
@@ -635,24 +719,36 @@ contexts:
       behaviors:
       - name: from_code
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: string
           name: code
         output:
           type: AssignmentSpec
       - name: from_literal
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: any
           name: value
         output:
           type: AssignmentSpec
       - name: from_symbol
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: string
           name: symbol
         output:
           type: AssignmentSpec
       - name: from_call
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: string
           name: func_name
         - type: AssignmentSpec
@@ -668,7 +764,9 @@ contexts:
         output:
           type: AssignmentSpec
       - name: get_required_types
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: string
           container: set
@@ -703,7 +801,9 @@ contexts:
         default: None
       behaviors:
       - name: render
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: string
     - name: ModuleSpec
@@ -738,6 +838,9 @@ contexts:
       behaviors:
       - name: create
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: string
           name: name
         - type: FunctionSpec
@@ -773,68 +876,97 @@ contexts:
         output:
           type: ModuleSpec
       - name: create_shared_models
-        inputs: []
+        inputs:
+        - type: Self
+          container: type
+          name: cls
         output:
           type: ModuleSpec
       - name: create_shared_events
-        inputs: []
+        inputs:
+        - type: Self
+          container: type
+          name: cls
         output:
           type: ModuleSpec
       - name: get_init_module
-        inputs: []
+        inputs:
+        - type: Self
+          container: type
+          name: cls
         output:
           type: ModuleSpec
       - name: filename
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: string
       - name: is_init_module
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: boolean
       - name: is_match_name
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: name
         output:
           type: boolean
       - name: is_match_any_name
         inputs:
+        - type: Self
+          name: self
         - type: string
           container: list
           name: names
         output:
           type: boolean
       - name: get_required_types
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: string
           container: set
       - name: has_class
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: class_name
         output:
           type: boolean
       - name: has_function
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: function_name
         output:
           type: boolean
       - name: has_class_or_function
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: name
         output:
           type: boolean
       - name: collect_class_spec
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: ClassSpec
           container: map
       - name: merge
         inputs:
+        - type: Self
+          name: self
         - type: ModuleSpec
           name: other
         output:
@@ -855,6 +987,9 @@ contexts:
       behaviors:
       - name: create
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: string
           name: name
         - type: ModuleSpec
@@ -870,11 +1005,15 @@ contexts:
         output:
           type: any
       - name: is_empty
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: boolean
       - name: get_global_registry
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: root_path
           default: ''''''
@@ -883,6 +1022,8 @@ contexts:
           container: map
       - name: _build_symbol_table
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: root_path
         - type: string
@@ -891,12 +1032,16 @@ contexts:
         output:
           type: any
       - name: collect_class_spec
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: ClassSpec
           container: map
       - name: merge
         inputs:
+        - type: Self
+          name: self
         - type: PackageSpec
           name: other
         output:
@@ -918,6 +1063,9 @@ contexts:
       behaviors:
       - name: create
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: string
           name: module
         - type: string
@@ -933,30 +1081,42 @@ contexts:
           type: ImportFromSpec
       - name: has_name
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: name
         output:
           type: boolean
       - name: add_name
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: name
         output:
           type: ImportFromSpec
       - name: render
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: string
       - name: render_from_expression
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: string
       - name: render_names
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: string
       - name: merge
         inputs:
+        - type: Self
+          name: self
         - type: ImportFromSpec
           name: other
         output:
@@ -975,6 +1135,9 @@ contexts:
       behaviors:
       - name: create
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: string
           name: name
         - type: TypeAnnotationSpec
@@ -987,7 +1150,9 @@ contexts:
         output:
           type: VariableSpec
       - name: get_required_types
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: string
           container: set
@@ -1013,6 +1178,9 @@ contexts:
       behaviors:
       - name: create
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: string
           name: name
         - type: string
@@ -1034,7 +1202,9 @@ contexts:
         output:
           type: PythonEnumSpec
       - name: get_required_types
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: string
           container: set
@@ -1047,6 +1217,9 @@ contexts:
       operations:
       - name: build_from_package_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: PackageSpec
           name: package_spec
         - type: string
@@ -1056,6 +1229,8 @@ contexts:
           type: DependencyResolver
       - name: resolve_module
         inputs:
+        - type: Self
+          name: self
         - type: ModuleSpec
           name: module_spec
         output:
@@ -1071,12 +1246,16 @@ contexts:
       operations:
       - name: to_package_spec
         inputs:
+        - type: Self
+          name: self
         - type: Path
           name: package_path
         output:
           type: PackageSpec
       - name: to_code
         inputs:
+        - type: Self
+          name: self
         - type: ModuleSpec
           name: module_spec
         - type: ImportFromSpec
@@ -1086,6 +1265,8 @@ contexts:
           type: string
       - name: generate_source_tree
         inputs:
+        - type: Self
+          name: self
         - type: PackageSpec
           name: package_spec
         - type: string
@@ -1100,6 +1281,8 @@ contexts:
           custom_type_string: dict[Path, str]
       - name: _collect_files_recursively
         inputs:
+        - type: Self
+          name: self
         - type: PackageSpec
           name: current_spec
         - type: DependencyResolver
@@ -1123,6 +1306,8 @@ contexts:
       operations:
       - name: render_module
         inputs:
+        - type: Self
+          name: self
         - type: ModuleSpec
           name: module_spec
         - type: ImportFromSpec
@@ -1132,6 +1317,8 @@ contexts:
           type: string
       - name: parse_module
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: source_code
         - type: string
@@ -1144,6 +1331,8 @@ contexts:
       operations:
       - name: format_code
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: code
         output:
@@ -1226,6 +1415,9 @@ contexts:
       behaviors:
       - name: create
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: Any
           custom_type_string: Union[str, PascalString]
           name: name
@@ -1246,17 +1438,24 @@ contexts:
         output:
           type: Self
       - name: to_package_spec
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: PackageSpec
       - name: from_package_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: PackageSpec
           name: package_spec
         output:
           type: Self
       - name: upsert_context
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: name
         - type: string
@@ -1265,6 +1464,8 @@ contexts:
           type: Self
       - name: remove_context
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: name
         output:
@@ -1362,7 +1563,9 @@ contexts:
         name: env_var
       behaviors:
       - name: to_variable_spec
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: VariableSpec
     - name: CliCommandSpec
@@ -1378,6 +1581,8 @@ contexts:
       behaviors:
       - name: to_module_spec
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: context_name
         - type: UseCaseSpec
@@ -1389,6 +1594,9 @@ contexts:
           type: ModuleSpec
       - name: from_module_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: ModuleSpec
           name: module
         - type: UseCaseSpec
@@ -1398,6 +1606,9 @@ contexts:
           type: CliCommandSpec | None
       - name: _infer_use_case_from_suite
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: string
           name: suite
         - type: UseCaseSpec
@@ -1423,6 +1634,9 @@ contexts:
       behaviors:
       - name: create
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: string
           name: name
         - type: AttributeSpec
@@ -1434,6 +1648,8 @@ contexts:
           type: MethodSpec
       - name: to_function_spec
         inputs:
+        - type: Self
+          name: self
         - type: FunctionType
           name: type
         - type: string
@@ -1444,6 +1660,9 @@ contexts:
           type: FunctionSpec
       - name: from_function_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: FunctionSpec
           name: function_spec
         output:
@@ -1464,29 +1683,41 @@ contexts:
         name: custom_type_string
       behaviors:
       - name: to_python_annotation
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: TypeAnnotationSpec
       - name: _apply_container
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: core_type
         output:
           type: TypeAnnotationSpec
       - name: _make_optional
         inputs:
+        - type: Self
+          name: self
         - type: TypeAnnotationSpec
           name: annotation
         output:
           type: TypeAnnotationSpec
       - name: from_python_annotation
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: TypeAnnotationSpec
           name: annotation
         output:
           type: TypeDefinition
       - name: _extract_optional
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: TypeAnnotationSpec
           name: annotation
         output:
@@ -1494,6 +1725,9 @@ contexts:
           custom_type_string: tuple[bool, TypeAnnotationSpec]
       - name: _extract_container_and_type
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: TypeAnnotationSpec
           name: annotation
         output:
@@ -1514,6 +1748,8 @@ contexts:
       behaviors:
       - name: to_module_spec
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: context_name
         - type: UseCaseSpec
@@ -1525,6 +1761,9 @@ contexts:
           type: ModuleSpec
       - name: from_module_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: ModuleSpec
           name: module
         - type: UseCaseSpec
@@ -1534,6 +1773,9 @@ contexts:
           type: HttpEndpointSpec | None
       - name: _infer_use_case_from_suite
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: string
           name: suite
         - type: UseCaseSpec
@@ -1544,6 +1786,9 @@ contexts:
           optional: true
       - name: _parse_route_decorator
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: string
           container: list
           name: decorators
@@ -1564,6 +1809,9 @@ contexts:
       behaviors:
       - name: create
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: string
           name: name
         - type: string
@@ -1575,6 +1823,8 @@ contexts:
           type: AttributeSpec
       - name: to_variable_spec
         inputs:
+        - type: Self
+          name: self
         - type: FieldFlavor
           optional: true
           name: flavor
@@ -1583,6 +1833,9 @@ contexts:
           type: VariableSpec
       - name: from_variable_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: VariableSpec
           name: variable_spec
         output:
@@ -1600,6 +1853,8 @@ contexts:
       behaviors:
       - name: to_module_spec
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: context_name
         - type: UseCaseSpec
@@ -1611,6 +1866,9 @@ contexts:
           type: ModuleSpec
       - name: from_module_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: ModuleSpec
           name: module
         - type: UseCaseSpec
@@ -1620,6 +1878,9 @@ contexts:
           type: McpToolSpec | None
       - name: _infer_use_case_from_suite
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: string
           name: suite
         - type: UseCaseSpec
@@ -1655,6 +1916,9 @@ contexts:
       behaviors:
       - name: create
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: string
           name: name
         - type: Any
@@ -1683,11 +1947,16 @@ contexts:
         output:
           type: any
       - name: to_module_spec
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: ModuleSpec
       - name: from_module_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: ModuleSpec
           name: module
         output:
@@ -1709,11 +1978,16 @@ contexts:
         name: services
       behaviors:
       - name: to_package_spec
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: PackageSpec
       - name: from_package_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: PackageSpec
           name: package_spec
         output:
@@ -1736,6 +2010,8 @@ contexts:
       behaviors:
       - name: to_package_spec
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: context_name
         - type: UseCaseSpec
@@ -1748,6 +2024,9 @@ contexts:
           type: PackageSpec
       - name: from_package_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: PackageSpec
           name: interfaces_pkg
         - type: UseCaseSpec
@@ -1773,11 +2052,16 @@ contexts:
         name: behaviors
       behaviors:
       - name: to_module_spec
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: ModuleSpec
       - name: to_package_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: Self
           container: iterable
           name: value_objects
@@ -1785,12 +2069,18 @@ contexts:
           type: PackageSpec
       - name: from_module_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: ModuleSpec
           name: module
         output:
           type: Self
       - name: from_package_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: PackageSpec
           name: package
         output:
@@ -1806,6 +2096,8 @@ contexts:
       behaviors:
       - name: to_package_spec
         inputs:
+        - type: Self
+          name: self
         - type: PortSpec
           container: callable
           name: port_finder
@@ -1813,6 +2105,9 @@ contexts:
           type: PackageSpec
       - name: from_package_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: PackageSpec
           name: package_spec
         output:
@@ -1827,6 +2122,8 @@ contexts:
       behaviors:
       - name: to_class_spec
         inputs:
+        - type: Self
+          name: self
         - type: BoundedContext
           name: context
         - type: string
@@ -1836,6 +2133,8 @@ contexts:
           type: ClassSpec
       - name: to_module_spec
         inputs:
+        - type: Self
+          name: self
         - type: BoundedContext
           name: context
         - type: string
@@ -1844,11 +2143,15 @@ contexts:
         output:
           type: ModuleSpec
       - name: to_app_container_module
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: ModuleSpec
       - name: _create_provider_variable
         inputs:
+        - type: Self
+          name: self
         - type: PortBinding
           name: binding
         output:
@@ -1856,6 +2159,8 @@ contexts:
           optional: true
       - name: _create_use_case_provider_variable
         inputs:
+        - type: Self
+          name: self
         - type: UseCaseSpec
           name: use_case
         output:
@@ -1885,6 +2190,9 @@ contexts:
       behaviors:
       - name: create
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: string
           name: name
         - type: string
@@ -1908,12 +2216,17 @@ contexts:
           type: any
       - name: to_module_spec
         inputs:
+        - type: Self
+          name: self
         - type: PortSpec
           name: port
         output:
           type: ModuleSpec
       - name: from_module_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: ModuleSpec
           name: module_spec
         - type: string
@@ -1921,7 +2234,9 @@ contexts:
         output:
           type: ImplementationSpec
       - name: _get_class_name
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: string
     - name: McpInterfaceSpec
@@ -1934,6 +2249,8 @@ contexts:
       behaviors:
       - name: to_package_spec
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: context_name
         - type: UseCaseSpec
@@ -1946,6 +2263,8 @@ contexts:
           type: PackageSpec
       - name: _create_mcp_init_module
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: context_name
         - type: string
@@ -1957,6 +2276,9 @@ contexts:
           type: ModuleSpec
       - name: from_package_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: PackageSpec
           name: mcp_pkg
         - type: UseCaseSpec
@@ -1993,11 +2315,16 @@ contexts:
         name: ports
       behaviors:
       - name: to_package_spec
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: PackageSpec
       - name: from_package_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: PackageSpec
           name: package_spec
         output:
@@ -2031,6 +2358,8 @@ contexts:
       behaviors:
       - name: to_package_spec
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: project_name
           default: ''''''
@@ -2038,6 +2367,8 @@ contexts:
           type: PackageSpec
       - name: _collect_class_specs_in_ports
         inputs:
+        - type: Self
+          name: self
         - type: ClassSpec
           container: map
           name: class_specs
@@ -2047,12 +2378,18 @@ contexts:
           type: None
       - name: from_package_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: PackageSpec
           name: package_spec
         output:
           type: Self
       - name: create
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: string
           name: name
         - type: string
@@ -2085,18 +2422,24 @@ contexts:
         output:
           type: any
       - name: port_index
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: PortSpec
           container: map
       - name: update_metadata
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: description
         output:
           type: None
       - name: get_port_spec
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: port_name
         output:
@@ -2119,11 +2462,16 @@ contexts:
         name: operations
       behaviors:
       - name: to_module_spec
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: ModuleSpec
       - name: to_package_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: Self
           container: iterable
           name: services
@@ -2131,12 +2479,18 @@ contexts:
           type: PackageSpec
       - name: from_module_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: ModuleSpec
           name: module
         output:
           type: Self
       - name: from_package_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: PackageSpec
           name: package
         output:
@@ -2152,6 +2506,8 @@ contexts:
       behaviors:
       - name: to_package_spec
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: context_name
         - type: UseCaseSpec
@@ -2164,6 +2520,8 @@ contexts:
           type: PackageSpec
       - name: _create_cli_init_module
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: context_name
         - type: string
@@ -2175,6 +2533,9 @@ contexts:
           type: ModuleSpec
       - name: from_package_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: PackageSpec
           name: cli_pkg
         - type: UseCaseSpec
@@ -2200,11 +2561,16 @@ contexts:
         name: behaviors
       behaviors:
       - name: to_module_spec
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: ModuleSpec
       - name: to_package_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: Self
           container: iterable
           name: entities
@@ -2212,12 +2578,18 @@ contexts:
           type: PackageSpec
       - name: from_module_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: ModuleSpec
           name: module
         output:
           type: Self
       - name: from_package_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: PackageSpec
           name: package
         output:
@@ -2244,6 +2616,9 @@ contexts:
       behaviors:
       - name: create
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: string
           name: name
         - type: Any
@@ -2264,11 +2639,16 @@ contexts:
         output:
           type: Self
       - name: to_module_spec
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: ModuleSpec
       - name: to_package_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: Self
           container: iterable
           name: ports
@@ -2276,34 +2656,48 @@ contexts:
           type: PackageSpec
       - name: from_module_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: ModuleSpec
           name: module
         output:
           type: Self
       - name: from_package_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: PackageSpec
           name: package
         output:
           type: Self
           container: list
       - name: get_final_operations
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: MethodSpec
           container: list
       - name: get_save_method_spec
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: MethodSpec
           optional: true
       - name: get_delete_method_spec
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: MethodSpec
           optional: true
       - name: get_find_by_id_method_spec
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: MethodSpec
           optional: true
@@ -2320,17 +2714,25 @@ contexts:
         name: members
       behaviors:
       - name: to_python_enum_spec
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: PythonEnumSpec
       - name: from_python_enum_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: PythonEnumSpec
           name: enum_spec
         output:
           type: EnumSpec
       - name: to_module_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: EnumSpec
           container: iterable
           name: enums
@@ -2338,6 +2740,9 @@ contexts:
           type: ModuleSpec
       - name: from_module_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: ModuleSpec
           name: module_spec
         output:
@@ -2361,11 +2766,16 @@ contexts:
         name: behaviors
       behaviors:
       - name: to_module_spec
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: ModuleSpec
       - name: to_package_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: Self
           container: iterable
           name: aggregates
@@ -2373,12 +2783,18 @@ contexts:
           type: PackageSpec
       - name: from_module_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: ModuleSpec
           name: module
         output:
           type: Self
       - name: from_package_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: PackageSpec
           name: package
         output:
@@ -2396,6 +2812,8 @@ contexts:
       behaviors:
       - name: to_package_spec
         inputs:
+        - type: Self
+          name: self
         - type: BoundedContext
           container: list
           name: contexts
@@ -2411,6 +2829,8 @@ contexts:
       behaviors:
       - name: to_package_spec
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: context_name
         - type: UseCaseSpec
@@ -2423,6 +2843,8 @@ contexts:
           type: PackageSpec
       - name: _create_http_init_module
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: context_name
         - type: string
@@ -2434,6 +2856,9 @@ contexts:
           type: ModuleSpec
       - name: from_package_spec
         inputs:
+        - type: Self
+          container: type
+          name: cls
         - type: PackageSpec
           name: http_pkg
         - type: UseCaseSpec
@@ -2460,6 +2885,8 @@ contexts:
       behaviors:
       - name: to_class_spec
         inputs:
+        - type: Self
+          name: self
         - type: string
           optional: true
           name: class_name
@@ -2467,11 +2894,15 @@ contexts:
         output:
           type: ClassSpec
       - name: _create_model_config_attribute
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: VariableSpec
       - name: to_module_spec
         inputs:
+        - type: Self
+          name: self
         - type: string
           optional: true
           name: class_name
@@ -2480,6 +2911,8 @@ contexts:
           type: ModuleSpec
       - name: to_app_config_module
         inputs:
+        - type: Self
+          name: self
         - type: BoundedContext
           container: list
           name: contexts
@@ -2498,6 +2931,8 @@ contexts:
       operations:
       - name: parse
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: path
         output:
@@ -2505,6 +2940,8 @@ contexts:
           container: list
       - name: resolve
         inputs:
+        - type: Self
+          name: self
         - type: any
           name: obj
         - type: string
@@ -2513,6 +2950,8 @@ contexts:
           type: any
       - name: _resolve_segments
         inputs:
+        - type: Self
+          name: self
         - type: any
           name: obj
         - type: PathSegment
@@ -2522,6 +2961,8 @@ contexts:
           type: any
       - name: _get_segment_value
         inputs:
+        - type: Self
+          name: self
         - type: any
           name: obj
         - type: PathSegment
@@ -2530,6 +2971,8 @@ contexts:
           type: any
       - name: _access_by_name
         inputs:
+        - type: Self
+          name: self
         - type: any
           name: obj
         - type: string
@@ -2538,6 +2981,8 @@ contexts:
           type: any
       - name: _get_item_name
         inputs:
+        - type: Self
+          name: self
         - type: any
           name: item
         output:
@@ -2564,6 +3009,8 @@ contexts:
       operations:
       - name: _find_port_strategy
         inputs:
+        - type: Self
+          name: self
         - type: BoundedContext
           name: context
         - type: string
@@ -2572,6 +3019,8 @@ contexts:
           type: any
       - name: find_parent_component
         inputs:
+        - type: Self
+          name: self
         - type: BoundedContext
           name: context
         - type: string
@@ -2591,6 +3040,8 @@ contexts:
       operations:
       - name: get_value
         inputs:
+        - type: Self
+          name: self
         - type: any
           name: obj
         - type: string
@@ -2599,6 +3050,8 @@ contexts:
           type: any
       - name: set_value
         inputs:
+        - type: Self
+          name: self
         - type: any
           name: obj
         - type: string
@@ -2612,6 +3065,8 @@ contexts:
           type: any
       - name: remove_value
         inputs:
+        - type: Self
+          name: self
         - type: any
           name: obj
         - type: string
@@ -2620,6 +3075,8 @@ contexts:
           type: any
       - name: _set_recursive
         inputs:
+        - type: Self
+          name: self
         - type: any
           name: obj
         - type: PathSegment
@@ -2633,6 +3090,8 @@ contexts:
           type: any
       - name: _remove_recursive
         inputs:
+        - type: Self
+          name: self
         - type: any
           name: obj
         - type: PathSegment
@@ -2642,6 +3101,8 @@ contexts:
           type: any
       - name: _get_segment_value
         inputs:
+        - type: Self
+          name: self
         - type: any
           name: obj
         - type: PathSegment
@@ -2650,6 +3111,8 @@ contexts:
           type: any
       - name: _access_by_name
         inputs:
+        - type: Self
+          name: self
         - type: any
           name: obj
         - type: string
@@ -2658,6 +3121,8 @@ contexts:
           type: any
       - name: _get_item_name
         inputs:
+        - type: Self
+          name: self
         - type: any
           name: item
         output:
@@ -2665,6 +3130,8 @@ contexts:
           optional: true
       - name: _find_item_index
         inputs:
+        - type: Self
+          name: self
         - type: list
           name: items
         - type: string
@@ -2673,6 +3140,8 @@ contexts:
           type: integer
       - name: _set_final_value
         inputs:
+        - type: Self
+          name: self
         - type: any
           name: obj
         - type: PathSegment
@@ -2685,6 +3154,8 @@ contexts:
           type: any
       - name: _remove_final_value
         inputs:
+        - type: Self
+          name: self
         - type: any
           name: obj
         - type: PathSegment
@@ -2693,6 +3164,8 @@ contexts:
           type: any
       - name: _update_segment
         inputs:
+        - type: Self
+          name: self
         - type: any
           name: obj
         - type: PathSegment
@@ -2703,6 +3176,8 @@ contexts:
           type: any
       - name: _update_field
         inputs:
+        - type: Self
+          name: self
         - type: any
           name: obj
         - type: string
@@ -2713,6 +3188,8 @@ contexts:
           type: any
       - name: parse_value
         inputs:
+        - type: Self
+          name: self
         - type: string
           name: value_str
         output:
@@ -2728,7 +3205,9 @@ contexts:
         default: None
       operations:
       - name: is_index_access
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: boolean
     ports:
@@ -2737,12 +3216,16 @@ contexts:
       kind: adapter
       operations:
       - name: load
-        inputs: []
+        inputs:
+        - type: Self
+          name: self
         output:
           type: Blueprint
           optional: true
       - name: save
         inputs:
+        - type: Self
+          name: self
         - type: Blueprint
           name: blueprint
         output:
