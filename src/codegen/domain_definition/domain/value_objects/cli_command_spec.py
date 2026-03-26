@@ -5,10 +5,12 @@ from pydantic import Field
 from codegen.domain_definition.domain.enums import UseCaseKind
 from codegen.domain_definition.domain.entities.use_case_spec import UseCaseSpec
 from codegen.python_gen.domain.enums import FunctionType
+from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.raw_code_spec import RawCodeSpec
+from codegen.python_gen.domain.value_objects.type_annotation_spec import TypeAnnotationSpec
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import parse_type_str
 from codegen.shared.domain.value_objects.kebab_string import KebabString
@@ -40,13 +42,13 @@ class CliCommandSpec(ValueObject):
         Returns:
             ModuleSpec for CLI command
         """
-        # 确定参数类型
+        # 确定参数类型和属性列表
         if use_case.kind == UseCaseKind.COMMAND:
-            param_type = f"{use_case.name}Command"
-            param_name = "cmd"
+            attributes = use_case.command.attributes
+            param_type_name = f"{use_case.name}Command"
         else:
-            param_type = f"{use_case.name}Query"
-            param_name = "query"
+            attributes = use_case.query.attributes
+            param_type_name = f"{use_case.name}Query"
 
         result_type = f"{use_case.name}Result"
         func_name = self.name.replace(" ", "_").replace("-", "_")
@@ -56,25 +58,58 @@ class CliCommandSpec(ValueObject):
         # 构建完整包路径前缀
         pkg_prefix = f"{project_name}." if project_name else ""
 
-        # 生成函数体
-        suite = f"use_case = container.{uc_snake}_use_case()\nreturn use_case.execute({param_name})"
+        # 生成 Typer 参数
+        parameters: list[VariableSpec] = []
+        kwarg_parts: list[str] = []
+
+        for attr in attributes:
+            param_name = str(attr.name)
+            type_annotation = parse_type_str(attr.type)
+
+            if attr.default is None and not attr.optional:
+                # 必选参数: Annotated[type, typer.Argument(...)]
+                annotated_type = TypeAnnotationSpec(
+                    name="Annotated",
+                    args=[type_annotation, AssignmentSpec.from_call("typer.Argument", kwargs={})],
+                )
+                parameters.append(VariableSpec.create(name=param_name, type_spec=annotated_type))
+                kwarg_parts.append(f"{param_name}={param_name}")
+            else:
+                # 可选参数: type = typer.Option(default)
+                default_assignment = AssignmentSpec.from_literal(
+                    None if attr.default is None else attr.default
+                )
+                option_assignment = AssignmentSpec.from_call(
+                    "typer.Option",
+                    kwargs={"default": default_assignment},
+                )
+                parameters.append(
+                    VariableSpec.create(name=param_name, type_spec=type_annotation, assignment=option_assignment)
+                )
+                kwarg_parts.append(f"{param_name}={param_name}")
+
+        # 构建命令构造表达式
+        cmd_construct = f"{param_type_name}({', '.join(kwarg_parts)})"
+
+        # 构建函数体
+        suite = f"use_case = container.{uc_snake}_use_case()\ncmd = {cmd_construct}\nreturn use_case.execute(cmd)"
 
         # 生成函数
         func = FunctionSpec.create(
             name=func_name,
             description=self.description,
-            parameters=[
-                VariableSpec.create(name=param_name, type_spec=parse_type_str(param_type)),
-            ],
+            parameters=parameters,
             return_annotation=parse_type_str(result_type),
             function_type=FunctionType.FUNCTION,
             suite=suite,
+            decorators=["app.command"],
         )
 
         return ModuleSpec.create(
             name=func_name,
             functions=[func],
             imports=[
+                ImportFromSpec.create(module="typing", names=["Annotated"]),
                 ImportFromSpec.create(module="__root__", names=["typer"]),
                 ImportFromSpec.create(
                     module=f"{pkg_prefix}{ctx_snake}.container",
