@@ -51,6 +51,8 @@ GLOBAL_REGISTRY = {
     "Factory": "dependency_injector.providers",
     "Singleton": "dependency_injector.providers",
     "Configuration": "dependency_injector.providers",
+    "inject": "dependency_injector.wiring",
+    "Provide": "dependency_injector.wiring",
 }
 
 TEMPORARY_MAPPING = {"dataclass(frozen=True)": "dataclass"}
