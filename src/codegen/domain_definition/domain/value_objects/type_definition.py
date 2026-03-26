@@ -69,6 +69,8 @@ class TypeDefinition(ValueObject):
                 name="Callable",
                 args=[TypeAnnotationSpec(name="..."), TypeAnnotationSpec(name=core_type)],
             )
+        elif self.container == ContainerType.TYPE:
+            return TypeAnnotationSpec(name="type", args=[TypeAnnotationSpec(name=core_type)])
         else:
             return TypeAnnotationSpec(name=core_type)
 
@@ -154,5 +156,11 @@ class TypeDefinition(ValueObject):
                 return (ContainerType.CALLABLE, return_type.name)
             elif len(annotation.args) == 0:
                 return (ContainerType.NONE, "Any")
+
+        if annotation.name == "type" and len(annotation.args) == 1:
+            inner = annotation.args[0]
+            if inner.args:
+                raise ValueError(f"Nested containers not supported: {annotation.render()}")
+            return (ContainerType.TYPE, inner.name)
 
         raise ValueError(f"Cannot convert complex type: {annotation.render()}")
