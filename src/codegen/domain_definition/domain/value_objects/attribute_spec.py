@@ -1,3 +1,4 @@
+from typing import Any
 from codegen.domain_definition.domain.value_objects.type_definition import (
     TypeDefinition,
 )
@@ -12,7 +13,7 @@ class AttributeSpec(TypeDefinition):
 
     name: SnakeString
     description: str | None = Field(default=None)
-    default: str | None = Field(default=None)
+    default: Any | None = Field(default=None)
     # type, container, optional, custom_type_string 继承自 TypeDefinition
 
     @classmethod

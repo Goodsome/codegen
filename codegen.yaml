@@ -306,6 +306,7 @@ contexts:
         attributes:
         - type: boolean
           name: overwrite
+          default: 'False'
         - type: string
           container: list
           optional: true
@@ -1794,7 +1795,7 @@ contexts:
       - type: string
         optional: true
         name: description
-      - type: string
+      - type: any
         optional: true
         name: default
       behaviors:

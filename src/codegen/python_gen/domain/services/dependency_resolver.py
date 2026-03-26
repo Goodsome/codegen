@@ -33,6 +33,7 @@ GLOBAL_REGISTRY = {
     "Type": "typing",
     "Dict": "typing",
     "Union": "typing",
+    "Annotated": "typing",
     "Optional": "typing",
     "Callable": "typing",
     "Iterable": "typing",

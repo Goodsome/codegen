@@ -61,24 +61,56 @@ class CliCommandSpec(ValueObject):
         # 生成 Typer 参数
         parameters: list[VariableSpec] = []
         kwarg_parts: list[str] = []
+        used_short_flags: set[str] = set()
+
+        def get_short_flag(param_name: str) -> str:
+            """生成短标志，默认取首字母，重复则加数字后缀"""
+            base_char = param_name[0].lower()
+            short_flag = f"-{base_char}"
+            suffix = 2
+            while short_flag in used_short_flags:
+                short_flag = f"-{base_char}{suffix}"
+                suffix += 1
+            used_short_flags.add(short_flag)
+            return short_flag
+
+        def build_help_kwargs(description: str | None) -> dict[str, AssignmentSpec]:
+            """构建 help 参数"""
+            if description:
+                return {"help": AssignmentSpec.from_literal(description)}
+            return {}
 
         for attr in attributes:
             param_name = str(attr.name)
-            type_annotation = parse_type_str(attr.type)
+            type_annotation = attr.to_python_annotation()
+            help_kwargs = build_help_kwargs(attr.description)
 
             if attr.default is None and not attr.optional:
-                assignment = AssignmentSpec.from_call("typer.Argument", kwargs={})
+                # 必选参数: Annotated[type, typer.Argument(...)]
+                assignment = AssignmentSpec.from_call(
+                    "typer.Argument",
+                    kwargs=help_kwargs,
+                )
             else:
+                # 可选参数: Annotated[type, typer.Option(default, --flag, -f, help=...)]
                 default_assignment = AssignmentSpec.from_literal(
                     None if attr.default is None else attr.default
                 )
+                long_flag = f"--{param_name.replace('_', '-')}"
+                short_flag = get_short_flag(param_name)
+                # typer.Option(default, "--flag", "-f", help="...")
+                # flags are positional args, help is kwarg
+                option_args = [
+                    default_assignment,
+                    AssignmentSpec.from_literal(long_flag),
+                    AssignmentSpec.from_literal(short_flag),
+                ]
                 assignment = AssignmentSpec.from_call(
                     "typer.Option",
-                    kwargs={
-                        "default": default_assignment,
-                    },
+                    args=option_args,
+                    kwargs=help_kwargs,
                 )
-                
+
             annotated_type = TypeAnnotationSpec(
                 name="Annotated",
                 args=[type_annotation, assignment],
@@ -108,7 +140,6 @@ class CliCommandSpec(ValueObject):
             name=func_name,
             functions=[func],
             imports=[
-                ImportFromSpec.create(module="typing", names=["Annotated"]),
                 ImportFromSpec.create(module="__root__", names=["typer"]),
                 ImportFromSpec.create(
                     module=f"{pkg_prefix}{ctx_snake}.container",
