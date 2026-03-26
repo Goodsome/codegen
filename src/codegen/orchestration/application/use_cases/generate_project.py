@@ -8,34 +8,28 @@ from codegen.python_gen.application.use_cases.generate_package import (
     GeneratePackage,
     GeneratePackageCommand,
 )
+from typing import Union
+from pydantic import BaseModel, Field
 
 
-@dataclass(frozen=True)
-class GenerateProjectCommand:
-
-    overwrite: bool
-    nodes: list[str] | None
-    root_path: str = ""
-    generate_tests: bool = False
+class GenerateProjectCommand(BaseModel):
+    overwrite: bool = Field(default=False)
+    nodes: list[str] | None = Field(default=None)
+    root_path: str = Field(default="")
+    generate_tests: bool = Field(default=False)
 
 
-@dataclass(frozen=True)
-class GenerateProjectResult:
-
+class GenerateProjectResult(BaseModel):
     result: BuildResult
 
 
 @dataclass
 class GenerateProject:
-
     loader: LoadBlueprint
     generator: GeneratePackage
 
     def execute(self, cmd: GenerateProjectCommand) -> GenerateProjectResult:
-
-        # For backward compatibility, pass first node as `node` for single-node scenarios
         node = cmd.nodes[0] if cmd.nodes and len(cmd.nodes) == 1 else None
-
         load_result = self.loader.execute(LoadBlueprintCommand(node=node))
         package_spec = load_result.blueprint.to_package_spec()
         gen_result = self.generator.execute(
