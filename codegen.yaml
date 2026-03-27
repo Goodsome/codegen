@@ -302,9 +302,6 @@ contexts:
         name: generator
       command:
         attributes:
-        - type: boolean
-          name: overwrite
-          default: false
         - type: string
           container: list
           optional: true

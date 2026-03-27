@@ -171,14 +171,12 @@ def build(
     )
     use_case = container.generate_project_use_case()
 
-    # When node is specified, overwrite is automatically enabled
-    overwrite = node is not None
     # Parse comma-separated node string into list
     nodes = [n.strip() for n in node.split(",")] if node else None
 
     root_path_str = "" if output == "src" else output.replace("/", ".").replace("\\", ".")
 
-    cmd = GenerateProjectCommand(overwrite=overwrite, nodes=nodes, root_path=root_path_str)
+    cmd = GenerateProjectCommand(nodes=nodes, root_path=root_path_str)
     r = use_case.execute(cmd)
 
     return r.result

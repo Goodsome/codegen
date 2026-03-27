@@ -13,7 +13,6 @@ from pydantic import BaseModel, Field
 
 
 class GenerateProjectCommand(BaseModel):
-    overwrite: bool = Field(default=False)
     nodes: list[str] | None = Field(default=None)
     root_path: str = Field(default="")
     generate_tests: bool = Field(default=False)
@@ -36,7 +35,7 @@ class GenerateProject:
             GeneratePackageCommand(
                 package_spec=package_spec,
                 nodes=cmd.nodes,
-                overwrite=cmd.overwrite,
+                overwrite=cmd.nodes is not None,
                 root_path=cmd.root_path,
             )
         )

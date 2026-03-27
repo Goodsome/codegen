@@ -149,14 +149,12 @@ def build(
     with get_container(config_file=config_file, output=output) as container:
         use_case = container.generate_project_use_case()
 
-        # When node is specified, overwrite is automatically enabled
-        overwrite = node is not None
         nodes = parse_nodes(node)
 
         root_path = "" if output == "src" else output.replace("/", ".").replace("\\", ".")
 
         cmd = GenerateProjectCommand(
-            overwrite=overwrite, nodes=nodes, root_path=root_path,
+            nodes=nodes, root_path=root_path,
             generate_tests=generate_tests,
         )
 
