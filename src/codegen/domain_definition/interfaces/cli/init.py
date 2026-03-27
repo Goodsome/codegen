@@ -14,7 +14,6 @@ from codegen.domain_definition.application.use_cases.init_project import (
 )
 
 
-app = typer.Typer(name="init", help="Initialize a new codegen.yaml blueprint")
 console = Console()
 
 
