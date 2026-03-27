@@ -146,7 +146,7 @@ contexts:
           name: content
         - type: boolean
           name: overwrite
-          default: 'False'
+          default: false
         output:
           type: None
       - name: list_directory_recursively
@@ -224,7 +224,6 @@ contexts:
       attributes:
       - type: Any
         name: model_config
-        default: ConfigDict(frozen=False)
       - type: BuildStatus
         name: status
       - type: FileResult
@@ -265,25 +264,24 @@ contexts:
       attributes:
       - type: Any
         name: model_config
-        default: ConfigDict(frozen=False)
       - type: integer
         name: total_files
-        default: '0'
+        default: 0
       - type: integer
         name: created_count
-        default: '0'
+        default: 0
       - type: integer
         name: updated_count
-        default: '0'
+        default: 0
       - type: integer
         name: skipped_count
-        default: '0'
+        default: 0
       - type: integer
         name: failed_count
-        default: '0'
+        default: 0
       - type: integer
         name: duration_ms
-        default: '0'
+        default: 0
       behaviors:
       - name: add_result
         inputs:
@@ -306,17 +304,17 @@ contexts:
         attributes:
         - type: boolean
           name: overwrite
-          default: 'False'
+          default: false
         - type: string
           container: list
           optional: true
           name: nodes
         - type: string
           name: root_path
-          default: ''''''
+          default: ''
         - type: boolean
           name: generate_tests
-          default: 'False'
+          default: false
       result:
         attributes:
         - type: BuildResult
@@ -391,7 +389,6 @@ contexts:
       - type: string
         optional: true
         name: type_annotation
-        default: None
       behaviors:
       - name: create
         inputs:
@@ -405,7 +402,6 @@ contexts:
         - type: string
           optional: true
           name: type_annotation
-          default: None
         output:
           type: ModuleAssignmentSpec
     - name: RawCodeSpec
@@ -430,7 +426,7 @@ contexts:
         name: name
       - type: string
         name: description
-        default: ''''''
+        default: ''
       - type: string
         container: list
         optional: true
@@ -457,27 +453,23 @@ contexts:
           name: name
         - type: string
           name: description
-          default: ''''''
+          default: ''
         - type: string
           container: list
           optional: true
           name: decorators
-          default: None
         - type: string
           container: list
           optional: true
           name: inheritance
-          default: None
         - type: VariableSpec
           container: list
           optional: true
           name: attributes
-          default: None
         - type: FunctionSpec
           container: list
           optional: true
           name: methods
-          default: None
         output:
           type: ClassSpec
       - name: create_value_object
@@ -549,17 +541,16 @@ contexts:
         name: return_annotation
       - type: string
         name: suite
-        default: ''''''
+        default: ''
       - type: FunctionType
         name: function_type
         default: FunctionType.FUNCTION
       - type: boolean
         name: is_private
-        default: 'False'
+        default: false
       - type: string
         optional: true
         name: description
-        default: None
       behaviors:
       - name: create
         inputs:
@@ -574,25 +565,22 @@ contexts:
           container: list
           optional: true
           name: decorators
-          default: None
         - type: VariableSpec
           container: list
           optional: true
           name: parameters
-          default: None
         - type: string
           name: suite
-          default: ''''''
+          default: ''
         - type: FunctionType
           name: function_type
           default: FunctionType.FUNCTION
         - type: boolean
           name: is_private
-          default: 'False'
+          default: false
         - type: string
           optional: true
           name: description
-          default: None
         output:
           type: any
       - name: get_required_types
@@ -678,10 +666,9 @@ contexts:
         - type: Any
           custom_type_string: str | int | None
           name: value
-          default: None
         - type: string
           name: description
-          default: ''''''
+          default: ''
         output:
           type: PythonEnumMemberSpec
     - name: AssignmentSpec
@@ -751,12 +738,10 @@ contexts:
           container: list
           optional: true
           name: args
-          default: None
         - type: AssignmentSpec
           container: map
           optional: true
           name: kwargs
-          default: None
         output:
           type: AssignmentSpec
       - name: from_subscript
@@ -820,7 +805,6 @@ contexts:
       - type: string
         optional: true
         name: alias
-        default: None
       behaviors:
       - name: render
         inputs:
@@ -869,32 +853,26 @@ contexts:
           container: list
           optional: true
           name: functions
-          default: None
         - type: ClassSpec
           container: list
           optional: true
           name: classes
-          default: None
         - type: ImportFromSpec
           container: list
           optional: true
           name: imports
-          default: None
         - type: PythonEnumSpec
           container: list
           optional: true
           name: enums
-          default: None
         - type: ModuleAssignmentSpec
           container: list
           optional: true
           name: assignments
-          default: None
         - type: RawCodeSpec
           container: list
           optional: true
           name: extra_code
-          default: None
         output:
           type: ModuleSpec
       - name: create_shared_models
@@ -1018,12 +996,10 @@ contexts:
           container: list
           optional: true
           name: modules
-          default: None
         - type: PackageSpec
           container: list
           optional: true
           name: sub_packages
-          default: None
         output:
           type: any
       - name: is_empty
@@ -1038,7 +1014,7 @@ contexts:
           name: self
         - type: string
           name: root_path
-          default: ''''''
+          default: ''
         output:
           type: string
           container: map
@@ -1078,10 +1054,10 @@ contexts:
         name: names
       - type: boolean
         name: type_checking
-        default: 'False'
+        default: false
       - type: integer
         name: level
-        default: '0'
+        default: 0
       behaviors:
       - name: create
         inputs:
@@ -1095,10 +1071,10 @@ contexts:
           name: names
         - type: boolean
           name: type_checking
-          default: 'False'
+          default: false
         - type: integer
           name: level
-          default: '0'
+          default: 0
         output:
           type: ImportFromSpec
       - name: has_name
@@ -1168,7 +1144,6 @@ contexts:
         - type: AssignmentSpec
           optional: true
           name: assignment
-          default: None
         output:
           type: VariableSpec
       - name: get_required_types
@@ -1207,20 +1182,18 @@ contexts:
           name: name
         - type: string
           name: description
-          default: ''''''
+          default: ''
         - type: string
           container: list
           optional: true
           name: decorators
-          default: None
         - type: string
           name: base_class
-          default: '''Enum'''
+          default: Enum
         - type: PythonEnumMemberSpec
           container: list
           optional: true
           name: members
-          default: None
         output:
           type: PythonEnumSpec
       - name: get_required_types
@@ -1246,7 +1219,7 @@ contexts:
           name: package_spec
         - type: string
           name: root_path
-          default: ''''''
+          default: ''
         output:
           type: DependencyResolver
       - name: resolve_module
@@ -1297,7 +1270,7 @@ contexts:
           name: target_nodes
         - type: string
           name: root_path
-          default: ''''''
+          default: ''
         output:
           type: Any
           custom_type_string: dict[Path, str]
@@ -1400,7 +1373,7 @@ contexts:
           name: nodes
         - type: string
           name: root_path
-          default: ''''''
+          default: ''
       result:
         attributes:
         - type: BuildResult
@@ -1447,16 +1420,14 @@ contexts:
           name: description
         - type: string
           name: layout
-          default: ''''''
+          default: ''
         - type: BoundedContext
           container: list
           optional: true
           name: contexts
-          default: None
         - type: BootstrapSpec
           optional: true
           name: bootstrap
-          default: None
         output:
           type: Self
       - name: to_package_spec
@@ -1579,7 +1550,7 @@ contexts:
         name: default
       - type: string
         name: description
-        default: ''''''
+        default: ''
       - type: string
         optional: true
         name: env_var
@@ -1611,7 +1582,7 @@ contexts:
           name: use_case
         - type: string
           name: project_name
-          default: ''''''
+          default: ''
         output:
           type: ModuleSpec
       - name: from_module_spec
@@ -1664,7 +1635,6 @@ contexts:
         - type: string
           optional: true
           name: class_name
-          default: None
         output:
           type: FunctionSpec
       - name: from_function_spec
@@ -1765,7 +1735,7 @@ contexts:
           name: use_case
         - type: string
           name: project_name
-          default: ''''''
+          default: ''
         output:
           type: ModuleSpec
       - name: from_module_spec
@@ -1827,7 +1797,7 @@ contexts:
           name: type
         - type: boolean
           name: optional
-          default: 'False'
+          default: false
         output:
           type: AttributeSpec
       - name: to_variable_spec
@@ -1837,7 +1807,6 @@ contexts:
         - type: FieldFlavor
           optional: true
           name: flavor
-          default: None
         output:
           type: VariableSpec
       - name: from_variable_spec
@@ -1870,7 +1839,7 @@ contexts:
           name: use_case
         - type: string
           name: project_name
-          default: ''''''
+          default: ''
         output:
           type: ModuleSpec
       - name: from_module_spec
@@ -1937,22 +1906,18 @@ contexts:
           container: list
           optional: true
           name: dependencies
-          default: None
         - type: string
           name: description
-          default: ''''''
+          default: ''
         - type: DataContractSpec
           optional: true
           name: command
-          default: None
         - type: DataContractSpec
           optional: true
           name: query
-          default: None
         - type: DataContractSpec
           optional: true
           name: result
-          default: None
         output:
           type: any
       - name: to_module_spec
@@ -2007,15 +1972,12 @@ contexts:
       - type: CliInterfaceSpec
         optional: true
         name: cli
-        default: None
       - type: McpInterfaceSpec
         optional: true
         name: mcp
-        default: None
       - type: HttpInterfaceSpec
         optional: true
         name: http
-        default: None
       behaviors:
       - name: to_package_spec
         inputs:
@@ -2028,7 +1990,7 @@ contexts:
           name: use_cases
         - type: string
           name: project_name
-          default: ''''''
+          default: ''
         output:
           type: PackageSpec
       - name: from_package_spec
@@ -2137,7 +2099,7 @@ contexts:
           name: context
         - type: string
           name: class_name
-          default: '''Container'''
+          default: Container
         output:
           type: ClassSpec
       - name: to_module_spec
@@ -2148,7 +2110,7 @@ contexts:
           name: context
         - type: string
           name: class_name
-          default: '''Container'''
+          default: Container
         output:
           type: ModuleSpec
       - name: to_app_container_module
@@ -2210,17 +2172,15 @@ contexts:
           name: technology
         - type: string
           name: description
-          default: ''''''
+          default: ''
         - type: AttributeSpec
           container: list
           optional: true
           name: attributes
-          default: None
         - type: MethodSpec
           container: list
           optional: true
           name: private_methods
-          default: None
         output:
           type: any
       - name: to_module_spec
@@ -2267,7 +2227,7 @@ contexts:
           name: use_cases
         - type: string
           name: project_name
-          default: ''''''
+          default: ''
         output:
           type: PackageSpec
       - name: _create_mcp_init_module
@@ -2371,7 +2331,7 @@ contexts:
           name: self
         - type: string
           name: project_name
-          default: ''''''
+          default: ''
         output:
           type: PackageSpec
       - name: _collect_class_specs_in_ports
@@ -2403,31 +2363,25 @@ contexts:
           name: name
         - type: string
           name: description
-          default: ''''''
+          default: ''
         - type: DomainSpec
           optional: true
           name: domain
-          default: None
         - type: ApplicationSpec
           optional: true
           name: application
-          default: None
         - type: InfrastructureSpec
           optional: true
           name: infrastructure
-          default: None
         - type: ConfigSpec
           optional: true
           name: config
-          default: None
         - type: ContainerSpec
           optional: true
           name: container
-          default: None
         - type: InterfaceSpec
           optional: true
           name: interfaces
-          default: None
         output:
           type: any
       - name: port_index
@@ -2524,7 +2478,7 @@ contexts:
           name: use_cases
         - type: string
           name: project_name
-          default: ''''''
+          default: ''
         output:
           type: PackageSpec
       - name: _create_cli_init_module
@@ -2617,7 +2571,6 @@ contexts:
       - type: PascalString
         optional: true
         name: aggregate
-        default: None
       - type: MethodSpec
         container: list
         optional: true
@@ -2635,16 +2588,14 @@ contexts:
           name: kind
         - type: string
           name: description
-          default: ''''''
+          default: ''
         - type: string
           optional: true
           name: aggregate
-          default: None
         - type: MethodSpec
           container: list
           optional: true
           name: operations
-          default: None
         output:
           type: Self
       - name: to_module_spec
@@ -2847,7 +2798,7 @@ contexts:
           name: use_cases
         - type: string
           name: project_name
-          default: ''''''
+          default: ''
         output:
           type: PackageSpec
       - name: _create_http_init_module
@@ -2883,7 +2834,7 @@ contexts:
         name: class_name
       - type: string
         name: env_prefix
-        default: ''''''
+        default: ''
       - type: string
         optional: true
         name: env_file
@@ -2899,7 +2850,6 @@ contexts:
         - type: string
           optional: true
           name: class_name
-          default: None
         output:
           type: ClassSpec
       - name: _create_model_config_attribute
@@ -2915,7 +2865,6 @@ contexts:
         - type: string
           optional: true
           name: class_name
-          default: None
         output:
           type: ModuleSpec
       - name: to_app_config_module
@@ -2936,7 +2885,6 @@ contexts:
       dependencies:
       - type: Any
         name: _SEGMENT_PATTERN
-        default: re.compile('([a-zA-Z_][a-zA-Z0-9_]*)?(?:\\[(\\d+)\\])?')
       operations:
       - name: parse
         inputs:
@@ -3069,7 +3017,7 @@ contexts:
           name: value
         - type: boolean
           name: append
-          default: 'False'
+          default: false
         output:
           type: any
       - name: remove_value
@@ -3211,7 +3159,6 @@ contexts:
       - type: integer
         optional: true
         name: index
-        default: None
       operations:
       - name: is_index_access
         inputs:
@@ -3269,7 +3216,7 @@ contexts:
           name: value
         - type: boolean
           name: append
-          default: 'False'
+          default: false
     - name: UpsertContext
       kind: command
       dependencies:
@@ -3317,7 +3264,6 @@ contexts:
         - type: string
           optional: true
           name: node
-          default: None
       result:
         attributes:
         - type: Blueprint

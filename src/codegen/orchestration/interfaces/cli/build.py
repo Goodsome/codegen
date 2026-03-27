@@ -19,8 +19,8 @@ def _generate_project(
 
 
 def build(
-    overwrite: Annotated[bool, typer.Option("False", "--overwrite", "-o")],
+    overwrite: Annotated[bool, typer.Option(False, "--overwrite", "-o")],
     nodes: Annotated[list[str] | None, typer.Option(None, "--nodes", "-n")],
-    root_path: Annotated[str, typer.Option("''", "--root-path", "-r")],
-    generate_tests: Annotated[bool, typer.Option("False", "--generate-tests", "-g")],
+    root_path: Annotated[str, typer.Option("", "--root-path", "-r")],
+    generate_tests: Annotated[bool, typer.Option(False, "--generate-tests", "-g")],
 ) -> GenerateProjectResult: ...
