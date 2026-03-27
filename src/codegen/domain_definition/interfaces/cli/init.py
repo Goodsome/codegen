@@ -11,6 +11,7 @@ from rich.console import Console
 from codegen.domain_definition.application.use_cases.init_project import (
     InitProject,
     InitProjectCommand,
+    InitProjectResult,
 )
 
 
@@ -21,7 +22,7 @@ console = Console()
 def _init_project(
     cmd: InitProjectCommand,
     use_case: InitProject = Provide["domain_definition_container.init_project"],
-) -> None:
+) -> InitProjectResult:
     return use_case.execute(cmd)
 
 

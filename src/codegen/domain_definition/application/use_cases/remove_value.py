@@ -11,6 +11,12 @@ class RemoveValueCommand:
     path: str
 
 
+@dataclass(frozen=True)
+class RemoveValueResult:
+    """Result of a remove value operation."""
+    blueprint: dict | None
+
+
 @dataclass
 class RemoveValue:
     """
@@ -23,7 +29,7 @@ class RemoveValue:
     storage: BlueprintStorage
     operations: BlueprintPathOperations
     
-    def execute(self, cmd: RemoveValueCommand) -> None:
+    def execute(self, cmd: RemoveValueCommand) -> RemoveValueResult:
         """
         Execute the remove value command.
         
@@ -41,3 +47,4 @@ class RemoveValue:
         new_blueprint = self.operations.remove_value(blueprint, cmd.path)
         
         self.storage.save(new_blueprint)
+        return RemoveValueResult(blueprint=new_blueprint)

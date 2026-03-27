@@ -5,6 +5,7 @@ import typer
 from codegen.domain_definition.application.use_cases.remove_value import (
     RemoveValue,
     RemoveValueCommand,
+    RemoveValueResult,
 )
 from dependency_injector.wiring import Provide, inject
 from typing import Annotated
@@ -16,7 +17,7 @@ def _remove_value(
     use_case: RemoveValue = Provide[
         "domain_definition_container.remove_value"
     ],
-) -> None:
+) -> RemoveValueResult:
     return use_case.execute(cmd)
 
 
