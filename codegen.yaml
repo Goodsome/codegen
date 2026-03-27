@@ -3314,3 +3314,7 @@ contexts:
         use_case: SetValue
       - name: get
         use_case: GetValue
+      - name: upsert-context
+        use_case: UpsertContext
+      - name: remove-context
+        use_case: RemoveContext

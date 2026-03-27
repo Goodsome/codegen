@@ -9,6 +9,8 @@ from codegen.domain_definition.interfaces.cli.set import set as set_cmd
 from codegen.domain_definition.interfaces.cli.rm import rm
 from codegen.domain_definition.interfaces.cli.tree import tree as tree_cmd
 from codegen.domain_definition.interfaces.cli.init import init
+from codegen.domain_definition.interfaces.cli.upsert_context import upsert_context
+from codegen.domain_definition.interfaces.cli.remove_context import remove_context
 
 app = typer.Typer(
     name="codegen",
@@ -58,6 +60,8 @@ app.command(name="tree")(tree_cmd)
 app.command(name="get")(get_cmd)
 app.command(name="set")(set_cmd)
 app.command()(rm)
+app.command(name="upsert-context")(upsert_context)
+app.command(name="remove-context")(remove_context)
 
 
 def main():
