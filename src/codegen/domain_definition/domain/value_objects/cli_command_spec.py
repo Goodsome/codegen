@@ -1,6 +1,5 @@
 import re
 
-from codegen.python_gen.domain.value_objects.module_assignment_spec import ModuleAssignmentSpec
 from pydantic import Field
 
 from codegen.domain_definition.domain.enums import UseCaseKind
@@ -10,7 +9,6 @@ from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSp
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
-from codegen.python_gen.domain.value_objects.raw_code_spec import RawCodeSpec
 from codegen.python_gen.domain.value_objects.type_annotation_spec import TypeAnnotationSpec
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import parse_type_str
@@ -55,9 +53,6 @@ class CliCommandSpec(ValueObject):
         func_name = self.name.replace(" ", "_").replace("-", "_")
         uc_snake = str(SnakeString(use_case.name))
         ctx_snake = str(SnakeString(context_name))
-
-        # 构建完整包路径前缀
-        pkg_prefix = f"{project_name}." if project_name else ""
 
         # 生成 Typer 参数
         parameters: list[VariableSpec] = []
@@ -150,7 +145,10 @@ class CliCommandSpec(ValueObject):
                 VariableSpec.create(
                     name="use_case",
                     type_spec=parse_type_str(use_case_type),
-                    assignment=AssignmentSpec.from_code(f"Provide[{repr(provider_path)}]")
+                    assignment=AssignmentSpec.from_subscript(
+                        value=AssignmentSpec.from_symbol("Provide"),
+                        slice=AssignmentSpec.from_literal(provider_path)
+                    )
                 ),
             ],
             return_annotation=parse_type_str(result_type),

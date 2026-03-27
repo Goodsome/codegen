@@ -11,6 +11,7 @@ class AssignmentFlavor(Enum):
     LIST = "list"
     RAW_CODE = "raw_code"
     CODE = "code"
+    SUBSCRIPT = "subscript"
 
 
 

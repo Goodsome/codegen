@@ -39,4 +39,9 @@ def build_assignment_expr(assignment: AssignmentSpec) -> ast.expr:
 
         return ast.Call(func=func_node, args=args, keywords=keywords)
 
+    if assignment.flavor == AssignmentFlavor.SUBSCRIPT and assignment.subscript:
+        value_node = build_assignment_expr(assignment.subscript.value)
+        slice_node = build_assignment_expr(assignment.subscript.slice)
+        return ast.Subscript(value=value_node, slice=slice_node, ctx=ast.Load())
+
     return ast.Constant(value=None)

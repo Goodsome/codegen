@@ -1,11 +1,11 @@
 import typer
-from dependency_injector.wiring import Provide, inject
+from typing import Annotated, Union
 from codegen.orchestration.application.use_cases.generate_project import (
     GenerateProject,
     GenerateProjectCommand,
     GenerateProjectResult,
 )
-from typing import Annotated, Union
+from dependency_injector.wiring import Provide, inject
 
 
 @inject

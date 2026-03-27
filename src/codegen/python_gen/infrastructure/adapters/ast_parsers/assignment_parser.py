@@ -67,13 +67,18 @@ def parse_assignment_value(node: ast.AST) -> AssignmentSpec:
             else:
                 is_simple_dict = False
                 break
-        
+
         if is_simple_dict:
              return AssignmentSpec(
                 flavor=AssignmentFlavor.DICT,
                 dict_items=items,
                 code=code_str
             )
+
+    elif isinstance(node, ast.Subscript):
+        value_spec = parse_assignment_value(node.value)
+        slice_spec = parse_assignment_value(node.slice)
+        return AssignmentSpec.from_subscript(value_spec, slice_spec)
     
     # Fallback to CODE
     return AssignmentSpec(

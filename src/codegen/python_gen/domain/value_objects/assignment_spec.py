@@ -5,6 +5,7 @@ from typing import Any
 from codegen.python_gen.domain.value_objects.reference_spec import ReferenceSpec
 from codegen.python_gen.domain.value_objects.call_spec import CallSpec
 from codegen.python_gen.domain.value_objects.literal_spec import LiteralSpec
+from codegen.python_gen.domain.value_objects.subscript_spec import SubscriptSpec
 
 
 class AssignmentSpec(ValueObject):
@@ -17,6 +18,7 @@ class AssignmentSpec(ValueObject):
     list_items: list["AssignmentSpec"] | None = Field(default=None)
     dict_items: dict[str, "AssignmentSpec"] | None = Field(default=None)
     code: str | None = Field(default=None)
+    subscript: SubscriptSpec | None = Field(default=None)
 
     @classmethod
     def from_code(cls, code: str) -> "AssignmentSpec":
@@ -47,6 +49,13 @@ class AssignmentSpec(ValueObject):
             )
         )
 
+    @classmethod
+    def from_subscript(cls, value: "AssignmentSpec", slice: "AssignmentSpec") -> "AssignmentSpec":
+        return cls(
+            flavor=AssignmentFlavor.SUBSCRIPT,
+            subscript=SubscriptSpec(value=value, slice=slice)
+        )
+
     def get_required_types(self) -> set[str]:
         types: set[str] = set()
         if self.flavor == AssignmentFlavor.CALL and self.call:
@@ -63,4 +72,6 @@ class AssignmentSpec(ValueObject):
         elif self.dict_items:
             for item in self.dict_items.values():
                 types.update(item.get_required_types())
+        elif self.flavor == AssignmentFlavor.SUBSCRIPT and self.subscript:
+            types.update(self.subscript.get_required_types())
         return types

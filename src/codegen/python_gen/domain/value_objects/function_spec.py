@@ -62,12 +62,8 @@ class FunctionSpec(ValueObject):
         for p in self.parameters:
             if p.type_spec:
                 types.update(p.type_spec.get_all_referenced_names())
-            # Check assignment for types? AssignmentSpec doesn't easily expose types yet.
-            # But VariableSpec.assignment might have references.
-            # For now, let's stick to what ParameterSpec did (annotation + default).
-            # VariableSpec has type_spec.
-            # AssignmentSpec needs to be checked if it introduces types (e.g. CallSpec).
-            # For this refactor, let's keep it simple and match existing behavior + minimal extension.
+            if p.assignment:
+                types.update(p.assignment.get_required_types())
         return types
 
     def is_instance_method(self) -> bool:
