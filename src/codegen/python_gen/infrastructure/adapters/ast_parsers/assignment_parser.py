@@ -30,21 +30,18 @@ def parse_assignment_value(node: ast.AST) -> AssignmentSpec:
         return AssignmentSpec(
             flavor=AssignmentFlavor.CALL,
             call=CallSpec(callee=func_name, args=args, kwargs=kwargs),
-            code=code_str
         )
 
     elif isinstance(node, ast.Constant):
         return AssignmentSpec(
             flavor=AssignmentFlavor.LITERAL,
             literal=LiteralSpec(value=node.value),
-            code=code_str
         )
 
     elif isinstance(node, ast.Name):
         return AssignmentSpec(
             flavor=AssignmentFlavor.SYMBOL,
             reference=ReferenceSpec(name=node.id),
-            code=code_str
         )
     
     elif isinstance(node, ast.List):
