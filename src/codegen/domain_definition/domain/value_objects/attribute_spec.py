@@ -34,11 +34,15 @@ class AttributeSpec(TypeDefinition):
 
         assignment = None
         if self.default is not None:
-            # Explicit default value takes precedence
-            if self.default == "":
-                assignment = AssignmentSpec.from_literal("")
+            if isinstance(self.default, str):
+                # String values: empty string uses from_literal, non-empty uses from_code
+                if self.default == "":
+                    assignment = AssignmentSpec.from_literal("")
+                else:
+                    assignment = AssignmentSpec.from_code(self.default)
             else:
-                assignment = AssignmentSpec.from_code(self.default)
+                # Handle actual literals (bool, int, float, None, etc.)
+                assignment = AssignmentSpec.from_literal(self.default)
 
             # 如果指定了 flavor，需要包装在 Field/field 中
             if flavor:
@@ -83,7 +87,7 @@ class AttributeSpec(TypeDefinition):
             if variable_spec.assignment.code:
                 default_value = variable_spec.assignment.code
             elif variable_spec.assignment.literal:
-                default_value = repr(variable_spec.assignment.literal.value)
+                default_value = variable_spec.assignment.literal.value
 
             # Handle Field(default=...) wrapper
             if (
@@ -97,7 +101,7 @@ class AttributeSpec(TypeDefinition):
                         if default_arg.code:
                             default_value = default_arg.code
                         elif default_arg.literal:
-                            default_value = repr(default_arg.literal.value)
+                            default_value = default_arg.literal.value
                         if (
                             default_arg.literal
                             and default_arg.literal.value is None
