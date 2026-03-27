@@ -25,7 +25,6 @@ dev = [
 
 [project.scripts]
 codegen = "codegen.entrypoints.cli:app"
-codegen-mcp = "codegen.entrypoints.mcp:run"
 
 [build-system]
 requires = ["hatchling"]
