@@ -56,7 +56,7 @@ class GeneratePackage:
             )
 
             for rel_path_str, content in source_tree.items():
-                rel_path = Path(rel_path_str)
+                rel_path = Path("src") / Path(rel_path_str)
                 try:
                     # Formatting
                     try:

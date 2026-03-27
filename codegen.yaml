@@ -148,7 +148,7 @@ contexts:
           name: overwrite
           default: false
         output:
-          type: None
+          type: boolean
       - name: list_directory_recursively
         inputs:
         - type: Self
@@ -197,6 +197,12 @@ contexts:
       implements: FileSystemPort
       technology: os
       description: OS file system adapter for reading/writing files.
+      attributes:
+      - type: Path
+        name: root
+      - type: string
+        name: encoding
+        default: utf-8
 - name: Orchestration
   domain:
     enums:
@@ -306,9 +312,6 @@ contexts:
           container: list
           optional: true
           name: nodes
-        - type: string
-          name: root_path
-          default: ''
         - type: boolean
           name: generate_tests
           default: false
@@ -3271,3 +3274,6 @@ contexts:
       implements: BlueprintStorage
       technology: yaml
       description: Blueprint loader that reads from a YAML file.
+      attributes:
+      - type: Path
+        name: config_path

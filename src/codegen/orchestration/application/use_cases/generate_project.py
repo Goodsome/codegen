@@ -8,13 +8,11 @@ from codegen.python_gen.application.use_cases.generate_package import (
     GeneratePackage,
     GeneratePackageCommand,
 )
-from typing import Union
 from pydantic import BaseModel, Field
 
 
 class GenerateProjectCommand(BaseModel):
     nodes: list[str] | None = Field(default=None)
-    root_path: str = Field(default="")
     generate_tests: bool = Field(default=False)
 
 
@@ -36,7 +34,6 @@ class GenerateProject:
                 package_spec=package_spec,
                 nodes=cmd.nodes,
                 overwrite=cmd.nodes is not None,
-                root_path=cmd.root_path,
             )
         )
         return GenerateProjectResult(result=gen_result.result)

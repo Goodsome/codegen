@@ -20,6 +20,5 @@ def _generate_project(
 
 def build(
     nodes: Annotated[list[str] | None, typer.Option(None, "--nodes", "-n")],
-    root_path: Annotated[str, typer.Option("", "--root-path", "-rp")],
     generate_tests: Annotated[bool, typer.Option(False, "--generate-tests", "-gt")],
 ) -> GenerateProjectResult: ...

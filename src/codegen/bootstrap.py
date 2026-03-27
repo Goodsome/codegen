@@ -38,18 +38,17 @@ class Container(containers.DeclarativeContainer):
 
     config = providers.Configuration()
 
-    os_file_port = Singleton(OSFileSystem, config=config)
-    # File system port that writes relative to project root (for tests/)
-    project_root_file_port = Singleton(
-        OSFileSystem,
-        config=providers.Dict(
-            output_root=config.project_root,
-            encoding=config.encoding,
-        ),
+    os_file_port = Singleton(
+        OSFileSystem, 
+        root=config.project_root, 
+        encoding=config.encoding,
     )
     ast_translator_provider = Singleton(AstTranslator)
 
-    blueprint_loader_provider = Singleton(YamlBlueprintStorage, config=config)
+    blueprint_loader_provider = Singleton(
+        YamlBlueprintStorage, 
+        config_path=config.config_path
+    )
 
     python_syntax_translator_provider = Singleton(
         PythonSyntaxTranslator,

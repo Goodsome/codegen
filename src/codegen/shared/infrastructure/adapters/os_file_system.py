@@ -1,25 +1,19 @@
+from dataclasses import dataclass
+
 from pathlib import Path
-from typing import Any, Dict, Iterator
+from typing import Iterator
 
 from codegen.shared.domain.ports.file_system_port import FileSystemPort
 
 
+@dataclass
 class OSFileSystem(FileSystemPort):
     """
     OS file system adapter for reading/writing files.
     """
 
-    def __init__(self, config: Dict[str, Any]):
-        self.config = config
-
-        output_root = config.get("output_root", "target")
-        if isinstance(output_root, str):
-            self.root = Path(output_root)
-        elif isinstance(output_root, Path):
-            self.root = output_root
-        else:
-            raise ValueError("Invalid output_root value")
-        self.encoding = config.get("encoding", "utf-8")
+    root: Path
+    encoding: str = "utf-8"
 
     def read_file(self, path: Path) -> str:
         full_path = self.root / path

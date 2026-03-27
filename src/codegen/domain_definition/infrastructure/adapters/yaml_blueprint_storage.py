@@ -1,6 +1,8 @@
+from dataclasses import dataclass
+
 import os
 from pathlib import Path
-from typing import cast, Any
+from typing import cast
 
 import yaml
 
@@ -13,17 +15,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
+@dataclass
 class YamlBlueprintStorage(BlueprintStorage):
     """Blueprint loader that reads from a YAML file."""
 
-    def __init__(self, config: dict[str, Any]) -> None:
-        config_path = config["config_path"]
-        if isinstance(config_path, str):
-            self.config_path = Path(config_path)
-        elif isinstance(config_path, Path):
-            self.config_path = config_path
-        else:
-            raise ValueError("Invalid config_path value")
+    config_path: Path
 
     def load(self) -> Blueprint | None:
         if not os.path.exists(self.config_path):

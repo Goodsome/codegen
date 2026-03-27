@@ -25,10 +25,8 @@ def get_container():
     """
     cwd = Path.cwd()
     yaml_path = cwd / "codegen.yaml"
-    output_dir = cwd / "src"
 
     config = {
-        "output_root": output_dir,
         "project_root": cwd,
         "encoding": "utf-8",
         "config_path": yaml_path,
