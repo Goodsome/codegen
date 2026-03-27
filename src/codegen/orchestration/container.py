@@ -1,21 +1,27 @@
-from dependency_injector import containers, providers
-from dependency_injector.providers import Factory
-
-from codegen.orchestration.application.use_cases.generate_blueprint import (
-    GenerateBlueprint,
-)
+from codegen.domain_definition.application.use_cases.load_blueprint import LoadBlueprint
+from codegen.orchestration.application.use_cases.generate_blueprint import GenerateBlueprint
 from codegen.orchestration.application.use_cases.generate_project import GenerateProject
+from codegen.python_gen.application.use_cases.generate_package import GeneratePackage
+from codegen.python_gen.application.use_cases.parse_package import ParsePackage
+from codegen.domain_definition.domain.ports.blueprint_storage import BlueprintStorage
+from dependency_injector.containers import DeclarativeContainer
+from dependency_injector.providers import Dependency, Factory
 
 
-class Container(containers.DeclarativeContainer):
+class Container(DeclarativeContainer):
+    load_blueprint = Dependency()
+    generate_package = Dependency()
+    parse_package = Dependency()
+    blueprint_storage = Dependency()
 
-    config = providers.Configuration()
-    load_blueprint_use_case = providers.Dependency()
-    generate_package_use_case = providers.Dependency()
-    generate_blueprint_use_case = providers.Dependency()
-
-    generate_project_use_case = Factory(
+    generate_project = Factory(
         GenerateProject,
-        loader=load_blueprint_use_case,
-        generator=generate_package_use_case,
+        loader=load_blueprint,
+        generator=generate_package,
+    )
+
+    generate_blueprint = Factory(
+        GenerateBlueprint,
+        parser=parse_package,
+        storage=blueprint_storage,
     )

@@ -95,7 +95,7 @@ def print_build_report(result: BuildResult) -> None:
 def _generate_project(
     cmd: GenerateProjectCommand,
     use_case: GenerateProject = Provide[
-        "orchestration_container.generate_project_use_case"
+        "orchestration_container.generate_project"
     ],
 ):
     result = use_case.execute(cmd)

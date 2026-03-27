@@ -21,24 +21,30 @@ from codegen.domain_definition.infrastructure.adapters.yaml_blueprint_storage im
 class Container(DeclarativeContainer):
     config = Configuration()
 
-    yaml_blueprint_storage = Factory(
+    yaml_blueprint_storage = Singleton(
         YamlBlueprintStorage,
         config_path=config.config_path,
     )
 
-    path_resolver_provider = Singleton(BlueprintPathResolver)
+    path_resolver = Singleton(BlueprintPathResolver)
 
-    path_operations_provider = Singleton(
+    path_operations = Singleton(
         BlueprintPathOperations,
-        resolver=path_resolver_provider,
+        resolver=path_resolver,
     )
-    remove_context = Factory(RemoveContext, storage=yaml_blueprint_storage)
-    set_value = Factory(SetValue, storage=yaml_blueprint_storage)
-    upsert_context = Factory(UpsertContext, storage=yaml_blueprint_storage)
-    remove_value = Factory(RemoveValue, storage=yaml_blueprint_storage)
+
+    load_blueprint = Factory(LoadBlueprint, blueprint_loader=yaml_blueprint_storage)
+
     get_value = Factory(
         GetValue,
         storage=yaml_blueprint_storage,
-        operations=path_operations_provider,
+        operations=path_operations,
     )
-    load_blueprint = Factory(LoadBlueprint, blueprint_loader=yaml_blueprint_storage)
+
+    set_value = Factory(SetValue, storage=yaml_blueprint_storage, operations=path_operations)
+
+    remove_value = Factory(RemoveValue, storage=yaml_blueprint_storage, operations=path_operations)
+
+    remove_context = Factory(RemoveContext, storage=yaml_blueprint_storage)
+
+    upsert_context = Factory(UpsertContext, storage=yaml_blueprint_storage)

@@ -7,6 +7,7 @@ import typer
 from codegen.orchestration.application.use_cases.generate_blueprint import (
     GenerateBlueprint,
     GenerateBlueprintCommand,
+    GenerateBlueprintResult,
 )
 from dependency_injector.wiring import Provide, inject
 from typing import Annotated
@@ -28,9 +29,9 @@ def get_default_package_path() -> Path:
 def _generate_blueprint(
     cmd: GenerateBlueprintCommand,
     use_case: GenerateBlueprint = Provide[
-        "orchestration_container.generate_blueprint_use_case"
+        "orchestration_container.generate_blueprint"
     ],
-) -> None:
+) -> GenerateBlueprintResult:
     return use_case.execute(cmd)
 
 
