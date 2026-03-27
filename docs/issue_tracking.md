@@ -17,6 +17,39 @@
 
 ---
 
+## Issue 详情模板
+
+复制以下模板创建新 Issue：
+
+```markdown
+## {uuid} - {Issue 标题}
+
+### 描述 (Description)
+
+{详细描述问题或需求，包括相关代码片段}
+
+### 期望行为 (Expected Behavior)
+
+{描述期望的正确行为}
+
+### 建议的实现方案 (Proposed Solution)
+
+{描述建议的解决方案，可以包含代码示例}
+
+### 任务清单 (Tasks)
+
+- [ ] {任务1}
+- [ ] {任务2}
+- [ ] {任务3}
+
+### 创建时间
+{YYYY-MM-DD}
+
+---
+```
+
+---
+
 | # | Issue | Severity | Status | Notes |
 |-------|-------|----------|--------|-------|
 | `3f8a1b2c-4d5e-4f6a-b7c8-d9e0f1a2b3c4` | 扩展 `AssignmentSpec` 以支持 Subscript 语法解析 | Feature | Open | 支持 `Provide["..."]` 等下标语法的结构化解析 |

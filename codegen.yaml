@@ -363,6 +363,8 @@ contexts:
         value: raw_code
       - name: CODE
         value: code
+      - name: SUBSCRIPT
+        value: subscript
     - name: FunctionType
       members:
       - name: CLASS_METHOD
@@ -708,6 +710,9 @@ contexts:
       - type: string
         optional: true
         name: code
+      - type: SubscriptSpec
+        optional: true
+        name: subscript
       behaviors:
       - name: from_code
         inputs:
@@ -755,6 +760,32 @@ contexts:
           default: None
         output:
           type: AssignmentSpec
+      - name: from_subscript
+        inputs:
+        - type: Self
+          container: type
+          name: cls
+        - type: AssignmentSpec
+          name: value
+        - type: AssignmentSpec
+          name: slice
+        output:
+          type: AssignmentSpec
+      - name: get_required_types
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: string
+          container: set
+    - name: SubscriptSpec
+      description: 下标访问语法 obj[key]，对应 AST Subscript 节点。
+      attributes:
+      - type: AssignmentSpec
+        name: value
+      - type: AssignmentSpec
+        name: slice
+      behaviors:
       - name: get_required_types
         inputs:
         - type: Self

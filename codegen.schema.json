@@ -84,9 +84,7 @@
         },
         "default":{
           "anyOf":[
-            {
-              "type":"string"
-            },
+            {},
             {
               "type":"null"
             }
