@@ -56,13 +56,14 @@ class CliCommandSpec(ValueObject):
         parameters: list[VariableSpec] = []
         used_short_flags: set[str] = set()
 
-        def get_short_flag(param_name: str) -> str:
-            """生成短标志，默认取首字母，重复则加数字后缀"""
-            base_char = param_name[0].lower()
-            short_flag = f"-{base_char}"
+        def get_short_flag(param_name: KebabString) -> str:
+            """生成短标志，按'-'分割取首字母拼接，重复则加数字后缀"""
+            parts = str(param_name).split("-")
+            base_chars = "".join(p[0].lower() for p in parts if p)
+            short_flag = f"-{base_chars}"
             suffix = 2
             while short_flag in used_short_flags:
-                short_flag = f"-{base_char}{suffix}"
+                short_flag = f"-{base_chars}{suffix}"
                 suffix += 1
             used_short_flags.add(short_flag)
             return short_flag
@@ -74,7 +75,7 @@ class CliCommandSpec(ValueObject):
             return {}
 
         for attr in attributes:
-            param_name = str(attr.name)
+            param_name = KebabString(attr.name)
             type_annotation = attr.to_python_annotation()
             help_kwargs = build_help_kwargs(attr.description)
 
@@ -89,7 +90,7 @@ class CliCommandSpec(ValueObject):
                 default_assignment = AssignmentSpec.from_literal(
                     None if attr.default is None else attr.default
                 )
-                long_flag = f"--{param_name.replace('_', '-')}"
+                long_flag = f"--{str(param_name)}"
                 short_flag = get_short_flag(param_name)
                 # typer.Option(default, "--flag", "-f", help="...")
                 # flags are positional args, help is kwarg
