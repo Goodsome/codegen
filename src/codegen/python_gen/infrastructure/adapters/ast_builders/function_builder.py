@@ -1,6 +1,5 @@
 
 import ast
-from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.enums import FunctionType
 from codegen.python_gen.infrastructure.adapters.ast_builders import type_builder

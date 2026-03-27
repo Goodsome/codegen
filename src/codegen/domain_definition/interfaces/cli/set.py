@@ -2,7 +2,7 @@
 Set command - Set or update a value in blueprint by path.
 """
 import json
-from typing import Annotated, Any, Optional, List
+from typing import Annotated, Optional, List, Any
 
 import typer
 from dependency_injector.wiring import Provide, inject
@@ -12,7 +12,7 @@ from codegen.domain_definition.application.use_cases.set_value import (
 )
 
 
-def _parse_value(value_str: str) -> any:
+def _parse_value(value_str: str) -> Any:
     """Parse value string - tries JSON first, falls back to string."""
     if not value_str:
         return value_str

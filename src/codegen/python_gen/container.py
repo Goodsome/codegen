@@ -8,7 +8,6 @@ from codegen.python_gen.infrastructure.adapters.ast_translator import AstTransla
 from codegen.python_gen.infrastructure.adapters.black_code_formatter import (
     BlackCodeFormatter,
 )
-from codegen.shared.domain.ports.file_system_port import FileSystemPort
 from dependency_injector.containers import DeclarativeContainer
 from dependency_injector.providers import Dependency, Factory, Singleton
 

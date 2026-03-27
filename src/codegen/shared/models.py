@@ -7,11 +7,9 @@
 - AggregateRoot: 聚合根，管理领域事件
 """
 
-from datetime import datetime, timezone
-from typing import TYPE_CHECKING, Any
-from uuid import UUID, uuid4
+from typing import TYPE_CHECKING
 
-from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
+from pydantic import BaseModel, ConfigDict, PrivateAttr
 
 if TYPE_CHECKING:
     from codegen.shared.events import DomainEvent

@@ -1,6 +1,5 @@
 """Tests for SubscriptSpec and AssignmentSpec subscript support."""
 import ast
-import pytest
 from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
 from codegen.python_gen.domain.enums import AssignmentFlavor
 from codegen.python_gen.infrastructure.adapters.ast_parsers.assignment_parser import parse_assignment_value

@@ -1,4 +1,4 @@
-from typing import Any, Self, Union
+from typing import Self, Union
 from pydantic import Field
 from codegen.domain_definition.domain.entities.bootstrap_spec import BootstrapSpec
 from codegen.domain_definition.domain.entities.bounded_context import BoundedContext

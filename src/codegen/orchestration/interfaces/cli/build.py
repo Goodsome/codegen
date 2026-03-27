@@ -1,7 +1,6 @@
 """
 CLI build command - Compile codegen.yaml into Python code.
 """
-from pathlib import Path
 from typing import Annotated, Optional
 
 import typer
