@@ -336,12 +336,11 @@ contexts:
         attributes:
         - type: string
           name: result
-          
   interfaces:
     cli:
       commands:
-        - name: build
-          use_case: GenerateProject
+      - name: build
+        use_case: GenerateProject
 - name: PythonGen
   domain:
     enums:
@@ -1627,19 +1626,6 @@ contexts:
           name: use_case_index
         output:
           type: CliCommandSpec | None
-      - name: _infer_use_case_from_suite
-        inputs:
-        - type: Self
-          container: type
-          name: cls
-        - type: string
-          name: suite
-        - type: UseCaseSpec
-          container: map
-          name: use_case_index
-        output:
-          type: string
-          optional: true
     - name: MethodSpec
       description: Standard specification for a class method.
       attributes:

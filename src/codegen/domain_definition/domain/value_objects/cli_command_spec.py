@@ -1,5 +1,3 @@
-import re
-
 from pydantic import Field
 
 from codegen.domain_definition.domain.enums import UseCaseKind
@@ -174,30 +172,18 @@ class CliCommandSpec(ValueObject):
         # 从模块名推断命令名
         cmd_name = str(module.name).replace("_", "-")
 
-        # 从函数中推断 UseCase
+        # 找到带有 @inject 装饰器的辅助函数，从中提取 use_case 类型
         for func in module.functions:
-            use_case_name = cls._infer_use_case_from_suite(func.suite, use_case_index)
-            if use_case_name:
-                return cls(
-                    name=cmd_name,
-                    use_case=use_case_name,
-                    description=func.suite.split("\n")[0] if func.suite else "",
-                )
+            if "inject" in func.decorators:
+                # 在函数参数中查找 use_case 参数
+                for param in func.parameters:
+                    if param.name == "use_case" and param.type_spec:
+                        use_case_name = param.type_spec.name
+                        if use_case_name in use_case_index:
+                            return cls(
+                                name=cmd_name,
+                                use_case=use_case_name,
+                                description=func.description or "",
+                            )
         return None
 
-    @classmethod
-    def _infer_use_case_from_suite(
-        cls,
-        suite: str,
-        use_case_index: dict[str, UseCaseSpec],
-    ) -> str | None:
-        """从函数体推断 UseCase 名称"""
-        pattern = r'container\.(\w+)_use_case\(\)'
-        match = re.search(pattern, suite)
-        if match:
-            method_name = match.group(1)
-            # 将 snake_case 转换为 PascalCase
-            use_case_name = ''.join(word.capitalize() for word in method_name.split('_'))
-            if use_case_name in use_case_index:
-                return use_case_name
-        return None

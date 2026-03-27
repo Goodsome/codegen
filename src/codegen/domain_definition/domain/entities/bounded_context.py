@@ -110,6 +110,8 @@ class BoundedContext(Entity):
         application = None
         infrastructure = None
         interfaces = None
+
+        # First pass: parse domain, application, infrastructure
         for pkg in package_spec.sub_packages:
             if pkg.name == "domain":
                 domain = DomainSpec.from_package_spec(pkg)
@@ -117,10 +119,16 @@ class BoundedContext(Entity):
                 application = ApplicationSpec.from_package_spec(pkg)
             elif pkg.name == "infrastructure":
                 infrastructure = InfrastructureSpec.from_package_spec(pkg)
-            elif pkg.name == "interfaces":
-                # Interfaces need use_cases to parse, but application isn't parsed yet
-                # So we defer interface parsing - it will be handled separately
-                pass
+
+        # Get use_cases from application for interface parsing
+        use_cases = application.use_cases if application else []
+
+        # Second pass: parse interfaces using use_cases
+        for pkg in package_spec.sub_packages:
+            if pkg.name == "interfaces":
+                from codegen.domain_definition.domain.entities.interface_spec import InterfaceSpec
+                interfaces = InterfaceSpec.from_package_spec(pkg, use_cases)
+
         return cls.create(
             name=package_spec.name,
             domain=domain,
