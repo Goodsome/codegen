@@ -1,5 +1,4 @@
 from contextlib import contextmanager
-from importlib import resources
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
@@ -20,38 +19,21 @@ def version_callback(value: bool):
 
 
 @contextmanager
-def get_container(
-    config_file: Path = Path("codegen.yaml"),
-    output: str = "src",
-):
+def get_container():
     """
     Create a configured container instance.
-
-    Args:
-        config_file: Path to codegen.yaml (relative to cwd or absolute)
-        output: Output directory - "src" (default) or custom path (relative to cwd or absolute)
     """
     cwd = Path.cwd()
-    yaml_path = config_file if config_file.is_absolute() else (cwd / config_file)
+    yaml_path = cwd / "codegen.yaml"
+    output_dir = cwd / "src"
 
-    # Resolve output directory
-    if output == "src":
-        output_dir = cwd / "src"
-    else:
-        output_path = Path(output)
-        output_dir = output_path if output_path.is_absolute() else (cwd / output_path)
-
-    template_root = resources.files("codegen") / "python_gen" / "templates"
-
-    with resources.as_file(template_root) as path:
-        config = {
-            "template_root": path,
-            "output_root": output_dir,
-            "project_root": cwd,
-            "encoding": "utf-8",
-            "config_path": yaml_path,
-        }
-        yield Container(config=config)
+    config = {
+        "output_root": output_dir,
+        "project_root": cwd,
+        "encoding": "utf-8",
+        "config_path": yaml_path,
+    }
+    yield Container(config=config)
 
 
 def get_default_package_path() -> Path:

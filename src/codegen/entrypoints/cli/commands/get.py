@@ -5,7 +5,6 @@ New path-based command for inspecting blueprint values.
 """
 
 import json
-from pathlib import Path
 
 import typer
 from pydantic import BaseModel
@@ -56,12 +55,6 @@ def get_cmd(
         ...,
         help="Path to query (e.g., 'project.name', 'contexts.sales.aggregates')",
     ),
-    config_file: Path = typer.Option(
-        Path("codegen.yaml"),
-        "--config",
-        "-c",
-        help="Path to the codegen.yaml blueprint file",
-    ),
     output_format: str = typer.Option(
         "json",
         "--format",
@@ -71,17 +64,17 @@ def get_cmd(
 ):
     """
     Get: Query a value from blueprint by path.
-    
+
     Use dot notation to navigate the blueprint structure.
     Supports index access with [n] syntax.
-    
+
     Examples:
         $ codegen get "name"
         $ codegen get "contexts"
         $ codegen get "contexts.DomainDefinition"
         $ codegen get "contexts[0].domain.aggregates"
     """
-    with get_container(config_file=config_file) as container:
+    with get_container() as container:
         use_case = container.get_value_use_case()
         try:
             result = use_case.execute(GetValueCommand(path=path))

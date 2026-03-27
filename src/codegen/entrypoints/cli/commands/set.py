@@ -6,7 +6,6 @@ Supports JSON values and --append mode for lists.
 """
 
 import json
-from pathlib import Path
 from typing import Optional, List
 
 import typer
@@ -52,12 +51,6 @@ def set_cmd(
         "-a",
         help="Append to list instead of replace",
     ),
-    config_file: Path = typer.Option(
-        Path("codegen.yaml"),
-        "--config",
-        "-c",
-        help="Path to the codegen.yaml blueprint file",
-    ),
     key_values: Optional[List[str]] = typer.Option(
         None,
         "--kv",
@@ -87,7 +80,7 @@ def set_cmd(
         typer.echo("Error: Must provide either a value or --kv key=value pairs", err=True)
         raise typer.Exit(1)
     
-    with get_container(config_file=config_file) as container:
+    with get_container() as container:
         use_case = container.set_value_use_case()
         try:
             use_case.execute(SetValueCommand(

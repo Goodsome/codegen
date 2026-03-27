@@ -110,21 +110,10 @@ def print_build_report(result: BuildResult):
 
 @app.command()
 def build(
-    output: str = typer.Option(
-        "src",
-        "--output", "-o",
-        help='Output directory: "src" (default) or custom path (relative or absolute)',
-    ),
     node: Optional[str] = typer.Option(
         None,
         "--node",
         help="Generate only specific bounded contexts or components by name, comma-separated (e.g., 'DomainDefinition' or 'AggregateSpec,EntitySpec')",
-    ),
-    config_file: Path = typer.Option(
-        Path("codegen.yaml"),
-        "--config",
-        "-c",
-        help="Path to the codegen.yaml blueprint file",
     ),
     generate_tests: bool = typer.Option(
         False,
@@ -144,17 +133,15 @@ def build(
         $ codegen build
         $ codegen build --node DomainDefinition
         $ codegen build --node AggregateSpec,EntitySpec,ValueObjectSpec
-        $ codegen build -o ./generated
     """
-    with get_container(config_file=config_file, output=output) as container:
+    with get_container() as container:
         use_case = container.generate_project_use_case()
 
         nodes = parse_nodes(node)
 
-        root_path = "" if output == "src" else output.replace("/", ".").replace("\\", ".")
-
         cmd = GenerateProjectCommand(
-            nodes=nodes, root_path=root_path,
+            nodes=nodes,
+            root_path="",  # Modern src layout: import paths don't include src prefix
             generate_tests=generate_tests,
         )
 

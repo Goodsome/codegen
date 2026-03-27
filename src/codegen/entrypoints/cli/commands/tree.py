@@ -5,7 +5,6 @@ Provides a hierarchical view of the blueprint for easy navigation and overview.
 Uses rich library for beautiful console output.
 """
 
-from pathlib import Path
 from typing import Optional, Any
 
 import typer
@@ -234,12 +233,6 @@ def tree_cmd(
         None,
         help="Optional path to start from (e.g., 'contexts.DomainDefinition')",
     ),
-    config_file: Path = typer.Option(
-        Path("codegen.yaml"),
-        "--config",
-        "-c",
-        help="Path to the codegen.yaml blueprint file",
-    ),
     depth: int = typer.Option(
         -1,
         "--depth",
@@ -254,11 +247,11 @@ def tree_cmd(
 ):
     """
     Tree: Display blueprint structure as a visual tree.
-    
+
     Provides a hierarchical overview of your project's DDD structure,
     making it easy to understand the organization of contexts,
     aggregates, entities, and other components.
-    
+
     Examples:
         $ codegen tree
         $ codegen tree --depth 2
@@ -266,8 +259,8 @@ def tree_cmd(
         $ codegen tree --detail
     """
     console = Console()
-    
-    with get_container(config_file=config_file) as container:
+
+    with get_container() as container:
         try:
             # Load the blueprint
             load_use_case = container.load_blueprint_use_case()

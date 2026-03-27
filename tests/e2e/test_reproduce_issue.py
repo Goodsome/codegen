@@ -17,7 +17,7 @@ def test_reproduce_reverse_issue(cli_runner, working_dir, simple_project_bluepri
     # 1. Run the build command
     result = cli_runner.invoke(app, ["build"])
     assert result.exit_code == 0, f"Build failed: {result.stdout}"
-    
+
     # 2. explicit check that files exist
     project_root = working_dir
     sales_dir = project_root / "src" / "simple_project" / "sales"
@@ -32,23 +32,27 @@ def test_reproduce_reverse_issue(cli_runner, working_dir, simple_project_bluepri
         "    total_amount: float\n\n    def calculate_tax(self, rate: float = 0.1) -> float:\n        return self.total_amount * rate"
     )
     order_file.write_text(new_content)
-    
+
     # 3. Run the reverse command
-    # We need to specify where to reverse from. 
-    # Assuming the default behavior tries to reverse the package in the current directory or specified by config.
-    # The simple_project blueprint has name: SimpleProject.
-    # We might need to adjust the command arguments based on how reverse works.
-    # Usually it's `codegen reverse --output codegen_reversed.yaml`
-    
-    reverse_output = working_dir / "codegen_reversed.yaml"
-    result_reverse = cli_runner.invoke(app, ["reverse", "--config", str(reverse_output)])
-    
-    assert result_reverse.exit_code == 0, f"Reverse failed: {result_reverse.stdout}"
-    assert reverse_output.exists()
-    
-    content = reverse_output.read_text()
-    assert "calculate_tax" in content
-    # We expect the parameter 'rate' to be present.
-    # Depending on how VariableSpec is serialized, it might show 'assignment: 0.1' or similar.
-    assert "rate" in content 
-    assert "0.1" in content
+    # Note: reverse now outputs to codegen.yaml (fixed path)
+    # First backup original codegen.yaml
+    original_blueprint = working_dir / "codegen.yaml"
+    original_blueprint_backup = working_dir / "codegen.yaml.bak"
+    original_blueprint.rename(original_blueprint_backup)
+
+    try:
+        result_reverse = cli_runner.invoke(app, ["reverse"])
+
+        assert result_reverse.exit_code == 0, f"Reverse failed: {result_reverse.stdout}"
+        assert original_blueprint.exists()
+
+        content = original_blueprint.read_text()
+        assert "calculate_tax" in content
+        # We expect the parameter 'rate' to be present.
+        # Depending on how VariableSpec is serialized, it might show 'assignment: 0.1' or similar.
+        assert "rate" in content
+        assert "0.1" in content
+    finally:
+        # Restore original blueprint
+        original_blueprint.unlink()
+        original_blueprint_backup.rename(original_blueprint)

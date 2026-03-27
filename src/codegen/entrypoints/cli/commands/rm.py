@@ -4,8 +4,6 @@ Remove command - Remove a value from blueprint by path.
 New path-based command for deleting blueprint values.
 """
 
-from pathlib import Path
-
 import typer
 from codegen.entrypoints.cli.utils import get_container
 from codegen.domain_definition.application.use_cases.remove_value import RemoveValueCommand
@@ -19,12 +17,6 @@ def rm(
         ...,
         help="Path to remove (e.g., 'contexts.sales', 'contexts[0]')",
     ),
-    config_file: Path = typer.Option(
-        Path("codegen.yaml"),
-        "--config",
-        "-c",
-        help="Path to the codegen.yaml blueprint file",
-    ),
     force: bool = typer.Option(
         False,
         "--force",
@@ -34,10 +26,10 @@ def rm(
 ):
     """
     Remove: Delete a value from blueprint by path.
-    
+
     Use dot notation to specify what to remove.
     Can remove fields, list items (by index or name), or nested objects.
-    
+
     Examples:
         $ codegen rm "contexts.Sales"
         $ codegen rm "contexts[0]"
@@ -49,8 +41,8 @@ def rm(
         if not confirm:
             typer.echo("Cancelled.")
             raise typer.Exit(0)
-    
-    with get_container(config_file=config_file) as container:
+
+    with get_container() as container:
         use_case = container.remove_value_use_case()
         try:
             use_case.execute(RemoveValueCommand(path=path))
