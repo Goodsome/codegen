@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from dependency_injector import containers, providers
 from dependency_injector.providers import Singleton, Factory
 
@@ -32,6 +34,7 @@ from codegen.python_gen.infrastructure.adapters.black_code_formatter import (
 )
 from codegen.python_gen.infrastructure.adapters.ast_translator import AstTranslator
 from codegen.shared.infrastructure.adapters.os_file_system import OSFileSystem
+from codegen.orchestration.container import Container as OrchestrationContainer
 
 
 class Container(containers.DeclarativeContainer):
@@ -39,14 +42,14 @@ class Container(containers.DeclarativeContainer):
     config = providers.Configuration()
 
     os_file_port = Singleton(
-        OSFileSystem, 
-        root=config.project_root, 
+        OSFileSystem,
+        root=config.project_root,
         encoding=config.encoding,
     )
     ast_translator_provider = Singleton(AstTranslator)
 
     blueprint_loader_provider = Singleton(
-        YamlBlueprintStorage, 
+        YamlBlueprintStorage,
         config_path=config.config_path
     )
 
@@ -113,3 +116,34 @@ class Container(containers.DeclarativeContainer):
         storage=blueprint_loader_provider,
         operations=path_operations_provider,
     )
+
+    # Orchestration sub-container
+    orchestration_container = providers.Container(
+        OrchestrationContainer,
+        config=config,
+        load_blueprint_use_case=load_blueprint_use_case,
+        generate_package_use_case=generate_package_use_case,
+    )
+
+
+# Global container instance for dependency injection
+_container_instance: Container | None = None
+
+
+def bootstrap() -> Container:
+    """Bootstrap the DI container with configuration."""
+    global _container_instance
+    _container_instance = Container()
+    cwd = Path.cwd()
+    _container_instance.config.project_root.from_value(cwd)
+    _container_instance.config.encoding.from_value("utf-8")
+    _container_instance.config.config_path.from_value(cwd / "codegen.yaml")
+    return _container_instance
+
+
+def get_container() -> Container:
+    """Get or create the global container instance."""
+    global _container_instance
+    if _container_instance is None:
+        return bootstrap()
+    return _container_instance

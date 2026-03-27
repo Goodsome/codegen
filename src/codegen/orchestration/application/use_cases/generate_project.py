@@ -29,11 +29,15 @@ class GenerateProject:
         node = cmd.nodes[0] if cmd.nodes and len(cmd.nodes) == 1 else None
         load_result = self.loader.execute(LoadBlueprintCommand(node=node))
         package_spec = load_result.blueprint.to_package_spec()
+        overwrite = False
+        if cmd.nodes:
+            overwrite = True
+            
         gen_result = self.generator.execute(
             GeneratePackageCommand(
                 package_spec=package_spec,
                 nodes=cmd.nodes,
-                overwrite=cmd.nodes is not None,
+                overwrite=overwrite,
             )
         )
         return GenerateProjectResult(result=gen_result.result)

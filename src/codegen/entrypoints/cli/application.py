@@ -1,7 +1,7 @@
 import typer
 
-# New path-based commands
-from codegen.entrypoints.cli.commands.build import build
+from codegen.bootstrap import bootstrap
+from codegen.orchestration.interfaces.cli.build import build
 from codegen.entrypoints.cli.commands.reverse import reverse
 from codegen.entrypoints.cli.commands.schema import schema
 from codegen.entrypoints.cli.commands.get import get_cmd
@@ -60,5 +60,12 @@ app.command(name="set")(set_cmd)
 app.command()(rm)
 
 
-if __name__ == "__main__":
+def main():
+    """Bootstrap the DI container and run the CLI app."""
+    container = bootstrap()
+    container.wire(packages=["codegen.orchestration.interfaces.cli"])
     app()
+
+
+if __name__ == "__main__":
+    main()
