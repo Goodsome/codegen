@@ -1,18 +1,15 @@
 """
 Set command - Set or update a value in blueprint by path.
-
-New path-based command for modifying blueprint values.
-Supports JSON values and --append mode for lists.
 """
-
 import json
-from typing import Optional, List
+from typing import Annotated, Any, Optional, List
 
 import typer
-from codegen.entrypoints.cli.utils import get_container
-from codegen.domain_definition.application.use_cases.set_value import SetValueCommand
-
-app = typer.Typer(name="set", help="Set a value in blueprint by path")
+from dependency_injector.wiring import Provide, inject
+from codegen.domain_definition.application.use_cases.set_value import (
+    SetValue,
+    SetValueCommand,
+)
 
 
 def _parse_value(value_str: str) -> any:
@@ -35,43 +32,41 @@ def _parse_key_values(args: List[str]) -> dict:
     return result
 
 
-@app.command()
-def set_cmd(
-    path: str = typer.Argument(
-        ...,
+@inject
+def _set_value(
+    cmd: SetValueCommand,
+    use_case: SetValue = Provide["domain_definition_container.set_value"],
+) -> None:
+    return use_case.execute(cmd)
+
+
+def set(
+    path: Annotated[str, typer.Argument(
         help="Path to set (e.g., 'project.version', 'contexts.sales.aggregates')",
-    ),
-    value: Optional[str] = typer.Argument(
-        None,
+    )],
+    value: Annotated[Optional[str], typer.Argument(
         help="JSON value to set (optional if using key=value pairs)",
-    ),
-    append: bool = typer.Option(
-        False,
-        "--append",
-        "-a",
-        help="Append to list instead of replace",
-    ),
-    key_values: Optional[List[str]] = typer.Option(
-        None,
+    )] = None,
+    append: Annotated[bool, typer.Option("--append", "-a")] = False,
+    key_values: Annotated[Optional[List[str]], typer.Option(
         "--kv",
         help="Key-value pairs for object creation (e.g., --kv name=Order --kv description=test)",
-    ),
-):
+    )] = None,
+) -> None:
     """
     Set: Set or update a value in blueprint by path (Upsert).
-    
+
     Use dot notation to navigate. Supports:
     - Simple values: codegen set "project.version" '"2.0.0"'
     - JSON objects: codegen set "contexts" '{"name": "Sales"}' --append
     - Key-value pairs: codegen set "contexts" --append --kv name=Sales --kv description=test
-    
+
     Examples:
         $ codegen set "project.version" '"2.0.0"'
         $ codegen set "contexts.DomainDefinition.description" '"Updated desc"'
         $ codegen set "contexts" '{"name": "Sales", "description": "Sales context"}' --append
         $ codegen set "contexts" --append --kv name=Sales --kv description="Sales context"
     """
-    # Determine the value to set
     if key_values:
         parsed_value = _parse_key_values(key_values)
     elif value is not None:
@@ -79,19 +74,11 @@ def set_cmd(
     else:
         typer.echo("Error: Must provide either a value or --kv key=value pairs", err=True)
         raise typer.Exit(1)
-    
-    with get_container() as container:
-        use_case = container.set_value_use_case()
-        try:
-            use_case.execute(SetValueCommand(
-                path=path,
-                value=parsed_value,
-                append=append,
-            ))
-            typer.echo(f"Successfully set value at '{path}'")
-        except KeyError as e:
-            typer.echo(f"Error: Path not found - {e}", err=True)
-            raise typer.Exit(1)
-        except Exception as e:
-            typer.echo(f"Error: {e}", err=True)
-            raise typer.Exit(1)
+
+    cmd = SetValueCommand(
+        path=path,
+        value=parsed_value,
+        append=append,
+    )
+    _set_value(cmd)
+    typer.echo(f"Successfully set value at '{path}'")

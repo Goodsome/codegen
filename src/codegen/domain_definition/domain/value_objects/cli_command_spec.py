@@ -81,7 +81,7 @@ class CliCommandSpec(ValueObject):
 
             if attr.default is None and not attr.optional:
                 # 必选参数: Annotated[type, typer.Argument(...)]
-                default_assignment = AssignmentSpec.from_literal(None)
+                default_assignment = None
                 assignment = AssignmentSpec.from_call(
                     "typer.Argument",
                     kwargs=help_kwargs,
@@ -128,7 +128,7 @@ class CliCommandSpec(ValueObject):
 
         # 生成辅助函数：使用依赖注入
         use_case_type = use_case.name
-        provider_path = f"{ctx_snake}_container.{uc_snake}_use_case"
+        provider_path = f"{ctx_snake}_container.{uc_snake}"
         do_func = FunctionSpec.create(
             name=f"_{uc_snake}",
             parameters=[

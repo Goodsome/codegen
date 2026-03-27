@@ -2,12 +2,12 @@ import typer
 
 from codegen.bootstrap import bootstrap
 from codegen.orchestration.interfaces.cli.build import build
-from codegen.entrypoints.cli.commands.reverse import reverse
-from codegen.entrypoints.cli.commands.schema import schema
+from codegen.orchestration.interfaces.cli.reverse import reverse
+from codegen.python_gen.interfaces.cli.schema import schema
 from codegen.domain_definition.interfaces.cli.get import get as get_cmd
-from codegen.entrypoints.cli.commands.set import set_cmd
-from codegen.entrypoints.cli.commands.rm import rm
-from codegen.entrypoints.cli.commands.tree import tree_cmd
+from codegen.domain_definition.interfaces.cli.set import set as set_cmd
+from codegen.domain_definition.interfaces.cli.rm import rm
+from codegen.domain_definition.interfaces.cli.tree import tree as tree_cmd
 from codegen.entrypoints.cli.commands.init import init
 
 app = typer.Typer(
@@ -63,7 +63,11 @@ app.command()(rm)
 def main():
     """Bootstrap the DI container and run the CLI app."""
     container = bootstrap()
-    container.wire(packages=["codegen.orchestration.interfaces.cli", "codegen.domain_definition.interfaces.cli"])
+    container.wire(packages=[
+        "codegen.orchestration.interfaces.cli",
+        "codegen.domain_definition.interfaces.cli",
+        "codegen.python_gen.interfaces.cli",
+    ])
     app()
 
 

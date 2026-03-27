@@ -339,6 +339,9 @@ contexts:
       commands:
       - name: build
         use_case: GenerateProject
+      - name: reverse
+        use_case: GenerateBlueprint
+        description: Reverse engineer Python code into codegen.yaml
 - name: PythonGen
   domain:
     enums:
@@ -1378,6 +1381,12 @@ contexts:
         attributes:
         - type: BuildResult
           name: result
+  interfaces:
+    cli:
+      commands:
+      - name: schema
+        use_case: GenerateSchemaJson
+        description: Output JSON schema for the blueprint
   infrastructure:
     implementations:
     - name: AstTranslator
@@ -3274,6 +3283,15 @@ contexts:
       - name: get
         use_case: GetValue
         description: Get a value from blueprint by path
+      - name: set
+        use_case: SetValue
+        description: Set a value by path
+      - name: rm
+        use_case: RemoveValue
+        description: Remove a value by path
+      - name: tree
+        use_case: GetValue
+        description: Display blueprint as tree
   infrastructure:
     implementations:
     - name: YamlBlueprintStorage

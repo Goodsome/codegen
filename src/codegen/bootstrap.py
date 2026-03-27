@@ -36,6 +36,7 @@ from codegen.python_gen.infrastructure.adapters.ast_translator import AstTransla
 from codegen.shared.infrastructure.adapters.os_file_system import OSFileSystem
 from codegen.domain_definition.container import Container as DomainDefinitionContainer
 from codegen.orchestration.container import Container as OrchestrationContainer
+from codegen.python_gen.container import Container as PythonGenContainer
 
 
 class Container(containers.DeclarativeContainer):
@@ -124,12 +125,19 @@ class Container(containers.DeclarativeContainer):
         config=config,
         load_blueprint_use_case=load_blueprint_use_case,
         generate_package_use_case=generate_package_use_case,
+        generate_blueprint_use_case=update_blueprint_use_case,
     )
 
     # DomainDefinition sub-container
     domain_definition_container = providers.Container(
         DomainDefinitionContainer,
         config=config,
+    )
+
+    # PythonGen sub-container
+    python_gen_container = providers.Container(
+        PythonGenContainer,
+        file_system_port=os_file_port,
     )
 
 
