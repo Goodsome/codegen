@@ -3195,6 +3195,23 @@ contexts:
           type: None
   application:
     use_cases:
+    - name: InitProject
+      kind: command
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+      command:
+        attributes:
+        - type: string
+          optional: true
+          name: project_name
+        - type: string
+          optional: true
+          name: project_description
+      result:
+        attributes:
+        - type: Blueprint
+          name: blueprint
     - name: RemoveContext
       kind: command
       dependencies:
@@ -3291,6 +3308,8 @@ contexts:
         use_case: LoadBlueprint
       - name: rm
         use_case: RemoveValue
+      - name: init
+        use_case: InitProject
       - name: set
         use_case: SetValue
       - name: get

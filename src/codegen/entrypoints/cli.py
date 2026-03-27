@@ -8,7 +8,7 @@ from codegen.domain_definition.interfaces.cli.get import get as get_cmd
 from codegen.domain_definition.interfaces.cli.set import set as set_cmd
 from codegen.domain_definition.interfaces.cli.rm import rm
 from codegen.domain_definition.interfaces.cli.tree import tree as tree_cmd
-from codegen.entrypoints.cli.commands.init import init
+from codegen.domain_definition.interfaces.cli.init import init
 
 app = typer.Typer(
     name="codegen",
