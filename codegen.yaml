@@ -3268,6 +3268,12 @@ contexts:
         attributes:
         - type: Blueprint
           name: blueprint
+  interfaces:
+    cli:
+      commands:
+      - name: get
+        use_case: GetValue
+        description: Get a value from blueprint by path
   infrastructure:
     implementations:
     - name: YamlBlueprintStorage

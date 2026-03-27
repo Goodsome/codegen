@@ -1,19 +1,15 @@
-"""
-Get command - Query a value from blueprint by path.
-
-New path-based command for inspecting blueprint values.
-"""
-
 import json
 
 import typer
 from pydantic import BaseModel
-from codegen.entrypoints.cli.utils import get_container
-from codegen.domain_definition.application.use_cases.get_value import (
-    GetValueCommand,
-)
+from typing import Annotated
 
-app = typer.Typer(name="get", help="Get a value from blueprint by path")
+from codegen.domain_definition.application.use_cases.get_value import (
+    GetValue,
+    GetValueCommand,
+    GetValueResult,
+)
+from dependency_injector.wiring import Provide, inject
 
 
 def _serialize_value(value, format: str) -> str:
@@ -23,7 +19,7 @@ def _serialize_value(value, format: str) -> str:
             import yaml
             return yaml.dump(value.model_dump(), allow_unicode=True, default_flow_style=False)
         return value.model_dump_json(indent=2)
-    
+
     if isinstance(value, (list, dict)):
         if format == "yaml":
             import yaml
@@ -45,23 +41,29 @@ def _serialize_value(value, format: str) -> str:
             ensure_ascii=False,
             default=lambda o: o.model_dump() if isinstance(o, BaseModel) else str(o)
         )
-    
+
     return str(value)
 
 
-@app.command()
-def get_cmd(
-    path: str = typer.Argument(
+@inject
+def _get_value(
+    cmd: GetValueCommand,
+    use_case: GetValue = Provide["domain_definition_container.get_value"],
+) -> GetValueResult:
+    return use_case.execute(cmd)
+
+
+def get(
+    path: Annotated[str, typer.Argument(
         ...,
         help="Path to query (e.g., 'project.name', 'contexts.sales.aggregates')",
-    ),
-    output_format: str = typer.Option(
-        "json",
+    )],
+    output_format: Annotated[str, typer.Option(
         "--format",
         "-f",
         help="Output format: json or yaml",
-    ),
-):
+    )] = "json",
+) -> GetValueResult:
     """
     Get: Query a value from blueprint by path.
 
@@ -74,14 +76,7 @@ def get_cmd(
         $ codegen get "contexts.DomainDefinition"
         $ codegen get "contexts[0].domain.aggregates"
     """
-    with get_container() as container:
-        use_case = container.get_value_use_case()
-        try:
-            result = use_case.execute(GetValueCommand(path=path))
-            typer.echo(_serialize_value(result, output_format))
-        except KeyError as e:
-            typer.echo(f"Error: Path not found - {e}", err=True)
-            raise typer.Exit(1)
-        except Exception as e:
-            typer.echo(f"Error: {e}", err=True)
-            raise typer.Exit(1)
+    cmd = GetValueCommand(path=path)
+    result = _get_value(cmd)
+    typer.echo(_serialize_value(result, output_format))
+    return result

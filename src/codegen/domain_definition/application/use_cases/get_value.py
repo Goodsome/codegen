@@ -1,38 +1,24 @@
-"""
-Path-based Use Cases for Blueprint manipulation.
-
-Provides GetValue, SetValue, RemoveValue use cases that operate
-on Blueprint using path expressions.
-"""
-
-from dataclasses import dataclass
-from typing import Any
-
-from codegen.domain_definition.domain.ports.blueprint_storage import BlueprintStorage
 from codegen.domain_definition.domain.services.blueprint_path_operations import (
     BlueprintPathOperations,
 )
+from codegen.domain_definition.domain.ports.blueprint_storage import BlueprintStorage
+from dataclasses import dataclass
+from pydantic import BaseModel
 
 
-# ============================================================================
-# GetValue Use Case
-# ============================================================================
-
-@dataclass(frozen=True)
-class GetValueCommand:
-    """Command to get a value at a path."""
+class GetValueCommand(BaseModel):
     path: str
+
+
+class GetValueResult(BaseModel): ...
 
 
 @dataclass
 class GetValue:
-    """
-    Use case to get a value from Blueprint at the specified path.
-    """
     storage: BlueprintStorage
     operations: BlueprintPathOperations
     
-    def execute(self, cmd: GetValueCommand) -> Any:
+    def execute(self, cmd: GetValueCommand) -> GetValueResult:
         """
         Execute the get value command.
         

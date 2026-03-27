@@ -81,6 +81,7 @@ class CliCommandSpec(ValueObject):
 
             if attr.default is None and not attr.optional:
                 # 必选参数: Annotated[type, typer.Argument(...)]
+                default_assignment = AssignmentSpec.from_literal(None)
                 assignment = AssignmentSpec.from_call(
                     "typer.Argument",
                     kwargs=help_kwargs,
@@ -95,7 +96,6 @@ class CliCommandSpec(ValueObject):
                 # typer.Option(default, "--flag", "-f", help="...")
                 # flags are positional args, help is kwarg
                 option_args = [
-                    default_assignment,
                     AssignmentSpec.from_literal(long_flag),
                     AssignmentSpec.from_literal(short_flag),
                 ]
@@ -110,7 +110,11 @@ class CliCommandSpec(ValueObject):
                 args=[type_annotation, assignment],
             )
             parameters.append(
-                VariableSpec.create(name=param_name, type_spec=annotated_type)
+                VariableSpec.create(
+                    name=param_name, 
+                    type_spec=annotated_type,
+                    assignment=default_assignment,
+                )
             )
 
         # 生成主函数

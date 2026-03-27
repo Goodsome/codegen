@@ -34,6 +34,7 @@ from codegen.python_gen.infrastructure.adapters.black_code_formatter import (
 )
 from codegen.python_gen.infrastructure.adapters.ast_translator import AstTranslator
 from codegen.shared.infrastructure.adapters.os_file_system import OSFileSystem
+from codegen.domain_definition.container import Container as DomainDefinitionContainer
 from codegen.orchestration.container import Container as OrchestrationContainer
 
 
@@ -123,6 +124,12 @@ class Container(containers.DeclarativeContainer):
         config=config,
         load_blueprint_use_case=load_blueprint_use_case,
         generate_package_use_case=generate_package_use_case,
+    )
+
+    # DomainDefinition sub-container
+    domain_definition_container = providers.Container(
+        DomainDefinitionContainer,
+        config=config,
     )
 
 

@@ -4,7 +4,7 @@ from codegen.bootstrap import bootstrap
 from codegen.orchestration.interfaces.cli.build import build
 from codegen.entrypoints.cli.commands.reverse import reverse
 from codegen.entrypoints.cli.commands.schema import schema
-from codegen.entrypoints.cli.commands.get import get_cmd
+from codegen.domain_definition.interfaces.cli.get import get as get_cmd
 from codegen.entrypoints.cli.commands.set import set_cmd
 from codegen.entrypoints.cli.commands.rm import rm
 from codegen.entrypoints.cli.commands.tree import tree_cmd
@@ -63,7 +63,7 @@ app.command()(rm)
 def main():
     """Bootstrap the DI container and run the CLI app."""
     container = bootstrap()
-    container.wire(packages=["codegen.orchestration.interfaces.cli"])
+    container.wire(packages=["codegen.orchestration.interfaces.cli", "codegen.domain_definition.interfaces.cli"])
     app()
 
 
