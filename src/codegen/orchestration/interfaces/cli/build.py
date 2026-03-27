@@ -9,7 +9,7 @@ from dependency_injector.wiring import Provide, inject
 
 
 @inject
-def _do_build(
+def _generate_project(
     cmd: GenerateProjectCommand,
     use_case: GenerateProject = Provide[
         "orchestration_container.generate_project_use_case"
@@ -23,11 +23,4 @@ def build(
     nodes: Annotated[list[str] | None, typer.Option(None, "--nodes", "-n")],
     root_path: Annotated[str, typer.Option("''", "--root-path", "-r")],
     generate_tests: Annotated[bool, typer.Option("False", "--generate-tests", "-g")],
-) -> GenerateProjectResult:
-    cmd = GenerateProjectCommand(
-        overwrite=overwrite,
-        nodes=nodes,
-        root_path=root_path,
-        generate_tests=generate_tests,
-    )
-    return _do_build(cmd)
+) -> GenerateProjectResult: ...

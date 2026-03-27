@@ -56,7 +56,6 @@ class CliCommandSpec(ValueObject):
 
         # 生成 Typer 参数
         parameters: list[VariableSpec] = []
-        kwarg_parts: list[str] = []
         used_short_flags: set[str] = set()
 
         def get_short_flag(param_name: str) -> str:
@@ -114,13 +113,6 @@ class CliCommandSpec(ValueObject):
             parameters.append(
                 VariableSpec.create(name=param_name, type_spec=annotated_type)
             )
-            kwarg_parts.append(f"{param_name}={param_name}")
-
-        # 构建命令构造表达式
-        cmd_construct = f"{param_type_name}({', '.join(kwarg_parts)})"
-
-        # 主函数体：构造命令并调用辅助函数
-        main_suite = f"cmd = {cmd_construct}\nreturn _do_{func_name}(cmd)"
 
         # 生成主函数
         func = FunctionSpec.create(
@@ -129,14 +121,13 @@ class CliCommandSpec(ValueObject):
             parameters=parameters,
             return_annotation=parse_type_str(result_type),
             function_type=FunctionType.FUNCTION,
-            suite=main_suite,
         )
 
         # 生成辅助函数：使用依赖注入
         use_case_type = use_case.name
         provider_path = f"{ctx_snake}_container.{uc_snake}_use_case"
         do_func = FunctionSpec.create(
-            name=f"_do_{func_name}",
+            name=f"_{uc_snake}",
             parameters=[
                 VariableSpec.create(
                     name="cmd",

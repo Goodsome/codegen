@@ -1,6 +1,6 @@
 # Issue Tracking
 
-> Last updated: 2026-03-26
+> Last updated: 2026-03-27
 
 本文档用于跟踪 Codegen 项目中的问题、缺陷和改进建议。
 
@@ -52,46 +52,7 @@
 
 | # | Issue | Severity | Status | Notes |
 |-------|-------|----------|--------|-------|
-| `3f8a1b2c-4d5e-4f6a-b7c8-d9e0f1a2b3c4` | 扩展 `AssignmentSpec` 以支持 Subscript 语法解析 | Feature | Open | 支持 `Provide["..."]` 等下标语法的结构化解析 |
 | `4e9b2c3d-5f6a-4d7e-8a9b-0c1d2e3f4a5b6` | AttributeSpec.default 字面量类型问题 | Bug | Open | `default: False` 实际表现为字符串 `"False"` 而非布尔值 |
-
----
-
-## 3f8a1b2c-4d5e-4f6a-b7c8-d9e0f1a2b3c4 - 扩展 `AssignmentSpec` 以支持 Subscript 语法解析
-
-### 描述 (Description)
-
-当前 `AssignmentSpec` 模型无法在结构层面精确描述类似依赖注入中的下标语法，例如：
-
-```python
-use_case: GenerateProject = Provide["orchestration_container.generate_project_use_case"]
-```
-
-目前对于 `Provide["..."]` 这种 AST 中的 `Subscript` 节点，模型只能退化使用 `AssignmentFlavor.CODE` 作为纯文本进行存储。这导致我们丧失对其进行结构化解析的能力，特别是 `get_required_types()` 无法自动识别并提取出 `Provide` 这个依赖符号。
-
-### 期望行为 (Expected Behavior)
-
-引入对 `Subscript` 语法的支持，使得 `AssignmentSpec` 能够将 `obj[key]` 拆解为被索引的对象 (value) 和索引内容 (slice)，并能正确参与依赖类型的收集。
-
-### 建议的实现方案 (Proposed Solution)
-
-1. **新增值对象 `SubscriptSpec`**：包含 `value` (对应 `AssignmentSpec`) 和 `slice` (对应 `AssignmentSpec`) 两个字段。
-2. **扩展枚举**：在 `AssignmentFlavor` 中增加 `SUBSCRIPT` 类型。
-3. **扩展 `AssignmentSpec`**：
-   - 增加 `subscript: SubscriptSpec | None = Field(default=None)` 字段。
-   - 增加 `@classmethod def from_subscript(...)` 工厂方法。
-4. **完善依赖解析**：更新 `AssignmentSpec.get_required_types()` 方法，使其能递归收集 `subscript.value` 和 `subscript.slice` 中的类型。
-
-### 任务清单 (Tasks)
-
-- [ ] 定义 `SubscriptSpec` 类
-- [ ] 更新 `AssignmentFlavor` 和 `AssignmentSpec` 模型
-- [ ] 更新 `get_required_types` 逻辑
-- [ ] 添加对应的单元测试，确保 `Provide["..."]` 能被正确解析，并且能从中提取到 `Provide`
-
-### 创建时间
-2026-03-26
-
 ---
 
 ## 4e9b2c3d-5f6a-4d7e-8a9b-0c1d2e3f4a5b6 - AttributeSpec.default 字面量类型问题
