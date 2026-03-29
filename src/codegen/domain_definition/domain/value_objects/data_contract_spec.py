@@ -2,6 +2,7 @@ from codegen.domain_definition.domain.value_objects.attribute_spec import Attrib
 from codegen.python_gen.domain.enums import FieldFlavor
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.shared.models import ValueObject
+from pydantic import Field
 
 
 class DataContractSpec(ValueObject):
@@ -9,7 +10,7 @@ class DataContractSpec(ValueObject):
 
     name: str
     description: str
-    attributes: list[AttributeSpec] = []
+    attributes: list[AttributeSpec] = Field(default_factory=list)
 
     def to_class_spec(self) -> ClassSpec:
         """Convert DataContractSpec to ClassSpec with BaseModel inheritance."""

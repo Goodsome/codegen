@@ -137,6 +137,9 @@ contexts:
         output:
           type: string
       - name: write_file
+        description: 'Writes content to file.
+
+          Returns True if written, False if skipped (due to overwrite=False).'
         inputs:
         - type: Self
           name: self
@@ -301,11 +304,6 @@ contexts:
     use_cases:
     - name: GenerateProject
       kind: command
-      dependencies:
-      - type: LoadBlueprint
-        name: loader
-      - type: GeneratePackage
-        name: generator
       input_:
         name: GenerateProjectCommand
         description: ''
@@ -323,13 +321,13 @@ contexts:
         attributes:
         - type: BuildResult
           name: result
+      dependencies:
+      - type: LoadBlueprint
+        name: loader
+      - type: GeneratePackage
+        name: generator
     - name: GenerateBlueprint
       kind: command
-      dependencies:
-      - type: ParsePackage
-        name: parser
-      - type: BlueprintStorage
-        name: storage
       input_:
         name: GenerateBlueprintCommand
         description: ''
@@ -342,6 +340,11 @@ contexts:
         attributes:
         - type: string
           name: result
+      dependencies:
+      - type: ParsePackage
+        name: parser
+      - type: BlueprintStorage
+        name: storage
   interfaces:
     cli:
       commands:
@@ -527,6 +530,7 @@ contexts:
           type: string
           container: set
       - name: get_method
+        description: 获取指定名称的方法，不存在则 raise error
         inputs:
         - type: Self
           name: self
@@ -639,12 +643,14 @@ contexts:
         name: args
       behaviors:
       - name: render
+        description: 递归渲染类型字符串
         inputs:
         - type: Self
           name: self
         output:
           type: string
       - name: get_all_referenced_names
+        description: 递归获取所有引用的类型名称
         inputs:
         - type: Self
           name: self
@@ -789,6 +795,7 @@ contexts:
         name: slice
       behaviors:
       - name: get_required_types
+        description: 收集 subscript.value 和 subscript.slice 中的所有类型标记。
         inputs:
         - type: Self
           name: self
@@ -935,6 +942,7 @@ contexts:
         output:
           type: boolean
       - name: is_match_any_name
+        description: Check if module name matches any of the provided names.
         inputs:
         - type: Self
           name: self
@@ -944,6 +952,7 @@ contexts:
         output:
           type: boolean
       - name: get_required_types
+        description: 收集本模块所有需要的类型名称
         inputs:
         - type: Self
           name: self
@@ -951,6 +960,7 @@ contexts:
           type: string
           container: set
       - name: has_class
+        description: 检查模块中是否存在指定名称的类
         inputs:
         - type: Self
           name: self
@@ -959,6 +969,7 @@ contexts:
         output:
           type: boolean
       - name: get_class
+        description: 获取模块中指定名称的类，不存在则 raise error
         inputs:
         - type: Self
           name: self
@@ -967,6 +978,7 @@ contexts:
         output:
           type: ClassSpec
       - name: has_function
+        description: 检查模块中是否存在指定名称的函数
         inputs:
         - type: Self
           name: self
@@ -1045,6 +1057,7 @@ contexts:
           type: string
           container: map
       - name: _build_symbol_table
+        description: 递归扫描所有模块，记录每个类属于哪个绝对路径
         inputs:
         - type: Self
           name: self
@@ -1223,6 +1236,7 @@ contexts:
         output:
           type: PythonEnumSpec
       - name: get_required_types
+        description: 收集本 Enum 需要的类型名称
         inputs:
         - type: Self
           name: self
@@ -1266,6 +1280,8 @@ contexts:
         name: file_system_port
       operations:
       - name: to_package_spec
+        description: Reconstruct a PackageSpec from a dictionary of file paths and
+          their contents.
         inputs:
         - type: Self
           name: self
@@ -1285,6 +1301,9 @@ contexts:
         output:
           type: string
       - name: generate_source_tree
+        description: '核心方法：将 PackageSpec 转换为虚拟文件树。
+
+          返回格式: { Path(''relative/path/to/file.py''): ''source code content'' }'
         inputs:
         - type: Self
           name: self
@@ -1362,10 +1381,6 @@ contexts:
     use_cases:
     - name: ParsePackage
       kind: query
-      dependencies:
-      - type: PythonSyntaxTranslator
-        name: translator
-      description: Parses Python package to PackageSpec.
       input_:
         name: ParsePackageQuery
         description: ''
@@ -1378,26 +1393,23 @@ contexts:
         attributes:
         - type: PackageSpec
           name: package_spec
+      description: Parses Python package to PackageSpec.
+      dependencies:
+      - type: PythonSyntaxTranslator
+        name: translator
     - name: GenerateSchemaJson
       kind: command
-      dependencies:
-      - type: FileSystemPort
-        name: file_system_port
       input_:
         name: GenerateSchemaJsonCommand
         description: ''
       result:
         name: GenerateSchemaJsonResult
         description: ''
-    - name: GeneratePackage
-      kind: command
       dependencies:
       - type: FileSystemPort
         name: file_system_port
-      - type: PythonSyntaxTranslator
-        name: translator
-      - type: CodeFormatter
-        name: code_formatter
+    - name: GeneratePackage
+      kind: command
       input_:
         name: GeneratePackageCommand
         description: ''
@@ -1419,6 +1431,13 @@ contexts:
         attributes:
         - type: BuildResult
           name: result
+      dependencies:
+      - type: FileSystemPort
+        name: file_system_port
+      - type: PythonSyntaxTranslator
+        name: translator
+      - type: CodeFormatter
+        name: code_formatter
   infrastructure:
     implementations:
     - name: AstTranslator
@@ -1477,12 +1496,14 @@ contexts:
         output:
           type: Self
       - name: to_package_spec
+        description: Convert this Blueprint to a PackageSpec.
         inputs:
         - type: Self
           name: self
         output:
           type: PackageSpec
       - name: from_package_spec
+        description: Create a Blueprint from a PackageSpec.
         inputs:
         - type: Self
           container: type
@@ -1492,6 +1513,8 @@ contexts:
         output:
           type: Self
       - name: upsert_context
+        description: Upsert a BoundedContext by name. Only updates scalar fields if
+          exists.
         inputs:
         - type: Self
           name: self
@@ -1502,6 +1525,7 @@ contexts:
         output:
           type: Self
       - name: remove_context
+        description: Remove a BoundedContext by name. Returns self for chaining.
         inputs:
         - type: Self
           name: self
@@ -1510,6 +1534,7 @@ contexts:
         output:
           type: Self
       - name: get_context
+        description: Get a BoundedContext by name. Raises ValueError if not found.
         inputs:
         - type: Self
           name: self
@@ -1570,16 +1595,18 @@ contexts:
         name: description
       - type: AttributeSpec
         container: list
+        optional: true
         name: attributes
-        default: '[]'
       behaviors:
       - name: to_class_spec
+        description: Convert DataContractSpec to ClassSpec with BaseModel inheritance.
         inputs:
         - type: Self
           name: self
         output:
           type: ClassSpec
       - name: from_class_spec
+        description: Convert ClassSpec back to DataContractSpec.
         inputs:
         - type: Self
           container: type
@@ -1624,6 +1651,7 @@ contexts:
         name: env_var
       behaviors:
       - name: to_variable_spec
+        description: 将 ConfigFieldSpec 转换为 VariableSpec
         inputs:
         - type: Self
           name: self
@@ -1641,6 +1669,9 @@ contexts:
         name: description
       behaviors:
       - name: to_module_spec
+        description: "生成单个 CLI 命令模块\n\nArgs:\n    context_name: 上下文名称\n    use_case:\
+          \ UseCase 规范\n    project_name: 项目名称\n\nReturns:\n    ModuleSpec for CLI\
+          \ command"
         inputs:
         - type: Self
           name: self
@@ -1654,6 +1685,9 @@ contexts:
         output:
           type: ModuleSpec
       - name: from_module_spec
+        description: "从 ModuleSpec 逆向解析为 CliCommandSpec\n\nArgs:\n    module: CLI\
+          \ 命令模块\n    use_case_index: UseCase 名称索引\n\nReturns:\n    CliCommandSpec\
+          \ or None if无法解析"
         inputs:
         - type: Self
           container: type
@@ -1695,6 +1729,7 @@ contexts:
         output:
           type: MethodSpec
       - name: to_function_spec
+        description: 将 MethodSpec 转换为 PythonGen FunctionSpec
         inputs:
         - type: Self
           name: self
@@ -1706,6 +1741,7 @@ contexts:
         output:
           type: FunctionSpec
       - name: from_function_spec
+        description: 从 PythonGen FunctionSpec 逆向解析为 MethodSpec
         inputs:
         - type: Self
           container: type
@@ -1730,12 +1766,14 @@ contexts:
         name: custom_type_string
       behaviors:
       - name: to_python_annotation
+        description: 将 TypeDefinition 转换为 Python 类型注解
         inputs:
         - type: Self
           name: self
         output:
           type: TypeAnnotationSpec
       - name: _apply_container
+        description: 根据 container 类型包装核心类型
         inputs:
         - type: Self
           name: self
@@ -1744,6 +1782,7 @@ contexts:
         output:
           type: TypeAnnotationSpec
       - name: _make_optional
+        description: 将类型包装为可选类型 (Union[T, None])
         inputs:
         - type: Self
           name: self
@@ -1752,6 +1791,7 @@ contexts:
         output:
           type: TypeAnnotationSpec
       - name: from_python_annotation
+        description: 从 Python 类型注解逆向解析为 TypeDefinition
         inputs:
         - type: Self
           container: type
@@ -1761,6 +1801,7 @@ contexts:
         output:
           type: TypeDefinition
       - name: _extract_optional
+        description: 如果是 Union[T, None] 或 Optional[T] 形式，返回 (True, T)
         inputs:
         - type: Self
           container: type
@@ -1771,6 +1812,7 @@ contexts:
           type: Any
           custom_type_string: tuple[bool, TypeAnnotationSpec]
       - name: _extract_container_and_type
+        description: 从 TypeAnnotationSpec 提取容器类型和核心类型名
         inputs:
         - type: Self
           container: type
@@ -1794,6 +1836,9 @@ contexts:
         name: description
       behaviors:
       - name: to_module_spec
+        description: "生成单个 HTTP endpoint 模块\n\nArgs:\n    context_name: 上下文名称\n  \
+          \  use_case: UseCase 规范\n    project_name: 项目名称\n\nReturns:\n    ModuleSpec\
+          \ for HTTP endpoint"
         inputs:
         - type: Self
           name: self
@@ -1807,6 +1852,9 @@ contexts:
         output:
           type: ModuleSpec
       - name: from_module_spec
+        description: "从 ModuleSpec 逆向解析为 HttpEndpointSpec\n\nArgs:\n    module: HTTP\
+          \ endpoint 模块\n    use_case_index: UseCase 名称索引\n\nReturns:\n    HttpEndpointSpec\
+          \ or None if无法解析"
         inputs:
         - type: Self
           container: type
@@ -1819,6 +1867,7 @@ contexts:
         output:
           type: HttpEndpointSpec | None
       - name: _infer_use_case_from_suite
+        description: 从函数体推断 UseCase 名称
         inputs:
         - type: Self
           container: type
@@ -1832,6 +1881,7 @@ contexts:
           type: string
           optional: true
       - name: _parse_route_decorator
+        description: 从装饰器解析路由信息
         inputs:
         - type: Self
           container: type
@@ -1869,6 +1919,7 @@ contexts:
         output:
           type: AttributeSpec
       - name: to_variable_spec
+        description: 将 AttributeSpec 转换为 PythonGen VariableSpec
         inputs:
         - type: Self
           name: self
@@ -1878,6 +1929,7 @@ contexts:
         output:
           type: VariableSpec
       - name: from_variable_spec
+        description: 从 PythonGen VariableSpec 逆向解析为 AttributeSpec
         inputs:
         - type: Self
           container: type
@@ -1898,6 +1950,9 @@ contexts:
         name: description
       behaviors:
       - name: to_module_spec
+        description: "生成单个 MCP tool 模块\n\nArgs:\n    context_name: 上下文名称\n    use_case:\
+          \ UseCase 规范\n    project_name: 项目名称\n\nReturns:\n    ModuleSpec for MCP\
+          \ tool"
         inputs:
         - type: Self
           name: self
@@ -1911,6 +1966,9 @@ contexts:
         output:
           type: ModuleSpec
       - name: from_module_spec
+        description: "从 ModuleSpec 逆向解析为 McpToolSpec\n\nArgs:\n    module: MCP tool\
+          \ 模块\n    use_case_index: UseCase 名称索引\n\nReturns:\n    McpToolSpec or None\
+          \ if无法解析"
         inputs:
         - type: Self
           container: type
@@ -1923,6 +1981,7 @@ contexts:
         output:
           type: McpToolSpec | None
       - name: _infer_use_case_from_suite
+        description: 从函数体推断 UseCase 名称
         inputs:
         - type: Self
           container: type
@@ -1943,17 +2002,17 @@ contexts:
         name: name
       - type: UseCaseKind
         name: kind
-      - type: AttributeSpec
-        container: list
-        optional: true
-        name: dependencies
-      - type: string
-        optional: true
-        name: description
       - type: DataContractSpec
         name: input
       - type: DataContractSpec
         name: result
+      - type: string
+        optional: true
+        name: description
+      - type: AttributeSpec
+        container: list
+        optional: true
+        name: dependencies
       behaviors:
       - name: create
         inputs:
@@ -1979,12 +2038,14 @@ contexts:
         output:
           type: any
       - name: to_module_spec
+        description: 将 UseCaseSpec 转换为 ModuleSpec
         inputs:
         - type: Self
           name: self
         output:
           type: ModuleSpec
       - name: from_module_spec
+        description: 将 ModuleSpec 逆向解析为 UseCaseSpec
         inputs:
         - type: Self
           container: type
@@ -2010,12 +2071,14 @@ contexts:
         name: services
       behaviors:
       - name: to_package_spec
+        description: 将 ApplicationSpec 转换为 PackageSpec
         inputs:
         - type: Self
           name: self
         output:
           type: PackageSpec
       - name: from_package_spec
+        description: 将 PackageSpec 逆向解析为 ApplicationSpec
         inputs:
         - type: Self
           container: type
@@ -2038,6 +2101,9 @@ contexts:
         name: http
       behaviors:
       - name: to_package_spec
+        description: "将 InterfaceSpec 转换为 PackageSpec\n\nArgs:\n    context_name:\
+          \ 上下文名称\n    use_cases: UseCase 列表，用于解析类型\n    project_name: 项目名称\n\nReturns:\n\
+          \    PackageSpec for interfaces package"
         inputs:
         - type: Self
           name: self
@@ -2052,6 +2118,9 @@ contexts:
         output:
           type: PackageSpec
       - name: from_package_spec
+        description: "从 PackageSpec 逆向解析为 InterfaceSpec\n\nArgs:\n    interfaces_pkg:\
+          \ interfaces 包的 PackageSpec\n    use_cases: UseCase 列表，用于索引\n\nReturns:\n\
+          \    InterfaceSpec"
         inputs:
         - type: Self
           container: type
@@ -2081,12 +2150,14 @@ contexts:
         name: behaviors
       behaviors:
       - name: to_module_spec
+        description: 将 ValueObjectSpec 转换为 ModuleSpec
         inputs:
         - type: Self
           name: self
         output:
           type: ModuleSpec
       - name: to_package_spec
+        description: 将多个 ValueObjectSpec 转换为一个 'value_objects' 包
         inputs:
         - type: Self
           container: type
@@ -2097,6 +2168,7 @@ contexts:
         output:
           type: PackageSpec
       - name: from_module_spec
+        description: 将 ModuleSpec 逆向解析为 ValueObjectSpec
         inputs:
         - type: Self
           container: type
@@ -2106,6 +2178,7 @@ contexts:
         output:
           type: Self
       - name: from_package_spec
+        description: 将 'value_objects' 包逆向解析为 ValueObjectSpec 列表
         inputs:
         - type: Self
           container: type
@@ -2116,6 +2189,8 @@ contexts:
           type: Self
           container: list
       - name: update_metadata
+        description: Update scalar metadata fields (e.g., description). Preserves
+          internal structure.
         inputs:
         - type: Self
           name: self
@@ -2132,6 +2207,7 @@ contexts:
         name: implementations
       behaviors:
       - name: to_package_spec
+        description: 将 InfrastructureSpec 转换为 PackageSpec
         inputs:
         - type: Self
           name: self
@@ -2141,6 +2217,7 @@ contexts:
         output:
           type: PackageSpec
       - name: from_package_spec
+        description: 将 PackageSpec 逆向解析为 InfrastructureSpec
         inputs:
         - type: Self
           container: type
@@ -2158,6 +2235,7 @@ contexts:
         name: bindings
       behaviors:
       - name: to_class_spec
+        description: 将 ContainerSpec 转换为 ClassSpec
         inputs:
         - type: Self
           name: self
@@ -2169,6 +2247,7 @@ contexts:
         output:
           type: ClassSpec
       - name: to_module_spec
+        description: 将 ContainerSpec 转换为 ModuleSpec
         inputs:
         - type: Self
           name: self
@@ -2180,12 +2259,14 @@ contexts:
         output:
           type: ModuleSpec
       - name: to_app_container_module
+        description: 创建 app-level Container 模块
         inputs:
         - type: Self
           name: self
         output:
           type: ModuleSpec
       - name: _create_provider_variable
+        description: 创建 provider VariableSpec
         inputs:
         - type: Self
           name: self
@@ -2195,6 +2276,7 @@ contexts:
           type: VariableSpec
           optional: true
       - name: _create_use_case_provider_variable
+        description: 创建 use_case provider VariableSpec
         inputs:
         - type: Self
           name: self
@@ -2250,6 +2332,7 @@ contexts:
         output:
           type: any
       - name: to_module_spec
+        description: 将 ImplementationSpec 转换为 ModuleSpec（需要 port 获取 operations）
         inputs:
         - type: Self
           name: self
@@ -2258,6 +2341,7 @@ contexts:
         output:
           type: ModuleSpec
       - name: from_module_spec
+        description: 将 ModuleSpec 逆向解析为 ImplementationSpec
         inputs:
         - type: Self
           container: type
@@ -2283,6 +2367,9 @@ contexts:
         name: tools
       behaviors:
       - name: to_package_spec
+        description: "将 McpInterfaceSpec 转换为 PackageSpec\n\nArgs:\n    context_name:\
+          \ 上下文名称\n    use_cases: UseCase 列表，用于解析类型\n    project_name: 项目名称\n\nReturns:\n\
+          \    PackageSpec for mcp package"
         inputs:
         - type: Self
           name: self
@@ -2297,6 +2384,7 @@ contexts:
         output:
           type: PackageSpec
       - name: _create_mcp_init_module
+        description: 生成 MCP __init__.py
         inputs:
         - type: Self
           name: self
@@ -2310,6 +2398,8 @@ contexts:
         output:
           type: ModuleSpec
       - name: from_package_spec
+        description: "从 PackageSpec 逆向解析为 McpInterfaceSpec\n\nArgs:\n    mcp_pkg:\
+          \ mcp 包的 PackageSpec\n    use_cases: UseCase 列表，用于索引\n\nReturns:\n    McpInterfaceSpec"
         inputs:
         - type: Self
           container: type
@@ -2350,12 +2440,14 @@ contexts:
         name: ports
       behaviors:
       - name: to_package_spec
+        description: 将 DomainSpec 转换为 PackageSpec
         inputs:
         - type: Self
           name: self
         output:
           type: PackageSpec
       - name: from_package_spec
+        description: 将 PackageSpec 逆向解析为 DomainSpec
         inputs:
         - type: Self
           container: type
@@ -2365,6 +2457,8 @@ contexts:
         output:
           type: DomainSpec
       - name: upsert_aggregate
+        description: Upsert an AggregateSpec by name. Only updates scalar fields if
+          exists.
         inputs:
         - type: Self
           name: self
@@ -2375,6 +2469,7 @@ contexts:
         output:
           type: Self
       - name: get_aggregate
+        description: Get an AggregateSpec by name. Raises ValueError if not found.
         inputs:
         - type: Self
           name: self
@@ -2383,6 +2478,7 @@ contexts:
         output:
           type: AggregateSpec
       - name: remove_aggregate
+        description: Remove an AggregateSpec by name. Returns self for chaining.
         inputs:
         - type: Self
           name: self
@@ -2391,6 +2487,7 @@ contexts:
         output:
           type: Self
       - name: upsert_enum
+        description: Upsert an EnumSpec by name. Only updates scalar fields if exists.
         inputs:
         - type: Self
           name: self
@@ -2402,6 +2499,7 @@ contexts:
         output:
           type: Self
       - name: get_enum
+        description: Get an EnumSpec by name. Raises ValueError if not found.
         inputs:
         - type: Self
           name: self
@@ -2410,6 +2508,7 @@ contexts:
         output:
           type: EnumSpec
       - name: remove_enum
+        description: Remove an EnumSpec by name. Returns self for chaining.
         inputs:
         - type: Self
           name: self
@@ -2418,6 +2517,8 @@ contexts:
         output:
           type: Self
       - name: upsert_value_object
+        description: Upsert a ValueObjectSpec by name. Only updates scalar fields
+          if exists.
         inputs:
         - type: Self
           name: self
@@ -2428,6 +2529,7 @@ contexts:
         output:
           type: Self
       - name: get_value_object
+        description: Get a ValueObjectSpec by name. Raises ValueError if not found.
         inputs:
         - type: Self
           name: self
@@ -2436,6 +2538,7 @@ contexts:
         output:
           type: ValueObjectSpec
       - name: remove_value_object
+        description: Remove a ValueObjectSpec by name. Returns self for chaining.
         inputs:
         - type: Self
           name: self
@@ -2444,6 +2547,7 @@ contexts:
         output:
           type: Self
       - name: upsert_entity
+        description: Upsert an EntitySpec by name. Only updates scalar fields if exists.
         inputs:
         - type: Self
           name: self
@@ -2455,6 +2559,7 @@ contexts:
         output:
           type: Self
       - name: get_entity
+        description: Get an EntitySpec by name. Raises ValueError if not found.
         inputs:
         - type: Self
           name: self
@@ -2463,6 +2568,7 @@ contexts:
         output:
           type: EntitySpec
       - name: remove_entity
+        description: Remove an EntitySpec by name. Returns self for chaining.
         inputs:
         - type: Self
           name: self
@@ -2471,6 +2577,7 @@ contexts:
         output:
           type: Self
       - name: upsert_service
+        description: Upsert a ServiceSpec by name. Only updates scalar fields if exists.
         inputs:
         - type: Self
           name: self
@@ -2482,6 +2589,7 @@ contexts:
         output:
           type: Self
       - name: get_service
+        description: Get a ServiceSpec by name. Raises ValueError if not found.
         inputs:
         - type: Self
           name: self
@@ -2490,6 +2598,7 @@ contexts:
         output:
           type: ServiceSpec
       - name: remove_service
+        description: Remove a ServiceSpec by name. Returns self for chaining.
         inputs:
         - type: Self
           name: self
@@ -2498,6 +2607,7 @@ contexts:
         output:
           type: Self
       - name: upsert_port
+        description: Upsert a PortSpec by name. Only updates scalar fields if exists.
         inputs:
         - type: Self
           name: self
@@ -2513,6 +2623,7 @@ contexts:
         output:
           type: Self
       - name: get_port
+        description: Get a PortSpec by name. Raises ValueError if not found.
         inputs:
         - type: Self
           name: self
@@ -2521,6 +2632,7 @@ contexts:
         output:
           type: PortSpec
       - name: remove_port
+        description: Remove a PortSpec by name. Returns self for chaining.
         inputs:
         - type: Self
           name: self
@@ -2556,6 +2668,7 @@ contexts:
         name: interfaces
       behaviors:
       - name: to_package_spec
+        description: Convert this BoundedContext to a PackageSpec.
         inputs:
         - type: Self
           name: self
@@ -2565,6 +2678,7 @@ contexts:
         output:
           type: PackageSpec
       - name: _collect_class_specs_in_ports
+        description: Recursively collect class specs from ports packages.
         inputs:
         - type: Self
           name: self
@@ -2576,6 +2690,7 @@ contexts:
         output:
           type: None
       - name: from_package_spec
+        description: Create a BoundedContext from a PackageSpec.
         inputs:
         - type: Self
           container: type
@@ -2622,6 +2737,8 @@ contexts:
           type: PortSpec
           container: map
       - name: update_metadata
+        description: Update scalar metadata fields (e.g., description). Preserves
+          internal structure.
         inputs:
         - type: Self
           name: self
@@ -2655,12 +2772,14 @@ contexts:
         name: operations
       behaviors:
       - name: to_module_spec
+        description: 将 ServiceSpec 转换为 ModuleSpec
         inputs:
         - type: Self
           name: self
         output:
           type: ModuleSpec
       - name: to_package_spec
+        description: 将多个 ServiceSpec 转换为一个 'services' 包
         inputs:
         - type: Self
           container: type
@@ -2671,6 +2790,7 @@ contexts:
         output:
           type: PackageSpec
       - name: from_module_spec
+        description: 将 ModuleSpec 逆向解析为 ServiceSpec
         inputs:
         - type: Self
           container: type
@@ -2680,6 +2800,7 @@ contexts:
         output:
           type: Self
       - name: from_package_spec
+        description: 将 'services' 包逆向解析为 ServiceSpec 列表
         inputs:
         - type: Self
           container: type
@@ -2690,6 +2811,8 @@ contexts:
           type: Self
           container: list
       - name: update_metadata
+        description: Update scalar metadata fields (e.g., description). Preserves
+          internal structure.
         inputs:
         - type: Self
           name: self
@@ -2706,6 +2829,9 @@ contexts:
         name: commands
       behaviors:
       - name: to_package_spec
+        description: "将 CliInterfaceSpec 转换为 PackageSpec\n\nArgs:\n    context_name:\
+          \ 上下文名称\n    use_cases: UseCase 列表，用于解析类型\n    project_name: 项目名称\n\nReturns:\n\
+          \    PackageSpec for cli package"
         inputs:
         - type: Self
           name: self
@@ -2720,6 +2846,7 @@ contexts:
         output:
           type: PackageSpec
       - name: _create_cli_init_module
+        description: 生成 CLI __init__.py
         inputs:
         - type: Self
           name: self
@@ -2733,6 +2860,8 @@ contexts:
         output:
           type: ModuleSpec
       - name: from_package_spec
+        description: "从 PackageSpec 逆向解析为 CliInterfaceSpec\n\nArgs:\n    cli_pkg:\
+          \ cli 包的 PackageSpec\n    use_cases: UseCase 列表，用于索引\n\nReturns:\n    CliInterfaceSpec"
         inputs:
         - type: Self
           container: type
@@ -2762,12 +2891,14 @@ contexts:
         name: behaviors
       behaviors:
       - name: to_module_spec
+        description: 将 EntitySpec 转换为 ModuleSpec
         inputs:
         - type: Self
           name: self
         output:
           type: ModuleSpec
       - name: to_package_spec
+        description: 将多个 EntitySpec 转换为一个 'entities' 包
         inputs:
         - type: Self
           container: type
@@ -2778,6 +2909,7 @@ contexts:
         output:
           type: PackageSpec
       - name: from_module_spec
+        description: 将 ModuleSpec 逆向解析为 EntitySpec
         inputs:
         - type: Self
           container: type
@@ -2787,6 +2919,7 @@ contexts:
         output:
           type: Self
       - name: from_package_spec
+        description: 将 'entities' 包逆向解析为 EntitySpec 列表
         inputs:
         - type: Self
           container: type
@@ -2797,6 +2930,8 @@ contexts:
           type: Self
           container: list
       - name: update_metadata
+        description: Update scalar metadata fields (e.g., description). Preserves
+          internal structure.
         inputs:
         - type: Self
           name: self
@@ -2845,12 +2980,14 @@ contexts:
         output:
           type: Self
       - name: to_module_spec
+        description: 将 PortSpec 转换为 ModuleSpec
         inputs:
         - type: Self
           name: self
         output:
           type: ModuleSpec
       - name: to_package_spec
+        description: 将多个 PortSpec 转换为一个 'ports' 包
         inputs:
         - type: Self
           container: type
@@ -2861,6 +2998,7 @@ contexts:
         output:
           type: PackageSpec
       - name: from_module_spec
+        description: 将 ModuleSpec 逆向解析为 PortSpec
         inputs:
         - type: Self
           container: type
@@ -2870,6 +3008,7 @@ contexts:
         output:
           type: Self
       - name: from_package_spec
+        description: 将 'ports' 包逆向解析为 PortSpec 列表
         inputs:
         - type: Self
           container: type
@@ -2887,6 +3026,8 @@ contexts:
           type: MethodSpec
           container: list
       - name: update_metadata
+        description: Update scalar metadata fields (e.g., description). Preserves
+          internal structure.
         inputs:
         - type: Self
           name: self
@@ -2912,12 +3053,14 @@ contexts:
         name: members
       behaviors:
       - name: to_python_enum_spec
+        description: 将 EnumSpec 转换为 PythonEnumSpec
         inputs:
         - type: Self
           name: self
         output:
           type: PythonEnumSpec
       - name: from_python_enum_spec
+        description: 将 PythonEnumSpec 逆向解析为 EnumSpec
         inputs:
         - type: Self
           container: type
@@ -2927,6 +3070,7 @@ contexts:
         output:
           type: EnumSpec
       - name: to_module_spec
+        description: 将多个 EnumSpec 转换为一个 'enums' ModuleSpec
         inputs:
         - type: Self
           container: type
@@ -2937,6 +3081,7 @@ contexts:
         output:
           type: ModuleSpec
       - name: from_module_spec
+        description: 将 ModuleSpec 逆向解析为 EnumSpec 列表
         inputs:
         - type: Self
           container: type
@@ -2947,6 +3092,8 @@ contexts:
           type: EnumSpec
           container: list
       - name: update_metadata
+        description: Update scalar metadata fields (e.g., description). Preserves
+          internal structure.
         inputs:
         - type: Self
           name: self
@@ -2972,12 +3119,14 @@ contexts:
         name: behaviors
       behaviors:
       - name: to_module_spec
+        description: 将 AggregateSpec 转换为 ModuleSpec
         inputs:
         - type: Self
           name: self
         output:
           type: ModuleSpec
       - name: to_package_spec
+        description: 将多个 AggregateSpec 转换为一个 'aggregates' 包
         inputs:
         - type: Self
           container: type
@@ -2988,6 +3137,7 @@ contexts:
         output:
           type: PackageSpec
       - name: from_module_spec
+        description: 将 ModuleSpec 逆向解析为 AggregateSpec
         inputs:
         - type: Self
           container: type
@@ -2997,6 +3147,7 @@ contexts:
         output:
           type: Self
       - name: from_package_spec
+        description: 将 'aggregates' 包逆向解析为 AggregateSpec 列表
         inputs:
         - type: Self
           container: type
@@ -3007,6 +3158,8 @@ contexts:
           type: Self
           container: list
       - name: update_metadata
+        description: Update scalar metadata fields (e.g., description). Preserves
+          internal structure.
         inputs:
         - type: Self
           name: self
@@ -3025,6 +3178,9 @@ contexts:
         name: container
       behaviors:
       - name: to_package_spec
+        description: "将 BootstrapSpec 转换为 PackageSpec\n\nArgs:\n    contexts: All\
+          \ bounded contexts with their configs\n\nReturns:\n    PackageSpec for bootstrap\
+          \ package, or None if no bootstrap spec"
         inputs:
         - type: Self
           name: self
@@ -3042,6 +3198,9 @@ contexts:
         name: endpoints
       behaviors:
       - name: to_package_spec
+        description: "将 HttpInterfaceSpec 转换为 PackageSpec\n\nArgs:\n    context_name:\
+          \ 上下文名称\n    use_cases: UseCase 列表，用于解析类型\n    project_name: 项目名称\n\nReturns:\n\
+          \    PackageSpec for http package"
         inputs:
         - type: Self
           name: self
@@ -3056,6 +3215,7 @@ contexts:
         output:
           type: PackageSpec
       - name: _create_http_init_module
+        description: 生成 HTTP __init__.py
         inputs:
         - type: Self
           name: self
@@ -3069,6 +3229,8 @@ contexts:
         output:
           type: ModuleSpec
       - name: from_package_spec
+        description: "从 PackageSpec 逆向解析为 HttpInterfaceSpec\n\nArgs:\n    http_pkg:\
+          \ http 包的 PackageSpec\n    use_cases: UseCase 列表，用于索引\n\nReturns:\n    HttpInterfaceSpec"
         inputs:
         - type: Self
           container: type
@@ -3098,6 +3260,7 @@ contexts:
         name: fields
       behaviors:
       - name: to_class_spec
+        description: 将 ConfigSpec 转换为 ClassSpec
         inputs:
         - type: Self
           name: self
@@ -3107,12 +3270,14 @@ contexts:
         output:
           type: ClassSpec
       - name: _create_model_config_attribute
+        description: 创建 model_config 属性
         inputs:
         - type: Self
           name: self
         output:
           type: VariableSpec
       - name: to_module_spec
+        description: 将 ConfigSpec 转换为 ModuleSpec
         inputs:
         - type: Self
           name: self
@@ -3122,6 +3287,7 @@ contexts:
         output:
           type: ModuleSpec
       - name: to_app_config_module
+        description: 创建 AppSettings 模块，包含所有 context 的嵌套配置
         inputs:
         - type: Self
           name: self
@@ -3141,6 +3307,10 @@ contexts:
         name: _SEGMENT_PATTERN
       operations:
       - name: parse
+        description: "Parse a path string into a list of PathSegments.\n\nExamples:\n\
+          \    \"project.version\" -> [PathSegment(\"project\"), PathSegment(\"version\"\
+          )]\n    \"contexts[0]\" -> [PathSegment(\"contexts\", 0)]\n    \"contexts.sales\"\
+          \ -> [PathSegment(\"contexts\"), PathSegment(\"sales\")]"
         inputs:
         - type: Self
           name: self
@@ -3150,6 +3320,11 @@ contexts:
           type: PathSegment
           container: list
       - name: resolve
+        description: "Resolve a path against an object and return the value.\n\nArgs:\n\
+          \    obj: The root object (Blueprint or any nested object)\n    path: The\
+          \ path expression\n    \nReturns:\n    The value at the specified path\n\
+          \    \nRaises:\n    KeyError: If path segment not found\n    IndexError:\
+          \ If index out of range"
         inputs:
         - type: Self
           name: self
@@ -3160,6 +3335,7 @@ contexts:
         output:
           type: any
       - name: _resolve_segments
+        description: Recursively resolve path segments.
         inputs:
         - type: Self
           name: self
@@ -3171,6 +3347,7 @@ contexts:
         output:
           type: any
       - name: _get_segment_value
+        description: Get value for a single path segment.
         inputs:
         - type: Self
           name: self
@@ -3181,6 +3358,9 @@ contexts:
         output:
           type: any
       - name: _access_by_name
+        description: 'Access an attribute or dict key by name.
+
+          For lists, searches for item with matching ''name'' field.'
         inputs:
         - type: Self
           name: self
@@ -3191,6 +3371,7 @@ contexts:
         output:
           type: any
       - name: _get_item_name
+        description: Get the 'name' field value from an item, if it exists.
         inputs:
         - type: Self
           name: self
@@ -3219,6 +3400,8 @@ contexts:
           str(x.name) == name), None)}'
       operations:
       - name: _find_port_strategy
+        description: 'Strategy to find port: Domain layer first, then Application
+          layer.'
         inputs:
         - type: Self
           name: self
@@ -3229,6 +3412,10 @@ contexts:
         output:
           type: any
       - name: find_parent_component
+        description: 'Finds a component by name and type hint.
+
+          type_hint: ''aggregate'', ''service'', ''port'', ''implementation'', ''entity'',
+          ''value-object'', ''use-case'', ''enum'''
         inputs:
         - type: Self
           name: self
@@ -3250,6 +3437,9 @@ contexts:
         name: resolver
       operations:
       - name: get_value
+        description: "Get a value at the specified path.\n\nArgs:\n    obj: The root\
+          \ object (Blueprint)\n    path: Path expression\n    \nReturns:\n    The\
+          \ value at the path"
         inputs:
         - type: Self
           name: self
@@ -3260,6 +3450,11 @@ contexts:
         output:
           type: any
       - name: set_value
+        description: "Set a value at the specified path, returning a new object.\n\
+          \nArgs:\n    obj: The root object (Blueprint)\n    path: Path expression\n\
+          \    value: The value to set\n    append: If True and target is a list,\
+          \ append value instead of replace\n    \nReturns:\n    A new object with\
+          \ the value set"
         inputs:
         - type: Self
           name: self
@@ -3275,6 +3470,9 @@ contexts:
         output:
           type: any
       - name: remove_value
+        description: "Remove a value at the specified path, returning a new object.\n\
+          \nArgs:\n    obj: The root object (Blueprint)\n    path: Path expression\n\
+          \    \nReturns:\n    A new object with the value removed"
         inputs:
         - type: Self
           name: self
@@ -3285,6 +3483,7 @@ contexts:
         output:
           type: any
       - name: _set_recursive
+        description: Recursively navigate and set value.
         inputs:
         - type: Self
           name: self
@@ -3300,6 +3499,7 @@ contexts:
         output:
           type: any
       - name: _remove_recursive
+        description: Recursively navigate and remove value.
         inputs:
         - type: Self
           name: self
@@ -3311,6 +3511,7 @@ contexts:
         output:
           type: any
       - name: _get_segment_value
+        description: Get value for a segment (delegate to resolver logic).
         inputs:
         - type: Self
           name: self
@@ -3321,6 +3522,7 @@ contexts:
         output:
           type: any
       - name: _access_by_name
+        description: Access by name - mirrors resolver logic.
         inputs:
         - type: Self
           name: self
@@ -3331,6 +3533,7 @@ contexts:
         output:
           type: any
       - name: _get_item_name
+        description: Get name field from item.
         inputs:
         - type: Self
           name: self
@@ -3340,6 +3543,7 @@ contexts:
           type: string
           optional: true
       - name: _find_item_index
+        description: Find index of item with matching name.
         inputs:
         - type: Self
           name: self
@@ -3350,6 +3554,7 @@ contexts:
         output:
           type: integer
       - name: _set_final_value
+        description: Set value at the final segment.
         inputs:
         - type: Self
           name: self
@@ -3364,6 +3569,7 @@ contexts:
         output:
           type: any
       - name: _remove_final_value
+        description: Remove value at the final segment.
         inputs:
         - type: Self
           name: self
@@ -3374,6 +3580,7 @@ contexts:
         output:
           type: any
       - name: _update_segment
+        description: Update a segment in the path with new value.
         inputs:
         - type: Self
           name: self
@@ -3386,6 +3593,7 @@ contexts:
         output:
           type: any
       - name: _update_field
+        description: Update a field on an object, returning new object.
         inputs:
         - type: Self
           name: self
@@ -3398,6 +3606,9 @@ contexts:
         output:
           type: any
       - name: parse_value
+        description: 'Parse a value string into appropriate Python type.
+
+          Tries JSON first, falls back to string.'
         inputs:
         - type: Self
           name: self
@@ -3444,10 +3655,6 @@ contexts:
     use_cases:
     - name: InitProject
       kind: command
-      dependencies:
-      - type: BlueprintStorage
-        name: storage
-      description: Initializes a new project blueprint with a default Shared context.
       input_:
         name: InitProjectCommand
         description: ''
@@ -3464,11 +3671,12 @@ contexts:
         attributes:
         - type: Blueprint
           name: blueprint
-    - name: RemoveContext
-      kind: command
+      description: Initializes a new project blueprint with a default Shared context.
       dependencies:
       - type: BlueprintStorage
         name: storage
+    - name: RemoveContext
+      kind: command
       input_:
         name: RemoveContextCommand
         description: ''
@@ -3481,23 +3689,11 @@ contexts:
         attributes:
         - type: Blueprint
           name: blueprint
-    - name: SetValue
-      kind: command
       dependencies:
       - type: BlueprintStorage
         name: storage
-      - type: BlueprintPathOperations
-        name: operations
-      description: 'Use case to set a value in Blueprint at the specified path.
-
-
-        Supports:
-
-        - Simple field updates: "project.version"
-
-        - Nested updates: "contexts.sales.description"
-
-        - List append with append=True'
+    - name: SetValue
+      kind: command
       input_:
         name: SetValueCommand
         description: Command to set a value at a path.
@@ -3515,11 +3711,23 @@ contexts:
         attributes:
         - type: boolean
           name: result
-    - name: UpsertContext
-      kind: command
+      description: 'Use case to set a value in Blueprint at the specified path.
+
+
+        Supports:
+
+        - Simple field updates: "project.version"
+
+        - Nested updates: "contexts.sales.description"
+
+        - List append with append=True'
       dependencies:
       - type: BlueprintStorage
         name: storage
+      - type: BlueprintPathOperations
+        name: operations
+    - name: UpsertContext
+      kind: command
       input_:
         name: UpsertContextCommand
         description: ''
@@ -3534,21 +3742,11 @@ contexts:
         attributes:
         - type: Blueprint
           name: blueprint
-    - name: RemoveValue
-      kind: command
       dependencies:
       - type: BlueprintStorage
         name: storage
-      - type: BlueprintPathOperations
-        name: operations
-      description: 'Use case to remove a value from Blueprint at the specified path.
-
-
-        Supports:
-
-        - Removing fields: "contexts.sales.description" (sets to None)
-
-        - Removing list items: "contexts[0]" or "contexts.sales" (removes from list)'
+    - name: RemoveValue
+      kind: command
       input_:
         name: RemoveValueCommand
         description: Command to remove a value at a path.
@@ -3562,13 +3760,21 @@ contexts:
         - type: dict
           optional: true
           name: blueprint
-    - name: GetValue
-      kind: command
+      description: 'Use case to remove a value from Blueprint at the specified path.
+
+
+        Supports:
+
+        - Removing fields: "contexts.sales.description" (sets to None)
+
+        - Removing list items: "contexts[0]" or "contexts.sales" (removes from list)'
       dependencies:
       - type: BlueprintStorage
         name: storage
       - type: BlueprintPathOperations
         name: operations
+    - name: GetValue
+      kind: command
       input_:
         name: GetValueCommand
         description: ''
@@ -3578,12 +3784,13 @@ contexts:
       result:
         name: GetValueResult
         description: ''
-    - name: LoadBlueprint
-      kind: command
       dependencies:
       - type: BlueprintStorage
-        name: blueprint_loader
-      description: Loads the blueprint from a file.
+        name: storage
+      - type: BlueprintPathOperations
+        name: operations
+    - name: LoadBlueprint
+      kind: command
       input_:
         name: LoadBlueprintCommand
         description: ''
@@ -3597,6 +3804,10 @@ contexts:
         attributes:
         - type: Blueprint
           name: blueprint
+      description: Loads the blueprint from a file.
+      dependencies:
+      - type: BlueprintStorage
+        name: blueprint_loader
   infrastructure:
     implementations:
     - name: YamlBlueprintStorage

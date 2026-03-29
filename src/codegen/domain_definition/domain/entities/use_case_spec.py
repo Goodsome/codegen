@@ -19,10 +19,10 @@ class UseCaseSpec(Entity):
 
     name: PascalString
     kind: UseCaseKind
-    dependencies: list[AttributeSpec] = Field(default_factory=list)
-    description: str = Field(default_factory=str)
     input_: DataContractSpec
     result: DataContractSpec
+    description: str = Field(default_factory=str)
+    dependencies: list[AttributeSpec] = Field(default_factory=list)
 
     @classmethod
     def create(
