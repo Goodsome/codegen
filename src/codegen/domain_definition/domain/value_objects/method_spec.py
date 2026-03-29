@@ -96,7 +96,6 @@ class MethodSpec(ValueObject):
             function_spec.return_annotation
         )
 
-        print(function_spec.name, function_spec.description)
         return cls(
             name=function_spec.name,
             description=function_spec.description,
