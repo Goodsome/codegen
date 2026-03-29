@@ -40,11 +40,10 @@ class CliCommandSpec(ValueObject):
             ModuleSpec for CLI command
         """
         # 确定参数类型和属性列表
+        attributes = use_case.input_.attributes
         if use_case.kind == UseCaseKind.COMMAND:
-            attributes = use_case.command.attributes
             param_type_name = f"{use_case.name}Command"
         else:
-            attributes = use_case.query.attributes
             param_type_name = f"{use_case.name}Query"
 
         result_type = f"{use_case.name}Result"

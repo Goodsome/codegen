@@ -76,6 +76,13 @@ class ClassSpec(ValueObject):
             types.update(method.get_required_types())
         return types
 
+    def get_method(self, method_name: str) -> FunctionSpec:
+        """获取指定名称的方法，不存在则 raise error"""
+        for method in self.methods:
+            if method.name == method_name:
+                return method
+        raise ValueError(f"Method '{method_name}' not found in class '{self.name}'")
+
     def merge(self, other: "ClassSpec") -> "ClassSpec":
         if self.name != other.name:
             return self

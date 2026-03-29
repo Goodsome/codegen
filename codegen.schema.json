@@ -398,6 +398,7 @@
       "description":"Generic data contract specification for use case command/query/result.",
       "properties":{
         "attributes":{
+          "default":[],
           "items":{
             "$ref":"#/$defs/AttributeSpec"
           },
@@ -413,6 +414,10 @@
           "type":"string"
         }
       },
+      "required":[
+        "name",
+        "description"
+      ],
       "title":"DataContractSpec",
       "type":"object"
     },
@@ -939,9 +944,6 @@
       "additionalProperties":false,
       "description":"Specification of a use case to be generated.",
       "properties":{
-        "command":{
-          "$ref":"#/$defs/DataContractSpec"
-        },
         "dependencies":{
           "items":{
             "$ref":"#/$defs/AttributeSpec"
@@ -953,6 +955,9 @@
           "title":"Description",
           "type":"string"
         },
+        "input_":{
+          "$ref":"#/$defs/DataContractSpec"
+        },
         "kind":{
           "$ref":"#/$defs/UseCaseKind"
         },
@@ -960,16 +965,15 @@
           "title":"Name",
           "type":"string"
         },
-        "query":{
-          "$ref":"#/$defs/DataContractSpec"
-        },
         "result":{
           "$ref":"#/$defs/DataContractSpec"
         }
       },
       "required":[
         "name",
-        "kind"
+        "kind",
+        "input_",
+        "result"
       ],
       "title":"UseCaseSpec",
       "type":"object"

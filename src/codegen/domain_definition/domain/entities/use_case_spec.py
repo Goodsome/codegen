@@ -21,88 +21,56 @@ class UseCaseSpec(Entity):
     kind: UseCaseKind
     dependencies: list[AttributeSpec] = Field(default_factory=list)
     description: str = Field(default_factory=str)
-    command: DataContractSpec = Field(default_factory=DataContractSpec)
-    query: DataContractSpec = Field(default_factory=DataContractSpec)
-    result: DataContractSpec = Field(default_factory=DataContractSpec)
+    input_: DataContractSpec
+    result: DataContractSpec
 
     @classmethod
     def create(
         cls,
         name: str,
         kind: str | UseCaseKind,
+        input_: DataContractSpec,
+        result: DataContractSpec,
         dependencies: list[AttributeSpec] | None = None,
         description: str = "",
-        command: DataContractSpec | None = None,
-        query: DataContractSpec | None = None,
-        result: DataContractSpec | None = None,
     ):
         if dependencies is None:
             dependencies = []
-        if command is None:
-            command = DataContractSpec()
-        if query is None:
-            query = DataContractSpec()
-        if result is None:
-            result = DataContractSpec()
         if isinstance(kind, str):
             kind = UseCaseKind(kind)
+        suffix = "Command" if kind == UseCaseKind.COMMAND else "Query"
+        input_with_name = DataContractSpec(
+            name=f"{name}{suffix}",
+            description=input_.description,
+            attributes=input_.attributes,
+        )
+        result_with_name = DataContractSpec(
+            name=f"{name}Result",
+            description=result.description,
+            attributes=result.attributes,
+        )
         return cls(
             name=PascalString(name),
             kind=kind,
             dependencies=dependencies,
             description=description,
-            command=command,
-            query=query,
-            result=result,
+            input_=input_with_name,
+            result=result_with_name,
         )
 
     def to_module_spec(self) -> ModuleSpec:
         """将 UseCaseSpec 转换为 ModuleSpec"""
         classes: list[ClassSpec] = []
 
-        if self.kind is UseCaseKind.COMMAND:
-            command_name = f"{self.name}Command"
-            cmd_attributes = [
-                attr.to_variable_spec(flavor=FieldFlavor.PYDANTIC)
-                for attr in self.command.attributes
-            ]
-            command_class = ClassSpec.create(
-                name=command_name,
-                inheritance=["BaseModel"],
-                attributes=cmd_attributes,
-            )
-            param = VariableSpec.create(
-                name="cmd",
-                type_spec=parse_type_str(command_name),
-            )
-            classes.append(command_class)
-        elif self.kind is UseCaseKind.QUERY:
-            query_name = f"{self.name}Query"
-            query_attributes = [
-                attr.to_variable_spec(flavor=FieldFlavor.PYDANTIC)
-                for attr in self.query.attributes
-            ]
-            query_class = ClassSpec.create(
-                name=query_name,
-                inheritance=["BaseModel"],
-                attributes=query_attributes,
-            )
-            param = VariableSpec.create(
-                name="query",
-                type_spec=parse_type_str(query_name),
-            )
-            classes.append(query_class)
-
-        result_name = f"{self.name}Result"
-        result_attributes = [
-            attr.to_variable_spec(flavor=FieldFlavor.PYDANTIC)
-            for attr in self.result.attributes
-        ]
-        result_class = ClassSpec.create(
-            name=result_name,
-            inheritance=["BaseModel"],
-            attributes=result_attributes,
+        param_name = "cmd" if self.kind == UseCaseKind.COMMAND else "query"
+        input_class = self.input_.to_class_spec()
+        param = VariableSpec.create(
+            name=param_name,
+            type_spec=parse_type_str(self.input_.name),
         )
+        classes.append(input_class)
+
+        result_class = self.result.to_class_spec()
         classes.append(result_class)
 
         uc_attributes = [
@@ -112,7 +80,7 @@ class UseCaseSpec(Entity):
         execute_method = FunctionSpec.create(
             name="execute",
             parameters=[param],
-            return_annotation=parse_type_str(result_name),
+            return_annotation=parse_type_str(self.result.name),
             function_type=FunctionType.INSTANCE_METHOD,
         )
         uc_class = ClassSpec.create(
@@ -128,42 +96,48 @@ class UseCaseSpec(Entity):
     @classmethod
     def from_module_spec(cls, module: ModuleSpec) -> "UseCaseSpec":
         """将 ModuleSpec 逆向解析为 UseCaseSpec"""
-        kind = "command"
-        command = None
-        query = None
-        result = None
-        uc_name = module.name
-        uc_deps = []
+        # 1. Find UseCase class by module name
+        uc_name = PascalString(str(module.name))
+        uc_class = module.get_class(str(uc_name))
 
-        for spec_cls in module.classes:
-            if spec_cls.name.endswith("Command"):
-                kind = "command"
-                command_attributes = [
-                    AttributeSpec.from_variable_spec(attr) for attr in spec_cls.attributes
-                ]
-                command = DataContractSpec(attributes=command_attributes)
-            elif spec_cls.name.endswith("Query"):
-                kind = "query"
-                query_attributes = [
-                    AttributeSpec.from_variable_spec(attr) for attr in spec_cls.attributes
-                ]
-                query = DataContractSpec(attributes=query_attributes)
-            elif spec_cls.name.endswith("Result"):
-                result_attributes = [
-                    AttributeSpec.from_variable_spec(attr) for attr in spec_cls.attributes
-                ]
-                result = DataContractSpec(attributes=result_attributes)
-            else:
-                uc_name = spec_cls.name
-                uc_deps = [
-                    AttributeSpec.from_variable_spec(attr) for attr in spec_cls.attributes
-                ]
+        # 2. Parse dependencies from uc_class attributes
+        uc_deps = [
+            AttributeSpec.from_variable_spec(attr) for attr in uc_class.attributes
+        ]
+
+        # 3. Find execute method
+        execute_func = uc_class.get_method("execute")
+
+        # 4. Parse parameter info from execute
+        if not execute_func.parameters:
+            raise ValueError(f"Execute method has no parameters in UseCase class '{uc_name}'")
+        param = execute_func.parameters[1]
+        param_name = str(param.name)
+        input_type_name = param.type_spec.name if param.type_spec else None
+
+        # 5. Parse return type
+        result_type_name = execute_func.return_annotation.name if execute_func.return_annotation else None
+
+        # 6. Determine kind from param name
+        kind = UseCaseKind.COMMAND if param_name == "cmd" else UseCaseKind.QUERY
+
+        # 7. Get input and result classes
+        if input_type_name is None:
+            raise ValueError(f"Execute parameter has no type in UseCase class '{uc_name}'")
+        input_class = module.get_class(input_type_name)
+        if result_type_name is None:
+            raise ValueError(f"Execute return type not found in UseCase class '{uc_name}'")
+        result_class = module.get_class(result_type_name)
+
+        # 8. Convert to DataContractSpec
+        input_ = DataContractSpec.from_class_spec(input_class)
+        result = DataContractSpec.from_class_spec(result_class)
 
         return cls.create(
-            name=uc_name,
+            name=str(uc_name),
             kind=kind,
-            dependencies=uc_deps,
-            command=command,
-            query=query,
+            input_=input_,
             result=result,
+            dependencies=uc_deps,
+            description=uc_class.description,
         )
