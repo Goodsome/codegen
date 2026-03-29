@@ -306,7 +306,9 @@ contexts:
         name: loader
       - type: GeneratePackage
         name: generator
-      command:
+      input_:
+        name: GenerateProjectCommand
+        description: ''
         attributes:
         - type: string
           container: list
@@ -316,6 +318,8 @@ contexts:
           name: generate_tests
           default: false
       result:
+        name: GenerateProjectResult
+        description: ''
         attributes:
         - type: BuildResult
           name: result
@@ -326,11 +330,15 @@ contexts:
         name: parser
       - type: BlueprintStorage
         name: storage
-      command:
+      input_:
+        name: GenerateBlueprintCommand
+        description: ''
         attributes:
         - type: Path
           name: path
       result:
+        name: GenerateBlueprintResult
+        description: ''
         attributes:
         - type: string
           name: result
@@ -518,6 +526,14 @@ contexts:
         output:
           type: string
           container: set
+      - name: get_method
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: method_name
+        output:
+          type: FunctionSpec
       - name: merge
         inputs:
         - type: Self
@@ -942,6 +958,14 @@ contexts:
           name: class_name
         output:
           type: boolean
+      - name: get_class
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: class_name
+        output:
+          type: ClassSpec
       - name: has_function
         inputs:
         - type: Self
@@ -1341,11 +1365,16 @@ contexts:
       dependencies:
       - type: PythonSyntaxTranslator
         name: translator
-      query:
+      description: Parses Python package to PackageSpec.
+      input_:
+        name: ParsePackageQuery
+        description: ''
         attributes:
         - type: Path
           name: package_path
       result:
+        name: ParsePackageResult
+        description: ''
         attributes:
         - type: PackageSpec
           name: package_spec
@@ -1354,6 +1383,12 @@ contexts:
       dependencies:
       - type: FileSystemPort
         name: file_system_port
+      input_:
+        name: GenerateSchemaJsonCommand
+        description: ''
+      result:
+        name: GenerateSchemaJsonResult
+        description: ''
     - name: GeneratePackage
       kind: command
       dependencies:
@@ -1363,7 +1398,9 @@ contexts:
         name: translator
       - type: CodeFormatter
         name: code_formatter
-      command:
+      input_:
+        name: GeneratePackageCommand
+        description: ''
         attributes:
         - type: PackageSpec
           name: package_spec
@@ -1377,6 +1414,8 @@ contexts:
           name: root_path
           default: ''
       result:
+        name: GeneratePackageResult
+        description: ''
         attributes:
         - type: BuildResult
           name: result
@@ -1526,15 +1565,29 @@ contexts:
       description: Generic data contract specification for use case command/query/result.
       attributes:
       - type: string
-        optional: true
         name: name
       - type: string
-        optional: true
         name: description
       - type: AttributeSpec
         container: list
-        optional: true
         name: attributes
+        default: '[]'
+      behaviors:
+      - name: to_class_spec
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: ClassSpec
+      - name: from_class_spec
+        inputs:
+        - type: Self
+          container: type
+          name: cls
+        - type: ClassSpec
+          name: class_spec
+        output:
+          type: DataContractSpec
     - name: MethodOutput
       description: Specification of the output of a method.
     - name: MapperSpec
@@ -1898,13 +1951,8 @@ contexts:
         optional: true
         name: description
       - type: DataContractSpec
-        optional: true
-        name: command
+        name: input
       - type: DataContractSpec
-        optional: true
-        name: query
-      - type: DataContractSpec
-        optional: true
         name: result
       behaviors:
       - name: create
@@ -1917,6 +1965,10 @@ contexts:
         - type: Any
           custom_type_string: Union[str, UseCaseKind]
           name: kind
+        - type: DataContractSpec
+          name: input
+        - type: DataContractSpec
+          name: result
         - type: AttributeSpec
           container: list
           optional: true
@@ -1924,15 +1976,6 @@ contexts:
         - type: string
           name: description
           default: ''
-        - type: DataContractSpec
-          optional: true
-          name: command
-        - type: DataContractSpec
-          optional: true
-          name: query
-        - type: DataContractSpec
-          optional: true
-          name: result
         output:
           type: any
       - name: to_module_spec
@@ -2072,6 +2115,14 @@ contexts:
         output:
           type: Self
           container: list
+      - name: update_metadata
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: description
+        output:
+          type: None
     - name: InfrastructureSpec
       description: Specification of an infrastructure to be generated.
       attributes:
@@ -2319,7 +2370,7 @@ contexts:
           name: self
         - type: string
           name: name
-        - type: any
+        - type: string
           name: description
         output:
           type: Self
@@ -2374,7 +2425,6 @@ contexts:
           name: name
         - type: string
           name: description
-          default: ''
         output:
           type: Self
       - name: get_value_object
@@ -2453,12 +2503,13 @@ contexts:
           name: self
         - type: string
           name: name
-        - type: PortType
+        - type: string
           name: kind
-          default: ADAPTER
         - type: string
           name: description
-          default: ''
+        - type: string
+          optional: true
+          name: aggregate
         output:
           type: Self
       - name: get_port
@@ -2638,6 +2689,14 @@ contexts:
         output:
           type: Self
           container: list
+      - name: update_metadata
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: description
+        output:
+          type: None
     - name: CliInterfaceSpec
       description: CLI 接口层规范
       attributes:
@@ -2737,6 +2796,14 @@ contexts:
         output:
           type: Self
           container: list
+      - name: update_metadata
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: description
+        output:
+          type: None
     - name: PortSpec
       description: Specification of a domain port to be generated.
       attributes:
@@ -2819,27 +2886,19 @@ contexts:
         output:
           type: MethodSpec
           container: list
-      - name: get_save_method_spec
+      - name: update_metadata
         inputs:
         - type: Self
           name: self
-        output:
-          type: MethodSpec
+        - type: string
+          name: kind
+        - type: string
+          name: description
+        - type: string
           optional: true
-      - name: get_delete_method_spec
-        inputs:
-        - type: Self
-          name: self
+          name: aggregate
         output:
-          type: MethodSpec
-          optional: true
-      - name: get_find_by_id_method_spec
-        inputs:
-        - type: Self
-          name: self
-        output:
-          type: MethodSpec
-          optional: true
+          type: None
     - name: EnumSpec
       description: Specification of an enum to be generated.
       attributes:
@@ -2887,6 +2946,14 @@ contexts:
         output:
           type: EnumSpec
           container: list
+      - name: update_metadata
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: description
+        output:
+          type: None
     - name: AggregateSpec
       description: Specification of a domain aggregate to be generated.
       attributes:
@@ -3380,7 +3447,10 @@ contexts:
       dependencies:
       - type: BlueprintStorage
         name: storage
-      command:
+      description: Initializes a new project blueprint with a default Shared context.
+      input_:
+        name: InitProjectCommand
+        description: ''
         attributes:
         - type: string
           optional: true
@@ -3389,6 +3459,8 @@ contexts:
           optional: true
           name: project_description
       result:
+        name: InitProjectResult
+        description: ''
         attributes:
         - type: Blueprint
           name: blueprint
@@ -3397,11 +3469,15 @@ contexts:
       dependencies:
       - type: BlueprintStorage
         name: storage
-      command:
+      input_:
+        name: RemoveContextCommand
+        description: ''
         attributes:
         - type: string
           name: name
       result:
+        name: RemoveContextResult
+        description: ''
         attributes:
         - type: Blueprint
           name: blueprint
@@ -3412,7 +3488,19 @@ contexts:
         name: storage
       - type: BlueprintPathOperations
         name: operations
-      command:
+      description: 'Use case to set a value in Blueprint at the specified path.
+
+
+        Supports:
+
+        - Simple field updates: "project.version"
+
+        - Nested updates: "contexts.sales.description"
+
+        - List append with append=True'
+      input_:
+        name: SetValueCommand
+        description: Command to set a value at a path.
         attributes:
         - type: string
           name: path
@@ -3421,18 +3509,28 @@ contexts:
         - type: boolean
           name: append
           default: false
+      result:
+        name: SetValueResult
+        description: Result of a set value operation.
+        attributes:
+        - type: boolean
+          name: result
     - name: UpsertContext
       kind: command
       dependencies:
       - type: BlueprintStorage
         name: storage
-      command:
+      input_:
+        name: UpsertContextCommand
+        description: ''
         attributes:
         - type: string
           name: name
         - type: string
           name: description
       result:
+        name: UpsertContextResult
+        description: ''
         attributes:
         - type: Blueprint
           name: blueprint
@@ -3443,11 +3541,23 @@ contexts:
         name: storage
       - type: BlueprintPathOperations
         name: operations
-      command:
+      description: 'Use case to remove a value from Blueprint at the specified path.
+
+
+        Supports:
+
+        - Removing fields: "contexts.sales.description" (sets to None)
+
+        - Removing list items: "contexts[0]" or "contexts.sales" (removes from list)'
+      input_:
+        name: RemoveValueCommand
+        description: Command to remove a value at a path.
         attributes:
         - type: string
           name: path
       result:
+        name: RemoveValueResult
+        description: Result of a remove value operation.
         attributes:
         - type: dict
           optional: true
@@ -3459,21 +3569,31 @@ contexts:
         name: storage
       - type: BlueprintPathOperations
         name: operations
-      command:
+      input_:
+        name: GetValueCommand
+        description: ''
         attributes:
         - type: string
           name: path
+      result:
+        name: GetValueResult
+        description: ''
     - name: LoadBlueprint
       kind: command
       dependencies:
       - type: BlueprintStorage
         name: blueprint_loader
-      command:
+      description: Loads the blueprint from a file.
+      input_:
+        name: LoadBlueprintCommand
+        description: ''
         attributes:
         - type: string
           optional: true
           name: node
       result:
+        name: LoadBlueprintResult
+        description: ''
         attributes:
         - type: Blueprint
           name: blueprint

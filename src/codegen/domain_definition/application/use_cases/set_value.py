@@ -13,6 +13,12 @@ class SetValueCommand:
     append: bool = False  # If True, append to list instead of replace
 
 
+@dataclass(frozen=True)
+class SetValueResult:
+    """Result of a set value operation."""
+    result: bool
+
+
 @dataclass
 class SetValue:
     """
@@ -26,7 +32,7 @@ class SetValue:
     storage: BlueprintStorage
     operations: BlueprintPathOperations
     
-    def execute(self, cmd: SetValueCommand) -> None:
+    def execute(self, cmd: SetValueCommand) -> SetValueResult:
         """
         Execute the set value command.
         
@@ -48,3 +54,5 @@ class SetValue:
         )
         
         self.storage.save(new_blueprint)
+        
+        return SetValueResult(result=True)
