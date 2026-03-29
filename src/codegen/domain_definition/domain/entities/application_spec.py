@@ -1,7 +1,12 @@
+from typing import Self
+
 from codegen.domain_definition.domain.entities.port_spec import PortSpec
 from codegen.domain_definition.domain.entities.service_spec import ServiceSpec
 from codegen.domain_definition.domain.entities.use_case_spec import UseCaseSpec
+from codegen.domain_definition.domain.enums import UseCaseKind
+from codegen.domain_definition.domain.value_objects.data_contract_spec import DataContractSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
+from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.models import Entity
 from pydantic import Field
 
@@ -42,4 +47,91 @@ class ApplicationSpec(Entity):
                         ports.append(PortSpec.from_module_spec(mod))
 
         return cls(use_cases=use_cases, ports=ports)
+
+    def upsert_use_case(
+        self,
+        name: str,
+        kind: str | UseCaseKind,
+        description: str = "",
+    ) -> Self:
+        """Upsert a UseCaseSpec by name."""
+        if isinstance(kind, str):
+            kind = UseCaseKind(kind)
+        for uc in self.use_cases:
+            if uc.name == name:
+                uc.update_metadata(kind=kind, description=description)
+                return self
+        input_ = DataContractSpec(name=f"{name}Input", description="")
+        result = DataContractSpec(name=f"{name}Result", description="")
+        new_use_case = UseCaseSpec.create(
+            name=name,
+            kind=kind,
+            input_=input_,
+            result=result,
+            description=description,
+        )
+        self.use_cases.append(new_use_case)
+        return self
+
+    def get_use_case(self, name: str) -> UseCaseSpec:
+        """Get a UseCaseSpec by name. Raises ValueError if not found."""
+        for uc in self.use_cases:
+            if uc.name == name:
+                return uc
+        raise ValueError(f"UseCase '{name}' not found in application")
+
+    def remove_use_case(self, name: str) -> Self:
+        """Remove a UseCaseSpec by name. Returns self for chaining."""
+        self.use_cases = [uc for uc in self.use_cases if uc.name != name]
+        return self
+
+    def upsert_port(
+        self, 
+        name: str, 
+        kind: str, 
+        description: str,
+        aggregate: str | None = None,
+    ) -> Self:
+        """Upsert a PortSpec by name."""
+        for port in self.ports:
+            if port.name == name:
+                port.update_metadata(kind=kind, description=description, aggregate=aggregate)
+                return self
+        new_port = PortSpec.create(name=PascalString(name), kind=kind, description=description, aggregate=aggregate)
+        self.ports.append(new_port)
+        return self
+
+    def get_port(self, name: str) -> PortSpec:
+        """Get a PortSpec by name. Raises ValueError if not found."""
+        for port in self.ports:
+            if port.name == name:
+                return port
+        raise ValueError(f"Port '{name}' not found in application")
+
+    def remove_port(self, name: str) -> Self:
+        """Remove a PortSpec by name. Returns self for chaining."""
+        self.ports = [p for p in self.ports if p.name != name]
+        return self
+
+    def upsert_service(self, name: str, description: str) -> Self:
+        """Upsert a ServiceSpec by name."""
+        for svc in self.services:
+            if svc.name == name:
+                svc.update_metadata(description=description)
+                return self
+        new_service = ServiceSpec(name=PascalString(name), description=description)
+        self.services.append(new_service)
+        return self
+
+    def get_service(self, name: str) -> ServiceSpec:
+        """Get a ServiceSpec by name. Raises ValueError if not found."""
+        for svc in self.services:
+            if svc.name == name:
+                return svc
+        raise ValueError(f"Service '{name}' not found in application")
+
+    def remove_service(self, name: str) -> Self:
+        """Remove a ServiceSpec by name. Returns self for chaining."""
+        self.services = [s for s in self.services if s.name != name]
+        return self
 

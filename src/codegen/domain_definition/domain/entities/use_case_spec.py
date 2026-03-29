@@ -1,3 +1,5 @@
+from typing import Self
+
 from codegen.domain_definition.domain.enums import UseCaseKind
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
 from codegen.domain_definition.domain.value_objects.data_contract_spec import (
@@ -38,24 +40,13 @@ class UseCaseSpec(Entity):
             dependencies = []
         if isinstance(kind, str):
             kind = UseCaseKind(kind)
-        suffix = "Command" if kind == UseCaseKind.COMMAND else "Query"
-        input_with_name = DataContractSpec(
-            name=f"{name}{suffix}",
-            description=input_.description,
-            attributes=input_.attributes,
-        )
-        result_with_name = DataContractSpec(
-            name=f"{name}Result",
-            description=result.description,
-            attributes=result.attributes,
-        )
         return cls(
             name=PascalString(name),
             kind=kind,
             dependencies=dependencies,
             description=description,
-            input_=input_with_name,
-            result=result_with_name,
+            input_=input_,
+            result=result,
         )
 
     def to_module_spec(self) -> ModuleSpec:
@@ -141,3 +132,12 @@ class UseCaseSpec(Entity):
             dependencies=uc_deps,
             description=uc_class.description,
         )
+
+    def update_metadata(self, kind: str | UseCaseKind | None = None, description: str | None = None) -> Self:
+        if kind is not None:
+            if isinstance(kind, str):
+                kind = UseCaseKind(kind)
+            self.kind = kind
+        if description is not None:
+            self.description = description
+        return self
