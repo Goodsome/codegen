@@ -60,3 +60,7 @@ class EnumSpec(Entity):
         """将 ModuleSpec 逆向解析为 EnumSpec 列表"""
         return [cls.from_python_enum_spec(enum_spec) for enum_spec in module_spec.enums]
 
+    def update_metadata(self, description: str) -> None:
+        """Update scalar metadata fields (e.g., description). Preserves internal structure."""
+        self.description = description
+

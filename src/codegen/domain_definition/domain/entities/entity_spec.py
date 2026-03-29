@@ -76,4 +76,8 @@ class EntitySpec(Entity):
                 continue
             entities.append(cls.from_module_spec(module))
         return entities
+
+    def update_metadata(self, description: str) -> None:
+        """Update scalar metadata fields (e.g., description). Preserves internal structure."""
+        self.description = description
     

@@ -76,3 +76,10 @@ class Blueprint(AggregateRoot):
         """Remove a BoundedContext by name. Returns self for chaining."""
         self.contexts = [ctx for ctx in self.contexts if ctx.name != name]
         return self
+
+    def get_context(self, name: str) -> BoundedContext:
+        """Get a BoundedContext by name. Raises ValueError if not found."""
+        for ctx in self.contexts:
+            if ctx.name == name:
+                return ctx
+        raise ValueError(f"Context '{name}' not found in blueprint")

@@ -74,3 +74,7 @@ class ServiceSpec(Entity):
             services.append(cls.from_module_spec(module))
         return services
 
+    def update_metadata(self, description: str) -> None:
+        """Update scalar metadata fields (e.g., description). Preserves internal structure."""
+        self.description = description
+

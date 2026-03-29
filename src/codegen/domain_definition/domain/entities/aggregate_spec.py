@@ -80,3 +80,7 @@ class AggregateSpec(Entity):
                 continue
             aggregates.append(cls.from_module_spec(module))
         return aggregates
+
+    def update_metadata(self, description: str) -> None:
+        """Update scalar metadata fields (e.g., description). Preserves internal structure."""
+        self.description = description

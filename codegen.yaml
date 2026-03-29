@@ -1470,6 +1470,14 @@ contexts:
           name: name
         output:
           type: Self
+      - name: get_context
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: BoundedContext
     enums:
     - name: PortType
       members:
@@ -2305,6 +2313,170 @@ contexts:
           name: package_spec
         output:
           type: DomainSpec
+      - name: upsert_aggregate
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        - type: any
+          name: description
+        output:
+          type: Self
+      - name: get_aggregate
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: AggregateSpec
+      - name: remove_aggregate
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: Self
+      - name: upsert_enum
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        - type: string
+          name: description
+          default: ''
+        output:
+          type: Self
+      - name: get_enum
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: EnumSpec
+      - name: remove_enum
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: Self
+      - name: upsert_value_object
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        - type: string
+          name: description
+          default: ''
+        output:
+          type: Self
+      - name: get_value_object
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: ValueObjectSpec
+      - name: remove_value_object
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: Self
+      - name: upsert_entity
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        - type: string
+          name: description
+          default: ''
+        output:
+          type: Self
+      - name: get_entity
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: EntitySpec
+      - name: remove_entity
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: Self
+      - name: upsert_service
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        - type: string
+          name: description
+          default: ''
+        output:
+          type: Self
+      - name: get_service
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: ServiceSpec
+      - name: remove_service
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: Self
+      - name: upsert_port
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        - type: PortType
+          name: kind
+          default: ADAPTER
+        - type: string
+          name: description
+          default: ''
+        output:
+          type: Self
+      - name: get_port
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: PortSpec
+      - name: remove_port
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: Self
     - name: BoundedContext
       description: A logical boundary within the system.
       attributes:
@@ -2767,6 +2939,14 @@ contexts:
         output:
           type: Self
           container: list
+      - name: update_metadata
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: description
+        output:
+          type: None
     - name: BootstrapSpec
       description: Specification of the bootstrap configuration.
       attributes:
@@ -3267,6 +3447,11 @@ contexts:
         attributes:
         - type: string
           name: path
+      result:
+        attributes:
+        - type: dict
+          optional: true
+          name: blueprint
     - name: GetValue
       kind: command
       dependencies:
@@ -3308,13 +3493,13 @@ contexts:
         use_case: LoadBlueprint
       - name: rm
         use_case: RemoveValue
+      - name: remove-context
+        use_case: RemoveContext
+      - name: upsert-context
+        use_case: UpsertContext
       - name: init
         use_case: InitProject
       - name: set
         use_case: SetValue
       - name: get
         use_case: GetValue
-      - name: upsert-context
-        use_case: UpsertContext
-      - name: remove-context
-        use_case: RemoveContext
