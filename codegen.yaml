@@ -1527,7 +1527,7 @@ contexts:
         value: command
       - name: QUERY
         value: query
-    - name: ContextNodeType
+    - name: ElementType
       members:
       - name: AGGREAGET
         value: aggregate
@@ -1551,6 +1551,14 @@ contexts:
         value: implementation
       - name: CLI_COMMAND
         value: cli_command
+    - name: ElementFieldType
+      members:
+      - name: ATTRIBUTE
+        value: attribute
+      - name: BEHAVIOR
+        value: behavior
+      - name: OPERATION
+        value: operation
     value_objects:
     - name: EnumMemberSpec
       description: Specification of an enum member to be generated.
@@ -2137,6 +2145,124 @@ contexts:
           name: description
         output:
           type: Self
+      - name: add_input
+        description: Add an AttributeSpec input. Raises ValueError if input with same
+          name exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: AttributeSpec
+          name: input
+        output:
+          type: Self
+      - name: update_input
+        description: Update an existing AttributeSpec input by name. Raises ValueError
+          if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: AttributeSpec
+          name: input
+        output:
+          type: Self
+      - name: remove_input
+        description: Remove an AttributeSpec input by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: Self
+      - name: get_input
+        description: Get an AttributeSpec input by name. Raises ValueError if not
+          found.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: AttributeSpec
+      - name: add_output
+        description: Add an AttributeSpec output. Raises ValueError if output with
+          same name exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: AttributeSpec
+          name: output
+        output:
+          type: Self
+      - name: update_output
+        description: Update an existing AttributeSpec output by name. Raises ValueError
+          if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: AttributeSpec
+          name: output
+        output:
+          type: Self
+      - name: remove_output
+        description: Remove an AttributeSpec output by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: Self
+      - name: get_output
+        description: Get an AttributeSpec output by name. Raises ValueError if not
+          found.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: AttributeSpec
+      - name: add_dependency
+        description: Add an AttributeSpec dependency. Raises ValueError if dependency
+          with same name exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: AttributeSpec
+          name: dependency
+        output:
+          type: Self
+      - name: update_dependency
+        description: Update an existing AttributeSpec dependency by name. Raises ValueError
+          if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: AttributeSpec
+          name: dependency
+        output:
+          type: Self
+      - name: remove_dependency
+        description: Remove an AttributeSpec dependency by name. Returns self for
+          chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: Self
+      - name: get_dependency
+        description: Get an AttributeSpec dependency by name. Raises ValueError if
+          not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: AttributeSpec
     - name: ApplicationSpec
       description: Specification of an application to be generated.
       attributes:
@@ -2170,19 +2296,24 @@ contexts:
           name: package_spec
         output:
           type: ApplicationSpec
-      - name: upsert_use_case
-        description: Upsert a UseCaseSpec by name.
+      - name: add_use_case
+        description: Add a UseCaseSpec. Raises ValueError if use_case with same name
+          exists.
         inputs:
         - type: Self
           name: self
-        - type: string
-          name: name
-        - type: Any
-          custom_type_string: Union[str, UseCaseKind]
-          name: kind
-        - type: string
-          name: description
-          default: ''
+        - type: UseCaseSpec
+          name: use_case
+        output:
+          type: Self
+      - name: update_use_case
+        description: Update an existing UseCaseSpec by name. Raises ValueError if
+          not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: UseCaseSpec
+          name: use_case
         output:
           type: Self
       - name: get_use_case
@@ -2203,20 +2334,23 @@ contexts:
           name: name
         output:
           type: Self
-      - name: upsert_port
-        description: Upsert a PortSpec by name.
+      - name: add_port
+        description: Add a PortSpec. Raises ValueError if port with same name exists.
         inputs:
         - type: Self
           name: self
-        - type: string
-          name: name
-        - type: string
-          name: kind
-        - type: string
-          name: description
-        - type: string
-          optional: true
-          name: aggregate
+        - type: PortSpec
+          name: port
+        output:
+          type: Self
+      - name: update_port
+        description: Update an existing PortSpec by name. Raises ValueError if not
+          found.
+        inputs:
+        - type: Self
+          name: self
+        - type: PortSpec
+          name: port
         output:
           type: Self
       - name: get_port
@@ -2237,15 +2371,24 @@ contexts:
           name: name
         output:
           type: Self
-      - name: upsert_service
-        description: Upsert a ServiceSpec by name.
+      - name: add_service
+        description: Add a ServiceSpec. Raises ValueError if service with same name
+          exists.
         inputs:
         - type: Self
           name: self
-        - type: string
-          name: name
-        - type: string
-          name: description
+        - type: ServiceSpec
+          name: service
+        output:
+          type: Self
+      - name: update_service
+        description: Update an existing ServiceSpec by name. Raises ValueError if
+          not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: ServiceSpec
+          name: service
         output:
           type: Self
       - name: get_service
@@ -2314,6 +2457,120 @@ contexts:
           name: use_cases
         output:
           type: InterfaceSpec
+      - name: add_cli_command
+        description: Add a CliCommandSpec. Raises ValueError if cli_command with same
+          name exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: CliCommandSpec
+          name: cli_command
+        output:
+          type: Self
+      - name: update_cli_command
+        description: Update an existing CliCommandSpec by name. Raises ValueError
+          if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: CliCommandSpec
+          name: cli_command
+        output:
+          type: Self
+      - name: remove_cli_command
+        description: Remove a CliCommandSpec by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: KebabString
+          name: name
+        output:
+          type: Self
+      - name: get_cli_command
+        description: Get a CliCommandSpec by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: KebabString
+          name: name
+        output:
+          type: CliCommandSpec
+      - name: add_mcp_tool
+        description: Add an McpToolSpec. Raises ValueError if mcp_tool with same name
+          exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: McpToolSpec
+          name: mcp_tool
+        output:
+          type: Self
+      - name: update_mcp_tool
+        description: Update an existing McpToolSpec by name. Raises ValueError if
+          not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: McpToolSpec
+          name: mcp_tool
+        output:
+          type: Self
+      - name: remove_mcp_tool
+        description: Remove an McpToolSpec by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: Self
+      - name: get_mcp_tool
+        description: Get an McpToolSpec by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: McpToolSpec
+      - name: add_http_endpoint
+        description: Add an HttpEndpointSpec. Raises ValueError if http_endpoint with
+          same name exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: HttpEndpointSpec
+          name: http_endpoint
+        output:
+          type: Self
+      - name: update_http_endpoint
+        description: Update an existing HttpEndpointSpec by name. Raises ValueError
+          if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: HttpEndpointSpec
+          name: http_endpoint
+        output:
+          type: Self
+      - name: remove_http_endpoint
+        description: Remove an HttpEndpointSpec by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: Self
+      - name: get_http_endpoint
+        description: Get an HttpEndpointSpec by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: HttpEndpointSpec
     - name: ValueObjectSpec
       description: Specification of a value object to be generated.
       attributes:
@@ -2380,6 +2637,82 @@ contexts:
           name: description
         output:
           type: None
+      - name: add_attribute
+        description: Add an AttributeSpec. Raises ValueError if attribute with same
+          name exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: AttributeSpec
+          name: attribute
+        output:
+          type: Self
+      - name: update_attribute
+        description: Update an existing AttributeSpec by name. Raises ValueError if
+          not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: AttributeSpec
+          name: attribute
+        output:
+          type: Self
+      - name: remove_attribute
+        description: Remove an AttributeSpec by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: Self
+      - name: get_attribute
+        description: Get an AttributeSpec by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: AttributeSpec
+      - name: add_behavior
+        description: Add a MethodSpec behavior. Raises ValueError if behavior with
+          same name exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: MethodSpec
+          name: behavior
+        output:
+          type: Self
+      - name: update_behavior
+        description: Update an existing MethodSpec behavior by name. Raises ValueError
+          if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: MethodSpec
+          name: behavior
+        output:
+          type: Self
+      - name: remove_behavior
+        description: Remove a MethodSpec behavior by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: Self
+      - name: get_behavior
+        description: Get a MethodSpec behavior by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: MethodSpec
     - name: InfrastructureSpec
       description: Specification of an infrastructure to be generated.
       attributes:
@@ -2408,20 +2741,24 @@ contexts:
           name: package_spec
         output:
           type: InfrastructureSpec
-      - name: upsert_implementation
-        description: Upsert an ImplementationSpec by name.
+      - name: add_implementation
+        description: Add an ImplementationSpec. Raises ValueError if implementation
+          with same name exists.
         inputs:
         - type: Self
           name: self
-        - type: string
-          name: name
-        - type: string
-          name: implements
-        - type: string
-          name: technology
-        - type: string
-          name: description
-          default: ''
+        - type: ImplementationSpec
+          name: implementation
+        output:
+          type: Self
+      - name: update_implementation
+        description: Update an existing ImplementationSpec by name. Raises ValueError
+          if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: ImplementationSpec
+          name: implementation
         output:
           type: Self
       - name: get_implementation
@@ -2590,6 +2927,82 @@ contexts:
           name: description
         output:
           type: None
+      - name: add_attribute
+        description: Add an AttributeSpec. Raises ValueError if attribute with same
+          name exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: AttributeSpec
+          name: attribute
+        output:
+          type: Self
+      - name: update_attribute
+        description: Update an existing AttributeSpec by name. Raises ValueError if
+          not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: AttributeSpec
+          name: attribute
+        output:
+          type: Self
+      - name: remove_attribute
+        description: Remove an AttributeSpec by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: Self
+      - name: get_attribute
+        description: Get an AttributeSpec by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: AttributeSpec
+      - name: add_private_method
+        description: Add a private MethodSpec. Raises ValueError if method with same
+          name exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: MethodSpec
+          name: method
+        output:
+          type: Self
+      - name: update_private_method
+        description: Update an existing private MethodSpec by name. Raises ValueError
+          if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: MethodSpec
+          name: method
+        output:
+          type: Self
+      - name: remove_private_method
+        description: Remove a private MethodSpec by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: Self
+      - name: get_private_method
+        description: Get a private MethodSpec by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: MethodSpec
     - name: DomainSpec
       description: Specification of a domain to be generated.
       attributes:
@@ -2635,16 +3048,24 @@ contexts:
           name: package_spec
         output:
           type: DomainSpec
-      - name: upsert_aggregate
-        description: Upsert an AggregateSpec by name. Only updates scalar fields if
-          exists.
+      - name: add_aggregate
+        description: Add an AggregateSpec. Raises ValueError if aggregate with same
+          name exists.
         inputs:
         - type: Self
           name: self
-        - type: string
-          name: name
-        - type: string
-          name: description
+        - type: AggregateSpec
+          name: aggregate
+        output:
+          type: Self
+      - name: update_aggregate
+        description: Update an existing AggregateSpec by name. Raises ValueError if
+          not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: AggregateSpec
+          name: aggregate
         output:
           type: Self
       - name: get_aggregate
@@ -2665,16 +3086,23 @@ contexts:
           name: name
         output:
           type: Self
-      - name: upsert_enum
-        description: Upsert an EnumSpec by name. Only updates scalar fields if exists.
+      - name: add_enum
+        description: Add an EnumSpec. Raises ValueError if enum with same name exists.
         inputs:
         - type: Self
           name: self
-        - type: string
-          name: name
-        - type: string
-          name: description
-          default: ''
+        - type: EnumSpec
+          name: enum
+        output:
+          type: Self
+      - name: update_enum
+        description: Update an existing EnumSpec by name. Raises ValueError if not
+          found.
+        inputs:
+        - type: Self
+          name: self
+        - type: EnumSpec
+          name: enum
         output:
           type: Self
       - name: get_enum
@@ -2695,16 +3123,24 @@ contexts:
           name: name
         output:
           type: Self
-      - name: upsert_value_object
-        description: Upsert a ValueObjectSpec by name. Only updates scalar fields
-          if exists.
+      - name: add_value_object
+        description: Add a ValueObjectSpec. Raises ValueError if value object with
+          same name exists.
         inputs:
         - type: Self
           name: self
-        - type: string
-          name: name
-        - type: string
-          name: description
+        - type: ValueObjectSpec
+          name: value_object
+        output:
+          type: Self
+      - name: update_value_object
+        description: Update an existing ValueObjectSpec by name. Raises ValueError
+          if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: ValueObjectSpec
+          name: value_object
         output:
           type: Self
       - name: get_value_object
@@ -2725,16 +3161,24 @@ contexts:
           name: name
         output:
           type: Self
-      - name: upsert_entity
-        description: Upsert an EntitySpec by name. Only updates scalar fields if exists.
+      - name: add_entity
+        description: Add an EntitySpec. Raises ValueError if entity with same name
+          exists.
         inputs:
         - type: Self
           name: self
-        - type: string
-          name: name
-        - type: string
-          name: description
-          default: ''
+        - type: EntitySpec
+          name: entity
+        output:
+          type: Self
+      - name: update_entity
+        description: Update an existing EntitySpec by name. Raises ValueError if not
+          found.
+        inputs:
+        - type: Self
+          name: self
+        - type: EntitySpec
+          name: entity
         output:
           type: Self
       - name: get_entity
@@ -2755,16 +3199,24 @@ contexts:
           name: name
         output:
           type: Self
-      - name: upsert_service
-        description: Upsert a ServiceSpec by name. Only updates scalar fields if exists.
+      - name: add_service
+        description: Add a ServiceSpec. Raises ValueError if service with same name
+          exists.
         inputs:
         - type: Self
           name: self
-        - type: string
-          name: name
-        - type: string
-          name: description
-          default: ''
+        - type: ServiceSpec
+          name: service
+        output:
+          type: Self
+      - name: update_service
+        description: Update an existing ServiceSpec by name. Raises ValueError if
+          not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: ServiceSpec
+          name: service
         output:
           type: Self
       - name: get_service
@@ -2785,20 +3237,23 @@ contexts:
           name: name
         output:
           type: Self
-      - name: upsert_port
-        description: Upsert a PortSpec by name. Only updates scalar fields if exists.
+      - name: add_port
+        description: Add a PortSpec. Raises ValueError if port with same name exists.
         inputs:
         - type: Self
           name: self
-        - type: string
-          name: name
-        - type: string
-          name: kind
-        - type: string
-          name: description
-        - type: string
-          optional: true
-          name: aggregate
+        - type: PortSpec
+          name: port
+        output:
+          type: Self
+      - name: update_port
+        description: Update an existing PortSpec by name. Raises ValueError if not
+          found.
+        inputs:
+        - type: Self
+          name: self
+        - type: PortSpec
+          name: port
         output:
           type: Self
       - name: get_port
@@ -2999,6 +3454,85 @@ contexts:
           name: description
         output:
           type: None
+      - name: add_dependency
+        description: Add an AttributeSpec dependency. Raises ValueError if dependency
+          with same name exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: AttributeSpec
+          name: dependency
+        output:
+          type: Self
+      - name: update_dependency
+        description: Update an existing AttributeSpec dependency by name. Raises ValueError
+          if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: AttributeSpec
+          name: dependency
+        output:
+          type: Self
+      - name: remove_dependency
+        description: Remove an AttributeSpec dependency by name. Returns self for
+          chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: Self
+      - name: get_dependency
+        description: Get an AttributeSpec dependency by name. Raises ValueError if
+          not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: AttributeSpec
+      - name: add_operation
+        description: Add a MethodSpec operation. Raises ValueError if operation with
+          same name exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: MethodSpec
+          name: operation
+        output:
+          type: Self
+      - name: update_operation
+        description: Update an existing MethodSpec operation by name. Raises ValueError
+          if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: MethodSpec
+          name: operation
+        output:
+          type: Self
+      - name: remove_operation
+        description: Remove a MethodSpec operation by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: Self
+      - name: get_operation
+        description: Get a MethodSpec operation by name. Raises ValueError if not
+          found.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: MethodSpec
     - name: EntitySpec
       description: Specification of an entity.
       attributes:
@@ -3065,6 +3599,82 @@ contexts:
           name: description
         output:
           type: None
+      - name: add_attribute
+        description: Add an AttributeSpec. Raises ValueError if attribute with same
+          name exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: AttributeSpec
+          name: attribute
+        output:
+          type: Self
+      - name: update_attribute
+        description: Update an existing AttributeSpec by name. Raises ValueError if
+          not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: AttributeSpec
+          name: attribute
+        output:
+          type: Self
+      - name: remove_attribute
+        description: Remove an AttributeSpec by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: Self
+      - name: get_attribute
+        description: Get an AttributeSpec by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: AttributeSpec
+      - name: add_behavior
+        description: Add a MethodSpec behavior. Raises ValueError if behavior with
+          same name exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: MethodSpec
+          name: behavior
+        output:
+          type: Self
+      - name: update_behavior
+        description: Update an existing MethodSpec behavior by name. Raises ValueError
+          if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: MethodSpec
+          name: behavior
+        output:
+          type: Self
+      - name: remove_behavior
+        description: Remove a MethodSpec behavior by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: Self
+      - name: get_behavior
+        description: Get a MethodSpec behavior by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: MethodSpec
     - name: PortSpec
       description: Specification of a domain port to be generated.
       attributes:
@@ -3166,6 +3776,45 @@ contexts:
           name: aggregate
         output:
           type: None
+      - name: add_operation
+        description: Add a MethodSpec operation. Raises ValueError if operation with
+          same name exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: MethodSpec
+          name: operation
+        output:
+          type: Self
+      - name: update_operation
+        description: Update an existing MethodSpec operation by name. Raises ValueError
+          if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: MethodSpec
+          name: operation
+        output:
+          type: Self
+      - name: remove_operation
+        description: Remove a MethodSpec operation by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: Self
+      - name: get_operation
+        description: Get a MethodSpec operation by name. Raises ValueError if not
+          found.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: MethodSpec
     - name: EnumSpec
       description: Specification of an enum to be generated.
       attributes:
@@ -3227,6 +3876,44 @@ contexts:
           name: description
         output:
           type: None
+      - name: add_member
+        description: Add an EnumMemberSpec. Raises ValueError if member with same
+          name exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: EnumMemberSpec
+          name: member
+        output:
+          type: Self
+      - name: update_member
+        description: Update an existing EnumMemberSpec by name. Raises ValueError
+          if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: EnumMemberSpec
+          name: member
+        output:
+          type: Self
+      - name: remove_member
+        description: Remove an EnumMemberSpec by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: Self
+      - name: get_member
+        description: Get an EnumMemberSpec by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: EnumMemberSpec
     - name: AggregateSpec
       description: Specification of a domain aggregate to be generated.
       attributes:
@@ -3293,6 +3980,82 @@ contexts:
           name: description
         output:
           type: None
+      - name: add_attribute
+        description: Add an AttributeSpec. Raises ValueError if attribute with same
+          name exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: AttributeSpec
+          name: attribute
+        output:
+          type: Self
+      - name: update_attribute
+        description: Update an existing AttributeSpec by name. Raises ValueError if
+          not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: AttributeSpec
+          name: attribute
+        output:
+          type: Self
+      - name: remove_attribute
+        description: Remove an AttributeSpec by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: Self
+      - name: get_attribute
+        description: Get an AttributeSpec by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: AttributeSpec
+      - name: add_behavior
+        description: Add a MethodSpec behavior. Raises ValueError if behavior with
+          same name exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: MethodSpec
+          name: behavior
+        output:
+          type: Self
+      - name: update_behavior
+        description: Update an existing MethodSpec behavior by name. Raises ValueError
+          if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: MethodSpec
+          name: behavior
+        output:
+          type: Self
+      - name: remove_behavior
+        description: Remove a MethodSpec behavior by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: Self
+      - name: get_behavior
+        description: Get a MethodSpec behavior by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: MethodSpec
     - name: BootstrapSpec
       description: Specification of the bootstrap configuration.
       attributes:
