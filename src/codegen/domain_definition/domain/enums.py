@@ -19,7 +19,7 @@ class UseCaseKind(Enum):
     QUERY = "query"
 
 
-class ContextNodeType(Enum):
+class ElementType(Enum):
     AGGREAGET = "aggregate"    
     ENTITY = "entity"
     VALUE_OBJECT = "value_object"
@@ -34,3 +34,10 @@ class ContextNodeType(Enum):
     IMPLEMENTATION = "implementation"
     
     CLI_COMMAND = "cli_command"
+
+class ElementFieldType(Enum):
+    
+    ATTRIBUTE = "attribute"
+    BEHAVIOR = "behavior"
+    OPERATION = "operation"
+    

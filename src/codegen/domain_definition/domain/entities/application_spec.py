@@ -47,26 +47,21 @@ class ApplicationSpec(Entity):
 
         return cls(use_cases=use_cases, ports=ports)
 
-    def upsert_use_case(
-        self,
-        name: str,
-        kind: str | UseCaseKind,
-        description: str = "",
-    ) -> Self:
-        """Upsert a UseCaseSpec by name."""
-        if isinstance(kind, str):
-            kind = UseCaseKind(kind)
+    def add_use_case(self, use_case: UseCaseSpec) -> Self:
+        """Add a UseCaseSpec. Raises ValueError if use_case with same name exists."""
         for uc in self.use_cases:
-            if uc.name == name:
-                uc.update_metadata(kind=kind, description=description)
-                return self
-        new_use_case = UseCaseSpec.create(
-            name=name,
-            kind=kind,
-            description=description,
-        )
-        self.use_cases.append(new_use_case)
+            if uc.name == use_case.name:
+                raise ValueError(f"UseCase '{use_case.name}' already exists in application")
+        self.use_cases.append(use_case)
         return self
+
+    def update_use_case(self, use_case: UseCaseSpec) -> Self:
+        """Update an existing UseCaseSpec by name. Raises ValueError if not found."""
+        for i, uc in enumerate(self.use_cases):
+            if uc.name == use_case.name:
+                self.use_cases[i] = use_case
+                return self
+        raise ValueError(f"UseCase '{use_case.name}' not found in application")
 
     def get_use_case(self, name: str) -> UseCaseSpec:
         """Get a UseCaseSpec by name. Raises ValueError if not found."""
@@ -80,21 +75,21 @@ class ApplicationSpec(Entity):
         self.use_cases = [uc for uc in self.use_cases if uc.name != name]
         return self
 
-    def upsert_port(
-        self, 
-        name: str, 
-        kind: str, 
-        description: str,
-        aggregate: str | None = None,
-    ) -> Self:
-        """Upsert a PortSpec by name."""
-        for port in self.ports:
-            if port.name == name:
-                port.update_metadata(kind=kind, description=description, aggregate=aggregate)
-                return self
-        new_port = PortSpec.create(name=PascalString(name), kind=kind, description=description, aggregate=aggregate)
-        self.ports.append(new_port)
+    def add_port(self, port: PortSpec) -> Self:
+        """Add a PortSpec. Raises ValueError if port with same name exists."""
+        for p in self.ports:
+            if p.name == port.name:
+                raise ValueError(f"Port '{port.name}' already exists in application")
+        self.ports.append(port)
         return self
+
+    def update_port(self, port: PortSpec) -> Self:
+        """Update an existing PortSpec by name. Raises ValueError if not found."""
+        for i, p in enumerate(self.ports):
+            if p.name == port.name:
+                self.ports[i] = port
+                return self
+        raise ValueError(f"Port '{port.name}' not found in application")
 
     def get_port(self, name: str) -> PortSpec:
         """Get a PortSpec by name. Raises ValueError if not found."""
@@ -108,15 +103,21 @@ class ApplicationSpec(Entity):
         self.ports = [p for p in self.ports if p.name != name]
         return self
 
-    def upsert_service(self, name: str, description: str) -> Self:
-        """Upsert a ServiceSpec by name."""
-        for svc in self.services:
-            if svc.name == name:
-                svc.update_metadata(description=description)
-                return self
-        new_service = ServiceSpec(name=PascalString(name), description=description)
-        self.services.append(new_service)
+    def add_service(self, service: ServiceSpec) -> Self:
+        """Add a ServiceSpec. Raises ValueError if service with same name exists."""
+        for s in self.services:
+            if s.name == service.name:
+                raise ValueError(f"Service '{service.name}' already exists in application")
+        self.services.append(service)
         return self
+
+    def update_service(self, service: ServiceSpec) -> Self:
+        """Update an existing ServiceSpec by name. Raises ValueError if not found."""
+        for i, s in enumerate(self.services):
+            if s.name == service.name:
+                self.services[i] = service
+                return self
+        raise ValueError(f"Service '{service.name}' not found in application")
 
     def get_service(self, name: str) -> ServiceSpec:
         """Get a ServiceSpec by name. Raises ValueError if not found."""

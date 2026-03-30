@@ -9,6 +9,7 @@ from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import parse_type_str
 from codegen.shared.domain.value_objects.pascal_string import PascalString
+from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.shared.models import Entity
 from pydantic import Field
 
@@ -170,3 +171,87 @@ class UseCaseSpec(Entity):
         if description is not None:
             self.description = description
         return self
+
+    def add_input(self, input: AttributeSpec) -> Self:
+        """Add an AttributeSpec input. Raises ValueError if input with same name exists."""
+        for inp in self.inputs:
+            if inp.name == input.name:
+                raise ValueError(f"Input '{input.name}' already exists in use_case '{self.name}'")
+        self.inputs.append(input)
+        return self
+
+    def update_input(self, input: AttributeSpec) -> Self:
+        """Update an existing AttributeSpec input by name. Raises ValueError if not found."""
+        for i, inp in enumerate(self.inputs):
+            if inp.name == input.name:
+                self.inputs[i] = input
+                return self
+        raise ValueError(f"Input '{input.name}' not found in use_case '{self.name}'")
+
+    def remove_input(self, name: SnakeString) -> Self:
+        """Remove an AttributeSpec input by name. Returns self for chaining."""
+        self.inputs = [inp for inp in self.inputs if inp.name != name]
+        return self
+
+    def get_input(self, name: SnakeString) -> AttributeSpec:
+        """Get an AttributeSpec input by name. Raises ValueError if not found."""
+        for inp in self.inputs:
+            if inp.name == name:
+                return inp
+        raise ValueError(f"Input '{name}' not found in use_case '{self.name}'")
+
+    def add_output(self, output: AttributeSpec) -> Self:
+        """Add an AttributeSpec output. Raises ValueError if output with same name exists."""
+        for out in self.outputs:
+            if out.name == output.name:
+                raise ValueError(f"Output '{output.name}' already exists in use_case '{self.name}'")
+        self.outputs.append(output)
+        return self
+
+    def update_output(self, output: AttributeSpec) -> Self:
+        """Update an existing AttributeSpec output by name. Raises ValueError if not found."""
+        for i, out in enumerate(self.outputs):
+            if out.name == output.name:
+                self.outputs[i] = output
+                return self
+        raise ValueError(f"Output '{output.name}' not found in use_case '{self.name}'")
+
+    def remove_output(self, name: SnakeString) -> Self:
+        """Remove an AttributeSpec output by name. Returns self for chaining."""
+        self.outputs = [out for out in self.outputs if out.name != name]
+        return self
+
+    def get_output(self, name: SnakeString) -> AttributeSpec:
+        """Get an AttributeSpec output by name. Raises ValueError if not found."""
+        for out in self.outputs:
+            if out.name == name:
+                return out
+        raise ValueError(f"Output '{name}' not found in use_case '{self.name}'")
+
+    def add_dependency(self, dependency: AttributeSpec) -> Self:
+        """Add an AttributeSpec dependency. Raises ValueError if dependency with same name exists."""
+        for dep in self.dependencies:
+            if dep.name == dependency.name:
+                raise ValueError(f"Dependency '{dependency.name}' already exists in use_case '{self.name}'")
+        self.dependencies.append(dependency)
+        return self
+
+    def update_dependency(self, dependency: AttributeSpec) -> Self:
+        """Update an existing AttributeSpec dependency by name. Raises ValueError if not found."""
+        for i, dep in enumerate(self.dependencies):
+            if dep.name == dependency.name:
+                self.dependencies[i] = dependency
+                return self
+        raise ValueError(f"Dependency '{dependency.name}' not found in use_case '{self.name}'")
+
+    def remove_dependency(self, name: SnakeString) -> Self:
+        """Remove an AttributeSpec dependency by name. Returns self for chaining."""
+        self.dependencies = [dep for dep in self.dependencies if dep.name != name]
+        return self
+
+    def get_dependency(self, name: SnakeString) -> AttributeSpec:
+        """Get an AttributeSpec dependency by name. Raises ValueError if not found."""
+        for dep in self.dependencies:
+            if dep.name == name:
+                return dep
+        raise ValueError(f"Dependency '{name}' not found in use_case '{self.name}'")

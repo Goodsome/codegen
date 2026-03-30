@@ -82,15 +82,21 @@ class DomainSpec(Entity):
             enums=enums,
         )
 
-    def upsert_aggregate(self, name: str, description: str) -> Self:
-        """Upsert an AggregateSpec by name. Only updates scalar fields if exists."""
+    def add_aggregate(self, aggregate: AggregateSpec) -> Self:
+        """Add an AggregateSpec. Raises ValueError if aggregate with same name exists."""
         for agg in self.aggregates:
-            if agg.name == name:
-                agg.update_metadata(description=description)
-                return self
-        new_aggregate = AggregateSpec(name=PascalString(name), description=description)
-        self.aggregates.append(new_aggregate)
+            if agg.name == aggregate.name:
+                raise ValueError(f"Aggregate '{aggregate.name}' already exists in domain")
+        self.aggregates.append(aggregate)
         return self
+
+    def update_aggregate(self, aggregate: AggregateSpec) -> Self:
+        """Update an existing AggregateSpec by name. Raises ValueError if not found."""
+        for i, agg in enumerate(self.aggregates):
+            if agg.name == aggregate.name:
+                self.aggregates[i] = aggregate
+                return self
+        raise ValueError(f"Aggregate '{aggregate.name}' not found in domain")
 
     def get_aggregate(self, name: str) -> AggregateSpec:
         """Get an AggregateSpec by name. Raises ValueError if not found."""
@@ -104,15 +110,21 @@ class DomainSpec(Entity):
         self.aggregates = [agg for agg in self.aggregates if agg.name != name]
         return self
 
-    def upsert_enum(self, name: str, description: str = "") -> Self:
-        """Upsert an EnumSpec by name. Only updates scalar fields if exists."""
+    def add_enum(self, enum: EnumSpec) -> Self:
+        """Add an EnumSpec. Raises ValueError if enum with same name exists."""
         for e in self.enums:
-            if e.name == name:
-                e.update_metadata(description=description)
-                return self
-        new_enum = EnumSpec(name=PascalString(name), description=description, members=[])
-        self.enums.append(new_enum)
+            if e.name == enum.name:
+                raise ValueError(f"Enum '{enum.name}' already exists in domain")
+        self.enums.append(enum)
         return self
+
+    def update_enum(self, enum: EnumSpec) -> Self:
+        """Update an existing EnumSpec by name. Raises ValueError if not found."""
+        for i, e in enumerate(self.enums):
+            if e.name == enum.name:
+                self.enums[i] = enum
+                return self
+        raise ValueError(f"Enum '{enum.name}' not found in domain")
 
     def get_enum(self, name: str) -> EnumSpec:
         """Get an EnumSpec by name. Raises ValueError if not found."""
@@ -126,15 +138,21 @@ class DomainSpec(Entity):
         self.enums = [e for e in self.enums if e.name != name]
         return self
 
-    def upsert_value_object(self, name: str, description: str)-> Self:
-        """Upsert a ValueObjectSpec by name. Only updates scalar fields if exists."""
+    def add_value_object(self, value_object: ValueObjectSpec) -> Self:
+        """Add a ValueObjectSpec. Raises ValueError if value object with same name exists."""
         for vo in self.value_objects:
-            if vo.name == name:
-                vo.update_metadata(description=description)
-                return self
-        new_vo = ValueObjectSpec(name=PascalString(name), description=description)
-        self.value_objects.append(new_vo)
+            if vo.name == value_object.name:
+                raise ValueError(f"ValueObject '{value_object.name}' already exists in domain")
+        self.value_objects.append(value_object)
         return self
+
+    def update_value_object(self, value_object: ValueObjectSpec) -> Self:
+        """Update an existing ValueObjectSpec by name. Raises ValueError if not found."""
+        for i, vo in enumerate(self.value_objects):
+            if vo.name == value_object.name:
+                self.value_objects[i] = value_object
+                return self
+        raise ValueError(f"ValueObject '{value_object.name}' not found in domain")
 
     def get_value_object(self, name: str) -> ValueObjectSpec:
         """Get a ValueObjectSpec by name. Raises ValueError if not found."""
@@ -148,15 +166,21 @@ class DomainSpec(Entity):
         self.value_objects = [vo for vo in self.value_objects if vo.name != name]
         return self
 
-    def upsert_entity(self, name: str, description: str = "") -> Self:
-        """Upsert an EntitySpec by name. Only updates scalar fields if exists."""
-        for entity in self.entities:
-            if entity.name == name:
-                entity.update_metadata(description=description)
-                return self
-        new_entity = EntitySpec(name=PascalString(name), description=description)
-        self.entities.append(new_entity)
+    def add_entity(self, entity: EntitySpec) -> Self:
+        """Add an EntitySpec. Raises ValueError if entity with same name exists."""
+        for e in self.entities:
+            if e.name == entity.name:
+                raise ValueError(f"Entity '{entity.name}' already exists in domain")
+        self.entities.append(entity)
         return self
+
+    def update_entity(self, entity: EntitySpec) -> Self:
+        """Update an existing EntitySpec by name. Raises ValueError if not found."""
+        for i, e in enumerate(self.entities):
+            if e.name == entity.name:
+                self.entities[i] = entity
+                return self
+        raise ValueError(f"Entity '{entity.name}' not found in domain")
 
     def get_entity(self, name: str) -> EntitySpec:
         """Get an EntitySpec by name. Raises ValueError if not found."""
@@ -170,15 +194,21 @@ class DomainSpec(Entity):
         self.entities = [e for e in self.entities if e.name != name]
         return self
 
-    def upsert_service(self, name: str, description: str = "") -> Self:
-        """Upsert a ServiceSpec by name. Only updates scalar fields if exists."""
-        for svc in self.services:
-            if svc.name == name:
-                svc.update_metadata(description=description)
-                return self
-        new_service = ServiceSpec(name=PascalString(name), description=description)
-        self.services.append(new_service)
+    def add_service(self, service: ServiceSpec) -> Self:
+        """Add a ServiceSpec. Raises ValueError if service with same name exists."""
+        for s in self.services:
+            if s.name == service.name:
+                raise ValueError(f"Service '{service.name}' already exists in domain")
+        self.services.append(service)
         return self
+
+    def update_service(self, service: ServiceSpec) -> Self:
+        """Update an existing ServiceSpec by name. Raises ValueError if not found."""
+        for i, s in enumerate(self.services):
+            if s.name == service.name:
+                self.services[i] = service
+                return self
+        raise ValueError(f"Service '{service.name}' not found in domain")
 
     def get_service(self, name: str) -> ServiceSpec:
         """Get a ServiceSpec by name. Raises ValueError if not found."""
@@ -192,19 +222,21 @@ class DomainSpec(Entity):
         self.services = [s for s in self.services if s.name != name]
         return self
 
-    def upsert_port(self, name: str, kind: str, description: str, aggregate: str | None) -> Self:
-        """Upsert a PortSpec by name. Only updates scalar fields if exists."""
-        for port in self.ports:
-            if port.name == name:
-                port.update_metadata(
-                    kind=kind,
-                    description=description,
-                    aggregate=aggregate
-                )
-                return self
-        new_port = PortSpec.create(name=PascalString(name), kind=kind, description=description)
-        self.ports.append(new_port)
+    def add_port(self, port: PortSpec) -> Self:
+        """Add a PortSpec. Raises ValueError if port with same name exists."""
+        for p in self.ports:
+            if p.name == port.name:
+                raise ValueError(f"Port '{port.name}' already exists in domain")
+        self.ports.append(port)
         return self
+
+    def update_port(self, port: PortSpec) -> Self:
+        """Update an existing PortSpec by name. Raises ValueError if not found."""
+        for i, p in enumerate(self.ports):
+            if p.name == port.name:
+                self.ports[i] = port
+                return self
+        raise ValueError(f"Port '{port.name}' not found in domain")
 
     def get_port(self, name: str) -> PortSpec:
         """Get a PortSpec by name. Raises ValueError if not found."""

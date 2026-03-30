@@ -1,3 +1,5 @@
+from typing import Callable, Self
+
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
 from codegen.domain_definition.domain.entities.port_spec import PortSpec
@@ -112,3 +114,59 @@ class ImplementationSpec(Entity):
             self.technology = SnakeString(technology)
         if description is not None:
             self.description = description
+
+    def add_attribute(self, attribute: AttributeSpec) -> Self:
+        """Add an AttributeSpec. Raises ValueError if attribute with same name exists."""
+        for attr in self.attributes:
+            if attr.name == attribute.name:
+                raise ValueError(f"Attribute '{attribute.name}' already exists in implementation '{self.name}'")
+        self.attributes.append(attribute)
+        return self
+
+    def update_attribute(self, attribute: AttributeSpec) -> Self:
+        """Update an existing AttributeSpec by name. Raises ValueError if not found."""
+        for i, attr in enumerate(self.attributes):
+            if attr.name == attribute.name:
+                self.attributes[i] = attribute
+                return self
+        raise ValueError(f"Attribute '{attribute.name}' not found in implementation '{self.name}'")
+
+    def remove_attribute(self, name: SnakeString) -> Self:
+        """Remove an AttributeSpec by name. Returns self for chaining."""
+        self.attributes = [attr for attr in self.attributes if attr.name != name]
+        return self
+
+    def get_attribute(self, name: SnakeString) -> AttributeSpec:
+        """Get an AttributeSpec by name. Raises ValueError if not found."""
+        for attr in self.attributes:
+            if attr.name == name:
+                return attr
+        raise ValueError(f"Attribute '{name}' not found in implementation '{self.name}'")
+
+    def add_private_method(self, method: MethodSpec) -> Self:
+        """Add a private MethodSpec. Raises ValueError if method with same name exists."""
+        for m in self.private_methods:
+            if m.name == method.name:
+                raise ValueError(f"Private method '{method.name}' already exists in implementation '{self.name}'")
+        self.private_methods.append(method)
+        return self
+
+    def update_private_method(self, method: MethodSpec) -> Self:
+        """Update an existing private MethodSpec by name. Raises ValueError if not found."""
+        for i, m in enumerate(self.private_methods):
+            if m.name == method.name:
+                self.private_methods[i] = method
+                return self
+        raise ValueError(f"Private method '{method.name}' not found in implementation '{self.name}'")
+
+    def remove_private_method(self, name: SnakeString) -> Self:
+        """Remove a private MethodSpec by name. Returns self for chaining."""
+        self.private_methods = [m for m in self.private_methods if m.name != name]
+        return self
+
+    def get_private_method(self, name: SnakeString) -> MethodSpec:
+        """Get a private MethodSpec by name. Raises ValueError if not found."""
+        for m in self.private_methods:
+            if m.name == name:
+                return m
+        raise ValueError(f"Private method '{name}' not found in implementation '{self.name}'")

@@ -59,26 +59,21 @@ class InfrastructureSpec(Entity):
 
         return cls(implementations=implementations)
 
-    def upsert_implementation(
-        self,
-        name: str,
-        implements: str,
-        technology: str,
-        description: str = "",
-    ) -> Self:
-        """Upsert an ImplementationSpec by name."""
+    def add_implementation(self, implementation: ImplementationSpec) -> Self:
+        """Add an ImplementationSpec. Raises ValueError if implementation with same name exists."""
         for impl in self.implementations:
-            if impl.name == name:
-                impl.update_metadata(implements=implements, technology=technology, description=description)
-                return self
-        new_impl = ImplementationSpec.create(
-            name=name,
-            implements=implements,
-            technology=technology,
-            description=description,
-        )
-        self.implementations.append(new_impl)
+            if impl.name == implementation.name:
+                raise ValueError(f"Implementation '{implementation.name}' already exists in infrastructure")
+        self.implementations.append(implementation)
         return self
+
+    def update_implementation(self, implementation: ImplementationSpec) -> Self:
+        """Update an existing ImplementationSpec by name. Raises ValueError if not found."""
+        for i, impl in enumerate(self.implementations):
+            if impl.name == implementation.name:
+                self.implementations[i] = implementation
+                return self
+        raise ValueError(f"Implementation '{implementation.name}' not found in infrastructure")
 
     def get_implementation(self, name: str) -> ImplementationSpec:
         """Get an ImplementationSpec by name. Raises ValueError if not found."""

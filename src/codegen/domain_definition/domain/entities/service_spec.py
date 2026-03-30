@@ -9,6 +9,7 @@ from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
+from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.shared.models import Entity
 
 
@@ -77,4 +78,60 @@ class ServiceSpec(Entity):
     def update_metadata(self, description: str) -> None:
         """Update scalar metadata fields (e.g., description). Preserves internal structure."""
         self.description = description
+
+    def add_dependency(self, dependency: AttributeSpec) -> Self:
+        """Add an AttributeSpec dependency. Raises ValueError if dependency with same name exists."""
+        for dep in self.dependencies:
+            if dep.name == dependency.name:
+                raise ValueError(f"Dependency '{dependency.name}' already exists in service '{self.name}'")
+        self.dependencies.append(dependency)
+        return self
+
+    def update_dependency(self, dependency: AttributeSpec) -> Self:
+        """Update an existing AttributeSpec dependency by name. Raises ValueError if not found."""
+        for i, dep in enumerate(self.dependencies):
+            if dep.name == dependency.name:
+                self.dependencies[i] = dependency
+                return self
+        raise ValueError(f"Dependency '{dependency.name}' not found in service '{self.name}'")
+
+    def remove_dependency(self, name: SnakeString) -> Self:
+        """Remove an AttributeSpec dependency by name. Returns self for chaining."""
+        self.dependencies = [dep for dep in self.dependencies if dep.name != name]
+        return self
+
+    def get_dependency(self, name: SnakeString) -> AttributeSpec:
+        """Get an AttributeSpec dependency by name. Raises ValueError if not found."""
+        for dep in self.dependencies:
+            if dep.name == name:
+                return dep
+        raise ValueError(f"Dependency '{name}' not found in service '{self.name}'")
+
+    def add_operation(self, operation: MethodSpec) -> Self:
+        """Add a MethodSpec operation. Raises ValueError if operation with same name exists."""
+        for op in self.operations:
+            if op.name == operation.name:
+                raise ValueError(f"Operation '{operation.name}' already exists in service '{self.name}'")
+        self.operations.append(operation)
+        return self
+
+    def update_operation(self, operation: MethodSpec) -> Self:
+        """Update an existing MethodSpec operation by name. Raises ValueError if not found."""
+        for i, op in enumerate(self.operations):
+            if op.name == operation.name:
+                self.operations[i] = operation
+                return self
+        raise ValueError(f"Operation '{operation.name}' not found in service '{self.name}'")
+
+    def remove_operation(self, name: SnakeString) -> Self:
+        """Remove a MethodSpec operation by name. Returns self for chaining."""
+        self.operations = [op for op in self.operations if op.name != name]
+        return self
+
+    def get_operation(self, name: SnakeString) -> MethodSpec:
+        """Get a MethodSpec operation by name. Raises ValueError if not found."""
+        for op in self.operations:
+            if op.name == name:
+                return op
+        raise ValueError(f"Operation '{name}' not found in service '{self.name}'")
 

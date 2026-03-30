@@ -9,6 +9,7 @@ from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
+from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.shared.models import Entity
 
 
@@ -82,3 +83,59 @@ class ValueObjectSpec(Entity):
     def update_metadata(self, description: str) -> None:
         """Update scalar metadata fields (e.g., description). Preserves internal structure."""
         self.description = description
+
+    def add_attribute(self, attribute: AttributeSpec) -> Self:
+        """Add an AttributeSpec. Raises ValueError if attribute with same name exists."""
+        for attr in self.attributes:
+            if attr.name == attribute.name:
+                raise ValueError(f"Attribute '{attribute.name}' already exists in value_object '{self.name}'")
+        self.attributes.append(attribute)
+        return self
+
+    def update_attribute(self, attribute: AttributeSpec) -> Self:
+        """Update an existing AttributeSpec by name. Raises ValueError if not found."""
+        for i, attr in enumerate(self.attributes):
+            if attr.name == attribute.name:
+                self.attributes[i] = attribute
+                return self
+        raise ValueError(f"Attribute '{attribute.name}' not found in value_object '{self.name}'")
+
+    def remove_attribute(self, name: SnakeString) -> Self:
+        """Remove an AttributeSpec by name. Returns self for chaining."""
+        self.attributes = [attr for attr in self.attributes if attr.name != name]
+        return self
+
+    def get_attribute(self, name: SnakeString) -> AttributeSpec:
+        """Get an AttributeSpec by name. Raises ValueError if not found."""
+        for attr in self.attributes:
+            if attr.name == name:
+                return attr
+        raise ValueError(f"Attribute '{name}' not found in value_object '{self.name}'")
+
+    def add_behavior(self, behavior: MethodSpec) -> Self:
+        """Add a MethodSpec behavior. Raises ValueError if behavior with same name exists."""
+        for beh in self.behaviors:
+            if beh.name == behavior.name:
+                raise ValueError(f"Behavior '{behavior.name}' already exists in value_object '{self.name}'")
+        self.behaviors.append(behavior)
+        return self
+
+    def update_behavior(self, behavior: MethodSpec) -> Self:
+        """Update an existing MethodSpec behavior by name. Raises ValueError if not found."""
+        for i, beh in enumerate(self.behaviors):
+            if beh.name == behavior.name:
+                self.behaviors[i] = behavior
+                return self
+        raise ValueError(f"Behavior '{behavior.name}' not found in value_object '{self.name}'")
+
+    def remove_behavior(self, name: SnakeString) -> Self:
+        """Remove a MethodSpec behavior by name. Returns self for chaining."""
+        self.behaviors = [beh for beh in self.behaviors if beh.name != name]
+        return self
+
+    def get_behavior(self, name: SnakeString) -> MethodSpec:
+        """Get a MethodSpec behavior by name. Raises ValueError if not found."""
+        for beh in self.behaviors:
+            if beh.name == name:
+                return beh
+        raise ValueError(f"Behavior '{name}' not found in value_object '{self.name}'")
