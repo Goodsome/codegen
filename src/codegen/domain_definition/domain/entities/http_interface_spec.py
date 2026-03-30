@@ -46,45 +46,9 @@ class HttpInterfaceSpec(Entity):
             # 使用 use_case 名称生成模块名 (snake_case)
             module_names.append(module.name)
 
-        # 生成 __init__.py
-        init_module = self._create_http_init_module(context_name, module_names, project_name)
-        modules.append(init_module)
-
         return PackageSpec.create(
             name="http",
             modules=modules,
-        )
-
-    def _create_http_init_module(
-        self,
-        context_name: str,
-        module_names: list[str],
-        project_name: str,
-    ) -> ModuleSpec:
-        """生成 HTTP __init__.py"""
-        ctx_snake = str(SnakeString(context_name))
-        pkg_prefix = f"{project_name}." if project_name else ""
-        imports: list[ImportFromSpec] = [
-            ImportFromSpec.create(module="fastapi", names=["APIRouter"]),
-        ]
-        for module_name in module_names:
-            imports.append(
-                ImportFromSpec.create(
-                    module=f"{pkg_prefix}{ctx_snake}.interfaces.http.{module_name}",
-                    names=[f"router as {module_name}_router"],
-                )
-            )
-
-        extra_code_lines = [
-            'app = APIRouter(prefix="/api")',
-        ]
-        for module_name in module_names:
-            extra_code_lines.append(f"app.include_router({module_name}_router)")
-
-        return ModuleSpec.create(
-            name="__init__",
-            imports=imports,
-            extra_code=[RawCodeSpec.create("\n".join(extra_code_lines))],
         )
 
     @classmethod

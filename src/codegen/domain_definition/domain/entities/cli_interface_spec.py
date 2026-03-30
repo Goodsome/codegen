@@ -41,49 +41,13 @@ class CliInterfaceSpec(Entity):
             use_case = use_case_index.get(cmd.use_case)
             if not use_case:
                 raise ValueError(f"UseCase '{cmd.use_case}' not found for CLI command '{cmd.name}'")
-            module = cmd.to_module_spec(context_name, use_case, project_name)
+            module = cmd.to_module_spec(context_name, use_case)
             modules.append(module)
             function_names.append(cmd.name.replace(" ", "_").replace("-", "_"))
-
-        # 生成 __init__.py
-        init_module = self._create_cli_init_module(context_name, function_names, project_name)
-        modules.append(init_module)
 
         return PackageSpec.create(
             name="cli",
             modules=modules,
-        )
-
-    def _create_cli_init_module(
-        self,
-        context_name: str,
-        function_names: list[str],
-        project_name: str,
-    ) -> ModuleSpec:
-        """生成 CLI __init__.py"""
-        ctx_snake = str(SnakeString(context_name))
-        pkg_prefix = f"{project_name}." if project_name else ""
-        imports: list[ImportFromSpec] = [
-            ImportFromSpec.create(module="__root__", names=["typer"]),
-        ]
-        for func_name in function_names:
-            imports.append(
-                ImportFromSpec.create(
-                    module=f"{pkg_prefix}{ctx_snake}.interfaces.cli.{func_name}",
-                    names=[func_name],
-                )
-            )
-
-        extra_code_lines = [
-            f'app = typer.Typer(help="{context_name} CLI")',
-        ]
-        for func_name in function_names:
-            extra_code_lines.append(f'app.command("{func_name}")({func_name})')
-
-        return ModuleSpec.create(
-            name="__init__",
-            imports=imports,
-            extra_code=[RawCodeSpec.create("\n".join(extra_code_lines))],
         )
 
     @classmethod

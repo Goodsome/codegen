@@ -45,45 +45,9 @@ class McpInterfaceSpec(Entity):
             modules.append(module)
             function_names.append(tool.name.replace(" ", "_").replace("-", "_"))
 
-        # 生成 __init__.py
-        init_module = self._create_mcp_init_module(context_name, function_names, project_name)
-        modules.append(init_module)
-
         return PackageSpec.create(
             name="mcp",
             modules=modules,
-        )
-
-    def _create_mcp_init_module(
-        self,
-        context_name: str,
-        function_names: list[str],
-        project_name: str,
-    ) -> ModuleSpec:
-        """生成 MCP __init__.py"""
-        ctx_snake = str(SnakeString(context_name))
-        pkg_prefix = f"{project_name}." if project_name else ""
-        imports: list[ImportFromSpec] = [
-            ImportFromSpec.create(module="mcp.server.fastmcp", names=["FastMCP"]),
-        ]
-        for func_name in function_names:
-            imports.append(
-                ImportFromSpec.create(
-                    module=f"{pkg_prefix}{ctx_snake}.interfaces.mcp.{func_name}",
-                    names=[func_name],
-                )
-            )
-
-        extra_code_lines = [
-            f'mcp = FastMCP("{context_name} MCP")',
-        ]
-        for func_name in function_names:
-            extra_code_lines.append(f"mcp.tool()({func_name})")
-
-        return ModuleSpec.create(
-            name="__init__",
-            imports=imports,
-            extra_code=[RawCodeSpec.create("\n".join(extra_code_lines))],
         )
 
     @classmethod
