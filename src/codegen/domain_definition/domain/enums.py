@@ -12,13 +12,6 @@ class PortType(Enum):
     PROVIDER = "provider"
 
 
-class MappingDirection(Enum):
-
-    ONE_WAY = "one_way"
-
-    TWO_WAY = "two_way"
-
-
 class UseCaseKind(Enum):
 
     COMMAND = "command"
@@ -26,10 +19,18 @@ class UseCaseKind(Enum):
     QUERY = "query"
 
 
-class TestMockStrategy(Enum):
+class ContextNodeType(Enum):
+    AGGREAGET = "aggregate"    
+    ENTITY = "entity"
+    VALUE_OBJECT = "value_object"
+    ENUM = "enum"
+    DOMAIN_SERVICE = "domain_service"
+    DOMAIN_PORT = "domain_port"
     
-    __test__ = False
-
-    UNITTEST = "unittest"
-
-    PYTEST = "pytest"
+    USE_CASE = "use_case"
+    APP_PORT = "app_port"
+    APP_SERVICE = "app_service"
+    
+    IMPLEMENTATION = "implementation"
+    
+    CLI_COMMAND = "cli_command"

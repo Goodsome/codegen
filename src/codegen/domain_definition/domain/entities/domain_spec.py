@@ -8,7 +8,6 @@ from codegen.domain_definition.domain.entities.service_spec import ServiceSpec
 from codegen.domain_definition.domain.entities.value_object_spec import (
     ValueObjectSpec,
 )
-from codegen.domain_definition.domain.enums import PortType
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString

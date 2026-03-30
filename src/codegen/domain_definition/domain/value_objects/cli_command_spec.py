@@ -27,14 +27,12 @@ class CliCommandSpec(ValueObject):
         self,
         context_name: str,
         use_case: UseCaseSpec,
-        project_name: str = "",
     ) -> ModuleSpec:
         """生成单个 CLI 命令模块
 
         Args:
             context_name: 上下文名称
             use_case: UseCase 规范
-            project_name: 项目名称
 
         Returns:
             ModuleSpec for CLI command

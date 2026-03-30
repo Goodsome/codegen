@@ -63,8 +63,6 @@ class ApplicationSpec(Entity):
         new_use_case = UseCaseSpec.create(
             name=name,
             kind=kind,
-            inputs=[],
-            outputs=[],
             description=description,
         )
         self.use_cases.append(new_use_case)
