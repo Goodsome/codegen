@@ -5445,3 +5445,108 @@ contexts:
       use_case: SetValue
     - name: get
       use_case: GetValue
+    - name: add-aggregate
+      use_case: AddAggregate
+    - name: update-aggregate
+      use_case: UpdateAggregate
+    - name: get-aggregate
+      use_case: GetAggregate
+    - name: remove-aggregate
+      use_case: RemoveAggregate
+    - name: add-entity
+      use_case: AddEntity
+    - name: update-entity
+      use_case: UpdateEntity
+    - name: get-entity
+      use_case: GetEntity
+    - name: remove-entity
+      use_case: RemoveEntity
+    - name: add-value-object
+      use_case: AddValueObject
+    - name: update-value-object
+      use_case: UpdateValueObject
+    - name: get-value-object
+      use_case: GetValueObject
+    - name: remove-value-object
+      use_case: RemoveValueObject
+    - name: add-enum
+      use_case: AddEnum
+    - name: update-enum
+      use_case: UpdateEnum
+    - name: get-enum
+      use_case: GetEnum
+    - name: remove-enum
+      use_case: RemoveEnum
+    - name: add-domain-service
+      use_case: AddDomainService
+    - name: update-domain-service
+      use_case: UpdateDomainService
+    - name: get-domain-service
+      use_case: GetDomainService
+    - name: remove-domain-service
+      use_case: RemoveDomainService
+    - name: add-domain-port
+      use_case: AddDomainPort
+    - name: update-domain-port
+      use_case: UpdateDomainPort
+    - name: get-domain-port
+      use_case: GetDomainPort
+    - name: remove-domain-port
+      use_case: RemoveDomainPort
+    - name: add-use-case
+      use_case: AddUseCase
+    - name: update-use-case
+      use_case: UpdateUseCase
+    - name: get-use-case
+      use_case: GetUseCase
+    - name: remove-use-case
+      use_case: RemoveUseCase
+    - name: add-app-port
+      use_case: AddAppPort
+    - name: update-app-port
+      use_case: UpdateAppPort
+    - name: get-app-port
+      use_case: GetAppPort
+    - name: remove-app-port
+      use_case: RemoveAppPort
+    - name: add-app-service
+      use_case: AddAppService
+    - name: update-app-service
+      use_case: UpdateAppService
+    - name: get-app-service
+      use_case: GetAppService
+    - name: remove-app-service
+      use_case: RemoveAppService
+    - name: add-implementation
+      use_case: AddImplementation
+    - name: update-implementation
+      use_case: UpdateImplementation
+    - name: get-implementation
+      use_case: GetImplementation
+    - name: remove-implementation
+      use_case: RemoveImplementation
+    - name: add-cli-command
+      use_case: AddCliCommand
+    - name: update-cli-command
+      use_case: UpdateCliCommand
+    - name: get-cli-command
+      use_case: GetCliCommand
+    - name: remove-cli-command
+      use_case: RemoveCliCommand
+    - name: add-mcp-tool
+      use_case: AddMcpTool
+    - name: update-mcp-tool
+      use_case: UpdateMcpTool
+    - name: get-mcp-tool
+      use_case: GetMcpTool
+    - name: remove-mcp-tool
+      use_case: RemoveMcpTool
+    - name: add-http-endpoint
+      use_case: AddHttpEndpoint
+    - name: update-http-endpoint
+      use_case: UpdateHttpEndpoint
+    - name: get-http-endpoint
+      use_case: GetHttpEndpoint
+    - name: remove-http-endpoint
+      use_case: RemoveHttpEndpoint
+      description: ''
