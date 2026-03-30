@@ -117,6 +117,17 @@ class McpToolSpec(ValueObject):
                 )
         return None
 
+    def update(
+        self,
+        use_case: str | None = None,
+        description: str | None = None,
+    ) -> None:
+        """Update scalar metadata fields. Preserves internal structure."""
+        if use_case is not None:
+            self.use_case = use_case
+        if description is not None:
+            self.description = description
+
     @classmethod
     def _infer_use_case_from_suite(
         cls,

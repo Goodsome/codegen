@@ -75,9 +75,10 @@ class ServiceSpec(Entity):
             services.append(cls.from_module_spec(module))
         return services
 
-    def update_metadata(self, description: str) -> None:
-        """Update scalar metadata fields (e.g., description). Preserves internal structure."""
-        self.description = description
+    def update(self, description: str | None = None) -> None:
+        """Update scalar metadata fields. Preserves internal structure."""
+        if description is not None:
+            self.description = description
 
     def add_dependency(self, dependency: AttributeSpec) -> Self:
         """Add an AttributeSpec dependency. Raises ValueError if dependency with same name exists."""

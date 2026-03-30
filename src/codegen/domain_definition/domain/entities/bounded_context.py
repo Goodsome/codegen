@@ -175,9 +175,10 @@ class BoundedContext(Entity):
 
         return {port.name: port for port in self.domain.ports + self.application.ports}
 
-    def update_metadata(self, description: str) -> None:
-        """Update scalar metadata fields (e.g., description). Preserves internal structure."""
-        self.description = description
+    def update(self, description: str | None = None) -> None:
+        """Update scalar metadata fields. Preserves internal structure."""
+        if description is not None:
+            self.description = description
 
     def get_port_spec(self, port_name: str) -> PortSpec:
 

@@ -3,8 +3,6 @@ from typing import Iterable, Self
 from pydantic import Field
 
 from codegen.domain_definition.domain.enums import PortType
-from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
-from codegen.domain_definition.domain.value_objects.method_output import MethodOutput
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
 from codegen.python_gen.domain.enums import FunctionType
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
@@ -113,18 +111,19 @@ class PortSpec(Entity):
 
         return default_operations
 
-    def update_metadata(
+    def update(
         self,
-        kind: str,
-        description: str,
-        aggregate: str | None
+        kind: str | None = None,
+        description: str | None = None,
+        aggregate: str | None = None,
     ) -> None:
-        """Update scalar metadata fields (e.g., description). Preserves internal structure."""
-        self.description = description
-        self.kind = PortType(kind)
+        """Update scalar metadata fields. Preserves internal structure."""
+        if description is not None:
+            self.description = description
+        if kind is not None:
+            self.kind = PortType(kind)
         if aggregate is not None:
-            aggregate = PascalString(aggregate)
-        self.aggregate = aggregate
+            self.aggregate = PascalString(aggregate)
 
     def add_operation(self, operation: MethodSpec) -> Self:
         """Add a MethodSpec operation. Raises ValueError if operation with same name exists."""

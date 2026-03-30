@@ -163,7 +163,8 @@ class UseCaseSpec(Entity):
             description=uc_class.description,
         )
 
-    def update_metadata(self, kind: str | UseCaseKind | None = None, description: str | None = None) -> Self:
+    def update(self, kind: str | UseCaseKind | None = None, description: str | None = None) -> Self:
+        """Update scalar metadata fields. Preserves internal structure."""
         if kind is not None:
             if isinstance(kind, str):
                 kind = UseCaseKind(kind)

@@ -101,13 +101,13 @@ class ImplementationSpec(Entity):
             return self.name
         return PascalString(self.technology) + self.implements
 
-    def update_metadata(
+    def update(
         self,
         implements: str | None = None,
         technology: str | None = None,
         description: str | None = None,
     ) -> None:
-        """Update scalar metadata fields (e.g., implements, technology, description). Preserves internal structure."""
+        """Update scalar metadata fields. Preserves internal structure."""
         if implements is not None:
             self.implements = PascalString(implements)
         if technology is not None:

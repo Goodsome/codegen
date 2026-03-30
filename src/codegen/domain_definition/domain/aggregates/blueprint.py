@@ -66,7 +66,7 @@ class Blueprint(AggregateRoot):
         """Upsert a BoundedContext by name. Only updates scalar fields if exists."""
         for ctx in self.contexts:
             if ctx.name == name:
-                ctx.update_metadata(description=description)
+                ctx.update(description=description)
                 return self
         new_context = BoundedContext.create(name=name, description=description)
         self.contexts.append(new_context)

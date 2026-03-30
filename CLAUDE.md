@@ -21,6 +21,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 用确定性的静态工具，为不确定性的 LLM 划定不可逾越的“脚手架”和“护栏”。
 
+## Skills
+
+- **[Codegen CRUD Use Case](./docs/codegen-crud-use-case.md)** - 如何实现 CRUD 用例的完整流程
+
 ## Project Architecture & Structure
 Codegen is a CLI tool that generates Domain-Driven Design (DDD) boilerplate code in Python from a single blueprint file (`codegen.yaml`).
 

@@ -82,9 +82,10 @@ class AggregateSpec(Entity):
             aggregates.append(cls.from_module_spec(module))
         return aggregates
 
-    def update_metadata(self, description: str) -> None:
-        """Update scalar metadata fields (e.g., description). Preserves internal structure."""
-        self.description = description
+    def update(self, description: str | None = None) -> None:
+        """Update scalar metadata fields. Preserves internal structure."""
+        if description is not None:
+            self.description = description
 
     def add_attribute(self, attribute: AttributeSpec) -> Self:
         """Add an AttributeSpec. Raises ValueError if attribute with same name exists."""

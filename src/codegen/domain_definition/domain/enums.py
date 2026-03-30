@@ -34,6 +34,9 @@ class ElementType(Enum):
     IMPLEMENTATION = "implementation"
     
     CLI_COMMAND = "cli_command"
+    MCP_TOOL = "mcp_tool"
+    HTTP_ENDPOINT = "http_endpoint"
+    
 
 class ElementFieldType(Enum):
     
