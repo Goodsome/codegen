@@ -13,7 +13,7 @@ from pydantic import Field
 class ImplementationSpec(Entity):
     """Specification of an implementation to be generated."""
 
-    name: PascalString = Field(default_factory=str)
+    name: PascalString
     implements: PascalString
     technology: SnakeString
     description: str = Field(default_factory=str)
@@ -98,3 +98,17 @@ class ImplementationSpec(Entity):
         if self.name:
             return self.name
         return PascalString(self.technology) + self.implements
+
+    def update_metadata(
+        self,
+        implements: str | None = None,
+        technology: str | None = None,
+        description: str | None = None,
+    ) -> None:
+        """Update scalar metadata fields (e.g., implements, technology, description). Preserves internal structure."""
+        if implements is not None:
+            self.implements = PascalString(implements)
+        if technology is not None:
+            self.technology = SnakeString(technology)
+        if description is not None:
+            self.description = description

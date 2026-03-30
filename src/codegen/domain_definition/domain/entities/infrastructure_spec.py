@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Self
 
 from pydantic import Field
 
@@ -58,4 +58,37 @@ class InfrastructureSpec(Entity):
                 )
 
         return cls(implementations=implementations)
+
+    def upsert_implementation(
+        self,
+        name: str,
+        implements: str,
+        technology: str,
+        description: str = "",
+    ) -> Self:
+        """Upsert an ImplementationSpec by name."""
+        for impl in self.implementations:
+            if impl.name == name:
+                impl.update_metadata(implements=implements, technology=technology, description=description)
+                return self
+        new_impl = ImplementationSpec.create(
+            name=name,
+            implements=implements,
+            technology=technology,
+            description=description,
+        )
+        self.implementations.append(new_impl)
+        return self
+
+    def get_implementation(self, name: str) -> ImplementationSpec:
+        """Get an ImplementationSpec by name. Raises ValueError if not found."""
+        for impl in self.implementations:
+            if impl.name == name:
+                return impl
+        raise ValueError(f"Implementation '{name}' not found in infrastructure")
+
+    def remove_implementation(self, name: str) -> Self:
+        """Remove an ImplementationSpec by name. Returns self for chaining."""
+        self.implementations = [impl for impl in self.implementations if impl.name != name]
+        return self
 

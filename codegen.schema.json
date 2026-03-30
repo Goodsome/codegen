@@ -194,15 +194,7 @@
           "$ref":"#/$defs/InfrastructureSpec"
         },
         "interfaces":{
-          "anyOf":[
-            {
-              "$ref":"#/$defs/InterfaceSpec"
-            },
-            {
-              "type":"null"
-            }
-          ],
-          "default":null
+          "$ref":"#/$defs/InterfaceSpec"
         },
         "name":{
           "title":"Name",
@@ -398,7 +390,6 @@
       "description":"Generic data contract specification for use case command/query/result.",
       "properties":{
         "attributes":{
-          "default":[],
           "items":{
             "$ref":"#/$defs/AttributeSpec"
           },
@@ -645,6 +636,7 @@
         }
       },
       "required":[
+        "name",
         "implements",
         "technology"
       ],

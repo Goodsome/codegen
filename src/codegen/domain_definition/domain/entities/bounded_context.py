@@ -30,9 +30,9 @@ class BoundedContext(Entity):
     domain: DomainSpec = Field(default_factory=DomainSpec)
     application: ApplicationSpec = Field(default_factory=ApplicationSpec)
     infrastructure: InfrastructureSpec = Field(default_factory=InfrastructureSpec)
+    interfaces: InterfaceSpec = Field(default_factory=InterfaceSpec)
     config: ConfigSpec | None = Field(default=None)
     container: ContainerSpec | None = Field(default=None)
-    interfaces: InterfaceSpec | None = Field(default=None)
 
     def to_package_spec(self, project_name: str = "") -> PackageSpec:
         """Convert this BoundedContext to a PackageSpec."""
@@ -126,7 +126,6 @@ class BoundedContext(Entity):
         # Second pass: parse interfaces using use_cases
         for pkg in package_spec.sub_packages:
             if pkg.name == "interfaces":
-                from codegen.domain_definition.domain.entities.interface_spec import InterfaceSpec
                 interfaces = InterfaceSpec.from_package_spec(pkg, use_cases)
 
         return cls.create(
@@ -156,6 +155,8 @@ class BoundedContext(Entity):
             application = ApplicationSpec()
         if infrastructure is None:
             infrastructure = InfrastructureSpec()
+        if interfaces is None:
+            interfaces = InterfaceSpec()
         return cls(
             name=PascalString(name),
             description=description,

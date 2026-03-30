@@ -2054,6 +2054,18 @@ contexts:
           name: module
         output:
           type: UseCaseSpec
+      - name: update_metadata
+        inputs:
+        - type: Self
+          name: self
+        - type: Any
+          custom_type_string: str | UseCaseKind | None
+          name: kind
+        - type: string
+          optional: true
+          name: description
+        output:
+          type: Self
     - name: ApplicationSpec
       description: Specification of an application to be generated.
       attributes:
@@ -2087,6 +2099,102 @@ contexts:
           name: package_spec
         output:
           type: ApplicationSpec
+      - name: upsert_use_case
+        description: Upsert a UseCaseSpec by name.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        - type: Any
+          custom_type_string: Union[str, UseCaseKind]
+          name: kind
+        - type: string
+          name: description
+          default: ''
+        output:
+          type: Self
+      - name: get_use_case
+        description: Get a UseCaseSpec by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: UseCaseSpec
+      - name: remove_use_case
+        description: Remove a UseCaseSpec by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: Self
+      - name: upsert_port
+        description: Upsert a PortSpec by name.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        - type: string
+          name: kind
+        - type: string
+          name: description
+        - type: string
+          optional: true
+          name: aggregate
+        output:
+          type: Self
+      - name: get_port
+        description: Get a PortSpec by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: PortSpec
+      - name: remove_port
+        description: Remove a PortSpec by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: Self
+      - name: upsert_service
+        description: Upsert a ServiceSpec by name.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        - type: string
+          name: description
+        output:
+          type: Self
+      - name: get_service
+        description: Get a ServiceSpec by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: ServiceSpec
+      - name: remove_service
+        description: Remove a ServiceSpec by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: Self
     - name: InterfaceSpec
       description: 接口层总规范
       attributes:
@@ -2226,6 +2334,40 @@ contexts:
           name: package_spec
         output:
           type: InfrastructureSpec
+      - name: upsert_implementation
+        description: Upsert an ImplementationSpec by name.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        - type: string
+          name: implements
+        - type: string
+          name: technology
+        - type: string
+          name: description
+          default: ''
+        output:
+          type: Self
+      - name: get_implementation
+        description: Get an ImplementationSpec by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: ImplementationSpec
+      - name: remove_implementation
+        description: Remove an ImplementationSpec by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: Self
     - name: ContainerSpec
       description: Specification for a container (dependency injection).
       attributes:
@@ -2289,7 +2431,6 @@ contexts:
       description: Specification of an implementation to be generated.
       attributes:
       - type: PascalString
-        optional: true
         name: name
       - type: PascalString
         name: implements
@@ -2358,6 +2499,23 @@ contexts:
           name: self
         output:
           type: string
+      - name: update_metadata
+        description: Update scalar metadata fields (e.g., implements, technology,
+          description). Preserves internal structure.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          optional: true
+          name: implements
+        - type: string
+          optional: true
+          name: technology
+        - type: string
+          optional: true
+          name: description
+        output:
+          type: None
     - name: McpInterfaceSpec
       description: MCP 接口层规范
       attributes:
@@ -2657,15 +2815,15 @@ contexts:
       - type: InfrastructureSpec
         optional: true
         name: infrastructure
+      - type: InterfaceSpec
+        optional: true
+        name: interfaces
       - type: ConfigSpec
         optional: true
         name: config
       - type: ContainerSpec
         optional: true
         name: container
-      - type: InterfaceSpec
-        optional: true
-        name: interfaces
       behaviors:
       - name: to_package_spec
         description: Convert this BoundedContext to a PackageSpec.
