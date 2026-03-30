@@ -5441,10 +5441,6 @@ contexts:
       use_case: UpsertContext
     - name: init
       use_case: InitProject
-    - name: set
-      use_case: SetValue
-    - name: get
-      use_case: GetValue
     - name: add-aggregate
       use_case: AddAggregate
     - name: update-aggregate

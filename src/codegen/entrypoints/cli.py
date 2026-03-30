@@ -4,8 +4,6 @@ from codegen.bootstrap import bootstrap
 from codegen.orchestration.interfaces.cli.build import build
 from codegen.orchestration.interfaces.cli.reverse import reverse
 from codegen.python_gen.interfaces.cli.schema import schema
-from codegen.domain_definition.interfaces.cli.get import get as get_cmd
-from codegen.domain_definition.interfaces.cli.set import set as set_cmd
 from codegen.domain_definition.interfaces.cli.rm import rm
 from codegen.domain_definition.interfaces.cli.tree import tree as tree_cmd
 from codegen.domain_definition.interfaces.cli.init import init
@@ -84,10 +82,6 @@ app = typer.Typer(
 
 **Overview Command**:
   tree       Display blueprint structure as a visual tree
-
-**Edit Commands (Blueprint Manipulation)**:
-  get        Get a value by path (e.g., 'contexts.sales')
-  set        Set a value by path (Upsert). Supports --append for lists
   rm         Remove a value by path
 
 **Domain Commands**:
@@ -128,8 +122,6 @@ app.command()(reverse)
 app.command()(schema)
 app.command()(init)
 app.command(name="tree")(tree_cmd)
-app.command(name="get")(get_cmd)
-app.command(name="set")(set_cmd)
 app.command()(rm)
 app.command(name="upsert-context")(upsert_context)
 app.command(name="remove-context")(remove_context)
