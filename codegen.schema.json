@@ -385,33 +385,6 @@
       "title":"ContainerType",
       "type":"string"
     },
-    "DataContractSpec":{
-      "additionalProperties":false,
-      "description":"Generic data contract specification for use case command/query/result.",
-      "properties":{
-        "attributes":{
-          "items":{
-            "$ref":"#/$defs/AttributeSpec"
-          },
-          "title":"Attributes",
-          "type":"array"
-        },
-        "description":{
-          "title":"Description",
-          "type":"string"
-        },
-        "name":{
-          "title":"Name",
-          "type":"string"
-        }
-      },
-      "required":[
-        "name",
-        "description"
-      ],
-      "title":"DataContractSpec",
-      "type":"object"
-    },
     "DomainSpec":{
       "additionalProperties":false,
       "description":"Specification of a domain to be generated.",
@@ -947,8 +920,12 @@
           "title":"Description",
           "type":"string"
         },
-        "input_":{
-          "$ref":"#/$defs/DataContractSpec"
+        "inputs":{
+          "items":{
+            "$ref":"#/$defs/AttributeSpec"
+          },
+          "title":"Inputs",
+          "type":"array"
         },
         "kind":{
           "$ref":"#/$defs/UseCaseKind"
@@ -957,15 +934,17 @@
           "title":"Name",
           "type":"string"
         },
-        "result":{
-          "$ref":"#/$defs/DataContractSpec"
+        "outputs":{
+          "items":{
+            "$ref":"#/$defs/AttributeSpec"
+          },
+          "title":"Outputs",
+          "type":"array"
         }
       },
       "required":[
         "name",
-        "kind",
-        "input_",
-        "result"
+        "kind"
       ],
       "title":"UseCaseSpec",
       "type":"object"

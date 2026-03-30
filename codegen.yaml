@@ -304,23 +304,17 @@ contexts:
     use_cases:
     - name: GenerateProject
       kind: command
-      input_:
-        name: GenerateProjectCommand
-        description: ''
-        attributes:
-        - type: string
-          container: list
-          optional: true
-          name: nodes
-        - type: boolean
-          name: generate_tests
-          default: false
-      result:
-        name: GenerateProjectResult
-        description: ''
-        attributes:
-        - type: BuildResult
-          name: result
+      inputs:
+      - type: string
+        container: list
+        optional: true
+        name: nodes
+      - type: boolean
+        name: generate_tests
+        default: false
+      outputs:
+      - type: BuildResult
+        name: result
       dependencies:
       - type: LoadBlueprint
         name: loader
@@ -328,18 +322,12 @@ contexts:
         name: generator
     - name: GenerateBlueprint
       kind: command
-      input_:
-        name: GenerateBlueprintCommand
-        description: ''
-        attributes:
-        - type: Path
-          name: path
-      result:
-        name: GenerateBlueprintResult
-        description: ''
-        attributes:
-        - type: string
-          name: result
+      inputs:
+      - type: Path
+        name: path
+      outputs:
+      - type: string
+        name: result
       dependencies:
       - type: ParsePackage
         name: parser
@@ -1381,56 +1369,38 @@ contexts:
     use_cases:
     - name: ParsePackage
       kind: query
-      input_:
-        name: ParsePackageQuery
-        description: ''
-        attributes:
-        - type: Path
-          name: package_path
-      result:
-        name: ParsePackageResult
-        description: ''
-        attributes:
-        - type: PackageSpec
-          name: package_spec
+      inputs:
+      - type: Path
+        name: package_path
+      outputs:
+      - type: PackageSpec
+        name: package_spec
       description: Parses Python package to PackageSpec.
       dependencies:
       - type: PythonSyntaxTranslator
         name: translator
     - name: GenerateSchemaJson
       kind: command
-      input_:
-        name: GenerateSchemaJsonCommand
-        description: ''
-      result:
-        name: GenerateSchemaJsonResult
-        description: ''
       dependencies:
       - type: FileSystemPort
         name: file_system_port
     - name: GeneratePackage
       kind: command
-      input_:
-        name: GeneratePackageCommand
-        description: ''
-        attributes:
-        - type: PackageSpec
-          name: package_spec
-        - type: boolean
-          name: overwrite
-        - type: string
-          container: list
-          optional: true
-          name: nodes
-        - type: string
-          name: root_path
-          default: ''
-      result:
-        name: GeneratePackageResult
-        description: ''
-        attributes:
-        - type: BuildResult
-          name: result
+      inputs:
+      - type: PackageSpec
+        name: package_spec
+      - type: boolean
+        name: overwrite
+      - type: string
+        container: list
+        optional: true
+        name: nodes
+      - type: string
+        name: root_path
+        default: ''
+      outputs:
+      - type: BuildResult
+        name: result
       dependencies:
       - type: FileSystemPort
         name: file_system_port
@@ -1586,35 +1556,6 @@ contexts:
       - type: string
         optional: true
         name: description
-    - name: DataContractSpec
-      description: Generic data contract specification for use case command/query/result.
-      attributes:
-      - type: string
-        name: name
-      - type: string
-        name: description
-      - type: AttributeSpec
-        container: list
-        optional: true
-        name: attributes
-      behaviors:
-      - name: to_class_spec
-        description: Convert DataContractSpec to ClassSpec with BaseModel inheritance.
-        inputs:
-        - type: Self
-          name: self
-        output:
-          type: ClassSpec
-      - name: from_class_spec
-        description: Convert ClassSpec back to DataContractSpec.
-        inputs:
-        - type: Self
-          container: type
-          name: cls
-        - type: ClassSpec
-          name: class_spec
-        output:
-          type: DataContractSpec
     - name: MethodOutput
       description: Specification of the output of a method.
     - name: MapperSpec
@@ -2002,10 +1943,14 @@ contexts:
         name: name
       - type: UseCaseKind
         name: kind
-      - type: DataContractSpec
-        name: input
-      - type: DataContractSpec
-        name: result
+      - type: AttributeSpec
+        container: list
+        optional: true
+        name: inputs
+      - type: AttributeSpec
+        container: list
+        optional: true
+        name: outputs
       - type: string
         optional: true
         name: description
@@ -2024,10 +1969,14 @@ contexts:
         - type: Any
           custom_type_string: Union[str, UseCaseKind]
           name: kind
-        - type: DataContractSpec
-          name: input
-        - type: DataContractSpec
-          name: result
+        - type: AttributeSpec
+          container: list
+          optional: true
+          name: inputs
+        - type: AttributeSpec
+          container: list
+          optional: true
+          name: outputs
         - type: AttributeSpec
           container: list
           optional: true
@@ -2044,6 +1993,24 @@ contexts:
           name: self
         output:
           type: ModuleSpec
+      - name: _build_input_class_spec
+        description: Build input ClassSpec from inputs list.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: class_name
+        output:
+          type: ClassSpec
+      - name: _build_output_class_spec
+        description: Build output ClassSpec from outputs list.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: class_name
+        output:
+          type: ClassSpec
       - name: from_module_spec
         description: 将 ModuleSpec 逆向解析为 UseCaseSpec
         inputs:
@@ -3813,62 +3780,44 @@ contexts:
     use_cases:
     - name: InitProject
       kind: command
-      input_:
-        name: InitProjectCommand
-        description: ''
-        attributes:
-        - type: string
-          optional: true
-          name: project_name
-        - type: string
-          optional: true
-          name: project_description
-      result:
-        name: InitProjectResult
-        description: ''
-        attributes:
-        - type: Blueprint
-          name: blueprint
+      inputs:
+      - type: string
+        optional: true
+        name: project_name
+      - type: string
+        optional: true
+        name: project_description
+      outputs:
+      - type: Blueprint
+        name: blueprint
       description: Initializes a new project blueprint with a default Shared context.
       dependencies:
       - type: BlueprintStorage
         name: storage
     - name: RemoveContext
       kind: command
-      input_:
-        name: RemoveContextCommand
-        description: ''
-        attributes:
-        - type: string
-          name: name
-      result:
-        name: RemoveContextResult
-        description: ''
-        attributes:
-        - type: Blueprint
-          name: blueprint
+      inputs:
+      - type: string
+        name: name
+      outputs:
+      - type: Blueprint
+        name: blueprint
       dependencies:
       - type: BlueprintStorage
         name: storage
     - name: SetValue
       kind: command
-      input_:
-        name: SetValueCommand
-        description: Command to set a value at a path.
-        attributes:
-        - type: string
-          name: path
-        - type: any
-          name: value
-        - type: boolean
-          name: append
-          default: false
-      result:
-        name: SetValueResult
-        description: Result of a set value operation.
-        attributes:
-        - type: boolean
-          name: result
+      inputs:
+      - type: string
+        name: path
+      - type: any
+        name: value
+      - type: boolean
+        name: append
+        default: false
+      outputs:
+      - type: boolean
+        name: result
       description: 'Use case to set a value in Blueprint at the specified path.
 
 
@@ -3886,38 +3835,26 @@ contexts:
         name: operations
     - name: UpsertContext
       kind: command
-      input_:
-        name: UpsertContextCommand
-        description: ''
-        attributes:
-        - type: string
-          name: name
-        - type: string
-          name: description
-      result:
-        name: UpsertContextResult
-        description: ''
-        attributes:
-        - type: Blueprint
-          name: blueprint
+      inputs:
+      - type: string
+        name: name
+      - type: string
+        name: description
+      outputs:
+      - type: Blueprint
+        name: blueprint
       dependencies:
       - type: BlueprintStorage
         name: storage
     - name: RemoveValue
       kind: command
-      input_:
-        name: RemoveValueCommand
-        description: Command to remove a value at a path.
-        attributes:
-        - type: string
-          name: path
-      result:
-        name: RemoveValueResult
-        description: Result of a remove value operation.
-        attributes:
-        - type: dict
-          optional: true
-          name: blueprint
+      inputs:
+      - type: string
+        name: path
+      outputs:
+      - type: dict
+        optional: true
+        name: blueprint
       description: 'Use case to remove a value from Blueprint at the specified path.
 
 
@@ -3933,15 +3870,9 @@ contexts:
         name: operations
     - name: GetValue
       kind: command
-      input_:
-        name: GetValueCommand
-        description: ''
-        attributes:
-        - type: string
-          name: path
-      result:
-        name: GetValueResult
-        description: ''
+      inputs:
+      - type: string
+        name: path
       dependencies:
       - type: BlueprintStorage
         name: storage
@@ -3949,19 +3880,13 @@ contexts:
         name: operations
     - name: LoadBlueprint
       kind: command
-      input_:
-        name: LoadBlueprintCommand
-        description: ''
-        attributes:
-        - type: string
-          optional: true
-          name: node
-      result:
-        name: LoadBlueprintResult
-        description: ''
-        attributes:
-        - type: Blueprint
-          name: blueprint
+      inputs:
+      - type: string
+        optional: true
+        name: node
+      outputs:
+      - type: Blueprint
+        name: blueprint
       description: Loads the blueprint from a file.
       dependencies:
       - type: BlueprintStorage

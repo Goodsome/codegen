@@ -4,7 +4,6 @@ from codegen.domain_definition.domain.entities.port_spec import PortSpec
 from codegen.domain_definition.domain.entities.service_spec import ServiceSpec
 from codegen.domain_definition.domain.entities.use_case_spec import UseCaseSpec
 from codegen.domain_definition.domain.enums import UseCaseKind
-from codegen.domain_definition.domain.value_objects.data_contract_spec import DataContractSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.models import Entity
@@ -61,13 +60,11 @@ class ApplicationSpec(Entity):
             if uc.name == name:
                 uc.update_metadata(kind=kind, description=description)
                 return self
-        input_ = DataContractSpec(name=f"{name}Input", description="")
-        result = DataContractSpec(name=f"{name}Result", description="")
         new_use_case = UseCaseSpec.create(
             name=name,
             kind=kind,
-            input_=input_,
-            result=result,
+            inputs=[],
+            outputs=[],
             description=description,
         )
         self.use_cases.append(new_use_case)

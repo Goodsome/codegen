@@ -2,9 +2,6 @@ from typing import Self
 
 from codegen.domain_definition.domain.enums import UseCaseKind
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
-from codegen.domain_definition.domain.value_objects.data_contract_spec import (
-    DataContractSpec,
-)
 from codegen.python_gen.domain.enums import FunctionType, FieldFlavor
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
@@ -21,8 +18,8 @@ class UseCaseSpec(Entity):
 
     name: PascalString
     kind: UseCaseKind
-    input_: DataContractSpec
-    result: DataContractSpec
+    inputs: list[AttributeSpec] = Field(default_factory=list)
+    outputs: list[AttributeSpec] = Field(default_factory=list)
     description: str = Field(default_factory=str)
     dependencies: list[AttributeSpec] = Field(default_factory=list)
 
@@ -31,13 +28,17 @@ class UseCaseSpec(Entity):
         cls,
         name: str,
         kind: str | UseCaseKind,
-        input_: DataContractSpec,
-        result: DataContractSpec,
+        inputs: list[AttributeSpec] | None = None,
+        outputs: list[AttributeSpec] | None = None,
         dependencies: list[AttributeSpec] | None = None,
         description: str = "",
     ):
         if dependencies is None:
             dependencies = []
+        if inputs is None:
+            inputs = []
+        if outputs is None:
+            outputs = []
         if isinstance(kind, str):
             kind = UseCaseKind(kind)
         return cls(
@@ -45,8 +46,8 @@ class UseCaseSpec(Entity):
             kind=kind,
             dependencies=dependencies,
             description=description,
-            input_=input_,
-            result=result,
+            inputs=inputs,
+            outputs=outputs,
         )
 
     def to_module_spec(self) -> ModuleSpec:
@@ -54,14 +55,16 @@ class UseCaseSpec(Entity):
         classes: list[ClassSpec] = []
 
         param_name = "cmd" if self.kind == UseCaseKind.COMMAND else "query"
-        input_class = self.input_.to_class_spec()
+        input_class_name = f"{self.name}Command" if self.kind == UseCaseKind.COMMAND else f"{self.name}Query"
+        input_class = self._build_input_class_spec(input_class_name)
         param = VariableSpec.create(
             name=param_name,
-            type_spec=parse_type_str(self.input_.name),
+            type_spec=parse_type_str(input_class_name),
         )
         classes.append(input_class)
 
-        result_class = self.result.to_class_spec()
+        result_class_name = f"{self.name}Result"
+        result_class = self._build_output_class_spec(result_class_name)
         classes.append(result_class)
 
         uc_attributes = [
@@ -71,7 +74,7 @@ class UseCaseSpec(Entity):
         execute_method = FunctionSpec.create(
             name="execute",
             parameters=[param],
-            return_annotation=parse_type_str(self.result.name),
+            return_annotation=parse_type_str(result_class_name),
             function_type=FunctionType.INSTANCE_METHOD,
         )
         uc_class = ClassSpec.create(
@@ -83,6 +86,32 @@ class UseCaseSpec(Entity):
         )
         classes.append(uc_class)
         return ModuleSpec.create(name=self.name, classes=classes)
+
+    def _build_input_class_spec(self, class_name: str) -> ClassSpec:
+        """Build input ClassSpec from inputs list."""
+        variable_specs = [
+            attr.to_variable_spec(flavor=FieldFlavor.PYDANTIC)
+            for attr in self.inputs
+        ]
+        return ClassSpec.create(
+            name=class_name,
+            description="",
+            inheritance=["BaseModel"],
+            attributes=variable_specs,
+        )
+
+    def _build_output_class_spec(self, class_name: str) -> ClassSpec:
+        """Build output ClassSpec from outputs list."""
+        variable_specs = [
+            attr.to_variable_spec(flavor=FieldFlavor.PYDANTIC)
+            for attr in self.outputs
+        ]
+        return ClassSpec.create(
+            name=class_name,
+            description="",
+            inheritance=["BaseModel"],
+            attributes=variable_specs,
+        )
 
     @classmethod
     def from_module_spec(cls, module: ModuleSpec) -> "UseCaseSpec":
@@ -120,15 +149,15 @@ class UseCaseSpec(Entity):
             raise ValueError(f"Execute return type not found in UseCase class '{uc_name}'")
         result_class = module.get_class(result_type_name)
 
-        # 8. Convert to DataContractSpec
-        input_ = DataContractSpec.from_class_spec(input_class)
-        result = DataContractSpec.from_class_spec(result_class)
+        # 8. Convert to inputs/outputs directly
+        inputs = [AttributeSpec.from_variable_spec(attr) for attr in input_class.attributes]
+        outputs = [AttributeSpec.from_variable_spec(attr) for attr in result_class.attributes]
 
         return cls.create(
             name=str(uc_name),
             kind=kind,
-            input_=input_,
-            result=result,
+            inputs=inputs,
+            outputs=outputs,
             dependencies=uc_deps,
             description=uc_class.description,
         )
