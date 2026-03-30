@@ -231,21 +231,6 @@
       "title":"CliCommandSpec",
       "type":"object"
     },
-    "CliInterfaceSpec":{
-      "additionalProperties":false,
-      "description":"CLI \u63a5\u53e3\u5c42\u89c4\u8303",
-      "properties":{
-        "commands":{
-          "items":{
-            "$ref":"#/$defs/CliCommandSpec"
-          },
-          "title":"Commands",
-          "type":"array"
-        }
-      },
-      "title":"CliInterfaceSpec",
-      "type":"object"
-    },
     "ConfigFieldSpec":{
       "additionalProperties":false,
       "description":"Specification for a single configuration field.",
@@ -558,21 +543,6 @@
       "title":"HttpEndpointSpec",
       "type":"object"
     },
-    "HttpInterfaceSpec":{
-      "additionalProperties":false,
-      "description":"HTTP \u63a5\u53e3\u5c42\u89c4\u8303",
-      "properties":{
-        "endpoints":{
-          "items":{
-            "$ref":"#/$defs/HttpEndpointSpec"
-          },
-          "title":"Endpoints",
-          "type":"array"
-        }
-      },
-      "title":"HttpInterfaceSpec",
-      "type":"object"
-    },
     "ImplementationSpec":{
       "additionalProperties":false,
       "description":"Specification of an implementation to be generated.",
@@ -635,56 +605,29 @@
       "additionalProperties":false,
       "description":"\u63a5\u53e3\u5c42\u603b\u89c4\u8303",
       "properties":{
-        "cli":{
-          "anyOf":[
-            {
-              "$ref":"#/$defs/CliInterfaceSpec"
-            },
-            {
-              "type":"null"
-            }
-          ],
-          "default":null
+        "cli_commands":{
+          "items":{
+            "$ref":"#/$defs/CliCommandSpec"
+          },
+          "title":"Cli Commands",
+          "type":"array"
         },
-        "http":{
-          "anyOf":[
-            {
-              "$ref":"#/$defs/HttpInterfaceSpec"
-            },
-            {
-              "type":"null"
-            }
-          ],
-          "default":null
+        "http_endpoints":{
+          "items":{
+            "$ref":"#/$defs/HttpEndpointSpec"
+          },
+          "title":"Http Endpoints",
+          "type":"array"
         },
-        "mcp":{
-          "anyOf":[
-            {
-              "$ref":"#/$defs/McpInterfaceSpec"
-            },
-            {
-              "type":"null"
-            }
-          ],
-          "default":null
-        }
-      },
-      "title":"InterfaceSpec",
-      "type":"object"
-    },
-    "McpInterfaceSpec":{
-      "additionalProperties":false,
-      "description":"MCP \u63a5\u53e3\u5c42\u89c4\u8303",
-      "properties":{
-        "tools":{
+        "mcp_tools":{
           "items":{
             "$ref":"#/$defs/McpToolSpec"
           },
-          "title":"Tools",
+          "title":"Mcp Tools",
           "type":"array"
         }
       },
-      "title":"McpInterfaceSpec",
+      "title":"InterfaceSpec",
       "type":"object"
     },
     "McpToolSpec":{

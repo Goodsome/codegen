@@ -1,3 +1,5 @@
+from typing import Self
+
 from pydantic import Field
 
 from codegen.domain_definition.domain.enums import UseCaseKind
@@ -7,6 +9,7 @@ from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSp
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
+from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.python_gen.domain.value_objects.type_annotation_spec import TypeAnnotationSpec
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import parse_type_str
@@ -188,4 +191,66 @@ class CliCommandSpec(ValueObject):
                                 description=func.description or "",
                             )
         return None
+
+    @classmethod
+    def commands_to_package_spec(
+        cls,
+        commands: list["CliCommandSpec"],
+        context_name: str,
+        use_cases: list[UseCaseSpec],
+        project_name: str = "",
+    ) -> PackageSpec:
+        """将 CLI 命令列表转换为 PackageSpec
+
+        Args:
+            commands: CLI 命令列表
+            context_name: 上下文名称
+            use_cases: UseCase 列表，用于解析类型
+            project_name: 项目名称
+
+        Returns:
+            PackageSpec for cli package
+        """
+        use_case_index = {uc.name: uc for uc in use_cases}
+        modules: list[ModuleSpec] = []
+
+        for cmd in commands:
+            use_case = use_case_index.get(cmd.use_case)
+            if not use_case:
+                raise ValueError(f"UseCase '{cmd.use_case}' not found for CLI command '{cmd.name}'")
+            module = cmd.to_module_spec(context_name, use_case)
+            modules.append(module)
+
+        return PackageSpec.create(
+            name="cli",
+            modules=modules,
+        )
+
+    @classmethod
+    def commands_from_package_spec(
+        cls,
+        cli_pkg: PackageSpec,
+        use_cases: list[UseCaseSpec],
+    ) -> list[Self]:
+        """从 PackageSpec 逆向解析为 CLI 命令列表
+
+        Args:
+            cli_pkg: cli 包的 PackageSpec
+            use_cases: UseCase 列表，用于索引
+
+        Returns:
+            list of CliCommandSpec
+        """
+        use_case_index = {uc.name: uc for uc in use_cases}
+        commands: list[CliCommandSpec] = []
+
+        for module in cli_pkg.modules:
+            if module.name == "__init__":
+                continue
+
+            cmd = CliCommandSpec.from_module_spec(module, use_case_index)
+            if cmd:
+                commands.append(cmd)
+
+        return commands
 

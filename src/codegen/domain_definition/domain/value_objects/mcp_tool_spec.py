@@ -1,4 +1,5 @@
 import re
+from typing import Self
 
 from pydantic import Field
 
@@ -9,6 +10,7 @@ from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.module_assignment_spec import ModuleAssignmentSpec
+from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import parse_type_str
 from codegen.shared.domain.value_objects.snake_string import SnakeString
@@ -131,3 +133,65 @@ class McpToolSpec(ValueObject):
             if use_case_name in use_case_index:
                 return use_case_name
         return None
+
+    @classmethod
+    def tools_to_package_spec(
+        cls,
+        tools: list["McpToolSpec"],
+        context_name: str,
+        use_cases: list[UseCaseSpec],
+        project_name: str = "",
+    ) -> PackageSpec:
+        """将 MCP tool 列表转换为 PackageSpec
+
+        Args:
+            tools: MCP tool 列表
+            context_name: 上下文名称
+            use_cases: UseCase 列表，用于解析类型
+            project_name: 项目名称
+
+        Returns:
+            PackageSpec for mcp package
+        """
+        use_case_index = {uc.name: uc for uc in use_cases}
+        modules: list[ModuleSpec] = []
+
+        for tool in tools:
+            use_case = use_case_index.get(tool.use_case)
+            if not use_case:
+                raise ValueError(f"UseCase '{tool.use_case}' not found for MCP tool '{tool.name}'")
+            module = tool.to_module_spec(context_name, use_case, project_name)
+            modules.append(module)
+
+        return PackageSpec.create(
+            name="mcp",
+            modules=modules,
+        )
+
+    @classmethod
+    def tools_from_package_spec(
+        cls,
+        mcp_pkg: PackageSpec,
+        use_cases: list[UseCaseSpec],
+    ) -> list[Self]:
+        """从 PackageSpec 逆向解析为 MCP tool 列表
+
+        Args:
+            mcp_pkg: mcp 包的 PackageSpec
+            use_cases: UseCase 列表，用于索引
+
+        Returns:
+            list of McpToolSpec
+        """
+        use_case_index = {uc.name: uc for uc in use_cases}
+        tools: list[McpToolSpec] = []
+
+        for module in mcp_pkg.modules:
+            if module.name == "__init__":
+                continue
+
+            tool = McpToolSpec.from_module_spec(module, use_case_index)
+            if tool:
+                tools.append(tool)
+
+        return tools

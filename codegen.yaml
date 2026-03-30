@@ -334,12 +334,11 @@ contexts:
       - type: BlueprintStorage
         name: storage
   interfaces:
-    cli:
-      commands:
-      - name: build
-        use_case: GenerateProject
-      - name: reverse
-        use_case: GenerateBlueprint
+    cli_commands:
+    - name: build
+      use_case: GenerateProject
+    - name: reverse
+      use_case: GenerateBlueprint
 - name: PythonGen
   domain:
     enums:
@@ -1418,10 +1417,9 @@ contexts:
       implements: CodeFormatter
       technology: black
   interfaces:
-    cli:
-      commands:
-      - name: schema
-        use_case: GenerateSchemaJson
+    cli_commands:
+    - name: schema
+      use_case: GenerateSchemaJson
 - name: DomainDefinition
   domain:
     aggregates:
@@ -1523,26 +1521,36 @@ contexts:
         value: client
       - name: PROVIDER
         value: provider
-    - name: MappingDirection
-      members:
-      - name: ONE_WAY
-        value: one_way
-      - name: TWO_WAY
-        value: two_way
     - name: UseCaseKind
       members:
       - name: COMMAND
         value: command
       - name: QUERY
         value: query
-    - name: TestMockStrategy
+    - name: ContextNodeType
       members:
-      - name: TEST
-        value: 0
-      - name: UNITTEST
-        value: unittest
-      - name: PYTEST
-        value: pytest
+      - name: AGGREAGET
+        value: aggregate
+      - name: ENTITY
+        value: entity
+      - name: VALUE_OBJECT
+        value: value_object
+      - name: ENUM
+        value: enum
+      - name: DOMAIN_SERVICE
+        value: domain_service
+      - name: DOMAIN_PORT
+        value: domain_port
+      - name: USE_CASE
+        value: use_case
+      - name: APP_PORT
+        value: app_port
+      - name: APP_SERVICE
+        value: app_service
+      - name: IMPLEMENTATION
+        value: implementation
+      - name: CLI_COMMAND
+        value: cli_command
     value_objects:
     - name: EnumMemberSpec
       description: Specification of an enum member to be generated.
@@ -1558,15 +1566,6 @@ contexts:
         name: description
     - name: MethodOutput
       description: Specification of the output of a method.
-    - name: MapperSpec
-      description: Base class for value object mappers.
-      attributes:
-      - type: string
-        name: source
-      - type: string
-        name: target
-      - type: MappingDirection
-        name: direction
     - name: PortBinding
       description: Binding between a port and an adapter.
       attributes:
@@ -1611,8 +1610,7 @@ contexts:
       behaviors:
       - name: to_module_spec
         description: "生成单个 CLI 命令模块\n\nArgs:\n    context_name: 上下文名称\n    use_case:\
-          \ UseCase 规范\n    project_name: 项目名称\n\nReturns:\n    ModuleSpec for CLI\
-          \ command"
+          \ UseCase 规范\n\nReturns:\n    ModuleSpec for CLI command"
         inputs:
         - type: Self
           name: self
@@ -1620,9 +1618,6 @@ contexts:
           name: context_name
         - type: UseCaseSpec
           name: use_case
-        - type: string
-          name: project_name
-          default: ''
         output:
           type: ModuleSpec
       - name: from_module_spec
@@ -1640,6 +1635,42 @@ contexts:
           name: use_case_index
         output:
           type: CliCommandSpec | None
+      - name: commands_to_package_spec
+        description: "将 CLI 命令列表转换为 PackageSpec\n\nArgs:\n    commands: CLI 命令列表\n\
+          \    context_name: 上下文名称\n    use_cases: UseCase 列表，用于解析类型\n    project_name:\
+          \ 项目名称\n\nReturns:\n    PackageSpec for cli package"
+        inputs:
+        - type: Self
+          container: type
+          name: cls
+        - type: CliCommandSpec
+          container: list
+          name: commands
+        - type: string
+          name: context_name
+        - type: UseCaseSpec
+          container: list
+          name: use_cases
+        - type: string
+          name: project_name
+          default: ''
+        output:
+          type: PackageSpec
+      - name: commands_from_package_spec
+        description: "从 PackageSpec 逆向解析为 CLI 命令列表\n\nArgs:\n    cli_pkg: cli 包的 PackageSpec\n\
+          \    use_cases: UseCase 列表，用于索引\n\nReturns:\n    list of CliCommandSpec"
+        inputs:
+        - type: Self
+          container: type
+          name: cls
+        - type: PackageSpec
+          name: cli_pkg
+        - type: UseCaseSpec
+          container: list
+          name: use_cases
+        output:
+          type: Self
+          container: list
     - name: MethodSpec
       description: Standard specification for a class method.
       attributes:
@@ -1833,6 +1864,43 @@ contexts:
         output:
           type: Any
           custom_type_string: tuple[str | None, str | None]
+      - name: endpoints_to_package_spec
+        description: "将 HTTP endpoint 列表转换为 PackageSpec\n\nArgs:\n    endpoints: HTTP\
+          \ endpoint 列表\n    context_name: 上下文名称\n    use_cases: UseCase 列表，用于解析类型\n\
+          \    project_name: 项目名称\n\nReturns:\n    PackageSpec for http package"
+        inputs:
+        - type: Self
+          container: type
+          name: cls
+        - type: HttpEndpointSpec
+          container: list
+          name: endpoints
+        - type: string
+          name: context_name
+        - type: UseCaseSpec
+          container: list
+          name: use_cases
+        - type: string
+          name: project_name
+          default: ''
+        output:
+          type: PackageSpec
+      - name: endpoints_from_package_spec
+        description: "从 PackageSpec 逆向解析为 HTTP endpoint 列表\n\nArgs:\n    http_pkg:\
+          \ http 包的 PackageSpec\n    use_cases: UseCase 列表，用于索引\n\nReturns:\n    list\
+          \ of HttpEndpointSpec"
+        inputs:
+        - type: Self
+          container: type
+          name: cls
+        - type: PackageSpec
+          name: http_pkg
+        - type: UseCaseSpec
+          container: list
+          name: use_cases
+        output:
+          type: Self
+          container: list
     - name: AttributeSpec
       description: Standard specification for a class attribute.
       attributes:
@@ -1935,6 +2003,42 @@ contexts:
         output:
           type: string
           optional: true
+      - name: tools_to_package_spec
+        description: "将 MCP tool 列表转换为 PackageSpec\n\nArgs:\n    tools: MCP tool 列表\n\
+          \    context_name: 上下文名称\n    use_cases: UseCase 列表，用于解析类型\n    project_name:\
+          \ 项目名称\n\nReturns:\n    PackageSpec for mcp package"
+        inputs:
+        - type: Self
+          container: type
+          name: cls
+        - type: McpToolSpec
+          container: list
+          name: tools
+        - type: string
+          name: context_name
+        - type: UseCaseSpec
+          container: list
+          name: use_cases
+        - type: string
+          name: project_name
+          default: ''
+        output:
+          type: PackageSpec
+      - name: tools_from_package_spec
+        description: "从 PackageSpec 逆向解析为 MCP tool 列表\n\nArgs:\n    mcp_pkg: mcp 包的\
+          \ PackageSpec\n    use_cases: UseCase 列表，用于索引\n\nReturns:\n    list of McpToolSpec"
+        inputs:
+        - type: Self
+          container: type
+          name: cls
+        - type: PackageSpec
+          name: mcp_pkg
+        - type: UseCaseSpec
+          container: list
+          name: use_cases
+        output:
+          type: Self
+          container: list
     entities:
     - name: UseCaseSpec
       description: Specification of a use case to be generated.
@@ -2165,15 +2269,18 @@ contexts:
     - name: InterfaceSpec
       description: 接口层总规范
       attributes:
-      - type: CliInterfaceSpec
+      - type: CliCommandSpec
+        container: list
         optional: true
-        name: cli
-      - type: McpInterfaceSpec
+        name: cli_commands
+      - type: McpToolSpec
+        container: list
         optional: true
-        name: mcp
-      - type: HttpInterfaceSpec
+        name: mcp_tools
+      - type: HttpEndpointSpec
+        container: list
         optional: true
-        name: http
+        name: http_endpoints
       behaviors:
       - name: to_package_spec
         description: "将 InterfaceSpec 转换为 PackageSpec\n\nArgs:\n    context_name:\
@@ -2483,59 +2590,6 @@ contexts:
           name: description
         output:
           type: None
-    - name: McpInterfaceSpec
-      description: MCP 接口层规范
-      attributes:
-      - type: McpToolSpec
-        container: list
-        optional: true
-        name: tools
-      behaviors:
-      - name: to_package_spec
-        description: "将 McpInterfaceSpec 转换为 PackageSpec\n\nArgs:\n    context_name:\
-          \ 上下文名称\n    use_cases: UseCase 列表，用于解析类型\n    project_name: 项目名称\n\nReturns:\n\
-          \    PackageSpec for mcp package"
-        inputs:
-        - type: Self
-          name: self
-        - type: string
-          name: context_name
-        - type: UseCaseSpec
-          container: list
-          name: use_cases
-        - type: string
-          name: project_name
-          default: ''
-        output:
-          type: PackageSpec
-      - name: _create_mcp_init_module
-        description: 生成 MCP __init__.py
-        inputs:
-        - type: Self
-          name: self
-        - type: string
-          name: context_name
-        - type: string
-          container: list
-          name: function_names
-        - type: string
-          name: project_name
-        output:
-          type: ModuleSpec
-      - name: from_package_spec
-        description: "从 PackageSpec 逆向解析为 McpInterfaceSpec\n\nArgs:\n    mcp_pkg:\
-          \ mcp 包的 PackageSpec\n    use_cases: UseCase 列表，用于索引\n\nReturns:\n    McpInterfaceSpec"
-        inputs:
-        - type: Self
-          container: type
-          name: cls
-        - type: PackageSpec
-          name: mcp_pkg
-        - type: UseCaseSpec
-          container: list
-          name: use_cases
-        output:
-          type: Self
     - name: DomainSpec
       description: Specification of a domain to be generated.
       attributes:
@@ -2945,59 +2999,6 @@ contexts:
           name: description
         output:
           type: None
-    - name: CliInterfaceSpec
-      description: CLI 接口层规范
-      attributes:
-      - type: CliCommandSpec
-        container: list
-        optional: true
-        name: commands
-      behaviors:
-      - name: to_package_spec
-        description: "将 CliInterfaceSpec 转换为 PackageSpec\n\nArgs:\n    context_name:\
-          \ 上下文名称\n    use_cases: UseCase 列表，用于解析类型\n    project_name: 项目名称\n\nReturns:\n\
-          \    PackageSpec for cli package"
-        inputs:
-        - type: Self
-          name: self
-        - type: string
-          name: context_name
-        - type: UseCaseSpec
-          container: list
-          name: use_cases
-        - type: string
-          name: project_name
-          default: ''
-        output:
-          type: PackageSpec
-      - name: _create_cli_init_module
-        description: 生成 CLI __init__.py
-        inputs:
-        - type: Self
-          name: self
-        - type: string
-          name: context_name
-        - type: string
-          container: list
-          name: function_names
-        - type: string
-          name: project_name
-        output:
-          type: ModuleSpec
-      - name: from_package_spec
-        description: "从 PackageSpec 逆向解析为 CliInterfaceSpec\n\nArgs:\n    cli_pkg:\
-          \ cli 包的 PackageSpec\n    use_cases: UseCase 列表，用于索引\n\nReturns:\n    CliInterfaceSpec"
-        inputs:
-        - type: Self
-          container: type
-          name: cls
-        - type: PackageSpec
-          name: cli_pkg
-        - type: UseCaseSpec
-          container: list
-          name: use_cases
-        output:
-          type: Self
     - name: EntitySpec
       description: Specification of an entity.
       attributes:
@@ -3314,59 +3315,6 @@ contexts:
           name: contexts
         output:
           type: PackageSpec | None
-    - name: HttpInterfaceSpec
-      description: HTTP 接口层规范
-      attributes:
-      - type: HttpEndpointSpec
-        container: list
-        optional: true
-        name: endpoints
-      behaviors:
-      - name: to_package_spec
-        description: "将 HttpInterfaceSpec 转换为 PackageSpec\n\nArgs:\n    context_name:\
-          \ 上下文名称\n    use_cases: UseCase 列表，用于解析类型\n    project_name: 项目名称\n\nReturns:\n\
-          \    PackageSpec for http package"
-        inputs:
-        - type: Self
-          name: self
-        - type: string
-          name: context_name
-        - type: UseCaseSpec
-          container: list
-          name: use_cases
-        - type: string
-          name: project_name
-          default: ''
-        output:
-          type: PackageSpec
-      - name: _create_http_init_module
-        description: 生成 HTTP __init__.py
-        inputs:
-        - type: Self
-          name: self
-        - type: string
-          name: context_name
-        - type: string
-          container: list
-          name: module_names
-        - type: string
-          name: project_name
-        output:
-          type: ModuleSpec
-      - name: from_package_spec
-        description: "从 PackageSpec 逆向解析为 HttpInterfaceSpec\n\nArgs:\n    http_pkg:\
-          \ http 包的 PackageSpec\n    use_cases: UseCase 列表，用于索引\n\nReturns:\n    HttpInterfaceSpec"
-        inputs:
-        - type: Self
-          container: type
-          name: cls
-        - type: PackageSpec
-          name: http_pkg
-        - type: UseCaseSpec
-          container: list
-          name: use_cases
-        output:
-          type: Self
     - name: ConfigSpec
       description: Specification for a configuration object (AppSettings or ContextSettings).
       attributes:
@@ -3901,19 +3849,18 @@ contexts:
       - type: Path
         name: config_path
   interfaces:
-    cli:
-      commands:
-      - name: tree
-        use_case: LoadBlueprint
-      - name: rm
-        use_case: RemoveValue
-      - name: remove-context
-        use_case: RemoveContext
-      - name: upsert-context
-        use_case: UpsertContext
-      - name: init
-        use_case: InitProject
-      - name: set
-        use_case: SetValue
-      - name: get
-        use_case: GetValue
+    cli_commands:
+    - name: tree
+      use_case: LoadBlueprint
+    - name: rm
+      use_case: RemoveValue
+    - name: remove-context
+      use_case: RemoveContext
+    - name: upsert-context
+      use_case: UpsertContext
+    - name: init
+      use_case: InitProject
+    - name: set
+      use_case: SetValue
+    - name: get
+      use_case: GetValue

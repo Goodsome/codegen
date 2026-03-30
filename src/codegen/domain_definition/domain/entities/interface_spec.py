@@ -1,9 +1,10 @@
 from typing import TYPE_CHECKING
 
 from codegen.shared.models import Entity
-from codegen.domain_definition.domain.entities.cli_interface_spec import CliInterfaceSpec
-from codegen.domain_definition.domain.entities.mcp_interface_spec import McpInterfaceSpec
-from codegen.domain_definition.domain.entities.http_interface_spec import HttpInterfaceSpec
+from codegen.domain_definition.domain.value_objects.cli_command_spec import CliCommandSpec
+from codegen.domain_definition.domain.value_objects.mcp_tool_spec import McpToolSpec
+from codegen.domain_definition.domain.value_objects.http_endpoint_spec import HttpEndpointSpec
+from pydantic import Field
 
 if TYPE_CHECKING:
     from codegen.domain_definition.domain.entities.use_case_spec import UseCaseSpec
@@ -13,9 +14,9 @@ if TYPE_CHECKING:
 class InterfaceSpec(Entity):
     """接口层总规范"""
 
-    cli: CliInterfaceSpec | None = None
-    mcp: McpInterfaceSpec | None = None
-    http: HttpInterfaceSpec | None = None
+    cli_commands: list[CliCommandSpec] = Field(default_factory=list)
+    mcp_tools: list[McpToolSpec] = Field(default_factory=list)
+    http_endpoints: list[HttpEndpointSpec] = Field(default_factory=list)
 
     def to_package_spec(
         self,
@@ -37,16 +38,22 @@ class InterfaceSpec(Entity):
 
         sub_packages: list["PackageSpec"] = []
 
-        if self.cli:
-            cli_pkg = self.cli.to_package_spec(context_name, use_cases, project_name)
+        if self.cli_commands:
+            cli_pkg = CliCommandSpec.commands_to_package_spec(
+                self.cli_commands, context_name, use_cases, project_name
+            )
             sub_packages.append(cli_pkg)
 
-        if self.mcp:
-            mcp_pkg = self.mcp.to_package_spec(context_name, use_cases, project_name)
+        if self.mcp_tools:
+            mcp_pkg = McpToolSpec.tools_to_package_spec(
+                self.mcp_tools, context_name, use_cases, project_name
+            )
             sub_packages.append(mcp_pkg)
 
-        if self.http:
-            http_pkg = self.http.to_package_spec(context_name, use_cases, project_name)
+        if self.http_endpoints:
+            http_pkg = HttpEndpointSpec.endpoints_to_package_spec(
+                self.http_endpoints, context_name, use_cases, project_name
+            )
             sub_packages.append(http_pkg)
 
         return PackageSpec.create(
@@ -69,16 +76,20 @@ class InterfaceSpec(Entity):
         Returns:
             InterfaceSpec
         """
-        cli_spec = None
-        mcp_spec = None
-        http_spec = None
+        cli_commands: list[CliCommandSpec] = []
+        mcp_tools: list[McpToolSpec] = []
+        http_endpoints: list[HttpEndpointSpec] = []
 
         for sub_pkg in interfaces_pkg.sub_packages:
             if sub_pkg.name == "cli":
-                cli_spec = CliInterfaceSpec.from_package_spec(sub_pkg, use_cases)
+                cli_commands = CliCommandSpec.commands_from_package_spec(sub_pkg, use_cases)
             elif sub_pkg.name == "mcp":
-                mcp_spec = McpInterfaceSpec.from_package_spec(sub_pkg, use_cases)
+                mcp_tools = McpToolSpec.tools_from_package_spec(sub_pkg, use_cases)
             elif sub_pkg.name == "http":
-                http_spec = HttpInterfaceSpec.from_package_spec(sub_pkg, use_cases)
+                http_endpoints = HttpEndpointSpec.endpoints_from_package_spec(sub_pkg, use_cases)
 
-        return cls(cli=cli_spec, mcp=mcp_spec, http=http_spec)
+        return cls(
+            cli_commands=cli_commands,
+            mcp_tools=mcp_tools,
+            http_endpoints=http_endpoints,
+        )
