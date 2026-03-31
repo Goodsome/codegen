@@ -5294,16 +5294,22 @@ contexts:
       use_case: UpdateCliCommand
     - name: update-http-endpoint
       use_case: UpdateHttpEndpoint
+    - name: update-method
+      use_case: UpdateMethod
     - name: update-entity
       use_case: UpdateEntity
     - name: remove-domain-port
       use_case: RemoveDomainPort
+    - name: update-attribute
+      use_case: UpdateAttribute
     - name: tree
       use_case: LoadBlueprint
     - name: remove-entity
       use_case: RemoveEntity
     - name: update-enum
       use_case: UpdateEnum
+    - name: remove-method
+      use_case: RemoveMethod
     - name: get-domain-port
       use_case: GetDomainPort
     - name: add-http-endpoint
@@ -5334,6 +5340,8 @@ contexts:
       use_case: GetEntity
     - name: add-entity
       use_case: AddEntity
+    - name: add-method
+      use_case: AddMethod
     - name: add-domain-port
       use_case: AddDomainPort
     - name: remove-domain-service
@@ -5356,6 +5364,8 @@ contexts:
       use_case: UpdateMcpTool
     - name: add-mcp-tool
       use_case: AddMcpTool
+    - name: add-attribute
+      use_case: AddAttribute
     - name: get-cli-command
       use_case: GetCliCommand
     - name: add-enum
@@ -5368,6 +5378,8 @@ contexts:
       use_case: GetUseCase
     - name: upsert-context
       use_case: UpsertContext
+    - name: remove-attribute
+      use_case: RemoveAttribute
     - name: get-value-object
       use_case: GetValueObject
     - name: update-implementation
