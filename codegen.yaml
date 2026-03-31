@@ -1529,7 +1529,7 @@ contexts:
         value: query
     - name: ElementType
       members:
-      - name: AGGREAGET
+      - name: AGGREGATE
         value: aggregate
       - name: ENTITY
         value: entity
@@ -1555,14 +1555,24 @@ contexts:
         value: mcp_tool
       - name: HTTP_ENDPOINT
         value: http_endpoint
-    - name: ElementFieldType
+    - name: AttributeKind
       members:
       - name: ATTRIBUTE
         value: attribute
+      - name: DEPENDENCY
+        value: dependency
+      - name: INPUT
+        value: input
+      - name: OUTPUT
+        value: output
+    - name: MethodKind
+      members:
       - name: BEHAVIOR
         value: behavior
       - name: OPERATION
         value: operation
+      - name: PRIVATE
+        value: private
     value_objects:
     - name: EnumMemberSpec
       description: Specification of an enum member to be generated.
@@ -4306,6 +4316,45 @@ contexts:
       dependencies:
       - type: BlueprintStorage
         name: storage
+    - name: UpdateMethod
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: ElementType
+        name: element_type
+      - type: MethodKind
+        name: method_kind
+      - type: string
+        name: element_name
+      - type: string
+        name: name
+      - type: string
+        optional: true
+        name: description
+      - type: Any
+        optional: true
+        custom_type_string: list[dict[str, Any]] | None
+        name: inputs
+      - type: string
+        optional: true
+        name: output_type
+      - type: ContainerType
+        optional: true
+        name: output_container
+      - type: boolean
+        optional: true
+        name: output_optional
+      - type: string
+        optional: true
+        name: output_custom_type_string
+      outputs:
+      - type: boolean
+        name: success
+      description: Use case to update a method of an element.
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
     - name: UpdateEntity
       kind: command
       inputs:
@@ -4335,6 +4384,45 @@ contexts:
       dependencies:
       - type: BlueprintStorage
         name: storage
+    - name: UpdateAttribute
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: ElementType
+        name: element_type
+      - type: AttributeKind
+        name: attribute_kind
+      - type: string
+        name: element_name
+      - type: string
+        name: name
+      - type: string
+        optional: true
+        name: type
+      - type: string
+        optional: true
+        name: description
+      - type: any
+        optional: true
+        name: default
+      - type: ContainerType
+        optional: true
+        name: container
+      - type: boolean
+        optional: true
+        name: optional
+      - type: string
+        optional: true
+        name: custom_type_string
+      outputs:
+      - type: boolean
+        name: success
+      description: Use case to update an attribute, dependency, input, or output of
+        an element.
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
     - name: RemoveEntity
       kind: command
       inputs:
@@ -4361,6 +4449,26 @@ contexts:
       outputs:
       - type: boolean
         name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: RemoveMethod
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: ElementType
+        name: element_type
+      - type: MethodKind
+        name: method_kind
+      - type: string
+        name: element_name
+      - type: string
+        name: name
+      outputs:
+      - type: boolean
+        name: success
+      description: Use case to remove a method from an element.
       dependencies:
       - type: BlueprintStorage
         name: storage
@@ -4579,6 +4687,45 @@ contexts:
       dependencies:
       - type: BlueprintStorage
         name: storage
+    - name: AddMethod
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: ElementType
+        name: element_type
+      - type: MethodKind
+        name: method_kind
+      - type: string
+        name: element_name
+      - type: string
+        name: name
+      - type: string
+        optional: true
+        name: description
+      - type: Any
+        optional: true
+        custom_type_string: list[dict[str, Any]]
+        name: inputs
+      - type: string
+        name: output_type
+        default: void
+      - type: ContainerType
+        name: output_container
+        default: ContainerType.NONE
+      - type: boolean
+        name: output_optional
+        default: false
+      - type: string
+        optional: true
+        name: output_custom_type_string
+      outputs:
+      - type: boolean
+        name: success
+      description: Use case to add a method to an element.
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
     - name: AddDomainPort
       kind: command
       inputs:
@@ -4742,6 +4889,44 @@ contexts:
       dependencies:
       - type: BlueprintStorage
         name: storage
+    - name: AddAttribute
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: ElementType
+        name: element_type
+      - type: AttributeKind
+        name: attribute_kind
+      - type: string
+        name: element_name
+      - type: string
+        name: name
+      - type: string
+        name: type
+      - type: string
+        optional: true
+        name: description
+      - type: any
+        optional: true
+        name: default
+      - type: ContainerType
+        name: container
+        default: ContainerType.NONE
+      - type: boolean
+        name: optional
+        default: false
+      - type: string
+        optional: true
+        name: custom_type_string
+      outputs:
+      - type: boolean
+        name: success
+      description: Use case to add an attribute, dependency, input, or output to an
+        element.
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
     - name: GetCliCommand
       kind: query
       inputs:
@@ -4819,6 +5004,27 @@ contexts:
       outputs:
       - type: Blueprint
         name: blueprint
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: RemoveAttribute
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: ElementType
+        name: element_type
+      - type: AttributeKind
+        name: attribute_kind
+      - type: string
+        name: element_name
+      - type: string
+        name: name
+      outputs:
+      - type: boolean
+        name: success
+      description: Use case to remove an attribute, dependency, input, or output from
+        an element.
       dependencies:
       - type: BlueprintStorage
         name: storage

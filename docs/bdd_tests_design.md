@@ -23,13 +23,11 @@
       # ... attributes ...
       rules:
         - name: AppendToListSuccessfully
-          description: "当 append 为 True 且目标路径已存在列表时，新值应追加到列表末尾。"
           given: "存储中已存在包含列表的 Blueprint"
           when: "执行 SetValueCommand，append=True"
           then: "存储中的列表末尾新增了该 value，且返回成功状态"
           
         - name: FailWhenAppendingToNonList
-          description: "当 append 为 True 但目标路径对应的值不是列表时，应抛出类型冲突异常。"
           given: "存储中目标路径的值是一个字符串"
           when: "执行 SetValueCommand，append=True"
           then: "抛出 TypeMismatchError 异常"
