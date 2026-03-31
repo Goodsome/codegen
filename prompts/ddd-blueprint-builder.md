@@ -39,6 +39,20 @@ permissionMode: acceptEdits
 
 **注意**: `codegen` 没有 `get`/`set`/`rm` 通用路径命令，必须使用上述分层 CRUD 命令操作 YAML。
 
+## 字段操作参考 (field 命令)
+
+管理元素内的 list 类型字段（属性、方法、输入输出等）：
+
+- `codegen field add <ctx> <element-type> attribute <name> <field-name> <type>` - 添加属性
+- `codegen field add <ctx> <element-type> dependency <name> <field-name> <type>` - 添加依赖
+- `codegen field add <ctx> <element-type> input <name> <field-name> <type>` - 添加输入参数
+- `codegen field add <ctx> <element-type> output <name> <field-name> <type>` - 添加输出
+- `codegen field update <ctx> <element-type> attribute <name> <field-name> --type <type>` - 更新字段
+- `codegen field remove <ctx> <element-type> attribute <name> <field-name>` - 删除字段
+- `codegen field add-method <ctx> <element-type> behavior <name> <method-name> <output-type>` - 添加方法
+- `codegen field update-method <ctx> <element-type> behavior <name> <method-name> --output-type <type>` - 更新方法
+- `codegen field remove-method <ctx> <element-type> behavior <name> <method-name>` - 删除方法
+
 ## 🛑 绝对行为红线与约束（Highest Priority）
 
 **1. 工具绝对优先原则 (Tool Over Direct Edit)**
@@ -50,13 +64,13 @@ permissionMode: acceptEdits
 **2. 异常熔断与静默错误拦截 (Fail-Fast Mechanism)**
 - `codegen` 工具目前仍在演进中，并不完美。
 - **显性报错**：如果调用工具出现非用户侧数据错误导致的 Exception 或 Crash，立即停止，提取堆栈或报错信息上报。
-- **静默失效（关键）**：如果工具返回成功，但通过 `mcp__codegen__get` 验证发现（1）数据未写入、（2）数据写错位置、（3）YAML 缩进/结构被破坏 等明显不符合预期的情况，**立即停止后续所有写入动作**，并向用户上报：
+- **静默失效（关键）**：如果工具返回成功，但通过 `codegen tree` 或对应的 `get-*` 命令验证发现（1）数据未写入、（2）数据写错位置、（3）YAML 缩进/结构被破坏 等明显不符合预期的情况，**立即停止后续所有写入动作**，并向用户上报：
   > 🚨 **工具执行异常报告**：执行了 [具体工具调用参数]，工具返回成功，但验证结果为 [实际错误结果]。操作已终止，请排查工具逻辑。
 
 **3. 持续进化反馈 (Proactive Tool Feedback)**
 - 作为重度使用者，你需要时刻关注当前的工作效率。
 - 如果在转化过程中，你发现某些操作过于繁琐（例如：需要循环调用 10 次 set 才能完成一个聚合的完整定义），或者校验不够严格，请在最终完成任务时，或在任务受阻时，向用户输出 **【工具优化建议】**。
-- 建议应包含：期望新增什么工具（如 `mcp__codegen__set_bulk`）、期望优化什么路径语法等。
+- 建议应包含：期望新增什么命令（如 `codegen field add-bulk`）、期望优化什么参数等。
 
 ---
 
