@@ -4189,54 +4189,6 @@ contexts:
           name: contexts
         output:
           type: ModuleSpec
-    services:
-    - name: ComponentLocator
-      description: Responsible for finding any component within a BoundedContext.
-      dependencies:
-      - type: Any
-        name: _FIND_HANDLERS
-        default: '{''aggregate'': lambda ctx, name: next((x for x in ctx.domain.aggregates
-          if str(x.name) == name), None), ''entity'': lambda ctx, name: next((x for
-          x in ctx.domain.entities if str(x.name) == name), None), ''value_object'':
-          lambda ctx, name: next((x for x in ctx.domain.value_objects if str(x.name)
-          == name), None), ''valueobject'': lambda ctx, name: next((x for x in ctx.domain.value_objects
-          if str(x.name) == name), None), ''service'': lambda ctx, name: next((x for
-          x in ctx.domain.services if str(x.name) == name), None), ''enum'': lambda
-          ctx, name: next((x for x in ctx.domain.enums if str(x.name) == name), None),
-          ''use_case'': lambda ctx, name: next((x for x in ctx.application.use_cases
-          if str(x.name) == name), None), ''usecase'': lambda ctx, name: next((x for
-          x in ctx.application.use_cases if str(x.name) == name), None), ''implementation'':
-          lambda ctx, name: next((x for x in ctx.infrastructure.implementations if
-          str(x.name) == name), None)}'
-      operations:
-      - name: _find_port_strategy
-        description: 'Strategy to find port: Domain layer first, then Application
-          layer.'
-        inputs:
-        - type: Self
-          name: self
-        - type: BoundedContext
-          name: context
-        - type: string
-          name: name
-        output:
-          type: any
-      - name: find_parent_component
-        description: 'Finds a component by name and type hint.
-
-          type_hint: ''aggregate'', ''service'', ''port'', ''implementation'', ''entity'',
-          ''value-object'', ''use-case'', ''enum'''
-        inputs:
-        - type: Self
-          name: self
-        - type: BoundedContext
-          name: context
-        - type: string
-          name: name
-        - type: string
-          name: type_hint
-        output:
-          type: any
     ports:
     - name: BlueprintStorage
       description: Loads the blueprint from a file.
