@@ -69,6 +69,14 @@ from codegen.domain_definition.interfaces.cli.update_http_endpoint import update
 from codegen.domain_definition.interfaces.cli.get_http_endpoint import get_http_endpoint
 from codegen.domain_definition.interfaces.cli.remove_http_endpoint import remove_http_endpoint
 
+# Field commands (attribute and method CRUD)
+from codegen.domain_definition.interfaces.cli.add_attribute import add_attribute
+from codegen.domain_definition.interfaces.cli.update_attribute import update_attribute
+from codegen.domain_definition.interfaces.cli.remove_attribute import remove_attribute
+from codegen.domain_definition.interfaces.cli.add_method import add_method
+from codegen.domain_definition.interfaces.cli.update_method import update_method
+from codegen.domain_definition.interfaces.cli.remove_method import remove_method
+
 app = typer.Typer(
     name="codegen",
     help="""Codegen CLI - DDD Project Scaffolding Tool.
@@ -94,6 +102,9 @@ app = typer.Typer(
 **Interface Commands**:
   interface   Manage interface elements (CLI commands, MCP tools, HTTP endpoints)
 
+**Field Commands**:
+  field       Manage fields (attributes, dependencies, inputs, outputs, methods)
+
     """,
     add_completion=False,
     rich_markup_mode="markdown",
@@ -110,6 +121,9 @@ app.add_typer(infrastructure_app, name="infrastructure")
 
 interface_app = typer.Typer(help="Interface layer manipulation commands")
 app.add_typer(interface_app, name="interface")
+
+field_app = typer.Typer(help="Field manipulation commands (attributes, methods)")
+app.add_typer(field_app, name="field")
 
 # ============================================================================
 # Root Commands
@@ -194,6 +208,17 @@ interface_app.command(name="add-http-endpoint")(add_http_endpoint)
 interface_app.command(name="update-http-endpoint")(update_http_endpoint)
 interface_app.command(name="get-http-endpoint")(get_http_endpoint)
 interface_app.command(name="remove-http-endpoint")(remove_http_endpoint)
+
+# ============================================================================
+# Field Commands
+# ============================================================================
+
+field_app.command(name="add")(add_attribute)
+field_app.command(name="update")(update_attribute)
+field_app.command(name="remove")(remove_attribute)
+field_app.command(name="add-method")(add_method)
+field_app.command(name="update-method")(update_method)
+field_app.command(name="remove-method")(remove_method)
 
 
 def main():

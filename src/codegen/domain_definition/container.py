@@ -79,6 +79,14 @@ from codegen.domain_definition.application.use_cases.update_http_endpoint import
 from codegen.domain_definition.application.use_cases.get_http_endpoint import GetHttpEndpoint
 from codegen.domain_definition.application.use_cases.remove_http_endpoint import RemoveHttpEndpoint
 
+# Field use cases (attribute and method CRUD)
+from codegen.domain_definition.application.use_cases.add_attribute import AddAttribute
+from codegen.domain_definition.application.use_cases.update_attribute import UpdateAttribute
+from codegen.domain_definition.application.use_cases.remove_attribute import RemoveAttribute
+from codegen.domain_definition.application.use_cases.add_method import AddMethod
+from codegen.domain_definition.application.use_cases.update_method import UpdateMethod
+from codegen.domain_definition.application.use_cases.remove_method import RemoveMethod
+
 # Other use cases
 from codegen.domain_definition.application.use_cases.init_project import InitProject
 from codegen.domain_definition.application.use_cases.load_blueprint import LoadBlueprint
@@ -209,3 +217,13 @@ class Container(DeclarativeContainer):
     update_http_endpoint = Factory(UpdateHttpEndpoint, storage=yaml_blueprint_storage)
     get_http_endpoint = Factory(GetHttpEndpoint, storage=yaml_blueprint_storage)
     remove_http_endpoint = Factory(RemoveHttpEndpoint, storage=yaml_blueprint_storage)
+
+    # =========================================================================
+    # Field use cases (attribute and method CRUD)
+    # =========================================================================
+    add_attribute = Factory(AddAttribute, storage=yaml_blueprint_storage)
+    update_attribute = Factory(UpdateAttribute, storage=yaml_blueprint_storage)
+    remove_attribute = Factory(RemoveAttribute, storage=yaml_blueprint_storage)
+    add_method = Factory(AddMethod, storage=yaml_blueprint_storage)
+    update_method = Factory(UpdateMethod, storage=yaml_blueprint_storage)
+    remove_method = Factory(RemoveMethod, storage=yaml_blueprint_storage)
