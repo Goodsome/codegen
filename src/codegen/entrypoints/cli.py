@@ -4,7 +4,6 @@ from codegen.bootstrap import bootstrap
 from codegen.orchestration.interfaces.cli.build import build
 from codegen.orchestration.interfaces.cli.reverse import reverse
 from codegen.python_gen.interfaces.cli.schema import schema
-from codegen.domain_definition.interfaces.cli.rm import rm
 from codegen.domain_definition.interfaces.cli.tree import tree as tree_cmd
 from codegen.domain_definition.interfaces.cli.init import init
 from codegen.domain_definition.interfaces.cli.upsert_context import upsert_context
@@ -82,7 +81,6 @@ app = typer.Typer(
 
 **Overview Command**:
   tree       Display blueprint structure as a visual tree
-  rm         Remove a value by path
 
 **Domain Commands**:
   domain     Manage domain model elements (aggregates, entities, value objects, enums, services, ports)
@@ -122,7 +120,6 @@ app.command()(reverse)
 app.command()(schema)
 app.command()(init)
 app.command(name="tree")(tree_cmd)
-app.command()(rm)
 app.command(name="upsert-context")(upsert_context)
 app.command(name="remove-context")(remove_context)
 
