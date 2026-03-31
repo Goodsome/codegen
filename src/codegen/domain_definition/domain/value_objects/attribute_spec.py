@@ -47,9 +47,14 @@ class AttributeSpec(TypeDefinition):
             # 如果指定了 flavor，需要包装在 Field/field 中
             if flavor:
                 func_name = "Field" if flavor == FieldFlavor.PYDANTIC else "field"
+                if isinstance(self.default, list):
+                    kwargs={"default_factory": AssignmentSpec.from_code("list")}
+                else:
+                    kwargs={"default": assignment}
+                    
                 assignment = AssignmentSpec.from_call(
                     func_name=func_name,
-                    kwargs={"default": assignment}
+                    kwargs=kwargs
                 )
         elif flavor and self.optional:
             # Create default=Field(default=None) or similar

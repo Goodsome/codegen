@@ -4,10 +4,16 @@ from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.shared.models import ValueObject
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
-from codegen.python_gen.domain.value_objects.type_annotation_spec import TypeAnnotationSpec
+from codegen.python_gen.domain.value_objects.type_annotation_spec import (
+    TypeAnnotationSpec,
+)
 from codegen.python_gen.domain.enums import FunctionType
-from codegen.domain_definition.domain.value_objects.type_definition import TypeDefinition
+from codegen.domain_definition.domain.value_objects.type_definition import (
+    TypeDefinition,
+)
 from pydantic import Field
+from codegen.domain_definition.domain.value_objects.rule_spec import RuleSpec
+from typing import Self, Union
 
 
 class MethodSpec(ValueObject):
@@ -17,34 +23,27 @@ class MethodSpec(ValueObject):
     description: str | None = Field(default=None)
     inputs: list[AttributeSpec] | None = Field(default=None)
     output: MethodOutput
+    rules: list[RuleSpec] = Field(default_factory=list)
 
     @classmethod
     def create(
-        cls, name: str, inputs: list[AttributeSpec], output: MethodOutput
-    ) -> "MethodSpec":
+        cls: type[Self], name: str, inputs: list[AttributeSpec], output: MethodOutput
+    ) -> Self:
         return cls(name=SnakeString(name), inputs=inputs, output=output)
 
     def to_function_spec(
-        self, type: FunctionType, class_name: str | None = None
+        self: Self, type: FunctionType, class_name: str | None = None
     ) -> FunctionSpec:
         """将 MethodSpec 转换为 PythonGen FunctionSpec"""
-        # 转换输入参数
-        parameters = [
-            attr.to_variable_spec() for attr in (self.inputs or [])
-        ]
-
+        parameters = [attr.to_variable_spec() for attr in self.inputs or []]
         decorators = []
         if type == FunctionType.CLASS_METHOD:
             decorators.append("classmethod")
         elif type == FunctionType.STATIC_METHOD:
             decorators.append("staticmethod")
-
         function_name = self.name
-
-        # 处理返回类型
         return_type = self.output.custom_type_string or self.output.type
         if class_name and return_type == class_name:
-            # 使用 Self 类型
             return_annotation = TypeAnnotationSpec(name="Self")
             if self.output.optional:
                 return_annotation = TypeAnnotationSpec(
@@ -56,7 +55,6 @@ class MethodSpec(ValueObject):
                 )
         else:
             return_annotation = self.output.to_python_annotation()
-
         return FunctionSpec.create(
             name=function_name,
             parameters=parameters,
@@ -67,13 +65,14 @@ class MethodSpec(ValueObject):
         )
 
     @classmethod
-    def from_function_spec(cls, function_spec: FunctionSpec) -> "MethodSpec":
+    def from_function_spec(cls: type[Self], function_spec: FunctionSpec) -> Self:
         """从 PythonGen FunctionSpec 逆向解析为 MethodSpec"""
-        # 转换输入参数
         inputs: list[AttributeSpec] = []
         for param in function_spec.parameters:
-            # 将 self/cls 转换为正确的 Self/type[Self] 类型
-            if function_spec.function_type == FunctionType.INSTANCE_METHOD and param.name == "self":
+            if (
+                function_spec.function_type == FunctionType.INSTANCE_METHOD
+                and param.name == "self"
+            ):
                 self_var_spec = VariableSpec.create(
                     name=param.name,
                     type_spec=TypeAnnotationSpec(name="Self"),
@@ -81,21 +80,23 @@ class MethodSpec(ValueObject):
                 )
                 inputs.append(AttributeSpec.from_variable_spec(self_var_spec))
                 continue
-            if function_spec.function_type == FunctionType.CLASS_METHOD and param.name == "cls":
+            if (
+                function_spec.function_type == FunctionType.CLASS_METHOD
+                and param.name == "cls"
+            ):
                 cls_var_spec = VariableSpec.create(
                     name=param.name,
-                    type_spec=TypeAnnotationSpec(name="type", args=[TypeAnnotationSpec(name="Self")]),
+                    type_spec=TypeAnnotationSpec(
+                        name="type", args=[TypeAnnotationSpec(name="Self")]
+                    ),
                     assignment=None,
                 )
                 inputs.append(AttributeSpec.from_variable_spec(cls_var_spec))
                 continue
             inputs.append(AttributeSpec.from_variable_spec(param))
-
-        # 转换返回类型
         type_def = TypeDefinition.from_python_annotation(
             function_spec.return_annotation
         )
-
         return cls(
             name=function_spec.name,
             description=function_spec.description,

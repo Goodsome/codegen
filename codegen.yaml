@@ -1394,9 +1394,6 @@ contexts:
         container: list
         optional: true
         name: nodes
-      - type: string
-        name: root_path
-        default: ''
       outputs:
       - type: BuildResult
         name: result
@@ -1720,6 +1717,10 @@ contexts:
         name: inputs
       - type: MethodOutput
         name: output
+      - type: RuleSpec
+        container: list
+        optional: true
+        name: rules
       behaviors:
       - name: create
         inputs:
@@ -1734,7 +1735,7 @@ contexts:
         - type: MethodOutput
           name: output
         output:
-          type: MethodSpec
+          type: Self
       - name: to_function_spec
         description: 将 MethodSpec 转换为 PythonGen FunctionSpec
         inputs:
@@ -1756,7 +1757,7 @@ contexts:
         - type: FunctionSpec
           name: function_spec
         output:
-          type: MethodSpec
+          type: Self
     - name: TypeDefinition
       description: 类型定义的公共部分，被 AttributeSpec 和 MethodOutput 共同继承。
       attributes:
@@ -1952,6 +1953,17 @@ contexts:
         output:
           type: Self
           container: list
+    - name: RuleSpec
+      description: BDD rule specification with given/when/then
+      attributes:
+      - type: PascalString
+        name: name
+      - type: string
+        name: given
+      - type: string
+        name: when
+      - type: string
+        name: then
     - name: AttributeSpec
       description: Standard specification for a class attribute.
       attributes:
