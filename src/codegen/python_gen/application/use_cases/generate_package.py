@@ -21,7 +21,6 @@ class GeneratePackageCommand:
     package_spec: PackageSpec
     overwrite: bool
     nodes: list[str] | None = field(default=None)
-    root_path: str = field(default="")
 
 
 @dataclass(frozen=True)
@@ -42,17 +41,17 @@ class GeneratePackage:
         build_result = BuildResult(status=BuildStatus.SUCCESS)
 
         try:
-            current_pkg_path = Path(cmd.package_spec.name)
+            current_pkg_path = Path("src") / Path(cmd.package_spec.name)
             if self.file_system_port.is_directory(current_pkg_path):
                 current_pkg = self.translator.to_package_spec(
-                    package_path=Path(cmd.package_spec.name)
+                    package_path=current_pkg_path
                 )
                 pkg = cmd.package_spec.merge(current_pkg)
             else:
                 pkg = cmd.package_spec
             
             source_tree = self.translator.generate_source_tree(
-                package_spec=pkg, target_nodes=cmd.nodes, root_path=cmd.root_path
+                package_spec=pkg, target_nodes=cmd.nodes,
             )
 
             for rel_path_str, content in source_tree.items():

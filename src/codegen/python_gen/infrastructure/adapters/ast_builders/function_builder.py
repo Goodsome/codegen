@@ -13,11 +13,6 @@ def build_function(func_spec: FunctionSpec) -> ast.FunctionDef | ast.AsyncFuncti
     # 1. Args
     args_list = []
     defaults_list = []
-    
-    if func_spec.is_instance_method():
-        args_list.append(ast.arg(arg="self", annotation=None))
-    elif func_spec.function_type == FunctionType.CLASS_METHOD:
-        args_list.append(ast.arg(arg="cls", annotation=None))
         
     for param in func_spec.parameters:
         # Build arg
