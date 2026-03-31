@@ -1,8 +1,6 @@
 from dataclasses import dataclass
-from typing import Any
-
+from typing import Any, Self, Union
 from pydantic import BaseModel, Field
-
 from codegen.domain_definition.domain.enums import AttributeKind, ElementType
 from codegen.domain_definition.domain.ports.blueprint_storage import BlueprintStorage
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
@@ -11,8 +9,6 @@ from codegen.shared.domain.value_objects.snake_string import SnakeString
 
 
 class UpdateAttributeCommand(BaseModel):
-    """Command to update an attribute, dependency, input, or output of an element."""
-
     context_name: str
     element_type: ElementType
     attribute_kind: AttributeKind
@@ -36,14 +32,11 @@ class UpdateAttribute:
 
     storage: BlueprintStorage
 
-    def execute(self, cmd: UpdateAttributeCommand) -> UpdateAttributeResult:
+    def execute(self: Self, cmd: UpdateAttributeCommand) -> UpdateAttributeResult:
         blueprint = self.storage.load()
         if blueprint is None:
             raise ValueError("Blueprint not loaded")
-
         context = blueprint.get_context(cmd.context_name)
-
-        # Build updated AttributeSpec - only update fields that are provided
         updated = AttributeSpec(
             name=SnakeString(cmd.name),
             type=cmd.type or "string",
@@ -53,32 +46,38 @@ class UpdateAttribute:
             optional=cmd.optional if cmd.optional is not None else False,
             custom_type_string=cmd.custom_type_string,
         )
-
         match (cmd.element_type, cmd.attribute_kind):
-            case (ElementType.AGGREGATE, AttributeKind.ATTRIBUTE):
+            case [ElementType.AGGREGATE, AttributeKind.ATTRIBUTE]:
                 context.domain.get_aggregate(cmd.element_name).update_attribute(updated)
-            case (ElementType.ENTITY, AttributeKind.ATTRIBUTE):
+            case [ElementType.ENTITY, AttributeKind.ATTRIBUTE]:
                 context.domain.get_entity(cmd.element_name).update_attribute(updated)
-            case (ElementType.VALUE_OBJECT, AttributeKind.ATTRIBUTE):
-                context.domain.get_value_object(cmd.element_name).update_attribute(updated)
-            case (ElementType.DOMAIN_SERVICE, AttributeKind.DEPENDENCY):
+            case [ElementType.VALUE_OBJECT, AttributeKind.ATTRIBUTE]:
+                context.domain.get_value_object(cmd.element_name).update_attribute(
+                    updated
+                )
+            case [ElementType.DOMAIN_SERVICE, AttributeKind.DEPENDENCY]:
                 context.domain.get_service(cmd.element_name).update_dependency(updated)
-            case (ElementType.APP_SERVICE, AttributeKind.DEPENDENCY):
-                context.application.get_service(cmd.element_name).update_dependency(updated)
-            case (ElementType.USE_CASE, AttributeKind.DEPENDENCY):
-                context.application.get_use_case(cmd.element_name).update_dependency(updated)
-            case (ElementType.USE_CASE, AttributeKind.INPUT):
+            case [ElementType.APP_SERVICE, AttributeKind.DEPENDENCY]:
+                context.application.get_service(cmd.element_name).update_dependency(
+                    updated
+                )
+            case [ElementType.USE_CASE, AttributeKind.DEPENDENCY]:
+                context.application.get_use_case(cmd.element_name).update_dependency(
+                    updated
+                )
+            case [ElementType.USE_CASE, AttributeKind.INPUT]:
                 context.application.get_use_case(cmd.element_name).update_input(updated)
-            case (ElementType.USE_CASE, AttributeKind.OUTPUT):
-                context.application.get_use_case(cmd.element_name).update_output(updated)
-            case (ElementType.IMPLEMENTATION, AttributeKind.ATTRIBUTE):
-                context.infrastructure.get_implementation(cmd.element_name).update_attribute(updated)
+            case [ElementType.USE_CASE, AttributeKind.OUTPUT]:
+                context.application.get_use_case(cmd.element_name).update_output(
+                    updated
+                )
+            case [ElementType.IMPLEMENTATION, AttributeKind.ATTRIBUTE]:
+                context.infrastructure.get_implementation(
+                    cmd.element_name
+                ).update_attribute(updated)
             case _:
                 raise ValueError(
-                    f"Unsupported combination: element_type='{cmd.element_type.value}', "
-                    f"attribute_kind='{cmd.attribute_kind.value}'"
+                    f"Unsupported combination: element_type='{cmd.element_type.value}', attribute_kind='{cmd.attribute_kind.value}'"
                 )
-
         self.storage.save(blueprint)
-
         return UpdateAttributeResult(success=True)

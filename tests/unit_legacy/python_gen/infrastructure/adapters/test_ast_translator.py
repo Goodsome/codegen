@@ -158,7 +158,7 @@ class TestRoundTrip:
         ]), [])
 
 
-        assert "def create_field(self, field_config: FieldConfig=Field(default='test')) -> Any:" in code
+        assert "def create_field(field_config: FieldConfig=Field(default='test')) -> Any:" in code
 
     def test_render_field_with_empty_string_default(self):
         """Test that empty string default renders correctly as Field(default='')."""

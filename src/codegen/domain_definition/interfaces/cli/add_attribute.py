@@ -1,17 +1,13 @@
-"""
-AddAttribute command - Add an attribute/dependency/input/output to an element.
-"""
-from typing import Annotated
-
 import typer
+from typing import Annotated, Any, Union
 from dependency_injector.wiring import Provide, inject
-
 from codegen.domain_definition.application.use_cases.add_attribute import (
     AddAttribute,
     AddAttributeCommand,
     AddAttributeResult,
 )
 from codegen.domain_definition.domain.enums import AttributeKind, ElementType
+from codegen.shared.domain.enums import ContainerType
 
 
 @inject
@@ -23,18 +19,23 @@ def _add_attribute(
 
 
 def add_attribute(
-    context_name: Annotated[str, typer.Argument(help="Bounded context name")],
-    element_type: Annotated[ElementType, typer.Argument(help="Element type")],
-    attribute_kind: Annotated[AttributeKind, typer.Argument(help="Attribute kind")],
-    element_name: Annotated[str, typer.Argument(help="Element name")],
-    name: Annotated[str, typer.Argument(help="Attribute name")],
-    type: Annotated[str, typer.Argument(help="Attribute type")],
+    context_name: Annotated[str, typer.Argument()],
+    element_type: Annotated[ElementType, typer.Argument()],
+    attribute_kind: Annotated[AttributeKind, typer.Argument()],
+    element_name: Annotated[str, typer.Argument()],
+    name: Annotated[str, typer.Argument()],
+    type: Annotated[str, typer.Argument()],
     description: Annotated[str | None, typer.Option("--description", "-d")] = None,
-    default: Annotated[str | None, typer.Option("--default")] = None,
-    optional: Annotated[bool, typer.Option("--optional")] = False,
+    default: Annotated[str | None, typer.Option("--default", "-d2")] = None,
+    container: Annotated[
+        ContainerType, typer.Option("--container", "-c")
+    ] = ContainerType.NONE,
+    optional: Annotated[bool, typer.Option("--optional", "-o")] = False,
+    custom_type_string: Annotated[
+        str | None, typer.Option("--custom-type-string", "-cts")
+    ] = None,
 ) -> None:
-    """
-    Add an attribute, dependency, input, or output to an element.
+    """Add an attribute, dependency, input, or output to an element.
 
     Examples:
         $ codegen field add sales entity attribute Order order_id string
@@ -51,10 +52,14 @@ def add_attribute(
         description=description,
         default=default,
         optional=optional,
+        container=container,
+        custom_type_string=custom_type_string,
     )
     result = _add_attribute(cmd)
     if result.success:
-        typer.echo(f"Successfully added {attribute_kind.value} '{name}' to {element_type.value} '{element_name}'")
+        typer.echo(
+            f"Successfully added {attribute_kind.value} '{name}' to {element_type.value} '{element_name}'"
+        )
     else:
         typer.echo(f"Failed to add {attribute_kind.value} '{name}'", err=True)
         raise typer.Exit(1)
