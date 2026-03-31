@@ -20,7 +20,7 @@ class UseCaseKind(Enum):
 
 
 class ElementType(Enum):
-    AGGREAGET = "aggregate"    
+    AGGREGATE = "aggregate"    
     ENTITY = "entity"
     VALUE_OBJECT = "value_object"
     ENUM = "enum"
@@ -38,9 +38,23 @@ class ElementType(Enum):
     HTTP_ENDPOINT = "http_endpoint"
     
 
-class ElementFieldType(Enum):
-    
+class AttributeKind(Enum):
+
     ATTRIBUTE = "attribute"
+
+    DEPENDENCY = "dependency"
+
+    INPUT = "input"
+
+    OUTPUT = "output"
+    
+
+class MethodKind(Enum):
+
     BEHAVIOR = "behavior"
+
     OPERATION = "operation"
+
+    PRIVATE = "private"
+    
     
