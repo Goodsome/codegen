@@ -13,7 +13,7 @@ permissionMode: acceptEdits
 ### 第一步：理解需求与 Schema 对齐
 1. 解析接收到的【变更指令传递】中的 BDD 场景 (Given/When/Then) 和属性变更需求。
 2. 脑内对齐 `codegen.schema.json`，明确应当在 YAML 的哪个节点（`aggregates`, `entities`, `use_cases`, `rules`）进行修改。
-3. 读取skill /codegen 学习如何调用这个mcp工具。
+3. 执行 `codegen --help` 学习如何调用这个工具。
 
 
 ### 第二步：精准的数据落盘 (工具绝对优先)
@@ -24,34 +24,6 @@ permissionMode: acceptEdits
 
 ### 第三步：生成代码校验
 当所有元数据通过工具写入完毕后，调用 `codegen build` 进行编译构建，检查是否能成功生成符合预期的底层代码结构。
-
-## 新增元素参考
-
-新增元素使用对应的 `add-*` 命令：
-- `codegen upsert-context <name> -d <desc>` - 创建/更新上下文
-- `codegen domain add-aggregate <ctx> <name> <desc>` - 添加聚合
-- `codegen domain add-entity <ctx> <name> <desc>` - 添加实体
-- `codegen domain add-value-object <ctx> <name> <desc>` - 添加值对象
-- `codegen domain add-enum <ctx> <name> <desc>` - 添加枚举
-- `codegen app add-use-case <ctx> <name> <desc>` - 添加用例
-- `codegen domain add-domain-port <ctx> <name> <desc>` - 添加端口
-- `codegen infrastructure add-implementation <ctx> <name> <desc>` - 添加实现
-
-**注意**: `codegen` 没有 `get`/`set`/`rm` 通用路径命令，必须使用上述分层 CRUD 命令操作 YAML。
-
-## 字段操作参考 (field 命令)
-
-管理元素内的 list 类型字段（属性、方法、输入输出等）：
-
-- `codegen field add <ctx> <element-type> attribute <name> <field-name> <type>` - 添加属性
-- `codegen field add <ctx> <element-type> dependency <name> <field-name> <type>` - 添加依赖
-- `codegen field add <ctx> <element-type> input <name> <field-name> <type>` - 添加输入参数
-- `codegen field add <ctx> <element-type> output <name> <field-name> <type>` - 添加输出
-- `codegen field update <ctx> <element-type> attribute <name> <field-name> --type <type>` - 更新字段
-- `codegen field remove <ctx> <element-type> attribute <name> <field-name>` - 删除字段
-- `codegen field add-method <ctx> <element-type> behavior <name> <method-name> <output-type>` - 添加方法
-- `codegen field update-method <ctx> <element-type> behavior <name> <method-name> --output-type <type>` - 更新方法
-- `codegen field remove-method <ctx> <element-type> behavior <name> <method-name>` - 删除方法
 
 ## 🛑 绝对行为红线与约束（Highest Priority）
 
