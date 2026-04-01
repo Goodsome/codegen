@@ -1,16 +1,17 @@
 from functools import cached_property
 from typing import Any, Self, Union
 from pydantic import Field
+
 from codegen.domain_definition.domain.entities.application_spec import ApplicationSpec
+from codegen.domain_definition.domain.entities.config_spec import ConfigSpec
+from codegen.domain_definition.domain.entities.container_spec import ContainerSpec
 from codegen.domain_definition.domain.entities.domain_spec import DomainSpec
 from codegen.domain_definition.domain.entities.infrastructure_spec import (
     InfrastructureSpec,
 )
-from codegen.domain_definition.domain.entities.config_spec import ConfigSpec
-from codegen.domain_definition.domain.entities.container_spec import ContainerSpec
-from codegen.domain_definition.domain.value_objects.port_binding import PortBinding
-from codegen.domain_definition.domain.entities.port_spec import PortSpec
 from codegen.domain_definition.domain.entities.interface_spec import InterfaceSpec
+from codegen.domain_definition.domain.entities.port_spec import PortSpec
+from codegen.domain_definition.domain.value_objects.port_binding import PortBinding
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
@@ -90,6 +91,7 @@ class BoundedContext(Entity):
             for pkg in package_spec.sub_packages:
                 self._collect_class_specs_in_ports(class_specs, pkg)
 
+    @classmethod
     def from_package_spec(cls: type[Self], package_spec: PackageSpec) -> Self:
         """Create a BoundedContext from a PackageSpec."""
         domain = None
@@ -125,7 +127,7 @@ class BoundedContext(Entity):
         config: ConfigSpec | None = None,
         container: ContainerSpec | None = None,
         interfaces: InterfaceSpec | None = None,
-    ) -> Any:
+    ) -> Self:
         if domain is None:
             domain = DomainSpec()
         if application is None:
@@ -145,6 +147,7 @@ class BoundedContext(Entity):
             interfaces=interfaces,
         )
 
+    @cached_property
     def port_index(self: Self) -> dict[str, PortSpec]:
         return {port.name: port for port in self.domain.ports + self.application.ports}
 

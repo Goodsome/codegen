@@ -43,6 +43,7 @@ class DomainSpec(Entity):
             name="domain", sub_packages=sub_packages, modules=modules
         )
 
+    @classmethod
     def from_package_spec(cls: type[Self], package_spec: PackageSpec) -> Self:
         """将 PackageSpec 逆向解析为 DomainSpec"""
         aggregates = []

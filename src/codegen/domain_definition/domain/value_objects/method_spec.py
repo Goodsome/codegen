@@ -31,6 +31,13 @@ class MethodSpec(ValueObject):
         cls: type[Self], name: str, inputs: list[AttributeSpec], output: MethodOutput
     ) -> Self:
         return cls(name=SnakeString(name), inputs=inputs, output=output)
+        
+    def function_type(self) -> FunctionType:
+        if self.inputs and self.inputs[0].name == "cls":
+            return FunctionType.CLASS_METHOD
+        if self.inputs and self.inputs[0].name == "self":
+            return FunctionType.INSTANCE_METHOD
+        return FunctionType.FUNCTION
 
     def to_function_spec(
         self: Self, type: FunctionType, class_name: str | None = None
@@ -38,9 +45,10 @@ class MethodSpec(ValueObject):
         """将 MethodSpec 转换为 PythonGen FunctionSpec"""
         parameters = [attr.to_variable_spec() for attr in self.inputs or []]
         decorators = []
-        if type == FunctionType.CLASS_METHOD:
+        ft = self.function_type()
+        if ft == FunctionType.CLASS_METHOD:
             decorators.append("classmethod")
-        elif type == FunctionType.STATIC_METHOD:
+        elif ft == FunctionType.STATIC_METHOD:
             decorators.append("staticmethod")
         function_name = self.name
         return_type = self.output.custom_type_string or self.output.type
@@ -61,7 +69,7 @@ class MethodSpec(ValueObject):
             parameters=parameters,
             decorators=decorators,
             return_annotation=return_annotation,
-            function_type=type,
+            function_type=ft,
             suite="...",
         )
 

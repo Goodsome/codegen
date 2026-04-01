@@ -44,11 +44,13 @@ class AggregateSpec(Entity):
         )
         return ModuleSpec.create(name=self.name, classes=[class_spec])
 
+    @classmethod
     def to_package_spec(cls: type[Self], aggregates: Iterable[Self]) -> PackageSpec:
         """将多个 AggregateSpec 转换为一个 'aggregates' 包"""
         modules = [agg.to_module_spec() for agg in aggregates]
         return PackageSpec.create(name="aggregates", modules=modules)
 
+    @classmethod
     def from_module_spec(cls: type[Self], module: ModuleSpec) -> Self:
         """将 ModuleSpec 逆向解析为 AggregateSpec"""
         cls_spec = module.classes[0]
@@ -65,6 +67,7 @@ class AggregateSpec(Entity):
             behaviors=behaviors,
         )
 
+    @classmethod
     def from_package_spec(cls: type[Self], package: PackageSpec) -> list[Self]:
         """将 'aggregates' 包逆向解析为 AggregateSpec 列表"""
         if package.name != "aggregates":

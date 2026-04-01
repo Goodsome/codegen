@@ -1,5 +1,7 @@
 from typing import Self, Union
+
 from pydantic import Field
+
 from codegen.domain_definition.domain.entities.bootstrap_spec import BootstrapSpec
 from codegen.domain_definition.domain.entities.bounded_context import BoundedContext
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
