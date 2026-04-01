@@ -7,7 +7,6 @@ from codegen.domain_definition.domain.entities.service_spec import ServiceSpec
 from codegen.domain_definition.domain.entities.value_object_spec import ValueObjectSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
-from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.models import Entity
 from pydantic import Field
 
@@ -15,12 +14,12 @@ from pydantic import Field
 class DomainSpec(Entity):
     """Specification of a domain to be generated."""
 
-    aggregates: list[AggregateSpec] | None = Field(default=None)
-    enums: list[EnumSpec] | None = Field(default=None)
-    value_objects: list[ValueObjectSpec] | None = Field(default=None)
-    entities: list[EntitySpec] | None = Field(default=None)
-    services: list[ServiceSpec] | None = Field(default=None)
-    ports: list[PortSpec] | None = Field(default=None)
+    aggregates: list[AggregateSpec] = Field(default_factory=list)
+    enums: list[EnumSpec] = Field(default_factory=list)
+    value_objects: list[ValueObjectSpec] = Field(default_factory=list)
+    entities: list[EntitySpec] = Field(default_factory=list)
+    services: list[ServiceSpec] = Field(default_factory=list)
+    ports: list[PortSpec] = Field(default_factory=list)
 
     def to_package_spec(self: Self) -> PackageSpec:
         """将 DomainSpec 转换为 PackageSpec"""

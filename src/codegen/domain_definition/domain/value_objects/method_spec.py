@@ -22,9 +22,9 @@ class MethodSpec(ValueObject):
 
     name: SnakeString
     description: str | None = Field(default=None)
-    inputs: list[AttributeSpec] | None = Field(default=None)
+    inputs: list[AttributeSpec] = Field(default_factory=list)
     output: MethodOutput
-    rules: list[RuleSpec] | None = Field(default=None)
+    rules: list[RuleSpec] = Field(default_factory=list)
 
     @classmethod
     def create(

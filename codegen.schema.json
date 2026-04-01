@@ -28,7 +28,8 @@
         }
       },
       "required":[
-        "name"
+        "name",
+        "description"
       ],
       "title":"AggregateSpec",
       "type":"object"
@@ -162,30 +163,10 @@
           "$ref":"#/$defs/ApplicationSpec"
         },
         "config":{
-          "anyOf":[
-            {
-              "$ref":"#/$defs/ConfigSpec"
-            },
-            {
-              "type":"null"
-            }
-          ],
-          "default":null
+          "$ref":"#/$defs/ConfigSpec"
         },
         "container":{
-          "anyOf":[
-            {
-              "$ref":"#/$defs/ContainerSpec"
-            },
-            {
-              "type":"null"
-            }
-          ],
-          "default":null
-        },
-        "description":{
-          "title":"Description",
-          "type":"string"
+          "$ref":"#/$defs/ContainerSpec"
         },
         "domain":{
           "$ref":"#/$defs/DomainSpec"
@@ -706,19 +687,11 @@
           "title":"Description"
         },
         "inputs":{
-          "anyOf":[
-            {
-              "items":{
-                "$ref":"#/$defs/AttributeSpec"
-              },
-              "type":"array"
-            },
-            {
-              "type":"null"
-            }
-          ],
-          "default":null,
-          "title":"Inputs"
+          "items":{
+            "$ref":"#/$defs/AttributeSpec"
+          },
+          "title":"Inputs",
+          "type":"array"
         },
         "name":{
           "title":"Name",
@@ -726,6 +699,13 @@
         },
         "output":{
           "$ref":"#/$defs/MethodOutput"
+        },
+        "rules":{
+          "items":{
+            "$ref":"#/$defs/RuleSpec"
+          },
+          "title":"Rules",
+          "type":"array"
         }
       },
       "required":[
@@ -806,6 +786,36 @@
       ],
       "title":"PortType",
       "type":"string"
+    },
+    "RuleSpec":{
+      "additionalProperties":false,
+      "description":"BDD rule specification with given/when/then",
+      "properties":{
+        "given":{
+          "title":"Given",
+          "type":"string"
+        },
+        "name":{
+          "title":"Name",
+          "type":"string"
+        },
+        "then":{
+          "title":"Then",
+          "type":"string"
+        },
+        "when":{
+          "title":"When",
+          "type":"string"
+        }
+      },
+      "required":[
+        "name",
+        "given",
+        "when",
+        "then"
+      ],
+      "title":"RuleSpec",
+      "type":"object"
     },
     "ServiceSpec":{
       "additionalProperties":false,
@@ -939,22 +949,13 @@
       "title":"Contexts",
       "type":"array"
     },
-    "description":{
-      "title":"Description",
-      "type":"string"
-    },
-    "layout":{
-      "title":"Layout",
-      "type":"string"
-    },
     "name":{
       "title":"Name",
       "type":"string"
     }
   },
   "required":[
-    "name",
-    "description"
+    "name"
   ],
   "title":"Blueprint",
   "type":"object"

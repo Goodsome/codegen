@@ -1,6 +1,5 @@
 # yaml-language-server: $schema=./codegen.schema.json
 name: Codegen
-description: ''
 contexts:
 - name: Shared
   domain:
@@ -1425,11 +1424,6 @@ contexts:
       attributes:
       - type: PascalString
         name: name
-      - type: string
-        name: description
-      - type: string
-        optional: true
-        name: layout
       - type: BoundedContext
         container: list
         optional: true
@@ -1446,11 +1440,6 @@ contexts:
         - type: Any
           custom_type_string: Union[str, PascalString]
           name: name
-        - type: string
-          name: description
-        - type: string
-          name: layout
-          default: ''
         - type: BoundedContext
           container: list
           optional: true
@@ -1508,7 +1497,6 @@ contexts:
         output:
           type: BoundedContext
       - name: to_test_package_spec
-        description: Create test package for blueprint
         inputs:
         - type: Self
           name: self
@@ -1743,6 +1731,12 @@ contexts:
           name: output
         output:
           type: Self
+      - name: function_type
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: FunctionType
       - name: to_function_spec
         description: 将 MethodSpec 转换为 PythonGen FunctionSpec
         inputs:
@@ -1766,14 +1760,12 @@ contexts:
         output:
           type: Self
       - name: to_test_module_spec
-        description: Generate test module for method
         inputs:
         - type: Self
           name: self
         output:
           type: ModuleSpec
       - name: to_bindings_module_spec
-        description: Generate bindings module for method
         inputs:
         - type: Self
           name: self
@@ -1987,7 +1979,6 @@ contexts:
         name: then
       behaviors:
       - name: to_test_function_spec
-        description: Map business rule to test function
         inputs:
         - type: Self
           name: self
@@ -3146,7 +3137,7 @@ contexts:
         - type: PackageSpec
           name: package_spec
         output:
-          type: DomainSpec
+          type: Self
       - name: add_aggregate
         description: Add an AggregateSpec. Raises ValueError if aggregate with same
           name exists.
@@ -3374,7 +3365,6 @@ contexts:
         output:
           type: Self
       - name: to_test_package_spec
-        description: Create test package for domain
         inputs:
         - type: Self
           name: self
@@ -3385,9 +3375,6 @@ contexts:
       attributes:
       - type: PascalString
         name: name
-      - type: string
-        optional: true
-        name: description
       - type: DomainSpec
         optional: true
         name: domain
@@ -3468,7 +3455,7 @@ contexts:
           optional: true
           name: interfaces
         output:
-          type: any
+          type: Self
       - name: port_index
         inputs:
         - type: Self
@@ -3495,7 +3482,6 @@ contexts:
         output:
           type: PortSpec
       - name: to_test_package_spec
-        description: Create test package for context
         inputs:
         - type: Self
           name: self
@@ -4034,7 +4020,6 @@ contexts:
       - type: PascalString
         name: name
       - type: string
-        optional: true
         name: description
       - type: AttributeSpec
         container: list
@@ -4171,7 +4156,6 @@ contexts:
         output:
           type: MethodSpec
       - name: to_test_package_spec
-        description: Create test package for aggregate
         inputs:
         - type: Self
           name: self

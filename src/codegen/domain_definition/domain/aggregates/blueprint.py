@@ -13,17 +13,13 @@ class Blueprint(AggregateRoot):
     """Root of the generation model. Represents the entire project definition."""
 
     name: PascalString
-    description: str
-    layout: str | None = Field(default=None)
-    contexts: list[BoundedContext] | None = Field(default=None)
-    bootstrap: BootstrapSpec | None = Field(default=None)
+    contexts: list[BoundedContext] = Field(default_factory=list)
+    bootstrap: BootstrapSpec = Field(default_factory=BootstrapSpec)
 
     @classmethod
     def create(
         cls: type[Self],
         name: Union[str, PascalString],
-        description: str,
-        layout: str = "",
         contexts: list[BoundedContext] | None = None,
         bootstrap: BootstrapSpec | None = None,
     ) -> Self:
@@ -35,8 +31,6 @@ class Blueprint(AggregateRoot):
             name = PascalString(name)
         return cls(
             name=name,
-            description=description,
-            layout=layout,
             contexts=contexts,
             bootstrap=bootstrap,
         )
@@ -62,7 +56,7 @@ class Blueprint(AggregateRoot):
             if p.name != "entrypoints"
         ]
         return cls.create(
-            name=package_spec.name, description="", contexts=contexts, layout=""
+            name=package_spec.name, contexts=contexts,
         )
 
     def upsert_context(self: Self, name: str, description: str) -> Self:

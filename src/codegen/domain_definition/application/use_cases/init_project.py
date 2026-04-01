@@ -23,18 +23,15 @@ class InitProject:
     def execute(self, cmd: InitProjectCommand) -> InitProjectResult:
         # Determine project name and description
         project_name = cmd.project_name if cmd.project_name else "MyProject"
-        project_description = cmd.project_description if cmd.project_description else f"{project_name} project"
 
         # Create default Shared context
         shared_context = BoundedContext.create(
             name="Shared",
-            description="Common generic components.",
         )
 
         # Create the blueprint
         blueprint = Blueprint.create(
             name=project_name,
-            description=project_description,
             contexts=[shared_context],
         )
 

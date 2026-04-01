@@ -15,9 +15,9 @@ class AggregateSpec(Entity):
     """Specification of a domain aggregate to be generated."""
 
     name: PascalString
-    description: str | None = Field(default=None)
-    attributes: list[AttributeSpec] | None = Field(default=None)
-    behaviors: list[MethodSpec] | None = Field(default=None)
+    description: str
+    attributes: list[AttributeSpec] = Field(default_factory=list)
+    behaviors: list[MethodSpec] = Field(default_factory=list)
 
     def to_module_spec(self: Self) -> ModuleSpec:
         """将 AggregateSpec 转换为 ModuleSpec"""

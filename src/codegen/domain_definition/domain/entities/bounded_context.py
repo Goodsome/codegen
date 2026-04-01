@@ -23,13 +23,12 @@ class BoundedContext(Entity):
     """A logical boundary within the system."""
 
     name: PascalString
-    description: str | None = Field(default=None)
-    domain: DomainSpec | None = Field(default=None)
-    application: ApplicationSpec | None = Field(default=None)
-    infrastructure: InfrastructureSpec | None = Field(default=None)
-    interfaces: InterfaceSpec | None = Field(default=None)
-    config: ConfigSpec | None = Field(default=None)
-    container: ContainerSpec | None = Field(default=None)
+    domain: DomainSpec = Field(default_factory=DomainSpec)
+    application: ApplicationSpec = Field(default_factory=ApplicationSpec)
+    infrastructure: InfrastructureSpec = Field(default_factory=InfrastructureSpec)
+    interfaces: InterfaceSpec = Field(default_factory=InterfaceSpec)
+    config: ConfigSpec = Field(default_factory=ConfigSpec)
+    container: ContainerSpec = Field(default_factory=ContainerSpec)
 
     def to_package_spec(self: Self, project_name: str = "") -> PackageSpec:
         """Convert this BoundedContext to a PackageSpec."""
@@ -117,6 +116,7 @@ class BoundedContext(Entity):
             interfaces=interfaces,
         )
 
+    @classmethod
     def create(
         cls: type[Self],
         name: str,
@@ -136,9 +136,12 @@ class BoundedContext(Entity):
             infrastructure = InfrastructureSpec()
         if interfaces is None:
             interfaces = InterfaceSpec()
+        if config is None:
+            config = ConfigSpec()
+        if container is None:
+            container = ContainerSpec()
         return cls(
             name=PascalString(name),
-            description=description,
             domain=domain,
             application=application,
             infrastructure=infrastructure,
