@@ -39,16 +39,11 @@ def build_function(func_spec: FunctionSpec) -> ast.FunctionDef | ast.AsyncFuncti
         body.append(ast.Expr(value=ast.Constant(value=func_spec.description)))
 
     if func_spec.suite:
-        try:
-             # Parse suite code.
-             parsed_suite = ast.parse(func_spec.suite) # Module
-             if parsed_suite.body:
-                 body.extend(parsed_suite.body)
-             else:
-                 body.append(ast.Expr(value=ast.Constant(value=...)))
-        except SyntaxError:
-             # Fallback
-             body.append(ast.Expr(value=ast.Constant(value=...)))
+        parsed_suite = ast.parse(func_spec.suite) # Module
+        if parsed_suite.body:
+            body.extend(parsed_suite.body)
+        else:
+            body.append(ast.Expr(value=ast.Constant(value=...)))
     else:
         body.append(ast.Expr(value=ast.Constant(value=...)))
         

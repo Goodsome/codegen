@@ -27,10 +27,10 @@ class RuleSpec(ValueObject):
         )
         chain_suite = (
             f"({fixture_var.name}\n"
-            f'    .given("{self.given}")\n'
+            f'    .given({repr(self.given)})\n'
             f"    .arrange_done()\n"
-            f'    .when("{self.when}")\n'
-            f'    .then("{self.then}")\n'
+            f'    .when({repr(self.when)})\n'
+            f'    .then({repr(self.then)})\n'
             f")"
         )
         return FunctionSpec.create(
