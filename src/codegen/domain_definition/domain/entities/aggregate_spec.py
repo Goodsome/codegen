@@ -148,4 +148,14 @@ class AggregateSpec(Entity):
                 return beh
         raise ValueError(f"Behavior '{name}' not found in aggregate '{self.name}'")
 
-    def to_test_package_spec(self: Self) -> PackageSpec: ...
+    def to_test_package_spec(self: Self) -> PackageSpec:
+        """Create test package for aggregate with behaviors that have rules."""
+        modules = []
+        for behavior in self.behaviors:
+            tm = behavior.to_test_module_spec()
+            bm = behavior.to_bindings_module_spec()
+            if tm.functions:
+                modules.append(tm)
+            if bm.functions:
+                modules.append(bm)
+        return PackageSpec.create(name=str(self.name), modules=modules)

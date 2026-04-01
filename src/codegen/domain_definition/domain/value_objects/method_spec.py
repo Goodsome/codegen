@@ -1,5 +1,7 @@
 from codegen.domain_definition.domain.value_objects.method_output import MethodOutput
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
+from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
+from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.shared.models import ValueObject
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
@@ -118,6 +120,64 @@ class MethodSpec(ValueObject):
             ),
         )
 
-    def to_test_module_spec(self: Self) -> ModuleSpec: ...
+    def to_test_module_spec(self: Self) -> ModuleSpec:
+        """Generate test module with test functions for each rule."""
+        bindings_name = f"{self.name}_bindings"
+        functions = [
+            rule.to_test_function_spec(bindings_name) for rule in self.rules
+        ]
+        return ModuleSpec.create(
+            name=f"test_{self.name}",
+            functions=functions,
+        )
 
-    def to_bindings_module_spec(self: Self) -> ModuleSpec: ...
+    def to_bindings_module_spec(self: Self) -> ModuleSpec:
+        """Generate bindings module with match-case routing for given/when/then."""
+        bindings_name = f"{PascalString(self.name)}Bindings"
+        gf = self._get_match_semantic_function("given")
+        wf = self._get_match_semantic_function("when")
+        tf = self._get_match_semantic_function("then")
+        
+        af = FunctionSpec.create(
+            name="arrange_done",
+            return_annotation=TypeAnnotationSpec(name="Self"),
+            parameters=[
+                VariableSpec.create(
+                    name="self",
+                    type_spec=TypeAnnotationSpec(name="Self"),
+                )
+            ],
+            function_type=FunctionType.INSTANCE_METHOD,
+            suite='''return self''',
+        )
+        bc = ClassSpec.create(
+            name=bindings_name,
+            methods=[gf, af, wf, tf],
+            decorators=["dataclass"],
+            attributes=[],
+        )
+        return ModuleSpec.create(
+            name=f"bindings_{self.name}",
+            classes=[bc],
+        )
+        
+    def _get_match_semantic_function(self, name: str) -> FunctionSpec:
+        return FunctionSpec.create(
+            name=name,
+            return_annotation=TypeAnnotationSpec(name="Self"),
+            parameters=[
+                VariableSpec.create(
+                    name="self",
+                    type_spec=TypeAnnotationSpec(name="Self"),
+                ),
+                VariableSpec.create(
+                    name="semantic_text",
+                    type_spec=TypeAnnotationSpec(name="str"),
+                )
+            ],
+            function_type=FunctionType.INSTANCE_METHOD,
+            suite=f"""match semantic_text:
+            case _:
+                raise NotImplementedError(f"未实现的 {name} 语义: {{semantic_text}}")
+            return self""",
+        )

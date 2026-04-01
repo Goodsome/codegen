@@ -27,7 +27,7 @@ class ModuleSpec(ValueObject):
     imports: list[ImportFromSpec] = Field(default_factory=list)
     enums: list[PythonEnumSpec] = Field(default_factory=list)
     assignments: list[ModuleAssignmentSpec] = Field(default_factory=list)
-    extra_code: list[RawCodeSpec] = Field(default_factory=list)
+    extra_code: list[RawCodeSpec] = Field(default_factory=list) # 逃生舱，非极端特殊情况，不能使用
 
     @classmethod
     def create(

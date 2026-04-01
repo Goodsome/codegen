@@ -1496,6 +1496,8 @@ contexts:
         output:
           type: BoundedContext
       - name: to_test_package_spec
+        description: Create top-level tests package with unit subpackage containing
+          all context tests.
         inputs:
         - type: Self
           name: self
@@ -1758,17 +1760,27 @@ contexts:
         output:
           type: Self
       - name: to_test_module_spec
+        description: Generate test module with test functions for each rule.
         inputs:
         - type: Self
           name: self
         output:
           type: ModuleSpec
       - name: to_bindings_module_spec
+        description: Generate bindings module with match-case routing for given/when/then.
         inputs:
         - type: Self
           name: self
         output:
           type: ModuleSpec
+      - name: _get_match_semantic_function
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: FunctionSpec
     - name: TypeDefinition
       description: 类型定义的公共部分，被 AttributeSpec 和 MethodOutput 共同继承。
       attributes:
@@ -1978,6 +1990,7 @@ contexts:
         name: then
       behaviors:
       - name: to_test_function_spec
+        description: Map business rule to test function with given/when/then chain.
         inputs:
         - type: Self
           name: self
@@ -3364,6 +3377,7 @@ contexts:
         output:
           type: Self
       - name: to_test_package_spec
+        description: Create test package for domain with aggregates that have rules.
         inputs:
         - type: Self
           name: self
@@ -3481,6 +3495,7 @@ contexts:
         output:
           type: PortSpec
       - name: to_test_package_spec
+        description: Create test package for bounded context.
         inputs:
         - type: Self
           name: self
@@ -4155,6 +4170,7 @@ contexts:
         output:
           type: MethodSpec
       - name: to_test_package_spec
+        description: Create test package for aggregate with behaviors that have rules.
         inputs:
         - type: Self
           name: self

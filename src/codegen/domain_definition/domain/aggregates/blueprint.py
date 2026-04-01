@@ -81,4 +81,8 @@ class Blueprint(AggregateRoot):
                 return ctx
         raise ValueError(f"Context '{name}' not found in blueprint")
 
-    def to_test_package_spec(self: Self) -> PackageSpec: ...
+    def to_test_package_spec(self: Self) -> PackageSpec:
+        """Create top-level tests package with unit subpackage containing all context tests."""
+        context_packages = [ctx.to_test_package_spec() for ctx in self.contexts]
+        unit_pkg = PackageSpec.create(name="unit", sub_packages=context_packages)
+        return PackageSpec.create(name="tests", sub_packages=[unit_pkg])

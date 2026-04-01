@@ -164,4 +164,7 @@ class BoundedContext(Entity):
             raise ValueError(f"Port {port_name} not found in {self.name}")
         return self.port_index[port_name]
 
-    def to_test_package_spec(self: Self) -> PackageSpec: ...
+    def to_test_package_spec(self: Self) -> PackageSpec:
+        """Create test package for bounded context."""
+        domain_pkg = self.domain.to_test_package_spec()
+        return PackageSpec.create(name=str(self.name), sub_packages=[domain_pkg])

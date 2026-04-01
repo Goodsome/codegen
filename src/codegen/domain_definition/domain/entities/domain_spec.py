@@ -246,4 +246,7 @@ class DomainSpec(Entity):
         self.ports = [p for p in self.ports if p.name != name]
         return self
 
-    def to_test_package_spec(self: Self) -> PackageSpec: ...
+    def to_test_package_spec(self: Self) -> PackageSpec:
+        """Create test package for domain with aggregates that have rules."""
+        aggregate_packages = [agg.to_test_package_spec() for agg in self.aggregates]
+        return PackageSpec.create(name="domain", sub_packages=aggregate_packages)
