@@ -54,11 +54,14 @@ def parse_function(node: ast.FunctionDef | ast.AsyncFunctionDef) -> FunctionSpec
     # 2. Return Type
     return_annotation = type_parser.parse_type(node.returns)
     
-    # 3. Suite
+    # 3. Suite (skip docstring since it's extracted to description separately)
     suite = ""
     if node.body:
-         # unparse body list
-         suite = "\n".join([ast.unparse(b) for b in node.body])
+        # Filter out docstring from body since it's stored separately in description
+        body_without_doc = node.body
+        if ast.get_docstring(node):
+            body_without_doc = node.body[1:] if len(node.body) > 1 else []
+        suite = "\n".join([ast.unparse(b) for b in body_without_doc])
 
     # 4. Create Spec
     # Need to map to FunctionType enum.
