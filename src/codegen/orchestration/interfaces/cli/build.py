@@ -102,11 +102,29 @@ def _generate_project(
 
 
 def build(
-    nodes: Annotated[Optional[list[str]], typer.Option("--node", "-n")] = None,
+    nodes: Annotated[Optional[list[str]], typer.Option(
+        "--node", "-n",
+        help="Specify specific model(s) to update. Can be used multiple times. "
+             "By default, build only creates new models and skips existing ones. "
+             "Use this option to update existing models.",
+    )] = None,
     generate_tests: Annotated[bool, typer.Option("--generate-tests")] = False,
 ) -> BuildResult:
     """
     Build: Compile codegen.yaml into Python code.
+
+    By default, this command only creates NEW models and skips any existing models.
+    To update existing models, use the --node option to specify which models to regenerate.
+
+    Examples:
+        # Create new models only (skip existing)
+        codegen build
+
+        # Update specific existing models
+        codegen build --node Order
+
+        # Update multiple existing models
+        codegen build -n Order -n Customer
     """
     cmd = GenerateProjectCommand(
         nodes=nodes,
