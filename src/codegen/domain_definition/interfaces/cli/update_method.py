@@ -1,17 +1,13 @@
-"""
-UpdateMethod command - Update a method of an element.
-"""
-from typing import Annotated
-
 import typer
+from typing import Annotated, Union, Any
 from dependency_injector.wiring import Provide, inject
-
 from codegen.domain_definition.application.use_cases.update_method import (
     UpdateMethod,
     UpdateMethodCommand,
     UpdateMethodResult,
 )
 from codegen.domain_definition.domain.enums import ElementType, MethodKind
+from codegen.shared.domain.enums import ContainerType
 
 
 @inject
@@ -23,18 +19,23 @@ def _update_method(
 
 
 def update_method(
-    context_name: Annotated[str, typer.Argument(help="Bounded context name")],
-    element_type: Annotated[ElementType, typer.Argument(help="Element type")],
-    method_kind: Annotated[MethodKind, typer.Argument(help="Method kind")],
-    element_name: Annotated[str, typer.Argument(help="Element name")],
-    name: Annotated[str, typer.Argument(help="Method name to update")],
-    output_type: Annotated[str | None, typer.Option("--output-type", "-t")] = None,
-    description: Annotated[str | None, typer.Option("--description", "-d")] = None,
-    inputs: Annotated[str | None, typer.Option("--inputs", "-i", help="JSON string of inputs list")] = None,
-    output_optional: Annotated[bool | None, typer.Option("--output-optional")] = None,
+    context_name: Annotated[str, typer.Argument()],
+    element_type: Annotated[ElementType, typer.Argument()],
+    method_kind: Annotated[MethodKind, typer.Argument()],
+    element_name: Annotated[str, typer.Argument()],
+    name: Annotated[str, typer.Argument()],
+    description: Annotated[str, typer.Argument()],
+    output_type: Annotated[str, typer.Argument()],
+    inputs: Annotated[str | None, typer.Option("--inputs", "-i")] = None,
+    output_container: Annotated[
+        ContainerType, typer.Option("--output-container", "-oc")
+    ] = ContainerType.NONE,
+    output_optional: Annotated[bool, typer.Option("--output-optional", "-oo")] = False,
+    output_custom_type_string: Annotated[
+        str | None, typer.Option("--output-custom-type-string", "-octs")
+    ] = None,
 ) -> None:
-    """
-    Update a method of an element.
+    """Update a method of an element.
 
     Examples:
         $ codegen field update-method sales entity behavior Order calculate_total --output-type float
@@ -44,7 +45,6 @@ def update_method(
     parsed_inputs = None
     if inputs:
         parsed_inputs = json.loads(inputs)
-
     cmd = UpdateMethodCommand(
         context_name=context_name,
         element_type=element_type,
@@ -55,6 +55,8 @@ def update_method(
         inputs=parsed_inputs,
         output_type=output_type,
         output_optional=output_optional,
+        output_container=output_container,
+        output_custom_type_string=output_custom_type_string,
     )
     result = _update_method(cmd)
     if result.success:

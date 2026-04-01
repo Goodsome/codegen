@@ -4294,21 +4294,19 @@ contexts:
       - type: string
         name: name
       - type: string
-        optional: true
         name: description
       - type: Any
         optional: true
         custom_type_string: list[dict[str, Any]] | None
         name: inputs
       - type: string
-        optional: true
         name: output_type
       - type: ContainerType
-        optional: true
         name: output_container
+        default: ContainerType.NONE
       - type: boolean
-        optional: true
         name: output_optional
+        default: false
       - type: string
         optional: true
         name: output_custom_type_string
