@@ -25,12 +25,12 @@ def _add_method(
 def add_method(
     context_name: Annotated[str, typer.Argument(help="Bounded context name")],
     element_type: Annotated[ElementType, typer.Argument(help="Element type")],
-    method_kind: Annotated[MethodKind, typer.Argument(help="Method kind")],
     element_name: Annotated[str, typer.Argument(help="Element name")],
+    method_kind: Annotated[MethodKind, typer.Argument(help="Method kind")],
     name: Annotated[str, typer.Argument(help="Method name")],
     output_type: Annotated[str, typer.Argument(help="Output type")],
     description: Annotated[str | None, typer.Option("--description", "-d")] = None,
-    inputs: Annotated[str, typer.Option("--inputs", "-i", help="JSON string of inputs list")] = None,
+    inputs: Annotated[str | None, typer.Option("--inputs", "-i", help="JSON string of inputs list")] = None,
     output_optional: Annotated[bool, typer.Option("--output-optional")] = False,
 ) -> None:
     """
