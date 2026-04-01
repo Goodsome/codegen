@@ -14,6 +14,7 @@ from codegen.domain_definition.domain.value_objects.type_definition import (
 from pydantic import Field
 from codegen.domain_definition.domain.value_objects.rule_spec import RuleSpec
 from typing import Self, Union
+from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 
 
 class MethodSpec(ValueObject):
@@ -23,7 +24,7 @@ class MethodSpec(ValueObject):
     description: str | None = Field(default=None)
     inputs: list[AttributeSpec] | None = Field(default=None)
     output: MethodOutput
-    rules: list[RuleSpec] = Field(default_factory=list)
+    rules: list[RuleSpec] | None = Field(default=None)
 
     @classmethod
     def create(
@@ -108,3 +109,7 @@ class MethodSpec(ValueObject):
                 custom_type_string=type_def.custom_type_string,
             ),
         )
+
+    def to_test_module_spec(self: Self) -> ModuleSpec: ...
+
+    def to_bindings_module_spec(self: Self) -> ModuleSpec: ...

@@ -1,13 +1,10 @@
-from typing import Self
-
+from typing import Self, Union
 from codegen.domain_definition.domain.entities.aggregate_spec import AggregateSpec
 from codegen.domain_definition.domain.entities.entity_spec import EntitySpec
 from codegen.domain_definition.domain.entities.enum_spec import EnumSpec
 from codegen.domain_definition.domain.entities.port_spec import PortSpec
 from codegen.domain_definition.domain.entities.service_spec import ServiceSpec
-from codegen.domain_definition.domain.entities.value_object_spec import (
-    ValueObjectSpec,
-)
+from codegen.domain_definition.domain.entities.value_object_spec import ValueObjectSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
@@ -18,14 +15,14 @@ from pydantic import Field
 class DomainSpec(Entity):
     """Specification of a domain to be generated."""
 
-    aggregates: list[AggregateSpec] = Field(default_factory=list)
-    enums: list[EnumSpec] = Field(default_factory=list)
-    value_objects: list[ValueObjectSpec] = Field(default_factory=list)
-    entities: list[EntitySpec] = Field(default_factory=list)
-    services: list[ServiceSpec] = Field(default_factory=list)
-    ports: list[PortSpec] = Field(default_factory=list)
+    aggregates: list[AggregateSpec] | None = Field(default=None)
+    enums: list[EnumSpec] | None = Field(default=None)
+    value_objects: list[ValueObjectSpec] | None = Field(default=None)
+    entities: list[EntitySpec] | None = Field(default=None)
+    services: list[ServiceSpec] | None = Field(default=None)
+    ports: list[PortSpec] | None = Field(default=None)
 
-    def to_package_spec(self) -> PackageSpec:
+    def to_package_spec(self: Self) -> PackageSpec:
         """将 DomainSpec 转换为 PackageSpec"""
         aggregate_pkg = AggregateSpec.to_package_spec(self.aggregates)
         entity_pkg = EntitySpec.to_package_spec(self.entities)
@@ -43,13 +40,10 @@ class DomainSpec(Entity):
         if self.enums:
             modules.append(EnumSpec.to_module_spec(self.enums))
         return PackageSpec.create(
-            name="domain",
-            sub_packages=sub_packages,
-            modules=modules,
+            name="domain", sub_packages=sub_packages, modules=modules
         )
 
-    @classmethod
-    def from_package_spec(cls, package_spec: PackageSpec) -> "DomainSpec":
+    def from_package_spec(cls: type[Self], package_spec: PackageSpec) -> Self:
         """将 PackageSpec 逆向解析为 DomainSpec"""
         aggregates = []
         entities = []
@@ -57,7 +51,6 @@ class DomainSpec(Entity):
         services = []
         ports = []
         enums: list[EnumSpec] = []
-
         for pkg in package_spec.sub_packages:
             if pkg.name == "aggregates":
                 aggregates = AggregateSpec.from_package_spec(pkg)
@@ -72,7 +65,6 @@ class DomainSpec(Entity):
         for module in package_spec.modules:
             if module.name == "enums":
                 enums = EnumSpec.from_module_spec(module)
-
         return cls(
             aggregates=aggregates,
             entities=entities,
@@ -82,15 +74,17 @@ class DomainSpec(Entity):
             enums=enums,
         )
 
-    def add_aggregate(self, aggregate: AggregateSpec) -> Self:
+    def add_aggregate(self: Self, aggregate: AggregateSpec) -> Self:
         """Add an AggregateSpec. Raises ValueError if aggregate with same name exists."""
         for agg in self.aggregates:
             if agg.name == aggregate.name:
-                raise ValueError(f"Aggregate '{aggregate.name}' already exists in domain")
+                raise ValueError(
+                    f"Aggregate '{aggregate.name}' already exists in domain"
+                )
         self.aggregates.append(aggregate)
         return self
 
-    def update_aggregate(self, aggregate: AggregateSpec) -> Self:
+    def update_aggregate(self: Self, aggregate: AggregateSpec) -> Self:
         """Update an existing AggregateSpec by name. Raises ValueError if not found."""
         for i, agg in enumerate(self.aggregates):
             if agg.name == aggregate.name:
@@ -98,19 +92,19 @@ class DomainSpec(Entity):
                 return self
         raise ValueError(f"Aggregate '{aggregate.name}' not found in domain")
 
-    def get_aggregate(self, name: str) -> AggregateSpec:
+    def get_aggregate(self: Self, name: str) -> AggregateSpec:
         """Get an AggregateSpec by name. Raises ValueError if not found."""
         for agg in self.aggregates:
             if agg.name == name:
                 return agg
         raise ValueError(f"Aggregate '{name}' not found in domain")
 
-    def remove_aggregate(self, name: str) -> Self:
+    def remove_aggregate(self: Self, name: str) -> Self:
         """Remove an AggregateSpec by name. Returns self for chaining."""
         self.aggregates = [agg for agg in self.aggregates if agg.name != name]
         return self
 
-    def add_enum(self, enum: EnumSpec) -> Self:
+    def add_enum(self: Self, enum: EnumSpec) -> Self:
         """Add an EnumSpec. Raises ValueError if enum with same name exists."""
         for e in self.enums:
             if e.name == enum.name:
@@ -118,7 +112,7 @@ class DomainSpec(Entity):
         self.enums.append(enum)
         return self
 
-    def update_enum(self, enum: EnumSpec) -> Self:
+    def update_enum(self: Self, enum: EnumSpec) -> Self:
         """Update an existing EnumSpec by name. Raises ValueError if not found."""
         for i, e in enumerate(self.enums):
             if e.name == enum.name:
@@ -126,27 +120,29 @@ class DomainSpec(Entity):
                 return self
         raise ValueError(f"Enum '{enum.name}' not found in domain")
 
-    def get_enum(self, name: str) -> EnumSpec:
+    def get_enum(self: Self, name: str) -> EnumSpec:
         """Get an EnumSpec by name. Raises ValueError if not found."""
         for e in self.enums:
             if e.name == name:
                 return e
         raise ValueError(f"Enum '{name}' not found in domain")
 
-    def remove_enum(self, name: str) -> Self:
+    def remove_enum(self: Self, name: str) -> Self:
         """Remove an EnumSpec by name. Returns self for chaining."""
         self.enums = [e for e in self.enums if e.name != name]
         return self
 
-    def add_value_object(self, value_object: ValueObjectSpec) -> Self:
+    def add_value_object(self: Self, value_object: ValueObjectSpec) -> Self:
         """Add a ValueObjectSpec. Raises ValueError if value object with same name exists."""
         for vo in self.value_objects:
             if vo.name == value_object.name:
-                raise ValueError(f"ValueObject '{value_object.name}' already exists in domain")
+                raise ValueError(
+                    f"ValueObject '{value_object.name}' already exists in domain"
+                )
         self.value_objects.append(value_object)
         return self
 
-    def update_value_object(self, value_object: ValueObjectSpec) -> Self:
+    def update_value_object(self: Self, value_object: ValueObjectSpec) -> Self:
         """Update an existing ValueObjectSpec by name. Raises ValueError if not found."""
         for i, vo in enumerate(self.value_objects):
             if vo.name == value_object.name:
@@ -154,19 +150,19 @@ class DomainSpec(Entity):
                 return self
         raise ValueError(f"ValueObject '{value_object.name}' not found in domain")
 
-    def get_value_object(self, name: str) -> ValueObjectSpec:
+    def get_value_object(self: Self, name: str) -> ValueObjectSpec:
         """Get a ValueObjectSpec by name. Raises ValueError if not found."""
         for vo in self.value_objects:
             if vo.name == name:
                 return vo
         raise ValueError(f"ValueObject '{name}' not found in domain")
 
-    def remove_value_object(self, name: str) -> Self:
+    def remove_value_object(self: Self, name: str) -> Self:
         """Remove a ValueObjectSpec by name. Returns self for chaining."""
         self.value_objects = [vo for vo in self.value_objects if vo.name != name]
         return self
 
-    def add_entity(self, entity: EntitySpec) -> Self:
+    def add_entity(self: Self, entity: EntitySpec) -> Self:
         """Add an EntitySpec. Raises ValueError if entity with same name exists."""
         for e in self.entities:
             if e.name == entity.name:
@@ -174,7 +170,7 @@ class DomainSpec(Entity):
         self.entities.append(entity)
         return self
 
-    def update_entity(self, entity: EntitySpec) -> Self:
+    def update_entity(self: Self, entity: EntitySpec) -> Self:
         """Update an existing EntitySpec by name. Raises ValueError if not found."""
         for i, e in enumerate(self.entities):
             if e.name == entity.name:
@@ -182,19 +178,19 @@ class DomainSpec(Entity):
                 return self
         raise ValueError(f"Entity '{entity.name}' not found in domain")
 
-    def get_entity(self, name: str) -> EntitySpec:
+    def get_entity(self: Self, name: str) -> EntitySpec:
         """Get an EntitySpec by name. Raises ValueError if not found."""
         for entity in self.entities:
             if entity.name == name:
                 return entity
         raise ValueError(f"Entity '{name}' not found in domain")
 
-    def remove_entity(self, name: str) -> Self:
+    def remove_entity(self: Self, name: str) -> Self:
         """Remove an EntitySpec by name. Returns self for chaining."""
         self.entities = [e for e in self.entities if e.name != name]
         return self
 
-    def add_service(self, service: ServiceSpec) -> Self:
+    def add_service(self: Self, service: ServiceSpec) -> Self:
         """Add a ServiceSpec. Raises ValueError if service with same name exists."""
         for s in self.services:
             if s.name == service.name:
@@ -202,7 +198,7 @@ class DomainSpec(Entity):
         self.services.append(service)
         return self
 
-    def update_service(self, service: ServiceSpec) -> Self:
+    def update_service(self: Self, service: ServiceSpec) -> Self:
         """Update an existing ServiceSpec by name. Raises ValueError if not found."""
         for i, s in enumerate(self.services):
             if s.name == service.name:
@@ -210,19 +206,19 @@ class DomainSpec(Entity):
                 return self
         raise ValueError(f"Service '{service.name}' not found in domain")
 
-    def get_service(self, name: str) -> ServiceSpec:
+    def get_service(self: Self, name: str) -> ServiceSpec:
         """Get a ServiceSpec by name. Raises ValueError if not found."""
         for svc in self.services:
             if svc.name == name:
                 return svc
         raise ValueError(f"Service '{name}' not found in domain")
 
-    def remove_service(self, name: str) -> Self:
+    def remove_service(self: Self, name: str) -> Self:
         """Remove a ServiceSpec by name. Returns self for chaining."""
         self.services = [s for s in self.services if s.name != name]
         return self
 
-    def add_port(self, port: PortSpec) -> Self:
+    def add_port(self: Self, port: PortSpec) -> Self:
         """Add a PortSpec. Raises ValueError if port with same name exists."""
         for p in self.ports:
             if p.name == port.name:
@@ -230,7 +226,7 @@ class DomainSpec(Entity):
         self.ports.append(port)
         return self
 
-    def update_port(self, port: PortSpec) -> Self:
+    def update_port(self: Self, port: PortSpec) -> Self:
         """Update an existing PortSpec by name. Raises ValueError if not found."""
         for i, p in enumerate(self.ports):
             if p.name == port.name:
@@ -238,15 +234,16 @@ class DomainSpec(Entity):
                 return self
         raise ValueError(f"Port '{port.name}' not found in domain")
 
-    def get_port(self, name: str) -> PortSpec:
+    def get_port(self: Self, name: str) -> PortSpec:
         """Get a PortSpec by name. Raises ValueError if not found."""
         for port in self.ports:
             if port.name == name:
                 return port
         raise ValueError(f"Port '{name}' not found in domain")
 
-    def remove_port(self, name: str) -> Self:
+    def remove_port(self: Self, name: str) -> Self:
         """Remove a PortSpec by name. Returns self for chaining."""
         self.ports = [p for p in self.ports if p.name != name]
         return self
 
+    def to_test_package_spec(self: Self) -> PackageSpec: ...

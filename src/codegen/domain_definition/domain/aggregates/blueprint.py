@@ -12,13 +12,13 @@ class Blueprint(AggregateRoot):
 
     name: PascalString
     description: str
-    layout: str = Field(default_factory=str)
-    contexts: list[BoundedContext] = Field(default_factory=list)
-    bootstrap: BootstrapSpec = Field(default_factory=BootstrapSpec)
+    layout: str | None = Field(default=None)
+    contexts: list[BoundedContext] | None = Field(default=None)
+    bootstrap: BootstrapSpec | None = Field(default=None)
 
     @classmethod
     def create(
-        cls,
+        cls: type[Self],
         name: Union[str, PascalString],
         description: str,
         layout: str = "",
@@ -39,7 +39,7 @@ class Blueprint(AggregateRoot):
             bootstrap=bootstrap,
         )
 
-    def to_package_spec(self) -> PackageSpec:
+    def to_package_spec(self: Self) -> PackageSpec:
         """Convert this Blueprint to a PackageSpec."""
         project_name = self.name.to_snake()
         context_packages = [
@@ -52,17 +52,18 @@ class Blueprint(AggregateRoot):
         return PackageSpec.create(name=project_name, sub_packages=context_packages)
 
     @classmethod
-    def from_package_spec(cls, package_spec: PackageSpec) -> Self:
+    def from_package_spec(cls: type[Self], package_spec: PackageSpec) -> Self:
         """Create a Blueprint from a PackageSpec."""
         contexts = [
-            BoundedContext.from_package_spec(p) for p in package_spec.sub_packages
+            BoundedContext.from_package_spec(p)
+            for p in package_spec.sub_packages
             if p.name != "entrypoints"
         ]
         return cls.create(
             name=package_spec.name, description="", contexts=contexts, layout=""
         )
 
-    def upsert_context(self, name: str, description: str) -> Self:
+    def upsert_context(self: Self, name: str, description: str) -> Self:
         """Upsert a BoundedContext by name. Only updates scalar fields if exists."""
         for ctx in self.contexts:
             if ctx.name == name:
@@ -72,14 +73,16 @@ class Blueprint(AggregateRoot):
         self.contexts.append(new_context)
         return self
 
-    def remove_context(self, name: str) -> Self:
+    def remove_context(self: Self, name: str) -> Self:
         """Remove a BoundedContext by name. Returns self for chaining."""
         self.contexts = [ctx for ctx in self.contexts if ctx.name != name]
         return self
 
-    def get_context(self, name: str) -> BoundedContext:
+    def get_context(self: Self, name: str) -> BoundedContext:
         """Get a BoundedContext by name. Raises ValueError if not found."""
         for ctx in self.contexts:
             if ctx.name == name:
                 return ctx
         raise ValueError(f"Context '{name}' not found in blueprint")
+
+    def to_test_package_spec(self: Self) -> PackageSpec: ...
