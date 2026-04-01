@@ -1507,10 +1507,6 @@ contexts:
           name: name
         output:
           type: BoundedContext
-      - name: to_test_package_spec
-        inputs: []
-        output:
-          type: PackageSpec
     enums:
     - name: PortType
       members:
@@ -1762,14 +1758,6 @@ contexts:
           name: function_spec
         output:
           type: Self
-      - name: to_test_module_spec
-        inputs: []
-        output:
-          type: ModuleSpec
-      - name: to_bindings_module_spec
-        inputs: []
-        output:
-          type: ModuleSpec
     - name: TypeDefinition
       description: 类型定义的公共部分，被 AttributeSpec 和 MethodOutput 共同继承。
       attributes:
@@ -1976,13 +1964,6 @@ contexts:
         name: when
       - type: string
         name: then
-      behaviors:
-      - name: to_test_function_spec
-        inputs:
-        - type: string
-          name: fixture_name
-        output:
-          type: FunctionSpec
     - name: AttributeSpec
       description: Standard specification for a class attribute.
       attributes:
@@ -3361,10 +3342,6 @@ contexts:
           name: name
         output:
           type: Self
-      - name: to_test_package_spec
-        inputs: []
-        output:
-          type: PackageSpec
     - name: BoundedContext
       description: A logical boundary within the system.
       attributes:
@@ -3479,10 +3456,6 @@ contexts:
           name: port_name
         output:
           type: PortSpec
-      - name: to_test_package_spec
-        inputs: []
-        output:
-          type: PackageSpec
     - name: ServiceSpec
       description: Specification of a domain service to be generated.
       attributes:
@@ -4152,10 +4125,6 @@ contexts:
           name: name
         output:
           type: MethodSpec
-      - name: to_test_package_spec
-        inputs: []
-        output:
-          type: PackageSpec
     - name: BootstrapSpec
       description: Specification of the bootstrap configuration.
       attributes:
@@ -4696,7 +4665,6 @@ contexts:
       - type: string
         name: name
       - type: string
-        optional: true
         name: description
       - type: Any
         optional: true
