@@ -5,6 +5,7 @@ from codegen.python_gen.domain.value_objects.type_annotation_spec import (
 )
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
+from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.shared.models import ValueObject
 from typing import Self
 
@@ -12,14 +13,14 @@ from typing import Self
 class RuleSpec(ValueObject):
     """BDD rule specification with given/when/then"""
 
-    name: PascalString
+    name: SnakeString
     given: str
     when: str
     then: str
 
     def to_test_function_spec(self: Self, fixture_name: str) -> FunctionSpec:
         """Map business rule to test function with given/when/then chain."""
-        func_name = self.name.to_snake()
+        func_name = "test_" + self.name
         fixture_var = VariableSpec.create(
             name=fixture_name,
             type_spec=TypeAnnotationSpec(name=PascalString(fixture_name))

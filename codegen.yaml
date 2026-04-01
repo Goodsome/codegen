@@ -1035,9 +1035,6 @@ contexts:
         inputs:
         - type: Self
           name: self
-        - type: string
-          name: root_path
-          default: ''
         output:
           type: string
           container: map
@@ -1242,9 +1239,6 @@ contexts:
           name: cls
         - type: PackageSpec
           name: package_spec
-        - type: string
-          name: root_path
-          default: ''
         output:
           type: DependencyResolver
       - name: resolve_module
@@ -1298,9 +1292,6 @@ contexts:
           container: list
           optional: true
           name: target_nodes
-        - type: string
-          name: root_path
-          default: ''
         output:
           type: Any
           custom_type_string: dict[Path, str]
@@ -1388,6 +1379,7 @@ contexts:
         name: package_spec
       - type: boolean
         name: overwrite
+        default: false
       - type: string
         container: list
         optional: true
@@ -1980,7 +1972,7 @@ contexts:
     - name: RuleSpec
       description: BDD rule specification with given/when/then
       attributes:
-      - type: PascalString
+      - type: SnakeString
         name: name
       - type: string
         name: given

@@ -47,10 +47,11 @@ class PythonSyntaxTranslator:
     def to_code(
         self, module_spec: ModuleSpec, imports: Iterable[ImportFromSpec]
     ) -> str:
-        return self.source_code_port.render_module(module_spec, list(imports))
+        content = self.source_code_port.render_module(module_spec, list(imports))
+        return content
 
     def generate_source_tree(
-        self, package_spec: PackageSpec, target_nodes: list[str] | None, root_path: str = "",
+        self, package_spec: PackageSpec, target_nodes: list[str] | None
     ) -> dict[Path, str]:
         """
         核心方法：将 PackageSpec 转换为虚拟文件树。
@@ -59,7 +60,6 @@ class PythonSyntaxTranslator:
         # 1. 预先构建依赖解析器
         resolver = DependencyResolver.build_from_package_spec(
             package_spec,
-            root_path=root_path,
         )
 
         # 2. 结果容器

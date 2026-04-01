@@ -52,8 +52,9 @@ class PackageSpec(ValueObject):
                 return False
         return True
 
-    def get_global_registry(self, root_path: str = "") -> dict[str, str]:
+    def get_global_registry(self) -> dict[str, str]:
         symbol_table: dict[str, str] = {}
+        root_path = ""
         self._build_symbol_table(root_path, symbol_table)
         return symbol_table
 
@@ -63,6 +64,9 @@ class PackageSpec(ValueObject):
             current_path = f"{root_path}.{self.name}"
         else:
             current_path = self.name
+        
+        if self.name == "src":
+            current_path = ""
 
         for mod in self.modules:
             mod_name = Path(mod.filename).stem

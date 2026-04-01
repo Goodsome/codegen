@@ -54,6 +54,7 @@ GLOBAL_REGISTRY = {
     "Configuration": "dependency_injector.providers",
     "inject": "dependency_injector.wiring",
     "Provide": "dependency_injector.wiring",
+    "pytest": "__root__"
 }
 
 TEMPORARY_MAPPING = {"dataclass(frozen=True)": "dataclass"}
@@ -65,10 +66,8 @@ class DependencyResolver:
     global_registry: dict[str, str]
 
     @classmethod
-    def build_from_package_spec(cls, package_spec: PackageSpec, root_path: str="") -> "DependencyResolver":
-        global_registry = package_spec.get_global_registry(
-            root_path=root_path,
-        )
+    def build_from_package_spec(cls, package_spec: PackageSpec) -> "DependencyResolver":
+        global_registry = package_spec.get_global_registry()
         global_registry.update(GLOBAL_REGISTRY)
         return cls(global_registry=global_registry)
 

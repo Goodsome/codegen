@@ -176,8 +176,9 @@ class MethodSpec(ValueObject):
                 )
             ],
             function_type=FunctionType.INSTANCE_METHOD,
-            suite=f"""match semantic_text:
-            case _:
-                raise NotImplementedError(f"未实现的 {name} 语义: {{semantic_text}}")
-            return self""",
+            suite=f"""
+match semantic_text:
+    case _:
+        raise NotImplementedError(f"未实现的 {name} 语义: {{semantic_text}}")
+return self""",
         )

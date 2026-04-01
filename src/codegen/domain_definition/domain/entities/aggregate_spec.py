@@ -156,6 +156,9 @@ class AggregateSpec(Entity):
             bm = behavior.to_bindings_module_spec()
             if tm.functions:
                 modules.append(tm)
-            if bm.functions:
                 modules.append(bm)
-        return PackageSpec.create(name=str(self.name), modules=modules)
+        p = PackageSpec.create(name=str(self.name), modules=modules)
+        return PackageSpec.create(
+            name="aggregates",
+            sub_packages=[p],
+        )

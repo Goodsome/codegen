@@ -58,7 +58,8 @@ class FunctionSpec(ValueObject):
     def get_required_types(self) -> set[str]:
         types: set[str] = set()
         types.update(self.return_annotation.get_all_referenced_names())
-        types.update(self.decorators)
+        for d in self.decorators:
+            types.add(d.split(".")[0])
         for p in self.parameters:
             if p.type_spec:
                 types.update(p.type_spec.get_all_referenced_names())

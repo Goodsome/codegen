@@ -1,3 +1,4 @@
+from operator import sub
 from typing import Self, Union
 
 from pydantic import Field
@@ -45,7 +46,11 @@ class Blueprint(AggregateRoot):
             bootstrap_pkg = self.bootstrap.to_package_spec(self.contexts)
             if bootstrap_pkg:
                 context_packages.append(bootstrap_pkg)
-        return PackageSpec.create(name=project_name, sub_packages=context_packages)
+        p = PackageSpec.create(name=project_name, sub_packages=context_packages)
+        return PackageSpec.create(
+            name="src",
+            sub_packages=[p]
+        )
 
     @classmethod
     def from_package_spec(cls: type[Self], package_spec: PackageSpec) -> Self:

@@ -29,6 +29,7 @@ class GenerateProject:
         node = cmd.nodes[0] if cmd.nodes and len(cmd.nodes) == 1 else None
         load_result = self.loader.execute(LoadBlueprintCommand(node=node))
         package_spec = load_result.blueprint.to_package_spec()
+        tps = load_result.blueprint.to_test_package_spec()
         overwrite = False
         if cmd.nodes:
             overwrite = True
@@ -37,6 +38,13 @@ class GenerateProject:
             GeneratePackageCommand(
                 package_spec=package_spec,
                 nodes=cmd.nodes,
+                overwrite=overwrite,
+            )
+        )
+        
+        gen_tests_result = self.generator.execute(
+            GeneratePackageCommand(
+                package_spec=tps,
                 overwrite=overwrite,
             )
         )
