@@ -1,12 +1,14 @@
+import logging
 from typing import Any
 from codegen.domain_definition.domain.value_objects.type_definition import (
     TypeDefinition,
 )
 from codegen.shared.domain.value_objects.snake_string import SnakeString
-from codegen.python_gen.domain.enums import FieldFlavor
+from codegen.python_gen.domain.enums import AssignmentFlavor, FieldFlavor
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from pydantic import Field
 
+logger = logging.getLogger(__name__)
 
 class AttributeSpec(TypeDefinition):
     """Standard specification for a class attribute."""
@@ -50,7 +52,7 @@ class AttributeSpec(TypeDefinition):
                 if isinstance(self.default, list):
                     kwargs={"default_factory": AssignmentSpec.from_code("list")}
                 else:
-                    kwargs={"default": assignment}
+                    kwargs={"default_factory": assignment}
                     
                 assignment = AssignmentSpec.from_call(
                     func_name=func_name,
@@ -111,11 +113,14 @@ class AttributeSpec(TypeDefinition):
                             default_arg.literal
                             and default_arg.literal.value is None
                         ):
-                            is_optional = True
                             default_value = None
                     elif "default_factory" in call.kwargs:
-                        is_optional = True
-                        default_value = None
+                        a = call.kwargs["default_factory"]
+                        if a.flavor is AssignmentFlavor.SYMBOL and a.reference:
+                            default_value = a.reference.name
+                        else:
+                            logger.warning(f"Unexpected default_factory: {a}")
+                            
 
         return cls(
             name=variable_spec.name,

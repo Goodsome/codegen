@@ -236,15 +236,15 @@ contexts:
         name: status
       - type: FileResult
         container: list
-        optional: true
         name: files
+        default: list
       - type: BuildStats
-        optional: true
         name: stats
+        default: BuildStats
       - type: string
         container: list
-        optional: true
         name: messages
+        default: list
       behaviors:
       - name: add_file_result
         inputs:
@@ -262,11 +262,11 @@ contexts:
       - type: FileStatus
         name: status
       - type: string
-        optional: true
         name: message
+        default: str
       - type: string
-        optional: true
         name: diff
+        default: str
     - name: BuildStats
       description: Aggregated statistics for a build operation.
       attributes:
@@ -428,20 +428,20 @@ contexts:
         default: ''
       - type: string
         container: list
-        optional: true
         name: decorators
+        default: list
       - type: string
         container: list
-        optional: true
         name: inheritance
+        default: list
       - type: VariableSpec
         container: list
-        optional: true
         name: attributes
+        default: list
       - type: FunctionSpec
         container: list
-        optional: true
         name: methods
+        default: list
       behaviors:
       - name: create
         inputs:
@@ -539,12 +539,12 @@ contexts:
         name: name
       - type: string
         container: list
-        optional: true
         name: decorators
+        default: list
       - type: VariableSpec
         container: list
-        optional: true
         name: parameters
+        default: list
       - type: TypeAnnotationSpec
         name: return_annotation
       - type: string
@@ -625,8 +625,8 @@ contexts:
         name: name
       - type: TypeAnnotationSpec | AssignmentSpec
         container: list
-        optional: true
         name: args
+        default: list
       behaviors:
       - name: render
         description: 递归渲染类型字符串
@@ -659,12 +659,11 @@ contexts:
       - type: MacroString
         name: name
       - type: Any
-        optional: true
         custom_type_string: str | int | None
         name: value
       - type: string
-        optional: true
         name: description
+        default: str
       behaviors:
       - name: create
         inputs:
@@ -830,28 +829,28 @@ contexts:
         name: name
       - type: FunctionSpec
         container: list
-        optional: true
         name: functions
+        default: list
       - type: ClassSpec
         container: list
-        optional: true
         name: classes
+        default: list
       - type: ImportFromSpec
         container: list
-        optional: true
         name: imports
+        default: list
       - type: PythonEnumSpec
         container: list
-        optional: true
         name: enums
+        default: list
       - type: ModuleAssignmentSpec
         container: list
-        optional: true
         name: assignments
+        default: list
       - type: RawCodeSpec
         container: list
-        optional: true
         name: extra_code
+        default: list
       behaviors:
       - name: create
         inputs:
@@ -1002,12 +1001,12 @@ contexts:
         name: name
       - type: ModuleSpec
         container: list
-        optional: true
         name: modules
+        default: list
       - type: PackageSpec
         container: list
-        optional: true
         name: sub_packages
+        default: list
       behaviors:
       - name: create
         inputs:
@@ -1184,19 +1183,19 @@ contexts:
       - type: PascalString
         name: name
       - type: string
-        optional: true
         name: description
+        default: str
       - type: string
         container: list
-        optional: true
         name: decorators
+        default: list
       - type: string
-        optional: true
         name: base_class
+        default: str
       - type: PythonEnumMemberSpec
         container: list
-        optional: true
         name: members
+        default: list
       behaviors:
       - name: create
         inputs:
@@ -1426,11 +1425,11 @@ contexts:
         name: name
       - type: BoundedContext
         container: list
-        optional: true
         name: contexts
+        default: list
       - type: BootstrapSpec
-        optional: true
         name: bootstrap
+        default: BootstrapSpec
       behaviors:
       - name: create
         inputs:
@@ -1572,12 +1571,11 @@ contexts:
       - type: MacroString
         name: name
       - type: Any
-        optional: true
         custom_type_string: str | int | None
         name: value
       - type: string
-        optional: true
         name: description
+        default: str
     - name: MethodOutput
       description: Specification of the output of a method.
     - name: PortBinding
@@ -1619,8 +1617,8 @@ contexts:
       - type: PascalString
         name: use_case
       - type: string
-        optional: true
         name: description
+        default: str
       behaviors:
       - name: to_module_spec
         description: "生成单个 CLI 命令模块\n\nArgs:\n    context_name: 上下文名称\n    use_case:\
@@ -1708,14 +1706,14 @@ contexts:
         name: description
       - type: AttributeSpec
         container: list
-        optional: true
         name: inputs
+        default: list
       - type: MethodOutput
         name: output
       - type: RuleSpec
         container: list
-        optional: true
         name: rules
+        default: list
       behaviors:
       - name: create
         inputs:
@@ -1780,8 +1778,8 @@ contexts:
         name: container
         default: ContainerType.NONE
       - type: boolean
-        optional: true
         name: optional
+        default: bool
       - type: string
         optional: true
         name: custom_type_string
@@ -1818,6 +1816,7 @@ contexts:
           container: type
           name: cls
         - type: TypeAnnotationSpec
+          optional: true
           name: annotation
         output:
           type: TypeDefinition
@@ -1853,8 +1852,8 @@ contexts:
       - type: string
         name: use_case
       - type: string
-        optional: true
         name: description
+        default: str
       behaviors:
       - name: to_module_spec
         description: "生成单个 HTTP endpoint 模块\n\nArgs:\n    context_name: 上下文名称\n  \
@@ -2040,8 +2039,8 @@ contexts:
       - type: string
         name: use_case
       - type: string
-        optional: true
         name: description
+        default: str
       behaviors:
       - name: to_module_spec
         description: "生成单个 MCP tool 模块\n\nArgs:\n    context_name: 上下文名称\n    use_case:\
@@ -2147,19 +2146,19 @@ contexts:
         name: kind
       - type: AttributeSpec
         container: list
-        optional: true
         name: inputs
+        default: list
       - type: AttributeSpec
         container: list
-        optional: true
         name: outputs
+        default: list
       - type: string
-        optional: true
         name: description
+        default: str
       - type: AttributeSpec
         container: list
-        optional: true
         name: dependencies
+        default: list
       behaviors:
       - name: create
         inputs:
@@ -2359,16 +2358,16 @@ contexts:
       attributes:
       - type: UseCaseSpec
         container: list
-        optional: true
         name: use_cases
+        default: list
       - type: PortSpec
         container: list
-        optional: true
         name: ports
+        default: list
       - type: ServiceSpec
         container: list
-        optional: true
         name: services
+        default: list
       behaviors:
       - name: to_package_spec
         description: 将 ApplicationSpec 转换为 PackageSpec
@@ -2505,16 +2504,16 @@ contexts:
       attributes:
       - type: CliCommandSpec
         container: list
-        optional: true
         name: cli_commands
+        default: list
       - type: McpToolSpec
         container: list
-        optional: true
         name: mcp_tools
+        default: list
       - type: HttpEndpointSpec
         container: list
-        optional: true
         name: http_endpoints
+        default: list
       behaviors:
       - name: to_package_spec
         description: "将 InterfaceSpec 转换为 PackageSpec\n\nArgs:\n    context_name:\
@@ -2668,16 +2667,16 @@ contexts:
       - type: PascalString
         name: name
       - type: string
-        optional: true
         name: description
+        default: str
       - type: AttributeSpec
         container: list
-        optional: true
         name: attributes
+        default: list
       - type: MethodSpec
         container: list
-        optional: true
         name: behaviors
+        default: list
       behaviors:
       - name: to_module_spec
         description: 将 ValueObjectSpec 转换为 ModuleSpec
@@ -2809,8 +2808,8 @@ contexts:
       attributes:
       - type: ImplementationSpec
         container: list
-        optional: true
         name: implementations
+        default: list
       behaviors:
       - name: to_package_spec
         description: 将 InfrastructureSpec 转换为 PackageSpec
@@ -2875,8 +2874,8 @@ contexts:
       attributes:
       - type: PortBinding
         container: list
-        optional: true
         name: bindings
+        default: list
       behaviors:
       - name: to_class_spec
         description: 将 ContainerSpec 转换为 ClassSpec
@@ -2939,16 +2938,16 @@ contexts:
       - type: SnakeString
         name: technology
       - type: string
-        optional: true
         name: description
+        default: str
       - type: AttributeSpec
         container: list
-        optional: true
         name: attributes
+        default: list
       - type: MethodSpec
         container: list
-        optional: true
         name: private_methods
+        default: list
       behaviors:
       - name: create
         inputs:
@@ -3098,28 +3097,28 @@ contexts:
       attributes:
       - type: AggregateSpec
         container: list
-        optional: true
         name: aggregates
+        default: list
       - type: EnumSpec
         container: list
-        optional: true
         name: enums
+        default: list
       - type: ValueObjectSpec
         container: list
-        optional: true
         name: value_objects
+        default: list
       - type: EntitySpec
         container: list
-        optional: true
         name: entities
+        default: list
       - type: ServiceSpec
         container: list
-        optional: true
         name: services
+        default: list
       - type: PortSpec
         container: list
-        optional: true
         name: ports
+        default: list
       behaviors:
       - name: to_package_spec
         description: 将 DomainSpec 转换为 PackageSpec
@@ -3376,23 +3375,23 @@ contexts:
       - type: PascalString
         name: name
       - type: DomainSpec
-        optional: true
         name: domain
+        default: DomainSpec
       - type: ApplicationSpec
-        optional: true
         name: application
+        default: ApplicationSpec
       - type: InfrastructureSpec
-        optional: true
         name: infrastructure
+        default: InfrastructureSpec
       - type: InterfaceSpec
-        optional: true
         name: interfaces
+        default: InterfaceSpec
       - type: ConfigSpec
-        optional: true
         name: config
+        default: ConfigSpec
       - type: ContainerSpec
-        optional: true
         name: container
+        default: ContainerSpec
       behaviors:
       - name: to_package_spec
         description: Convert this BoundedContext to a PackageSpec.
@@ -3493,16 +3492,16 @@ contexts:
       - type: PascalString
         name: name
       - type: string
-        optional: true
         name: description
+        default: str
       - type: AttributeSpec
         container: list
-        optional: true
         name: dependencies
+        default: list
       - type: MethodSpec
         container: list
-        optional: true
         name: operations
+        default: list
       behaviors:
       - name: to_module_spec
         description: 将 ServiceSpec 转换为 ModuleSpec
@@ -3638,16 +3637,16 @@ contexts:
       - type: PascalString
         name: name
       - type: string
-        optional: true
         name: description
+        default: str
       - type: AttributeSpec
         container: list
-        optional: true
         name: attributes
+        default: list
       - type: MethodSpec
         container: list
-        optional: true
         name: behaviors
+        default: list
       behaviors:
       - name: to_module_spec
         description: 将 EntitySpec 转换为 ModuleSpec
@@ -3780,8 +3779,8 @@ contexts:
       - type: PascalString
         name: name
       - type: string
-        optional: true
         name: description
+        default: str
       - type: PortType
         name: kind
       - type: PascalString
@@ -3789,8 +3788,8 @@ contexts:
         name: aggregate
       - type: MethodSpec
         container: list
-        optional: true
         name: operations
+        default: list
       behaviors:
       - name: create
         inputs:
@@ -3921,8 +3920,8 @@ contexts:
       - type: PascalString
         name: name
       - type: string
-        optional: true
         name: description
+        default: str
       - type: EnumMemberSpec
         container: list
         name: members
@@ -4023,12 +4022,12 @@ contexts:
         name: description
       - type: AttributeSpec
         container: list
-        optional: true
         name: attributes
+        default: list
       - type: MethodSpec
         container: list
-        optional: true
         name: behaviors
+        default: list
       behaviors:
       - name: to_module_spec
         description: 将 AggregateSpec 转换为 ModuleSpec
@@ -4197,8 +4196,8 @@ contexts:
         name: env_file
       - type: ConfigFieldSpec
         container: list
-        optional: true
         name: fields
+        default: list
       behaviors:
       - name: to_class_spec
         description: 将 ConfigSpec 转换为 ClassSpec
@@ -4701,9 +4700,9 @@ contexts:
       - type: string
         name: description
       - type: Any
-        optional: true
         custom_type_string: list[dict[str, Any]]
         name: inputs
+        default: list
       - type: string
         name: output_type
         default: void

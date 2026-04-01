@@ -81,7 +81,7 @@ class TypeDefinition(ValueObject):
         )
 
     @classmethod
-    def from_python_annotation(cls, annotation: TypeAnnotationSpec) -> "TypeDefinition":
+    def from_python_annotation(cls, annotation: TypeAnnotationSpec | None) -> "TypeDefinition":
         """从 Python 类型注解逆向解析为 TypeDefinition"""
         if annotation is None:
             return cls(type="Any", container=ContainerType.NONE, optional=False)
