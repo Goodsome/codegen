@@ -75,6 +75,8 @@ class PackageSpec(ValueObject):
                 table[cls.name] = full_mod_path
             for enum in mod.enums:
                 table[enum.name] = full_mod_path
+            for func in mod.functions:
+                table[func.name] = full_mod_path
 
         for pkg in self.sub_packages:
             pkg._build_symbol_table(current_path, table)

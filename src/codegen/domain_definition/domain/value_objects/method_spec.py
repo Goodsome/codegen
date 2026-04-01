@@ -1,14 +1,15 @@
 from codegen.domain_definition.domain.value_objects.method_output import MethodOutput
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
-from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.shared.models import ValueObject
+from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.python_gen.domain.value_objects.type_annotation_spec import (
     TypeAnnotationSpec,
 )
+from codegen.python_gen.domain.value_objects.module_assignment_spec import ModuleAssignmentSpec
 from codegen.python_gen.domain.enums import FunctionType
 from codegen.domain_definition.domain.value_objects.type_definition import (
     TypeDefinition,
@@ -129,6 +130,11 @@ class MethodSpec(ValueObject):
         return ModuleSpec.create(
             name=f"test_{self.name}",
             functions=functions,
+            assignments=[ModuleAssignmentSpec(
+                name="_",
+                value=bindings_name,
+                require_types=[bindings_name]
+            )]
         )
 
     def to_bindings_module_spec(self: Self) -> ModuleSpec:
@@ -156,9 +162,11 @@ class MethodSpec(ValueObject):
             decorators=["dataclass"],
             attributes=[],
         )
+        bf = self._get_bindings_fixture()
         return ModuleSpec.create(
             name=f"bindings_{self.name}",
             classes=[bc],
+            functions=[bf],
         )
         
     def _get_match_semantic_function(self, name: str) -> FunctionSpec:
@@ -182,3 +190,14 @@ match semantic_text:
         raise NotImplementedError(f"未实现的 {name} 语义: {{semantic_text}}")
 return self""",
         )
+
+    def _get_bindings_fixture(self) -> FunctionSpec:
+        bindings_name = f"{PascalString(self.name)}Bindings"
+        return FunctionSpec.create(
+            name=bindings_name,
+            return_annotation=TypeAnnotationSpec(name=bindings_name),
+            decorators=["pytest.fixture"],
+            function_type=FunctionType.FUNCTION,
+            suite=f"""return {bindings_name}()""",
+        )
+        

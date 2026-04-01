@@ -37,7 +37,6 @@ class RuleSpec(ValueObject):
             name=func_name,
             parameters=[fixture_var],
             return_annotation=TypeAnnotationSpec(name="None"),
-            decorators=["pytest.fixture"],
             function_type=FunctionType.FUNCTION,
             suite=chain_suite,
             description=f"[Rule]: {self.name}\n[Desc]: {self.given} -> {self.when} -> {self.then}",

@@ -72,8 +72,6 @@ class ModuleSpec(ValueObject):
     def get_init_module(cls) -> "ModuleSpec":
         return cls.create(name="__init__")
 
-
-
     @property
     def filename(self) -> str:
         return f"{self.name}.py"
@@ -97,6 +95,8 @@ class ModuleSpec(ValueObject):
             types.update(f.get_required_types())
         for e in self.enums:
             types.update(e.get_required_types())
+        for a in self.assignments:
+            types.update(a.get_required_types())
         return types
 
     def has_class(self, class_name: str) -> bool:
