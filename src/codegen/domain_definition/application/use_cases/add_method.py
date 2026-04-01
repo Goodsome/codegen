@@ -20,9 +20,8 @@ class AddMethodCommand(BaseModel):
     method_kind: MethodKind
     element_name: str
     name: str
-    description: str | None = Field(default=None)
+    description: str
     inputs: list[dict[str, Any]] = Field(default_factory=list)
-    # output fields (expanded from MethodOutput/TypeDefinition)
     output_type: str = Field(default="void")
     output_container: ContainerType = Field(default=ContainerType.NONE)
     output_optional: bool = Field(default=False)

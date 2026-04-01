@@ -28,8 +28,8 @@ def add_method(
     element_name: Annotated[str, typer.Argument(help="Element name")],
     method_kind: Annotated[MethodKind, typer.Argument(help="Method kind")],
     name: Annotated[str, typer.Argument(help="Method name")],
+    description: Annotated[str, typer.Argument()],
     output_type: Annotated[str, typer.Argument(help="Output type")],
-    description: Annotated[str | None, typer.Option("--description", "-d")] = None,
     inputs: Annotated[str | None, typer.Option("--inputs", "-i", help="JSON string of inputs list")] = None,
     output_optional: Annotated[bool, typer.Option("--output-optional")] = False,
 ) -> None:
