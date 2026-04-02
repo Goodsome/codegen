@@ -7,4 +7,5 @@ from codegen.shared.models import Entity
 class ValueObjectSpec(Entity, DomainConcept):
     """Specification of a value object to be generated."""
 
+    __concept_name__ = "value_object"
     __pkg_name__ = "value_objects"

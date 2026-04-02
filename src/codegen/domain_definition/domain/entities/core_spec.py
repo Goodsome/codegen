@@ -4,4 +4,6 @@ from codegen.shared.models import Entity
 class CoreSpec(Entity, DomainConcept):
     """Specification of a core entity to be generated."""
 
+    __concept_name__ = "core"
     __pkg_name__ = "core"
+    

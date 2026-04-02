@@ -109,7 +109,9 @@ contexts:
         output:
           type: boolean
     value_objects:
-    - behaviors:
+    - base_types:
+      - NamingString
+      behaviors:
       - inputs:
         - name: cls
           type: any
@@ -120,7 +122,9 @@ contexts:
           type: any
       description: ''
       name: SnakeString
-    - behaviors:
+    - base_types:
+      - NamingString
+      behaviors:
       - inputs:
         - name: cls
           type: any
@@ -131,7 +135,9 @@ contexts:
           type: any
       description: ''
       name: PascalString
-    - behaviors:
+    - base_types:
+      - NamingString
+      behaviors:
       - inputs:
         - name: cls
           type: any
@@ -142,7 +148,9 @@ contexts:
           type: any
       description: ''
       name: KebabString
-    - behaviors:
+    - base_types:
+      - str
+      behaviors:
       - inputs:
         - name: self
           type: Self
@@ -186,7 +194,9 @@ contexts:
           type: core_schema.CoreSchema
       description: 基于 case-converter 的增强型字符串
       name: NamingString
-    - behaviors:
+    - base_types:
+      - NamingString
+      behaviors:
       - inputs:
         - name: cls
           type: any
@@ -2537,6 +2547,8 @@ contexts:
         default: list
         name: attributes
         type: AttributeSpec
+      base_types:
+      - BaseModel
       behaviors:
       - description: Add an AttributeSpec. Raises ValueError if attribute with same
           name exists.
@@ -2609,6 +2621,8 @@ contexts:
       - container: class_var
         name: __pkg_name__
         type: string
+      base_types:
+      - BaseModel
       behaviors:
       - inputs:
         - name: self
@@ -2695,6 +2709,16 @@ contexts:
         type: PascalString
       - name: description
         type: string
+      - container: list
+        default: list
+        name: base_types
+        type: string
+      - container: class_var
+        name: __concept_name__
+        type: string
+      base_types:
+      - HasAttributes
+      - HasBehaviors
       behaviors:
       - inputs:
         - name: self
@@ -2709,6 +2733,16 @@ contexts:
         name: to_module_spec
         output:
           type: ModuleSpec
+      - description: 将 ModuleSpec 逆向解析为 DomainConcept
+        inputs:
+        - container: type
+          name: cls
+          type: Self
+        - name: module
+          type: ModuleSpec
+        name: from_module_spec
+        output:
+          type: Self
       - description: 将多个 DomainConcept 转换为一个 'core' 包
         inputs:
         - container: type
@@ -2720,16 +2754,6 @@ contexts:
         name: to_package_spec
         output:
           type: PackageSpec
-      - description: 将 ModuleSpec 逆向解析为 DomainConcept
-        inputs:
-        - container: type
-          name: cls
-          type: Self
-        - name: module
-          type: ModuleSpec
-        name: from_module_spec
-        output:
-          type: Self
       - description: 将 PackageSpec 包逆向解析为 DomainConcept 列表
         inputs:
         - container: type
@@ -3279,9 +3303,14 @@ contexts:
       description: 接口层总规范
       name: InterfaceSpec
     - attributes:
+      - default: value_object
+        name: __concept_name__
+        type: Any
       - default: value_objects
         name: __pkg_name__
         type: Any
+      base_types:
+      - DomainConcept
       description: Specification of a value object to be generated.
       name: ValueObjectSpec
     - attributes:
@@ -3423,6 +3452,8 @@ contexts:
         default: list
         name: private_methods
         type: MethodSpec
+      base_types:
+      - HasAttributes
       behaviors:
       - inputs:
         - container: type
@@ -3533,8 +3564,13 @@ contexts:
       name: ImplementationSpec
     - attributes:
       - default: core
+        name: __concept_name__
+        type: Any
+      - default: core
         name: __pkg_name__
         type: Any
+      base_types:
+      - DomainConcept
       description: Specification of a core entity to be generated.
       name: CoreSpec
     - attributes:
@@ -4083,9 +4119,14 @@ contexts:
       description: Specification of a domain service to be generated.
       name: ServiceSpec
     - attributes:
+      - default: entity
+        name: __concept_name__
+        type: Any
       - default: entities
         name: __pkg_name__
         type: Any
+      base_types:
+      - DomainConcept
       description: Specification of an entity.
       name: EntitySpec
     - attributes:
@@ -4329,9 +4370,14 @@ contexts:
       description: Specification of an enum to be generated.
       name: EnumSpec
     - attributes:
+      - default: aggregate_root
+        name: __concept_name__
+        type: Any
       - default: aggregates
         name: __pkg_name__
         type: Any
+      base_types:
+      - DomainConcept
       description: Specification of a domain aggregate to be generated.
       name: AggregateSpec
     - attributes:
@@ -4505,7 +4551,9 @@ contexts:
         type: string
       description: Specification of an enum member to be generated.
       name: EnumMemberSpec
-    - description: Specification of the output of a method.
+    - base_types:
+      - TypeDefinition
+      description: Specification of the output of a method.
       name: MethodOutput
     - attributes:
       - name: port
@@ -4528,6 +4576,8 @@ contexts:
       - name: env_var
         optional: true
         type: string
+      base_types:
+      - TypeDefinition
       behaviors:
       - description: 将 ConfigFieldSpec 转换为 VariableSpec
         inputs:
@@ -4941,6 +4991,8 @@ contexts:
       - name: default
         optional: true
         type: any
+      base_types:
+      - TypeDefinition
       behaviors:
       - inputs:
         - container: type

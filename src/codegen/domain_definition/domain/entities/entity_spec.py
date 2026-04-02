@@ -7,4 +7,5 @@ from codegen.shared.models import Entity
 class EntitySpec(Entity, DomainConcept):
     """Specification of an entity."""
 
+    __concept_name__ = "entity"
     __pkg_name__ = "entities"

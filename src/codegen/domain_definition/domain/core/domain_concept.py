@@ -1,4 +1,4 @@
-from typing import Iterable, Self
+from typing import ClassVar, Iterable, Self
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.python_gen.domain.enums import FieldFlavor
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
@@ -6,12 +6,16 @@ from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.domain_definition.domain.core.has_attributes import HasAttributes
 from codegen.domain_definition.domain.core.has_behaviors import HasBehaviors
+from pydantic import Field
 
 class DomainConcept(HasAttributes, HasBehaviors):
     """Specification of a core entity to be generated."""
 
     name: PascalString
     description: str
+    base_types: list[str] = Field(default_factory=list)
+    
+    __concept_name__: ClassVar[str]
 
     @property
     def entity_name(self) -> str:
@@ -21,20 +25,18 @@ class DomainConcept(HasAttributes, HasBehaviors):
         """将 DomainConcept 转换为 ModuleSpec"""
         vs = self.to_variable_specs(FieldFlavor.PYDANTIC)
         fs = self.to_function_specs()
+        if self.__concept_name__ != "core":
+            base_types = [PascalString(self.__concept_name__)] + self.base_types
+        else:
+            base_types = self.base_types
         class_spec = ClassSpec.create(
             name=self.name,
             description=self.description,
-            inheritance=["BaseModel"],
+            inheritance=base_types,
             attributes=vs,
             methods=fs,
         )
         return ModuleSpec.create(name=self.name, classes=[class_spec])
-
-    @classmethod
-    def to_package_spec(cls: type[Self], domain_concept: Iterable[Self]) -> PackageSpec:
-        """将多个 DomainConcept 转换为一个 'core' 包"""
-        modules = [dc.to_module_spec() for dc in domain_concept]
-        return PackageSpec.create(name=cls.__pkg_name__, modules=modules)
 
     @classmethod
     def from_module_spec(cls: type[Self], module: ModuleSpec) -> Self:
@@ -42,12 +44,20 @@ class DomainConcept(HasAttributes, HasBehaviors):
         cls_spec = module.classes[0]
         attributes = cls.from_variable_specs(cls_spec.attributes)
         behaviors = cls.from_function_specs(cls_spec.methods)
+        base_types = [i for i in cls_spec.inheritance if i not in ["Entity", "ValueObject", "AggregateRoot"]]
         return cls(
             name=cls_spec.name,
             description=cls_spec.description,
+            base_types=base_types,
             attributes=attributes,
             behaviors=behaviors,
         )
+
+    @classmethod
+    def to_package_spec(cls: type[Self], domain_concept: Iterable[Self]) -> PackageSpec:
+        """将多个 DomainConcept 转换为一个 'core' 包"""
+        modules = [dc.to_module_spec() for dc in domain_concept]
+        return PackageSpec.create(name=cls.__pkg_name__, modules=modules)
 
     @classmethod
     def from_package_spec(cls: type[Self], package: PackageSpec) -> list[Self]:
