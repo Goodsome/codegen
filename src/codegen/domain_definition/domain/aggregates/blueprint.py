@@ -6,7 +6,7 @@ from codegen.domain_definition.domain.entities.bootstrap_spec import BootstrapSp
 from codegen.domain_definition.domain.entities.bounded_context import BoundedContext
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
-from codegen.shared.domain.core import AggregateRoot
+from codegen.shared.domain.entities.aggregate_root import AggregateRoot
 
 
 class Blueprint(AggregateRoot):

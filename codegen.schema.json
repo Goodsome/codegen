@@ -11,6 +11,13 @@
           "title":"Attributes",
           "type":"array"
         },
+        "base_types":{
+          "items":{
+            "type":"string"
+          },
+          "title":"Base Types",
+          "type":"array"
+        },
         "behaviors":{
           "items":{
             "$ref":"#/$defs/MethodSpec"
@@ -346,7 +353,8 @@
         "map",
         "iterable",
         "callable",
-        "type"
+        "type",
+        "class_var"
       ],
       "title":"ContainerType",
       "type":"string"
@@ -360,6 +368,13 @@
             "$ref":"#/$defs/AttributeSpec"
           },
           "title":"Attributes",
+          "type":"array"
+        },
+        "base_types":{
+          "items":{
+            "type":"string"
+          },
+          "title":"Base Types",
           "type":"array"
         },
         "behaviors":{
@@ -453,6 +468,13 @@
           "title":"Attributes",
           "type":"array"
         },
+        "base_types":{
+          "items":{
+            "type":"string"
+          },
+          "title":"Base Types",
+          "type":"array"
+        },
         "behaviors":{
           "items":{
             "$ref":"#/$defs/MethodSpec"
@@ -470,7 +492,8 @@
         }
       },
       "required":[
-        "name"
+        "name",
+        "description"
       ],
       "title":"EntitySpec",
       "type":"object"
@@ -954,6 +977,13 @@
           "title":"Attributes",
           "type":"array"
         },
+        "base_types":{
+          "items":{
+            "type":"string"
+          },
+          "title":"Base Types",
+          "type":"array"
+        },
         "behaviors":{
           "items":{
             "$ref":"#/$defs/MethodSpec"
@@ -971,7 +1001,8 @@
         }
       },
       "required":[
-        "name"
+        "name",
+        "description"
       ],
       "title":"ValueObjectSpec",
       "type":"object"

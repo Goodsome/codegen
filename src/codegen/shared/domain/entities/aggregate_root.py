@@ -5,22 +5,14 @@ from codegen.shared.domain.core.domain_event import DomainEvent
 
 
 class AggregateRoot(Entity):
-    """聚合根基类
-
-    特征：
-    1. 继承 Entity 的所有特性
-    2. 管理领域事件的发布和收集
-    3. 确保聚合边界内的一致性
-    """
+    """聚合根基类 特征： 1. 继承 Entity 的所有特性 2. 管理领域事件的发布和收集 3. 确保聚合边界内的一致性"""
 
     _domain_events: list[DomainEvent] = PrivateAttr(default_factory=list)
 
     def add_domain_event(self, event: DomainEvent) -> None:
         """添加领域事件
-
         Args:
             event: 要添加的领域事件实例
-
         Raises:
             TypeError: 如果 event 不是 DomainEvent 的实例
         """
@@ -29,9 +21,8 @@ class AggregateRoot(Entity):
 
         self._domain_events.append(event)
 
-    def collect_events(self) -> list["DomainEvent"]:
+    def collect_events(self) -> list[DomainEvent]:
         """收集并清空领域事件
-
         Returns:
             收集到的所有领域事件列表（副本）
         """

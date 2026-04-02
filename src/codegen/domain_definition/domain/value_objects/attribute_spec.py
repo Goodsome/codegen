@@ -118,6 +118,8 @@ class AttributeSpec(TypeDefinition):
                         a = call.kwargs["default_factory"]
                         if a.flavor is AssignmentFlavor.SYMBOL and a.reference:
                             default_value = a.reference.name
+                        elif a.flavor is AssignmentFlavor.CODE:
+                            default_value = a.code
                         else:
                             logger.warning(f"Unexpected default_factory: {a}")
                             
