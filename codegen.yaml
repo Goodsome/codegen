@@ -2545,10 +2545,9 @@ contexts:
         type: AttributeSpec
       base_types:
       - BaseModel
+      - NamedElementOpsMixin
       behaviors:
-      - description: Add an AttributeSpec. Raises ValueError if attribute with same
-          name exists.
-        inputs:
+      - inputs:
         - name: self
           type: Self
         - name: attribute
@@ -2556,9 +2555,7 @@ contexts:
         name: add_attribute
         output:
           type: Self
-      - description: Update an existing AttributeSpec by name. Raises ValueError if
-          not found.
-        inputs:
+      - inputs:
         - name: self
           type: Self
         - name: attribute
@@ -2566,8 +2563,7 @@ contexts:
         name: update_attribute
         output:
           type: Self
-      - description: Remove an AttributeSpec by name. Returns self for chaining.
-        inputs:
+      - inputs:
         - name: self
           type: Self
         - name: name
@@ -2575,8 +2571,7 @@ contexts:
         name: remove_attribute
         output:
           type: Self
-      - description: Get an AttributeSpec by name. Raises ValueError if not found.
-        inputs:
+      - inputs:
         - name: self
           type: Self
         - name: name
@@ -2700,6 +2695,55 @@ contexts:
           type: MethodSpec
       description: 能力：拥有行为（方法）
       name: HasBehaviors
+    - behaviors:
+      - inputs:
+        - name: self
+          type: Self
+        - name: field_name
+          type: string
+        - name: item
+          type: any
+        - name: type_name
+          type: string
+        name: _add_item
+        output:
+          type: Self
+      - inputs:
+        - name: self
+          type: Self
+        - name: field_name
+          type: string
+        - name: item
+          type: any
+        - name: type_name
+          type: string
+        name: _update_item
+        output:
+          type: Self
+      - inputs:
+        - name: self
+          type: Self
+        - name: field_name
+          type: string
+        - name: name
+          type: string
+        name: _remove_item
+        output:
+          type: Self
+      - inputs:
+        - name: self
+          type: Self
+        - name: field_name
+          type: string
+        - name: name
+          type: string
+        - name: type_name
+          type: string
+        name: _get_item
+        output:
+          type: any
+      description: 底层逻辑复用：管理具备 name 属性的子元素集合
+      name: NamedElementOpsMixin
     - attributes:
       - name: name
         type: PascalString
