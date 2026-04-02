@@ -1,4 +1,3 @@
-from cmath import e
 from typing import Self
 
 from pydantic import Field
