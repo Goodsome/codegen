@@ -1,4 +1,8 @@
+from cmath import e
 from typing import Self
+
+from pydantic import Field
+
 from codegen.domain_definition.domain.entities.aggregate_spec import AggregateSpec
 from codegen.domain_definition.domain.entities.core_spec import CoreSpec
 from codegen.domain_definition.domain.entities.entity_spec import EntitySpec
@@ -9,7 +13,6 @@ from codegen.domain_definition.domain.entities.value_object_spec import ValueObj
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.models import Entity
-from pydantic import Field
 
 
 class DomainSpec(Entity):
@@ -67,7 +70,7 @@ class DomainSpec(Entity):
                 ports = PortSpec.from_package_spec(pkg)
             elif pkg.name == "core":
                 core = CoreSpec.from_package_spec(pkg)
-            
+
         for module in package_spec.modules:
             if module.name == "enums":
                 enums = EnumSpec.from_module_spec(module)
@@ -255,5 +258,11 @@ class DomainSpec(Entity):
 
     def to_test_package_spec(self: Self) -> PackageSpec:
         """Create test package for domain with aggregates that have rules."""
-        aggregate_packages = [agg.to_test_package_spec() for agg in self.aggregates]
-        return PackageSpec.create(name="domain", sub_packages=aggregate_packages)
+        sp: list[PackageSpec] = []
+        sp += [agg.to_test_package_spec() for agg in self.aggregates]
+        sp += [entity.to_test_package_spec() for entity in self.entities]
+        sp += [
+            value_object.to_test_package_spec() for value_object in self.value_objects
+        ]
+        sp += [core.to_test_package_spec() for core in self.core]
+        return PackageSpec.create(name="domain", sub_packages=sp)
