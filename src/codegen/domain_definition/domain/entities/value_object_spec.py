@@ -140,3 +140,19 @@ class ValueObjectSpec(Entity):
             if beh.name == name:
                 return beh
         raise ValueError(f"Behavior '{name}' not found in value_object '{self.name}'")
+
+
+    def to_test_package_spec(self: Self) -> PackageSpec:
+        """Create test package for value_object with behaviors that have rules."""
+        modules = []
+        for behavior in self.behaviors:
+            tm = behavior.to_test_module_spec()
+            bm = behavior.to_bindings_module_spec()
+            if tm.functions:
+                modules.append(tm)
+                modules.append(bm)
+        p = PackageSpec.create(name=str(self.name), modules=modules)
+        return PackageSpec.create(
+            name="value_objects",
+            sub_packages=[p],
+        )
