@@ -1,18 +1,18 @@
 from typing import Self, Iterable, ClassVar
 
-from pydantic import BaseModel, Field
+from pydantic import Field, BaseModel
 
+from codegen.domain_definition.domain.core.named_element_ops_mixin import NamedElementOpsMixin
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
-from codegen.shared.domain.value_objects.snake_string import SnakeString
 
 
-class HasBehaviors(BaseModel):
+class HasBehaviors(BaseModel, NamedElementOpsMixin):
     """能力：拥有行为（方法）"""
 
     behaviors: list[MethodSpec] = Field(default_factory=list)
-    
+
     __pkg_name__: ClassVar[str]
 
     @property
@@ -25,36 +25,16 @@ class HasBehaviors(BaseModel):
         raise NotImplementedError("Subclasses must implement 'test_package_name'")
 
     def add_behavior(self: Self, behavior: MethodSpec) -> Self:
-        """Add a MethodSpec behavior. Raises ValueError if behavior with same name exists."""
-        for beh in self.behaviors:
-            if beh.name == behavior.name:
-                raise ValueError(
-                    f"Behavior '{behavior.name}' already exists in '{self}'"
-                )
-        self.behaviors.append(behavior)
-        return self
+        return self._add_item("behaviors", behavior, "Behavior")
 
     def update_behavior(self: Self, behavior: MethodSpec) -> Self:
-        """Update an existing MethodSpec behavior by name. Raises ValueError if not found."""
-        for i, beh in enumerate(self.behaviors):
-            if beh.name == behavior.name:
-                self.behaviors[i] = behavior
-                return self
-        raise ValueError(
-            f"Behavior '{behavior.name}' not found in '{self}'"
-        )
+        return self._update_item("behaviors", behavior, "Behavior")
 
-    def remove_behavior(self: Self, name: SnakeString) -> Self:
-        """Remove a MethodSpec behavior by name. Returns self for chaining."""
-        self.behaviors = [beh for beh in self.behaviors if beh.name != name]
-        return self
+    def remove_behavior(self: Self, name) -> Self:
+        return self._remove_item("behaviors", name)
 
-    def get_behavior(self: Self, name: SnakeString) -> MethodSpec:
-        """Get a MethodSpec behavior by name. Raises ValueError if not found."""
-        for beh in self.behaviors:
-            if beh.name == name:
-                return beh
-        raise ValueError(f"Behavior '{name}' not found in '{self}'")
+    def get_behavior(self: Self, name) -> MethodSpec:
+        return self._get_item("behaviors", name, "Behavior")
 
     def to_test_package_spec(self: Self) -> PackageSpec:
         """Create test package for entity with behaviors that have rules."""

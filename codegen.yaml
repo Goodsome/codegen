@@ -2614,6 +2614,7 @@ contexts:
         type: string
       base_types:
       - BaseModel
+      - NamedElementOpsMixin
       behaviors:
       - inputs:
         - name: self
@@ -2628,9 +2629,7 @@ contexts:
         name: entity_name
         output:
           type: string
-      - description: Add a MethodSpec behavior. Raises ValueError if behavior with
-          same name exists.
-        inputs:
+      - inputs:
         - name: self
           type: Self
         - name: behavior
@@ -2638,9 +2637,7 @@ contexts:
         name: add_behavior
         output:
           type: Self
-      - description: Update an existing MethodSpec behavior by name. Raises ValueError
-          if not found.
-        inputs:
+      - inputs:
         - name: self
           type: Self
         - name: behavior
@@ -2648,21 +2645,19 @@ contexts:
         name: update_behavior
         output:
           type: Self
-      - description: Remove a MethodSpec behavior by name. Returns self for chaining.
-        inputs:
+      - inputs:
         - name: self
           type: Self
         - name: name
-          type: SnakeString
+          type: any
         name: remove_behavior
         output:
           type: Self
-      - description: Get a MethodSpec behavior by name. Raises ValueError if not found.
-        inputs:
+      - inputs:
         - name: self
           type: Self
         - name: name
-          type: SnakeString
+          type: any
         name: get_behavior
         output:
           type: MethodSpec
@@ -2695,6 +2690,69 @@ contexts:
           type: MethodSpec
       description: 能力：拥有行为（方法）
       name: HasBehaviors
+    - attributes:
+      - container: list
+        default: list
+        name: operations
+        type: MethodSpec
+      base_types:
+      - BaseModel
+      - NamedElementOpsMixin
+      behaviors:
+      - inputs:
+        - name: self
+          type: Self
+        - name: operation
+          type: MethodSpec
+        name: add_operation
+        output:
+          type: Self
+      - inputs:
+        - name: self
+          type: Self
+        - name: operation
+          type: MethodSpec
+        name: update_operation
+        output:
+          type: Self
+      - inputs:
+        - name: self
+          type: Self
+        - name: name
+          type: any
+        name: remove_operation
+        output:
+          type: Self
+      - inputs:
+        - name: self
+          type: Self
+        - name: name
+          type: any
+        name: get_operation
+        output:
+          type: MethodSpec
+      - description: 将 HasOperations 转换为 PythonGen FunctionSpec 列表
+        inputs:
+        - name: self
+          type: Self
+        name: to_function_specs
+        output:
+          container: list
+          type: FunctionSpec
+      - description: 将 FunctionSpec 列表逆向解析为 HasOperations
+        inputs:
+        - container: type
+          name: cls
+          type: Self
+        - container: iterable
+          name: specs
+          type: FunctionSpec
+        name: from_function_specs
+        output:
+          container: list
+          type: MethodSpec
+      description: 能力：拥有操作（方法）
+      name: HasOperations
     - behaviors:
       - inputs:
         - name: self
@@ -2744,6 +2802,72 @@ contexts:
           type: any
       description: 底层逻辑复用：管理具备 name 属性的子元素集合
       name: NamedElementOpsMixin
+    - attributes:
+      - container: list
+        default: list
+        name: dependencies
+        type: AttributeSpec
+      base_types:
+      - BaseModel
+      - NamedElementOpsMixin
+      behaviors:
+      - inputs:
+        - name: self
+          type: Self
+        - name: dependency
+          type: AttributeSpec
+        name: add_dependency
+        output:
+          type: Self
+      - inputs:
+        - name: self
+          type: Self
+        - name: dependency
+          type: AttributeSpec
+        name: update_dependency
+        output:
+          type: Self
+      - inputs:
+        - name: self
+          type: Self
+        - name: name
+          type: any
+        name: remove_dependency
+        output:
+          type: Self
+      - inputs:
+        - name: self
+          type: Self
+        - name: name
+          type: any
+        name: get_dependency
+        output:
+          type: AttributeSpec
+      - description: 将 HasDependencies 转换为 PythonGen VariableSpec 列表
+        inputs:
+        - name: self
+          type: Self
+        - name: flavor
+          optional: true
+          type: FieldFlavor
+        name: to_variable_specs
+        output:
+          container: list
+          type: VariableSpec
+      - description: 将 VariableSpec 列表逆向解析为 HasDependencies
+        inputs:
+        - container: type
+          name: cls
+          type: Self
+        - container: iterable
+          name: specs
+          type: VariableSpec
+        name: from_variable_specs
+        output:
+          container: list
+          type: AttributeSpec
+      description: 能力：拥有依赖项
+      name: HasDependencies
     - attributes:
       - name: name
         type: PascalString
@@ -4020,17 +4144,12 @@ contexts:
     - attributes:
       - name: name
         type: PascalString
-      - default: str
+      - default: ''
         name: description
         type: string
-      - container: list
-        default: list
-        name: dependencies
-        type: AttributeSpec
-      - container: list
-        default: list
-        name: operations
-        type: MethodSpec
+      base_types:
+      - HasDependencies
+      - HasOperations
       behaviors:
       - description: 将 ServiceSpec 转换为 ModuleSpec
         inputs:
@@ -4081,85 +4200,6 @@ contexts:
         name: update
         output:
           type: None
-      - description: Add an AttributeSpec dependency. Raises ValueError if dependency
-          with same name exists.
-        inputs:
-        - name: self
-          type: Self
-        - name: dependency
-          type: AttributeSpec
-        name: add_dependency
-        output:
-          type: Self
-      - description: Update an existing AttributeSpec dependency by name. Raises ValueError
-          if not found.
-        inputs:
-        - name: self
-          type: Self
-        - name: dependency
-          type: AttributeSpec
-        name: update_dependency
-        output:
-          type: Self
-      - description: Remove an AttributeSpec dependency by name. Returns self for
-          chaining.
-        inputs:
-        - name: self
-          type: Self
-        - name: name
-          type: SnakeString
-        name: remove_dependency
-        output:
-          type: Self
-      - description: Get an AttributeSpec dependency by name. Raises ValueError if
-          not found.
-        inputs:
-        - name: self
-          type: Self
-        - name: name
-          type: SnakeString
-        name: get_dependency
-        output:
-          type: AttributeSpec
-      - description: Add a MethodSpec operation. Raises ValueError if operation with
-          same name exists.
-        inputs:
-        - name: self
-          type: Self
-        - name: operation
-          type: MethodSpec
-        name: add_operation
-        output:
-          type: Self
-      - description: Update an existing MethodSpec operation by name. Raises ValueError
-          if not found.
-        inputs:
-        - name: self
-          type: Self
-        - name: operation
-          type: MethodSpec
-        name: update_operation
-        output:
-          type: Self
-      - description: Remove a MethodSpec operation by name. Returns self for chaining.
-        inputs:
-        - name: self
-          type: Self
-        - name: name
-          type: SnakeString
-        name: remove_operation
-        output:
-          type: Self
-      - description: Get a MethodSpec operation by name. Raises ValueError if not
-          found.
-        inputs:
-        - name: self
-          type: Self
-        - name: name
-          type: SnakeString
-        name: get_operation
-        output:
-          type: MethodSpec
       description: Specification of a domain service to be generated.
       name: ServiceSpec
     - attributes:
