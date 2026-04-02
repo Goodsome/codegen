@@ -6,8 +6,6 @@ from codegen.orchestration.interfaces.cli.reverse import reverse
 from codegen.python_gen.interfaces.cli.schema import schema
 from codegen.domain_definition.interfaces.cli.tree import tree as tree_cmd
 from codegen.domain_definition.interfaces.cli.init import init
-from codegen.domain_definition.interfaces.cli.upsert_context import upsert_context
-from codegen.domain_definition.interfaces.cli.remove_context import remove_context
 
 # Domain layer commands
 from codegen.domain_definition.interfaces.cli.add_aggregate import add_aggregate
@@ -134,8 +132,6 @@ app.command()(reverse)
 app.command()(schema)
 app.command()(init)
 app.command(name="tree")(tree_cmd)
-app.command(name="upsert-context")(upsert_context)
-app.command(name="remove-context")(remove_context)
 
 # ============================================================================
 # Domain Commands

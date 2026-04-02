@@ -39,5 +39,4 @@ class RuleSpec(ValueObject):
             return_annotation=TypeAnnotationSpec(name="None"),
             function_type=FunctionType.FUNCTION,
             suite=chain_suite,
-            description=f"[Rule]: {self.name}\n[Desc]: {self.given} -> {self.when} -> {self.then}",
         )

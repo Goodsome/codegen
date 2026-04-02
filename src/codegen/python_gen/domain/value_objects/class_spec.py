@@ -41,29 +41,6 @@ class ClassSpec(ValueObject):
             methods=methods or [],
         )
 
-    @classmethod
-    def create_value_object(cls) -> "ClassSpec":
-        return cls._create_base_model("ValueObject")
-
-    @classmethod
-    def create_aggregate(cls) -> "ClassSpec":
-        return cls._create_base_model("AggregateRoot")
-
-    @classmethod
-    def create_entity(cls) -> "ClassSpec":
-        return cls._create_base_model("Entity")
-
-    @classmethod
-    def create_event(cls) -> "ClassSpec":
-        return cls._create_base_model("DomainEvent")
-
-    @classmethod
-    def _create_base_model(cls, name: str) -> "ClassSpec":
-        return cls.create(
-            name=name,
-            inheritance=["BaseModel"],
-        )
-
     def get_required_types(self) -> set[str]:
         types: set[str] = set()
         types.update(self.inheritance)

@@ -46,9 +46,6 @@ class BoundedContext(Entity):
             application_pkg,
             infrastructure_pkg,
         ]
-        if self.name == "Shared":
-            modules.append(ModuleSpec.create_shared_models())
-            modules.append(ModuleSpec.create_shared_events())
         if self.config:
             config_module = self.config.to_module_spec(
                 class_name=f"{self.name}Settings"

@@ -90,8 +90,6 @@ from codegen.domain_definition.application.use_cases.remove_method import Remove
 # Other use cases
 from codegen.domain_definition.application.use_cases.init_project import InitProject
 from codegen.domain_definition.application.use_cases.load_blueprint import LoadBlueprint
-from codegen.domain_definition.application.use_cases.remove_context import RemoveContext
-from codegen.domain_definition.application.use_cases.upsert_context import UpsertContext
 
 from codegen.domain_definition.infrastructure.adapters.yaml_blueprint_storage import (
     YamlBlueprintStorage,
@@ -107,10 +105,6 @@ class Container(DeclarativeContainer):
     )
 
     load_blueprint = Factory(LoadBlueprint, blueprint_loader=yaml_blueprint_storage)
-
-    remove_context = Factory(RemoveContext, storage=yaml_blueprint_storage)
-
-    upsert_context = Factory(UpsertContext, storage=yaml_blueprint_storage)
 
     init_project = Factory(InitProject, storage=yaml_blueprint_storage)
 

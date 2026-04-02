@@ -61,16 +61,6 @@ class Blueprint(AggregateRoot):
             contexts=contexts,
         )
 
-    def upsert_context(self: Self, name: str, description: str) -> Self:
-        """Upsert a BoundedContext by name. Only updates scalar fields if exists."""
-        for ctx in self.contexts:
-            if ctx.name == name:
-                ctx.update(description=description)
-                return self
-        new_context = BoundedContext.create(name=name, description=description)
-        self.contexts.append(new_context)
-        return self
-
     def remove_context(self: Self, name: str) -> Self:
         """Remove a BoundedContext by name. Returns self for chaining."""
         self.contexts = [ctx for ctx in self.contexts if ctx.name != name]
