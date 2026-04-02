@@ -1,5 +1,6 @@
 from typing import Self, Union
 from codegen.domain_definition.domain.entities.aggregate_spec import AggregateSpec
+from codegen.domain_definition.domain.entities.core_spec import CoreSpec
 from codegen.domain_definition.domain.entities.entity_spec import EntitySpec
 from codegen.domain_definition.domain.entities.enum_spec import EnumSpec
 from codegen.domain_definition.domain.entities.port_spec import PortSpec
@@ -14,6 +15,7 @@ from pydantic import Field
 class DomainSpec(Entity):
     """Specification of a domain to be generated."""
 
+    core: list[CoreSpec] = Field(default_factory=list)
     aggregates: list[AggregateSpec] = Field(default_factory=list)
     enums: list[EnumSpec] = Field(default_factory=list)
     value_objects: list[ValueObjectSpec] = Field(default_factory=list)
@@ -51,6 +53,7 @@ class DomainSpec(Entity):
         services = []
         ports = []
         enums: list[EnumSpec] = []
+        core = []
         for pkg in package_spec.sub_packages:
             if pkg.name == "aggregates":
                 aggregates = AggregateSpec.from_package_spec(pkg)
@@ -62,6 +65,9 @@ class DomainSpec(Entity):
                 services = ServiceSpec.from_package_spec(pkg)
             elif pkg.name == "ports":
                 ports = PortSpec.from_package_spec(pkg)
+            elif pkg.name == "core":
+                core = CoreSpec.from_package_spec(pkg)
+            
         for module in package_spec.modules:
             if module.name == "enums":
                 enums = EnumSpec.from_module_spec(module)
@@ -72,6 +78,7 @@ class DomainSpec(Entity):
             services=services,
             ports=ports,
             enums=enums,
+            core=core,
         )
 
     def add_aggregate(self: Self, aggregate: AggregateSpec) -> Self:

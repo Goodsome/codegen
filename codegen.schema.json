@@ -351,6 +351,40 @@
       "title":"ContainerType",
       "type":"string"
     },
+    "CoreSpec":{
+      "additionalProperties":false,
+      "description":"Specification of a core entity to be generated.",
+      "properties":{
+        "attributes":{
+          "items":{
+            "$ref":"#/$defs/AttributeSpec"
+          },
+          "title":"Attributes",
+          "type":"array"
+        },
+        "behaviors":{
+          "items":{
+            "$ref":"#/$defs/MethodSpec"
+          },
+          "title":"Behaviors",
+          "type":"array"
+        },
+        "description":{
+          "title":"Description",
+          "type":"string"
+        },
+        "name":{
+          "title":"Name",
+          "type":"string"
+        }
+      },
+      "required":[
+        "name",
+        "description"
+      ],
+      "title":"CoreSpec",
+      "type":"object"
+    },
     "DomainSpec":{
       "additionalProperties":false,
       "description":"Specification of a domain to be generated.",
@@ -360,6 +394,13 @@
             "$ref":"#/$defs/AggregateSpec"
           },
           "title":"Aggregates",
+          "type":"array"
+        },
+        "core":{
+          "items":{
+            "$ref":"#/$defs/CoreSpec"
+          },
+          "title":"Core",
           "type":"array"
         },
         "entities":{

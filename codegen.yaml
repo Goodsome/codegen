@@ -314,6 +314,8 @@ contexts:
       outputs:
       - type: BuildResult
         name: result
+      - type: BuildResult
+        name: tests_result
       dependencies:
       - type: LoadBlueprint
         name: loader
@@ -388,6 +390,10 @@ contexts:
       - type: string
         optional: true
         name: type_annotation
+      - type: string
+        container: list
+        name: require_types
+        default: list
       behaviors:
       - name: create
         inputs:
@@ -403,6 +409,13 @@ contexts:
           name: type_annotation
         output:
           type: ModuleAssignmentSpec
+      - name: get_required_types
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: string
+          container: set
     - name: RawCodeSpec
       description: Represents a block of raw source code.
       attributes:
@@ -1409,6 +1422,14 @@ contexts:
       use_case: GenerateSchemaJson
 - name: DomainDefinition
   domain:
+    core:
+    - name: HasAttributes
+      description: 能力：拥有内部状态（属性）
+      attributes:
+      - type: AttributeSpec
+        container: list
+        name: attributes
+        default: list
     aggregates:
     - name: Blueprint
       description: Root of the generation model. Represents the entire project definition.
@@ -1771,6 +1792,12 @@ contexts:
           name: self
         - type: string
           name: name
+        output:
+          type: FunctionSpec
+      - name: _get_bindings_fixture
+        inputs:
+        - type: Self
+          name: self
         output:
           type: FunctionSpec
     - name: TypeDefinition
@@ -2808,6 +2835,14 @@ contexts:
           name: name
         output:
           type: MethodSpec
+      - name: to_test_package_spec
+        description: Create test package for value_object with behaviors that have
+          rules.
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: PackageSpec
     - name: InfrastructureSpec
       description: Specification of an infrastructure to be generated.
       attributes:
@@ -3097,9 +3132,161 @@ contexts:
           name: name
         output:
           type: MethodSpec
+    - name: CoreSpec
+      description: Specification of a core entity to be generated.
+      attributes:
+      - type: PascalString
+        name: name
+      - type: string
+        name: description
+      - type: AttributeSpec
+        container: list
+        name: attributes
+        default: list
+      - type: MethodSpec
+        container: list
+        name: behaviors
+        default: list
+      behaviors:
+      - name: to_module_spec
+        description: 将 AggregateSpec 转换为 ModuleSpec
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: ModuleSpec
+      - name: to_package_spec
+        description: 将多个 base_model 转换为一个 'core' 包
+        inputs:
+        - type: Self
+          container: type
+          name: cls
+        - type: Self
+          container: iterable
+          name: aggregates
+        output:
+          type: PackageSpec
+      - name: from_module_spec
+        description: 将 ModuleSpec 逆向解析为 AggregateSpec
+        inputs:
+        - type: Self
+          container: type
+          name: cls
+        - type: ModuleSpec
+          name: module
+        output:
+          type: Self
+      - name: from_package_spec
+        description: 将 'aggregates' 包逆向解析为 AggregateSpec 列表
+        inputs:
+        - type: Self
+          container: type
+          name: cls
+        - type: PackageSpec
+          name: package
+        output:
+          type: Self
+          container: list
+      - name: update
+        description: Update scalar metadata fields. Preserves internal structure.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          optional: true
+          name: description
+        output:
+          type: None
+      - name: add_attribute
+        description: Add an AttributeSpec. Raises ValueError if attribute with same
+          name exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: AttributeSpec
+          name: attribute
+        output:
+          type: Self
+      - name: update_attribute
+        description: Update an existing AttributeSpec by name. Raises ValueError if
+          not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: AttributeSpec
+          name: attribute
+        output:
+          type: Self
+      - name: remove_attribute
+        description: Remove an AttributeSpec by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: Self
+      - name: get_attribute
+        description: Get an AttributeSpec by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: AttributeSpec
+      - name: add_behavior
+        description: Add a MethodSpec behavior. Raises ValueError if behavior with
+          same name exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: MethodSpec
+          name: behavior
+        output:
+          type: Self
+      - name: update_behavior
+        description: Update an existing MethodSpec behavior by name. Raises ValueError
+          if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: MethodSpec
+          name: behavior
+        output:
+          type: Self
+      - name: remove_behavior
+        description: Remove a MethodSpec behavior by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: Self
+      - name: get_behavior
+        description: Get a MethodSpec behavior by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: MethodSpec
+      - name: to_test_package_spec
+        description: Create test package for aggregate with behaviors that have rules.
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: PackageSpec
     - name: DomainSpec
       description: Specification of a domain to be generated.
       attributes:
+      - type: CoreSpec
+        container: list
+        name: core
+        default: list
       - type: AggregateSpec
         container: list
         name: aggregates
@@ -3780,6 +3967,13 @@ contexts:
           name: name
         output:
           type: MethodSpec
+      - name: to_test_package_spec
+        description: Create test package for entity with behaviors that have rules.
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: PackageSpec
     - name: PortSpec
       description: Specification of a domain port to be generated.
       attributes:
