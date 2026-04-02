@@ -3,6 +3,7 @@ from typing import Callable, Self
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
 from codegen.domain_definition.domain.entities.port_spec import PortSpec
+from codegen.domain_definition.domain.core.has_attributes import HasAttributes
 from codegen.python_gen.domain.enums import FunctionType
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
@@ -12,14 +13,13 @@ from codegen.shared.models import Entity
 from pydantic import Field
 
 
-class ImplementationSpec(Entity):
+class ImplementationSpec(Entity, HasAttributes):
     """Specification of an implementation to be generated."""
 
     name: PascalString
     implements: PascalString
     technology: SnakeString
     description: str = Field(default_factory=str)
-    attributes: list[AttributeSpec] = Field(default_factory=list)
     private_methods: list[MethodSpec] = Field(default_factory=list)
 
     @classmethod
@@ -114,34 +114,6 @@ class ImplementationSpec(Entity):
             self.technology = SnakeString(technology)
         if description is not None:
             self.description = description
-
-    def add_attribute(self, attribute: AttributeSpec) -> Self:
-        """Add an AttributeSpec. Raises ValueError if attribute with same name exists."""
-        for attr in self.attributes:
-            if attr.name == attribute.name:
-                raise ValueError(f"Attribute '{attribute.name}' already exists in implementation '{self.name}'")
-        self.attributes.append(attribute)
-        return self
-
-    def update_attribute(self, attribute: AttributeSpec) -> Self:
-        """Update an existing AttributeSpec by name. Raises ValueError if not found."""
-        for i, attr in enumerate(self.attributes):
-            if attr.name == attribute.name:
-                self.attributes[i] = attribute
-                return self
-        raise ValueError(f"Attribute '{attribute.name}' not found in implementation '{self.name}'")
-
-    def remove_attribute(self, name: SnakeString) -> Self:
-        """Remove an AttributeSpec by name. Returns self for chaining."""
-        self.attributes = [attr for attr in self.attributes if attr.name != name]
-        return self
-
-    def get_attribute(self, name: SnakeString) -> AttributeSpec:
-        """Get an AttributeSpec by name. Raises ValueError if not found."""
-        for attr in self.attributes:
-            if attr.name == name:
-                return attr
-        raise ValueError(f"Attribute '{name}' not found in implementation '{self.name}'")
 
     def add_private_method(self, method: MethodSpec) -> Self:
         """Add a private MethodSpec. Raises ValueError if method with same name exists."""

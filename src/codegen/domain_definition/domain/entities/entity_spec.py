@@ -11,14 +11,14 @@ from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.shared.models import Entity
+from codegen.domain_definition.domain.core.has_attributes import HasAttributes
 
 
-class EntitySpec(Entity):
+class EntitySpec(Entity, HasAttributes):
     """Specification of an entity."""
 
     name: PascalString
     description: str = Field(default_factory=str)
-    attributes: list[AttributeSpec] = Field(default_factory=list)
     behaviors: list[MethodSpec] = Field(default_factory=list)
 
     def to_module_spec(self) -> ModuleSpec:
@@ -82,34 +82,6 @@ class EntitySpec(Entity):
         """Update scalar metadata fields. Preserves internal structure."""
         if description is not None:
             self.description = description
-
-    def add_attribute(self, attribute: AttributeSpec) -> Self:
-        """Add an AttributeSpec. Raises ValueError if attribute with same name exists."""
-        for attr in self.attributes:
-            if attr.name == attribute.name:
-                raise ValueError(f"Attribute '{attribute.name}' already exists in entity '{self.name}'")
-        self.attributes.append(attribute)
-        return self
-
-    def update_attribute(self, attribute: AttributeSpec) -> Self:
-        """Update an existing AttributeSpec by name. Raises ValueError if not found."""
-        for i, attr in enumerate(self.attributes):
-            if attr.name == attribute.name:
-                self.attributes[i] = attribute
-                return self
-        raise ValueError(f"Attribute '{attribute.name}' not found in entity '{self.name}'")
-
-    def remove_attribute(self, name: SnakeString) -> Self:
-        """Remove an AttributeSpec by name. Returns self for chaining."""
-        self.attributes = [attr for attr in self.attributes if attr.name != name]
-        return self
-
-    def get_attribute(self, name: SnakeString) -> AttributeSpec:
-        """Get an AttributeSpec by name. Raises ValueError if not found."""
-        for attr in self.attributes:
-            if attr.name == name:
-                return attr
-        raise ValueError(f"Attribute '{name}' not found in entity '{self.name}'")
 
     def add_behavior(self, behavior: MethodSpec) -> Self:
         """Add a MethodSpec behavior. Raises ValueError if behavior with same name exists."""

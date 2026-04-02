@@ -195,16 +195,16 @@ contexts:
           type: boolean
   infrastructure:
     implementations:
-    - name: OsFileSystem
-      implements: FileSystemPort
-      technology: os
-      description: OS file system adapter for reading/writing files.
-      attributes:
+    - attributes:
       - type: Path
         name: root
       - type: string
         name: encoding
         default: utf-8
+      name: OsFileSystem
+      implements: FileSystemPort
+      technology: os
+      description: OS file system adapter for reading/writing files.
 - name: Orchestration
   domain:
     enums:
@@ -227,9 +227,7 @@ contexts:
       - name: FAILED
         value: FAILED
     value_objects:
-    - name: BuildResult
-      description: Top-level result object returned by generation use cases.
-      attributes:
+    - attributes:
       - type: Any
         name: model_config
       - type: BuildStatus
@@ -245,6 +243,8 @@ contexts:
         container: list
         name: messages
         default: list
+      name: BuildResult
+      description: Top-level result object returned by generation use cases.
       behaviors:
       - name: add_file_result
         inputs:
@@ -254,9 +254,7 @@ contexts:
           name: result
         output:
           type: any
-    - name: FileResult
-      description: Represents the outcome for a single file generation.
-      attributes:
+    - attributes:
       - type: string
         name: path
       - type: FileStatus
@@ -267,9 +265,9 @@ contexts:
       - type: string
         name: diff
         default: str
-    - name: BuildStats
-      description: Aggregated statistics for a build operation.
-      attributes:
+      name: FileResult
+      description: Represents the outcome for a single file generation.
+    - attributes:
       - type: Any
         name: model_config
       - type: integer
@@ -290,6 +288,8 @@ contexts:
       - type: integer
         name: duration_ms
         default: 0
+      name: BuildStats
+      description: Aggregated statistics for a build operation.
       behaviors:
       - name: add_result
         inputs:
@@ -380,9 +380,7 @@ contexts:
       - name: DATACLASS
         value: dataclass
     value_objects:
-    - name: ModuleAssignmentSpec
-      description: Represents a top-level assignment in a module.
-      attributes:
+    - attributes:
       - type: string
         name: name
       - type: string
@@ -394,6 +392,8 @@ contexts:
         container: list
         name: require_types
         default: list
+      name: ModuleAssignmentSpec
+      description: Represents a top-level assignment in a module.
       behaviors:
       - name: create
         inputs:
@@ -416,11 +416,11 @@ contexts:
         output:
           type: string
           container: set
-    - name: RawCodeSpec
-      description: Represents a block of raw source code.
-      attributes:
+    - attributes:
       - type: string
         name: code
+      name: RawCodeSpec
+      description: Represents a block of raw source code.
       behaviors:
       - name: create
         inputs:
@@ -431,9 +431,7 @@ contexts:
           name: code
         output:
           type: RawCodeSpec
-    - name: ClassSpec
-      description: Represents a class in a Python module.
-      attributes:
+    - attributes:
       - type: PascalString
         name: name
       - type: string
@@ -455,6 +453,8 @@ contexts:
         container: list
         name: methods
         default: list
+      name: ClassSpec
+      description: Represents a class in a Python module.
       behaviors:
       - name: create
         inputs:
@@ -545,9 +545,7 @@ contexts:
           name: other
         output:
           type: ClassSpec
-    - name: FunctionSpec
-      description: Represents a function in a Python module.
-      attributes:
+    - attributes:
       - type: SnakeString
         name: name
       - type: string
@@ -572,6 +570,8 @@ contexts:
       - type: string
         optional: true
         name: description
+      name: FunctionSpec
+      description: Represents a function in a Python module.
       behaviors:
       - name: create
         inputs:
@@ -631,15 +631,15 @@ contexts:
           name: self
         output:
           type: boolean
-    - name: TypeAnnotationSpec
-      description: Represents a type annotation.
-      attributes:
+    - attributes:
       - type: string
         name: name
       - type: TypeAnnotationSpec | AssignmentSpec
         container: list
         name: args
         default: list
+      name: TypeAnnotationSpec
+      description: Represents a type annotation.
       behaviors:
       - name: render
         description: 递归渲染类型字符串
@@ -656,19 +656,17 @@ contexts:
         output:
           type: string
           container: set
-    - name: ReferenceSpec
-      description: 引用一个已存在的变量或符号 (对应 AST Name节点)。
-      attributes:
+    - attributes:
       - type: string
         name: name
-    - name: LiteralSpec
-      description: 基础类型的字面量值 (对应 AST Constant节点)。
-      attributes:
+      name: ReferenceSpec
+      description: 引用一个已存在的变量或符号 (对应 AST Name节点)。
+    - attributes:
       - type: any
         name: value
-    - name: PythonEnumMemberSpec
-      description: Represents an enum member in a Python module.
-      attributes:
+      name: LiteralSpec
+      description: 基础类型的字面量值 (对应 AST Constant节点)。
+    - attributes:
       - type: MacroString
         name: name
       - type: Any
@@ -677,6 +675,8 @@ contexts:
       - type: string
         name: description
         default: str
+      name: PythonEnumMemberSpec
+      description: Represents an enum member in a Python module.
       behaviors:
       - name: create
         inputs:
@@ -693,9 +693,7 @@ contexts:
           default: ''
         output:
           type: PythonEnumMemberSpec
-    - name: AssignmentSpec
-      description: 描述变量的赋值结构 (RHS)。 对应 AST 中的 value 节点。
-      attributes:
+    - attributes:
       - type: AssignmentFlavor
         name: flavor
       - type: LiteralSpec
@@ -721,6 +719,8 @@ contexts:
       - type: SubscriptSpec
         optional: true
         name: subscript
+      name: AssignmentSpec
+      description: 描述变量的赋值结构 (RHS)。 对应 AST 中的 value 节点。
       behaviors:
       - name: from_code
         inputs:
@@ -784,13 +784,13 @@ contexts:
         output:
           type: string
           container: set
-    - name: SubscriptSpec
-      description: 下标访问语法 obj[key]，对应 AST Subscript 节点。
-      attributes:
+    - attributes:
       - type: AssignmentSpec
         name: value
       - type: AssignmentSpec
         name: slice
+      name: SubscriptSpec
+      description: 下标访问语法 obj[key]，对应 AST Subscript 节点。
       behaviors:
       - name: get_required_types
         description: 收集 subscript.value 和 subscript.slice 中的所有类型标记。
@@ -800,9 +800,7 @@ contexts:
         output:
           type: string
           container: set
-    - name: CallSpec
-      description: 函数调用或类实例化 (对应 AST Call节点)。
-      attributes:
+    - attributes:
       - type: string
         name: callee
       - type: AssignmentSpec
@@ -811,23 +809,25 @@ contexts:
       - type: AssignmentSpec
         container: map
         name: kwargs
-    - name: TypeSpec
-      description: 描述变量的类型注解结构 (LHS)。 对应 AST 中的 annotation 节点。
-      attributes:
+      name: CallSpec
+      description: 函数调用或类实例化 (对应 AST Call节点)。
+    - attributes:
       - type: string
         name: core_type
       - type: ContainerType
         name: container
       - type: boolean
         name: nullable
-    - name: ImportedName
-      description: Represents a name imported from another module.
-      attributes:
+      name: TypeSpec
+      description: 描述变量的类型注解结构 (LHS)。 对应 AST 中的 annotation 节点。
+    - attributes:
       - type: string
         name: name
       - type: string
         optional: true
         name: alias
+      name: ImportedName
+      description: Represents a name imported from another module.
       behaviors:
       - name: render
         inputs:
@@ -835,9 +835,7 @@ contexts:
           name: self
         output:
           type: string
-    - name: ModuleSpec
-      description: Represents a Python module.
-      attributes:
+    - attributes:
       - type: SnakeString
         name: name
       - type: FunctionSpec
@@ -864,6 +862,8 @@ contexts:
         container: list
         name: extra_code
         default: list
+      name: ModuleSpec
+      description: Represents a Python module.
       behaviors:
       - name: create
         inputs:
@@ -1007,9 +1007,7 @@ contexts:
           name: other
         output:
           type: ModuleSpec
-    - name: PackageSpec
-      description: Represents a Python package.
-      attributes:
+    - attributes:
       - type: SnakeString
         name: name
       - type: ModuleSpec
@@ -1020,6 +1018,8 @@ contexts:
         container: list
         name: sub_packages
         default: list
+      name: PackageSpec
+      description: Represents a Python package.
       behaviors:
       - name: create
         inputs:
@@ -1078,9 +1078,7 @@ contexts:
           name: other
         output:
           type: PackageSpec
-    - name: ImportFromSpec
-      description: Represents an import statement from another module.
-      attributes:
+    - attributes:
       - type: string
         name: module
       - type: Any
@@ -1092,6 +1090,8 @@ contexts:
       - type: integer
         name: level
         default: 0
+      name: ImportFromSpec
+      description: Represents an import statement from another module.
       behaviors:
       - name: create
         inputs:
@@ -1153,9 +1153,7 @@ contexts:
           name: other
         output:
           type: ImportFromSpec
-    - name: VariableSpec
-      description: '对应 Python 代码中的 name: type_spec = assignment_spec'
-      attributes:
+    - attributes:
       - type: SnakeString
         name: name
       - type: TypeAnnotationSpec
@@ -1164,6 +1162,8 @@ contexts:
       - type: AssignmentSpec
         optional: true
         name: assignment
+      name: VariableSpec
+      description: '对应 Python 代码中的 name: type_spec = assignment_spec'
       behaviors:
       - name: create
         inputs:
@@ -1187,9 +1187,7 @@ contexts:
         output:
           type: string
           container: set
-    - name: PythonEnumSpec
-      description: Represents an enum in a Python module.
-      attributes:
+    - attributes:
       - type: PascalString
         name: name
       - type: string
@@ -1206,6 +1204,8 @@ contexts:
         container: list
         name: members
         default: list
+      name: PythonEnumSpec
+      description: Represents an enum in a Python module.
       behaviors:
       - name: create
         inputs:
@@ -1423,17 +1423,54 @@ contexts:
 - name: DomainDefinition
   domain:
     core:
-    - name: HasAttributes
-      description: 能力：拥有内部状态（属性）
-      attributes:
+    - attributes:
       - type: AttributeSpec
         container: list
         name: attributes
         default: list
+      name: HasAttributes
+      description: 能力：拥有内部状态（属性）
+      behaviors:
+      - name: add_attribute
+        description: Add an AttributeSpec. Raises ValueError if attribute with same
+          name exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: AttributeSpec
+          name: attribute
+        output:
+          type: Self
+      - name: update_attribute
+        description: Update an existing AttributeSpec by name. Raises ValueError if
+          not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: AttributeSpec
+          name: attribute
+        output:
+          type: Self
+      - name: remove_attribute
+        description: Remove an AttributeSpec by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: Self
+      - name: get_attribute
+        description: Get an AttributeSpec by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: SnakeString
+          name: name
+        output:
+          type: AttributeSpec
     aggregates:
-    - name: Blueprint
-      description: Root of the generation model. Represents the entire project definition.
-      attributes:
+    - attributes:
       - type: PascalString
         name: name
       - type: BoundedContext
@@ -1443,6 +1480,8 @@ contexts:
       - type: BootstrapSpec
         name: bootstrap
         default: BootstrapSpec
+      name: Blueprint
+      description: Root of the generation model. Represents the entire project definition.
       behaviors:
       - name: create
         inputs:
@@ -1580,9 +1619,7 @@ contexts:
       - name: PRIVATE
         value: private
     value_objects:
-    - name: EnumMemberSpec
-      description: Specification of an enum member to be generated.
-      attributes:
+    - attributes:
       - type: MacroString
         name: name
       - type: Any
@@ -1591,18 +1628,18 @@ contexts:
       - type: string
         name: description
         default: str
+      name: EnumMemberSpec
+      description: Specification of an enum member to be generated.
     - name: MethodOutput
       description: Specification of the output of a method.
-    - name: PortBinding
-      description: Binding between a port and an adapter.
-      attributes:
+    - attributes:
       - type: string
         name: port
       - type: string
         name: implementation
-    - name: ConfigFieldSpec
-      description: Specification for a single configuration field.
-      attributes:
+      name: PortBinding
+      description: Binding between a port and an adapter.
+    - attributes:
       - type: SnakeString
         name: name
       - type: string
@@ -1616,6 +1653,8 @@ contexts:
       - type: string
         optional: true
         name: env_var
+      name: ConfigFieldSpec
+      description: Specification for a single configuration field.
       behaviors:
       - name: to_variable_spec
         description: 将 ConfigFieldSpec 转换为 VariableSpec
@@ -1624,9 +1663,7 @@ contexts:
           name: self
         output:
           type: VariableSpec
-    - name: CliCommandSpec
-      description: CLI 命令规范
-      attributes:
+    - attributes:
       - type: KebabString
         name: name
       - type: PascalString
@@ -1634,6 +1671,8 @@ contexts:
       - type: string
         name: description
         default: str
+      name: CliCommandSpec
+      description: CLI 命令规范
       behaviors:
       - name: to_module_spec
         description: "生成单个 CLI 命令模块\n\nArgs:\n    context_name: 上下文名称\n    use_case:\
@@ -1711,9 +1750,7 @@ contexts:
         output:
           type: Self
           container: list
-    - name: MethodSpec
-      description: Standard specification for a class method.
-      attributes:
+    - attributes:
       - type: SnakeString
         name: name
       - type: string
@@ -1729,6 +1766,8 @@ contexts:
         container: list
         name: rules
         default: list
+      name: MethodSpec
+      description: Standard specification for a class method.
       behaviors:
       - name: create
         inputs:
@@ -1800,9 +1839,7 @@ contexts:
           name: self
         output:
           type: FunctionSpec
-    - name: TypeDefinition
-      description: 类型定义的公共部分，被 AttributeSpec 和 MethodOutput 共同继承。
-      attributes:
+    - attributes:
       - type: string
         name: type
       - type: ContainerType
@@ -1814,6 +1851,8 @@ contexts:
       - type: string
         optional: true
         name: custom_type_string
+      name: TypeDefinition
+      description: 类型定义的公共部分，被 AttributeSpec 和 MethodOutput 共同继承。
       behaviors:
       - name: to_python_annotation
         description: 将 TypeDefinition 转换为 Python 类型注解
@@ -1873,9 +1912,7 @@ contexts:
         output:
           type: Any
           custom_type_string: tuple[ContainerType, str]
-    - name: HttpEndpointSpec
-      description: HTTP Endpoint 规范
-      attributes:
+    - attributes:
       - type: string
         name: path
       - type: string
@@ -1885,6 +1922,8 @@ contexts:
       - type: string
         name: description
         default: str
+      name: HttpEndpointSpec
+      description: HTTP Endpoint 规范
       behaviors:
       - name: to_module_spec
         description: "生成单个 HTTP endpoint 模块\n\nArgs:\n    context_name: 上下文名称\n  \
@@ -1996,9 +2035,7 @@ contexts:
         output:
           type: Self
           container: list
-    - name: RuleSpec
-      description: BDD rule specification with given/when/then
-      attributes:
+    - attributes:
       - type: SnakeString
         name: name
       - type: string
@@ -2007,6 +2044,8 @@ contexts:
         name: when
       - type: string
         name: then
+      name: RuleSpec
+      description: BDD rule specification with given/when/then
       behaviors:
       - name: to_test_function_spec
         description: Map business rule to test function with given/when/then chain.
@@ -2017,9 +2056,7 @@ contexts:
           name: fixture_name
         output:
           type: FunctionSpec
-    - name: AttributeSpec
-      description: Standard specification for a class attribute.
-      attributes:
+    - attributes:
       - type: SnakeString
         name: name
       - type: string
@@ -2028,6 +2065,8 @@ contexts:
       - type: any
         optional: true
         name: default
+      name: AttributeSpec
+      description: Standard specification for a class attribute.
       behaviors:
       - name: create
         inputs:
@@ -2063,9 +2102,7 @@ contexts:
           name: variable_spec
         output:
           type: AttributeSpec
-    - name: McpToolSpec
-      description: MCP Tool 规范
-      attributes:
+    - attributes:
       - type: string
         name: name
       - type: string
@@ -2073,6 +2110,8 @@ contexts:
       - type: string
         name: description
         default: str
+      name: McpToolSpec
+      description: MCP Tool 规范
       behaviors:
       - name: to_module_spec
         description: "生成单个 MCP tool 模块\n\nArgs:\n    context_name: 上下文名称\n    use_case:\
@@ -2169,9 +2208,7 @@ contexts:
           type: Self
           container: list
     entities:
-    - name: UseCaseSpec
-      description: Specification of a use case to be generated.
-      attributes:
+    - attributes:
       - type: PascalString
         name: name
       - type: UseCaseKind
@@ -2191,6 +2228,8 @@ contexts:
         container: list
         name: dependencies
         default: list
+      name: UseCaseSpec
+      description: Specification of a use case to be generated.
       behaviors:
       - name: create
         inputs:
@@ -2385,9 +2424,7 @@ contexts:
           name: name
         output:
           type: AttributeSpec
-    - name: ApplicationSpec
-      description: Specification of an application to be generated.
-      attributes:
+    - attributes:
       - type: UseCaseSpec
         container: list
         name: use_cases
@@ -2400,6 +2437,8 @@ contexts:
         container: list
         name: services
         default: list
+      name: ApplicationSpec
+      description: Specification of an application to be generated.
       behaviors:
       - name: to_package_spec
         description: 将 ApplicationSpec 转换为 PackageSpec
@@ -2531,9 +2570,7 @@ contexts:
           name: name
         output:
           type: Self
-    - name: InterfaceSpec
-      description: 接口层总规范
-      attributes:
+    - attributes:
       - type: CliCommandSpec
         container: list
         name: cli_commands
@@ -2546,6 +2583,8 @@ contexts:
         container: list
         name: http_endpoints
         default: list
+      name: InterfaceSpec
+      description: 接口层总规范
       behaviors:
       - name: to_package_spec
         description: "将 InterfaceSpec 转换为 PackageSpec\n\nArgs:\n    context_name:\
@@ -2693,22 +2732,18 @@ contexts:
           name: name
         output:
           type: HttpEndpointSpec
-    - name: ValueObjectSpec
-      description: Specification of a value object to be generated.
-      attributes:
+    - attributes:
       - type: PascalString
         name: name
       - type: string
         name: description
         default: str
-      - type: AttributeSpec
-        container: list
-        name: attributes
-        default: list
       - type: MethodSpec
         container: list
         name: behaviors
         default: list
+      name: ValueObjectSpec
+      description: Specification of a value object to be generated.
       behaviors:
       - name: to_module_spec
         description: 将 ValueObjectSpec 转换为 ModuleSpec
@@ -2759,44 +2794,6 @@ contexts:
           name: description
         output:
           type: None
-      - name: add_attribute
-        description: Add an AttributeSpec. Raises ValueError if attribute with same
-          name exists.
-        inputs:
-        - type: Self
-          name: self
-        - type: AttributeSpec
-          name: attribute
-        output:
-          type: Self
-      - name: update_attribute
-        description: Update an existing AttributeSpec by name. Raises ValueError if
-          not found.
-        inputs:
-        - type: Self
-          name: self
-        - type: AttributeSpec
-          name: attribute
-        output:
-          type: Self
-      - name: remove_attribute
-        description: Remove an AttributeSpec by name. Returns self for chaining.
-        inputs:
-        - type: Self
-          name: self
-        - type: SnakeString
-          name: name
-        output:
-          type: Self
-      - name: get_attribute
-        description: Get an AttributeSpec by name. Raises ValueError if not found.
-        inputs:
-        - type: Self
-          name: self
-        - type: SnakeString
-          name: name
-        output:
-          type: AttributeSpec
       - name: add_behavior
         description: Add a MethodSpec behavior. Raises ValueError if behavior with
           same name exists.
@@ -2843,13 +2840,13 @@ contexts:
           name: self
         output:
           type: PackageSpec
-    - name: InfrastructureSpec
-      description: Specification of an infrastructure to be generated.
-      attributes:
+    - attributes:
       - type: ImplementationSpec
         container: list
         name: implementations
         default: list
+      name: InfrastructureSpec
+      description: Specification of an infrastructure to be generated.
       behaviors:
       - name: to_package_spec
         description: 将 InfrastructureSpec 转换为 PackageSpec
@@ -2909,13 +2906,13 @@ contexts:
           name: name
         output:
           type: Self
-    - name: ContainerSpec
-      description: Specification for a container (dependency injection).
-      attributes:
+    - attributes:
       - type: PortBinding
         container: list
         name: bindings
         default: list
+      name: ContainerSpec
+      description: Specification for a container (dependency injection).
       behaviors:
       - name: to_class_spec
         description: 将 ContainerSpec 转换为 ClassSpec
@@ -2968,9 +2965,7 @@ contexts:
         output:
           type: VariableSpec
           optional: true
-    - name: ImplementationSpec
-      description: Specification of an implementation to be generated.
-      attributes:
+    - attributes:
       - type: PascalString
         name: name
       - type: PascalString
@@ -2980,14 +2975,12 @@ contexts:
       - type: string
         name: description
         default: str
-      - type: AttributeSpec
-        container: list
-        name: attributes
-        default: list
       - type: MethodSpec
         container: list
         name: private_methods
         default: list
+      name: ImplementationSpec
+      description: Specification of an implementation to be generated.
       behaviors:
       - name: create
         inputs:
@@ -3056,44 +3049,6 @@ contexts:
           name: description
         output:
           type: None
-      - name: add_attribute
-        description: Add an AttributeSpec. Raises ValueError if attribute with same
-          name exists.
-        inputs:
-        - type: Self
-          name: self
-        - type: AttributeSpec
-          name: attribute
-        output:
-          type: Self
-      - name: update_attribute
-        description: Update an existing AttributeSpec by name. Raises ValueError if
-          not found.
-        inputs:
-        - type: Self
-          name: self
-        - type: AttributeSpec
-          name: attribute
-        output:
-          type: Self
-      - name: remove_attribute
-        description: Remove an AttributeSpec by name. Returns self for chaining.
-        inputs:
-        - type: Self
-          name: self
-        - type: SnakeString
-          name: name
-        output:
-          type: Self
-      - name: get_attribute
-        description: Get an AttributeSpec by name. Raises ValueError if not found.
-        inputs:
-        - type: Self
-          name: self
-        - type: SnakeString
-          name: name
-        output:
-          type: AttributeSpec
       - name: add_private_method
         description: Add a private MethodSpec. Raises ValueError if method with same
           name exists.
@@ -3132,21 +3087,17 @@ contexts:
           name: name
         output:
           type: MethodSpec
-    - name: CoreSpec
-      description: Specification of a core entity to be generated.
-      attributes:
+    - attributes:
       - type: PascalString
         name: name
       - type: string
         name: description
-      - type: AttributeSpec
-        container: list
-        name: attributes
-        default: list
       - type: MethodSpec
         container: list
         name: behaviors
         default: list
+      name: CoreSpec
+      description: Specification of a core entity to be generated.
       behaviors:
       - name: to_module_spec
         description: 将 AggregateSpec 转换为 ModuleSpec
@@ -3197,44 +3148,6 @@ contexts:
           name: description
         output:
           type: None
-      - name: add_attribute
-        description: Add an AttributeSpec. Raises ValueError if attribute with same
-          name exists.
-        inputs:
-        - type: Self
-          name: self
-        - type: AttributeSpec
-          name: attribute
-        output:
-          type: Self
-      - name: update_attribute
-        description: Update an existing AttributeSpec by name. Raises ValueError if
-          not found.
-        inputs:
-        - type: Self
-          name: self
-        - type: AttributeSpec
-          name: attribute
-        output:
-          type: Self
-      - name: remove_attribute
-        description: Remove an AttributeSpec by name. Returns self for chaining.
-        inputs:
-        - type: Self
-          name: self
-        - type: SnakeString
-          name: name
-        output:
-          type: Self
-      - name: get_attribute
-        description: Get an AttributeSpec by name. Raises ValueError if not found.
-        inputs:
-        - type: Self
-          name: self
-        - type: SnakeString
-          name: name
-        output:
-          type: AttributeSpec
       - name: add_behavior
         description: Add a MethodSpec behavior. Raises ValueError if behavior with
           same name exists.
@@ -3280,9 +3193,7 @@ contexts:
           name: self
         output:
           type: PackageSpec
-    - name: DomainSpec
-      description: Specification of a domain to be generated.
-      attributes:
+    - attributes:
       - type: CoreSpec
         container: list
         name: core
@@ -3311,6 +3222,8 @@ contexts:
         container: list
         name: ports
         default: list
+      name: DomainSpec
+      description: Specification of a domain to be generated.
       behaviors:
       - name: to_package_spec
         description: 将 DomainSpec 转换为 PackageSpec
@@ -3562,9 +3475,7 @@ contexts:
           name: self
         output:
           type: PackageSpec
-    - name: BoundedContext
-      description: A logical boundary within the system.
-      attributes:
+    - attributes:
       - type: PascalString
         name: name
       - type: DomainSpec
@@ -3585,6 +3496,8 @@ contexts:
       - type: ContainerSpec
         name: container
         default: ContainerSpec
+      name: BoundedContext
+      description: A logical boundary within the system.
       behaviors:
       - name: to_package_spec
         description: Convert this BoundedContext to a PackageSpec.
@@ -3680,9 +3593,7 @@ contexts:
           name: self
         output:
           type: PackageSpec
-    - name: ServiceSpec
-      description: Specification of a domain service to be generated.
-      attributes:
+    - attributes:
       - type: PascalString
         name: name
       - type: string
@@ -3696,6 +3607,8 @@ contexts:
         container: list
         name: operations
         default: list
+      name: ServiceSpec
+      description: Specification of a domain service to be generated.
       behaviors:
       - name: to_module_spec
         description: 将 ServiceSpec 转换为 ModuleSpec
@@ -3825,22 +3738,18 @@ contexts:
           name: name
         output:
           type: MethodSpec
-    - name: EntitySpec
-      description: Specification of an entity.
-      attributes:
+    - attributes:
       - type: PascalString
         name: name
       - type: string
         name: description
         default: str
-      - type: AttributeSpec
-        container: list
-        name: attributes
-        default: list
       - type: MethodSpec
         container: list
         name: behaviors
         default: list
+      name: EntitySpec
+      description: Specification of an entity.
       behaviors:
       - name: to_module_spec
         description: 将 EntitySpec 转换为 ModuleSpec
@@ -3891,44 +3800,6 @@ contexts:
           name: description
         output:
           type: None
-      - name: add_attribute
-        description: Add an AttributeSpec. Raises ValueError if attribute with same
-          name exists.
-        inputs:
-        - type: Self
-          name: self
-        - type: AttributeSpec
-          name: attribute
-        output:
-          type: Self
-      - name: update_attribute
-        description: Update an existing AttributeSpec by name. Raises ValueError if
-          not found.
-        inputs:
-        - type: Self
-          name: self
-        - type: AttributeSpec
-          name: attribute
-        output:
-          type: Self
-      - name: remove_attribute
-        description: Remove an AttributeSpec by name. Returns self for chaining.
-        inputs:
-        - type: Self
-          name: self
-        - type: SnakeString
-          name: name
-        output:
-          type: Self
-      - name: get_attribute
-        description: Get an AttributeSpec by name. Raises ValueError if not found.
-        inputs:
-        - type: Self
-          name: self
-        - type: SnakeString
-          name: name
-        output:
-          type: AttributeSpec
       - name: add_behavior
         description: Add a MethodSpec behavior. Raises ValueError if behavior with
           same name exists.
@@ -3974,9 +3845,7 @@ contexts:
           name: self
         output:
           type: PackageSpec
-    - name: PortSpec
-      description: Specification of a domain port to be generated.
-      attributes:
+    - attributes:
       - type: PascalString
         name: name
       - type: string
@@ -3991,6 +3860,8 @@ contexts:
         container: list
         name: operations
         default: list
+      name: PortSpec
+      description: Specification of a domain port to be generated.
       behaviors:
       - name: create
         inputs:
@@ -4115,9 +3986,7 @@ contexts:
           name: name
         output:
           type: MethodSpec
-    - name: EnumSpec
-      description: Specification of an enum to be generated.
-      attributes:
+    - attributes:
       - type: PascalString
         name: name
       - type: string
@@ -4126,6 +3995,8 @@ contexts:
       - type: EnumMemberSpec
         container: list
         name: members
+      name: EnumSpec
+      description: Specification of an enum to be generated.
       behaviors:
       - name: to_python_enum_spec
         description: 将 EnumSpec 转换为 PythonEnumSpec
@@ -4214,21 +4085,17 @@ contexts:
           name: name
         output:
           type: EnumMemberSpec
-    - name: AggregateSpec
-      description: Specification of a domain aggregate to be generated.
-      attributes:
+    - attributes:
       - type: PascalString
         name: name
       - type: string
         name: description
-      - type: AttributeSpec
-        container: list
-        name: attributes
-        default: list
       - type: MethodSpec
         container: list
         name: behaviors
         default: list
+      name: AggregateSpec
+      description: Specification of a domain aggregate to be generated.
       behaviors:
       - name: to_module_spec
         description: 将 AggregateSpec 转换为 ModuleSpec
@@ -4279,44 +4146,6 @@ contexts:
           name: description
         output:
           type: None
-      - name: add_attribute
-        description: Add an AttributeSpec. Raises ValueError if attribute with same
-          name exists.
-        inputs:
-        - type: Self
-          name: self
-        - type: AttributeSpec
-          name: attribute
-        output:
-          type: Self
-      - name: update_attribute
-        description: Update an existing AttributeSpec by name. Raises ValueError if
-          not found.
-        inputs:
-        - type: Self
-          name: self
-        - type: AttributeSpec
-          name: attribute
-        output:
-          type: Self
-      - name: remove_attribute
-        description: Remove an AttributeSpec by name. Returns self for chaining.
-        inputs:
-        - type: Self
-          name: self
-        - type: SnakeString
-          name: name
-        output:
-          type: Self
-      - name: get_attribute
-        description: Get an AttributeSpec by name. Raises ValueError if not found.
-        inputs:
-        - type: Self
-          name: self
-        - type: SnakeString
-          name: name
-        output:
-          type: AttributeSpec
       - name: add_behavior
         description: Add a MethodSpec behavior. Raises ValueError if behavior with
           same name exists.
@@ -4362,15 +4191,15 @@ contexts:
           name: self
         output:
           type: PackageSpec
-    - name: BootstrapSpec
-      description: Specification of the bootstrap configuration.
-      attributes:
+    - attributes:
       - type: ConfigSpec
         optional: true
         name: config
       - type: ContainerSpec
         optional: true
         name: container
+      name: BootstrapSpec
+      description: Specification of the bootstrap configuration.
       behaviors:
       - name: to_package_spec
         description: "将 BootstrapSpec 转换为 PackageSpec\n\nArgs:\n    contexts: All\
@@ -4384,9 +4213,7 @@ contexts:
           name: contexts
         output:
           type: PackageSpec | None
-    - name: ConfigSpec
-      description: Specification for a configuration object (AppSettings or ContextSettings).
-      attributes:
+    - attributes:
       - type: PascalString
         optional: true
         name: class_name
@@ -4400,6 +4227,8 @@ contexts:
         container: list
         name: fields
         default: list
+      name: ConfigSpec
+      description: Specification for a configuration object (AppSettings or ContextSettings).
       behaviors:
       - name: to_class_spec
         description: 将 ConfigSpec 转换为 ClassSpec
@@ -5479,13 +5308,13 @@ contexts:
         name: storage
   infrastructure:
     implementations:
-    - name: YamlBlueprintStorage
+    - attributes:
+      - type: Path
+        name: config_path
+      name: YamlBlueprintStorage
       implements: BlueprintStorage
       technology: yaml
       description: Blueprint loader that reads from a YAML file.
-      attributes:
-      - type: Path
-        name: config_path
   interfaces:
     cli_commands:
     - name: update-cli-command

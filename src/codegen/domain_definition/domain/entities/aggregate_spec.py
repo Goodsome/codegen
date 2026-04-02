@@ -9,14 +9,14 @@ from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.shared.models import Entity
+from codegen.domain_definition.domain.core.has_attributes import HasAttributes
 
 
-class AggregateSpec(Entity):
+class AggregateSpec(Entity, HasAttributes):
     """Specification of a domain aggregate to be generated."""
 
     name: PascalString
     description: str
-    attributes: list[AttributeSpec] = Field(default_factory=list)
     behaviors: list[MethodSpec] = Field(default_factory=list)
 
     def to_module_spec(self: Self) -> ModuleSpec:
@@ -83,38 +83,6 @@ class AggregateSpec(Entity):
         """Update scalar metadata fields. Preserves internal structure."""
         if description is not None:
             self.description = description
-
-    def add_attribute(self: Self, attribute: AttributeSpec) -> Self:
-        """Add an AttributeSpec. Raises ValueError if attribute with same name exists."""
-        for attr in self.attributes:
-            if attr.name == attribute.name:
-                raise ValueError(
-                    f"Attribute '{attribute.name}' already exists in aggregate '{self.name}'"
-                )
-        self.attributes.append(attribute)
-        return self
-
-    def update_attribute(self: Self, attribute: AttributeSpec) -> Self:
-        """Update an existing AttributeSpec by name. Raises ValueError if not found."""
-        for i, attr in enumerate(self.attributes):
-            if attr.name == attribute.name:
-                self.attributes[i] = attribute
-                return self
-        raise ValueError(
-            f"Attribute '{attribute.name}' not found in aggregate '{self.name}'"
-        )
-
-    def remove_attribute(self: Self, name: SnakeString) -> Self:
-        """Remove an AttributeSpec by name. Returns self for chaining."""
-        self.attributes = [attr for attr in self.attributes if attr.name != name]
-        return self
-
-    def get_attribute(self: Self, name: SnakeString) -> AttributeSpec:
-        """Get an AttributeSpec by name. Raises ValueError if not found."""
-        for attr in self.attributes:
-            if attr.name == name:
-                return attr
-        raise ValueError(f"Attribute '{name}' not found in aggregate '{self.name}'")
 
     def add_behavior(self: Self, behavior: MethodSpec) -> Self:
         """Add a MethodSpec behavior. Raises ValueError if behavior with same name exists."""
