@@ -12,14 +12,14 @@ from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.shared.models import Entity
 from codegen.domain_definition.domain.core.has_attributes import HasAttributes
+from codegen.domain_definition.domain.core.has_behaviors import HasBehaviors
 
 
-class ValueObjectSpec(Entity, HasAttributes):
+class ValueObjectSpec(Entity, HasAttributes, HasBehaviors):
     """Specification of a value object to be generated."""
 
     name: PascalString
     description: str = Field(default_factory=str)
-    behaviors: list[MethodSpec] = Field(default_factory=list)
 
     def to_module_spec(self) -> ModuleSpec:
         """将 ValueObjectSpec 转换为 ModuleSpec"""
@@ -84,34 +84,6 @@ class ValueObjectSpec(Entity, HasAttributes):
         """Update scalar metadata fields. Preserves internal structure."""
         if description is not None:
             self.description = description
-
-    def add_behavior(self, behavior: MethodSpec) -> Self:
-        """Add a MethodSpec behavior. Raises ValueError if behavior with same name exists."""
-        for beh in self.behaviors:
-            if beh.name == behavior.name:
-                raise ValueError(f"Behavior '{behavior.name}' already exists in value_object '{self.name}'")
-        self.behaviors.append(behavior)
-        return self
-
-    def update_behavior(self, behavior: MethodSpec) -> Self:
-        """Update an existing MethodSpec behavior by name. Raises ValueError if not found."""
-        for i, beh in enumerate(self.behaviors):
-            if beh.name == behavior.name:
-                self.behaviors[i] = behavior
-                return self
-        raise ValueError(f"Behavior '{behavior.name}' not found in value_object '{self.name}'")
-
-    def remove_behavior(self, name: SnakeString) -> Self:
-        """Remove a MethodSpec behavior by name. Returns self for chaining."""
-        self.behaviors = [beh for beh in self.behaviors if beh.name != name]
-        return self
-
-    def get_behavior(self, name: SnakeString) -> MethodSpec:
-        """Get a MethodSpec behavior by name. Raises ValueError if not found."""
-        for beh in self.behaviors:
-            if beh.name == name:
-                return beh
-        raise ValueError(f"Behavior '{name}' not found in value_object '{self.name}'")
 
 
     def to_test_package_spec(self: Self) -> PackageSpec:

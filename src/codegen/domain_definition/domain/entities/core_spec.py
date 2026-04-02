@@ -9,14 +9,14 @@ from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.domain_definition.domain.core.has_attributes import HasAttributes
+from codegen.domain_definition.domain.core.has_behaviors import HasBehaviors
 from pydantic import Field
 
-class CoreSpec(Entity, HasAttributes):
+class CoreSpec(Entity, HasAttributes, HasBehaviors):
     """Specification of a core entity to be generated."""
-    
+
     name: PascalString
     description: str
-    behaviors: list[MethodSpec] = Field(default_factory=list)
 
     def to_module_spec(self: Self) -> ModuleSpec:
         """将 AggregateSpec 转换为 ModuleSpec"""
@@ -82,38 +82,6 @@ class CoreSpec(Entity, HasAttributes):
         """Update scalar metadata fields. Preserves internal structure."""
         if description is not None:
             self.description = description
-
-    def add_behavior(self: Self, behavior: MethodSpec) -> Self:
-        """Add a MethodSpec behavior. Raises ValueError if behavior with same name exists."""
-        for beh in self.behaviors:
-            if beh.name == behavior.name:
-                raise ValueError(
-                    f"Behavior '{behavior.name}' already exists in aggregate '{self.name}'"
-                )
-        self.behaviors.append(behavior)
-        return self
-
-    def update_behavior(self: Self, behavior: MethodSpec) -> Self:
-        """Update an existing MethodSpec behavior by name. Raises ValueError if not found."""
-        for i, beh in enumerate(self.behaviors):
-            if beh.name == behavior.name:
-                self.behaviors[i] = behavior
-                return self
-        raise ValueError(
-            f"Behavior '{behavior.name}' not found in aggregate '{self.name}'"
-        )
-
-    def remove_behavior(self: Self, name: SnakeString) -> Self:
-        """Remove a MethodSpec behavior by name. Returns self for chaining."""
-        self.behaviors = [beh for beh in self.behaviors if beh.name != name]
-        return self
-
-    def get_behavior(self: Self, name: SnakeString) -> MethodSpec:
-        """Get a MethodSpec behavior by name. Raises ValueError if not found."""
-        for beh in self.behaviors:
-            if beh.name == name:
-                return beh
-        raise ValueError(f"Behavior '{name}' not found in aggregate '{self.name}'")
 
     def to_test_package_spec(self: Self) -> PackageSpec:
         """Create test package for aggregate with behaviors that have rules."""
