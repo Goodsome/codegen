@@ -162,5 +162,11 @@ class TypeDefinition(ValueObject):
             if inner.args:
                 raise ValueError(f"Nested containers not supported: {annotation.render()}")
             return (ContainerType.TYPE, inner.name)
+        
+        if annotation.name == "ClassVar" and len(annotation.args) == 1:
+            inner = annotation.args[0]
+            if inner.args:
+                raise ValueError(f"Nested containers not supported: {annotation.render()}")
+            return (ContainerType.CLASS_VAR, inner.name)
 
         raise ValueError(f"Cannot convert complex type: {annotation.render()}")

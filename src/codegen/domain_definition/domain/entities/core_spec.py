@@ -16,6 +16,12 @@ class CoreSpec(Entity, HasAttributes, HasBehaviors):
     name: PascalString
     description: str
 
+    __root_pkg_name__ = "core"
+
+    @property
+    def test_package_name(self) -> str:
+        return str(self.name)
+
     def to_module_spec(self: Self) -> ModuleSpec:
         """将 AggregateSpec 转换为 ModuleSpec"""
         attributes = [
@@ -80,18 +86,3 @@ class CoreSpec(Entity, HasAttributes, HasBehaviors):
         """Update scalar metadata fields. Preserves internal structure."""
         if description is not None:
             self.description = description
-
-    def to_test_package_spec(self: Self) -> PackageSpec:
-        """Create test package for aggregate with behaviors that have rules."""
-        modules = []
-        for behavior in self.behaviors:
-            tm = behavior.to_test_module_spec()
-            bm = behavior.to_bindings_module_spec()
-            if tm.functions:
-                modules.append(tm)
-                modules.append(bm)
-        p = PackageSpec.create(name=str(self.name), modules=modules)
-        return PackageSpec.create(
-            name="core",
-            sub_packages=[p],
-        )

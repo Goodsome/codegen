@@ -16,6 +16,8 @@ class ContainerType(Enum):
     CALLABLE = "callable"
 
     TYPE = "type"
+    
+    CLASS_VAR = "class_var"
 
 
 class PrimitiveType(Enum):

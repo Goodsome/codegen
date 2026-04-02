@@ -17,6 +17,8 @@ contexts:
         value: callable
       - name: TYPE
         value: type
+      - name: CLASS_VAR
+        value: class_var
       name: ContainerType
     - description: 通用原语类型，不依赖具体语言。
       members:
@@ -2577,7 +2579,17 @@ contexts:
         default: list
         name: behaviors
         type: MethodSpec
+      - container: class_var
+        name: __root_pkg_name__
+        type: string
       behaviors:
+      - description: 'Dynamic: test package name (e.g., entity name)'
+        inputs:
+        - name: self
+          type: Self
+        name: test_package_name
+        output:
+          type: string
       - description: Add a MethodSpec behavior. Raises ValueError if behavior with
           same name exists.
         inputs:
@@ -2616,6 +2628,13 @@ contexts:
         name: get_behavior
         output:
           type: MethodSpec
+      - description: Create test package for entity with behaviors that have rules.
+        inputs:
+        - name: self
+          type: Self
+        name: to_test_package_spec
+        output:
+          type: PackageSpec
       description: 能力：拥有行为（方法）
       name: HasBehaviors
     entities:
@@ -3149,7 +3168,16 @@ contexts:
       - default: str
         name: description
         type: string
+      - default: value_objects
+        name: __root_pkg_name__
+        type: Any
       behaviors:
+      - inputs:
+        - name: self
+          type: Self
+        name: test_package_name
+        output:
+          type: string
       - description: 将 ValueObjectSpec 转换为 ModuleSpec
         inputs:
         - name: self
@@ -3199,14 +3227,6 @@ contexts:
         name: update
         output:
           type: None
-      - description: Create test package for value_object with behaviors that have
-          rules.
-        inputs:
-        - name: self
-          type: Self
-        name: to_test_package_spec
-        output:
-          type: PackageSpec
       description: Specification of a value object to be generated.
       name: ValueObjectSpec
     - attributes:
@@ -3461,7 +3481,16 @@ contexts:
         type: PascalString
       - name: description
         type: string
+      - default: core
+        name: __root_pkg_name__
+        type: Any
       behaviors:
+      - inputs:
+        - name: self
+          type: Self
+        name: test_package_name
+        output:
+          type: string
       - description: 将 AggregateSpec 转换为 ModuleSpec
         inputs:
         - name: self
@@ -3511,13 +3540,6 @@ contexts:
         name: update
         output:
           type: None
-      - description: Create test package for aggregate with behaviors that have rules.
-        inputs:
-        - name: self
-          type: Self
-        name: to_test_package_spec
-        output:
-          type: PackageSpec
       description: Specification of a core entity to be generated.
       name: CoreSpec
     - attributes:
@@ -4071,7 +4093,16 @@ contexts:
       - default: str
         name: description
         type: string
+      - default: entities
+        name: __root_pkg_name__
+        type: Any
       behaviors:
+      - inputs:
+        - name: self
+          type: Self
+        name: test_package_name
+        output:
+          type: string
       - description: 将 EntitySpec 转换为 ModuleSpec
         inputs:
         - name: self
@@ -4121,13 +4152,6 @@ contexts:
         name: update
         output:
           type: None
-      - description: Create test package for entity with behaviors that have rules.
-        inputs:
-        - name: self
-          type: Self
-        name: to_test_package_spec
-        output:
-          type: PackageSpec
       description: Specification of an entity.
       name: EntitySpec
     - attributes:
@@ -4375,7 +4399,16 @@ contexts:
         type: PascalString
       - name: description
         type: string
+      - default: aggregates
+        name: __root_pkg_name__
+        type: Any
       behaviors:
+      - inputs:
+        - name: self
+          type: Self
+        name: test_package_name
+        output:
+          type: string
       - description: 将 AggregateSpec 转换为 ModuleSpec
         inputs:
         - name: self
@@ -4425,13 +4458,6 @@ contexts:
         name: update
         output:
           type: None
-      - description: Create test package for aggregate with behaviors that have rules.
-        inputs:
-        - name: self
-          type: Self
-        name: to_test_package_spec
-        output:
-          type: PackageSpec
       description: Specification of a domain aggregate to be generated.
       name: AggregateSpec
     - attributes:
