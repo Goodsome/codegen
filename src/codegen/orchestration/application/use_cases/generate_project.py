@@ -18,6 +18,7 @@ class GenerateProjectCommand(BaseModel):
 
 class GenerateProjectResult(BaseModel):
     result: BuildResult
+    tests_result: BuildResult
 
 
 @dataclass
@@ -48,4 +49,7 @@ class GenerateProject:
                 overwrite=overwrite,
             )
         )
-        return GenerateProjectResult(result=gen_result.result)
+        return GenerateProjectResult(
+            result=gen_result.result,
+            tests_result=gen_tests_result.result,
+        )

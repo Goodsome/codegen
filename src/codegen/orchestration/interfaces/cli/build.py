@@ -13,6 +13,7 @@ from rich import box
 from codegen.orchestration.application.use_cases.generate_project import (
     GenerateProject,
     GenerateProjectCommand,
+    GenerateProjectResult,
 )
 from codegen.orchestration.domain.enums import BuildStatus, FileStatus
 from codegen.orchestration.domain.value_objects.build_result import BuildResult
@@ -22,7 +23,7 @@ from dependency_injector.wiring import Provide, inject
 console = Console()
 
 
-def print_build_report(result: BuildResult) -> None:
+def print_build_report(result: BuildResult, report_name: str) -> None:
     """Renders a human-friendly report of the build execution."""
     status_style = "green"
     if result.status == BuildStatus.WARNING:
@@ -33,7 +34,7 @@ def print_build_report(result: BuildResult) -> None:
     console.print(
         Panel(
             f"Build Finished with status: [{status_style} bold]{result.status.value}[/]",
-            title="Build Summary",
+            title=f"Build Summary - {report_name}",
             expand=False,
             border_style=status_style,
         )
@@ -96,9 +97,9 @@ def _generate_project(
     use_case: GenerateProject = Provide[
         "orchestration_container.generate_project"
     ],
-):
+) -> GenerateProjectResult:
     result = use_case.execute(cmd)
-    return result.result
+    return result
 
 
 def build(
@@ -109,7 +110,7 @@ def build(
              "Use this option to update existing models.",
     )] = None,
     generate_tests: Annotated[bool, typer.Option("--generate-tests")] = False,
-) -> BuildResult:
+) -> None:
     """
     Build: Compile codegen.yaml into Python code.
 
@@ -134,9 +135,9 @@ def build(
     with console.status("[bold green]Generating code...[/]"):
         result = _generate_project(cmd)
 
-    print_build_report(result)
+    print_build_report(result.result, report_name="Src")
+    print_build_report(result.tests_result, report_name="Tests")
 
-    if result.status == BuildStatus.FAILURE:
+    if result.result.status == BuildStatus.FAILURE:
         raise typer.Exit(code=1)
 
-    return result
