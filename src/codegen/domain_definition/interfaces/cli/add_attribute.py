@@ -1,5 +1,5 @@
 import typer
-from typing import Annotated, Any, Union
+from typing import Annotated
 from dependency_injector.wiring import Provide, inject
 from codegen.domain_definition.application.use_cases.add_attribute import (
     AddAttribute,

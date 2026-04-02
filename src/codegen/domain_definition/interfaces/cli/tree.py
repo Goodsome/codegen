@@ -1,7 +1,7 @@
 """
 Tree command - Display blueprint structure as a visual tree.
 """
-from typing import Any, Iterable, Optional
+from typing import Any, Optional
 
 import typer
 from rich.tree import Tree

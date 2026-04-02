@@ -1,4 +1,4 @@
-from typing import Callable, Self
+from typing import Self
 
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec

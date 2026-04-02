@@ -3,9 +3,7 @@ from typing import Self
 from codegen.domain_definition.domain.entities.port_spec import PortSpec
 from codegen.domain_definition.domain.entities.service_spec import ServiceSpec
 from codegen.domain_definition.domain.entities.use_case_spec import UseCaseSpec
-from codegen.domain_definition.domain.enums import UseCaseKind
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
-from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.models import Entity
 from pydantic import Field
 

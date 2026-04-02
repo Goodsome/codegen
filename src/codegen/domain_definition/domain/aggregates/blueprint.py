@@ -1,4 +1,3 @@
-from operator import sub
 from typing import Self, Union
 
 from pydantic import Field

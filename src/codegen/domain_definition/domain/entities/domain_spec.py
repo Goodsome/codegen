@@ -1,4 +1,4 @@
-from typing import Self, Union
+from typing import Self
 from codegen.domain_definition.domain.entities.aggregate_spec import AggregateSpec
 from codegen.domain_definition.domain.entities.core_spec import CoreSpec
 from codegen.domain_definition.domain.entities.entity_spec import EntitySpec

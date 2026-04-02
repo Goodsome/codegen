@@ -9,7 +9,6 @@ from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
-from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.shared.models import Entity
 from codegen.domain_definition.domain.core.has_attributes import HasAttributes
 from codegen.domain_definition.domain.core.has_behaviors import HasBehaviors

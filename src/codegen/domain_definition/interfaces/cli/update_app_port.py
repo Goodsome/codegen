@@ -5,7 +5,7 @@ from codegen.domain_definition.application.use_cases.update_app_port import (
     UpdateAppPortResult,
 )
 from dependency_injector.wiring import Provide, inject
-from typing import Annotated, Union
+from typing import Annotated
 
 
 @inject

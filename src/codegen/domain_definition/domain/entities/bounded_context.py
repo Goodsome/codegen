@@ -1,5 +1,5 @@
 from functools import cached_property
-from typing import Any, Self, Union
+from typing import Self
 from pydantic import Field
 
 from codegen.domain_definition.domain.entities.application_spec import ApplicationSpec

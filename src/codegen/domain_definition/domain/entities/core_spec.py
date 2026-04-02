@@ -1,7 +1,6 @@
-from typing import Iterable, Self, Union
+from typing import Iterable, Self
 from codegen.shared.models import Entity
 from codegen.shared.domain.value_objects.pascal_string import PascalString
-from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
 from codegen.python_gen.domain.enums import FieldFlavor, FunctionType
@@ -10,7 +9,6 @@ from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.domain_definition.domain.core.has_attributes import HasAttributes
 from codegen.domain_definition.domain.core.has_behaviors import HasBehaviors
-from pydantic import Field
 
 class CoreSpec(Entity, HasAttributes, HasBehaviors):
     """Specification of a core entity to be generated."""

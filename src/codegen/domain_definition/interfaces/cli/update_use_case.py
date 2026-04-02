@@ -1,6 +1,6 @@
 import typer
 from dependency_injector.wiring import Provide, inject
-from typing import Annotated, Union
+from typing import Annotated
 from codegen.domain_definition.application.use_cases.update_use_case import (
     UpdateUseCase,
     UpdateUseCaseCommand,

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Self, Union
+from typing import Any, Self
 from pydantic import BaseModel, Field
 from codegen.domain_definition.domain.enums import AttributeKind, ElementType
 from codegen.domain_definition.domain.ports.blueprint_storage import BlueprintStorage

@@ -16,7 +16,7 @@ from codegen.domain_definition.domain.value_objects.type_definition import (
 )
 from pydantic import Field
 from codegen.domain_definition.domain.value_objects.rule_spec import RuleSpec
-from typing import Self, Union
+from typing import Self
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 
 
