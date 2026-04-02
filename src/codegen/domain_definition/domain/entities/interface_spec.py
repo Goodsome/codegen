@@ -1,9 +1,13 @@
 from typing import TYPE_CHECKING, Self
 
-from codegen.shared.models import Entity
-from codegen.domain_definition.domain.value_objects.cli_command_spec import CliCommandSpec
+from codegen.shared.domain.core import Entity
+from codegen.domain_definition.domain.value_objects.cli_command_spec import (
+    CliCommandSpec,
+)
 from codegen.domain_definition.domain.value_objects.mcp_tool_spec import McpToolSpec
-from codegen.domain_definition.domain.value_objects.http_endpoint_spec import HttpEndpointSpec
+from codegen.domain_definition.domain.value_objects.http_endpoint_spec import (
+    HttpEndpointSpec,
+)
 from codegen.shared.domain.value_objects.kebab_string import KebabString
 from pydantic import Field
 
@@ -83,11 +87,15 @@ class InterfaceSpec(Entity):
 
         for sub_pkg in interfaces_pkg.sub_packages:
             if sub_pkg.name == "cli":
-                cli_commands = CliCommandSpec.commands_from_package_spec(sub_pkg, use_cases)
+                cli_commands = CliCommandSpec.commands_from_package_spec(
+                    sub_pkg, use_cases
+                )
             elif sub_pkg.name == "mcp":
                 mcp_tools = McpToolSpec.tools_from_package_spec(sub_pkg, use_cases)
             elif sub_pkg.name == "http":
-                http_endpoints = HttpEndpointSpec.endpoints_from_package_spec(sub_pkg, use_cases)
+                http_endpoints = HttpEndpointSpec.endpoints_from_package_spec(
+                    sub_pkg, use_cases
+                )
 
         return cls(
             cli_commands=cli_commands,
@@ -99,7 +107,9 @@ class InterfaceSpec(Entity):
         """Add a CliCommandSpec. Raises ValueError if cli_command with same name exists."""
         for cmd in self.cli_commands:
             if cmd.name == cli_command.name:
-                raise ValueError(f"CliCommand '{cli_command.name}' already exists in interface")
+                raise ValueError(
+                    f"CliCommand '{cli_command.name}' already exists in interface"
+                )
         self.cli_commands.append(cli_command)
         return self
 
@@ -127,7 +137,9 @@ class InterfaceSpec(Entity):
         """Add an McpToolSpec. Raises ValueError if mcp_tool with same name exists."""
         for tool in self.mcp_tools:
             if tool.name == mcp_tool.name:
-                raise ValueError(f"McpTool '{mcp_tool.name}' already exists in interface")
+                raise ValueError(
+                    f"McpTool '{mcp_tool.name}' already exists in interface"
+                )
         self.mcp_tools.append(mcp_tool)
         return self
 
@@ -155,7 +167,9 @@ class InterfaceSpec(Entity):
         """Add an HttpEndpointSpec. Raises ValueError if http_endpoint with same name exists."""
         for endpoint in self.http_endpoints:
             if endpoint.name == http_endpoint.name:
-                raise ValueError(f"HttpEndpoint '{http_endpoint.name}' already exists in interface")
+                raise ValueError(
+                    f"HttpEndpoint '{http_endpoint.name}' already exists in interface"
+                )
         self.http_endpoints.append(http_endpoint)
         return self
 
@@ -169,7 +183,9 @@ class InterfaceSpec(Entity):
 
     def remove_http_endpoint(self, name: str) -> Self:
         """Remove an HttpEndpointSpec by name. Returns self for chaining."""
-        self.http_endpoints = [endpoint for endpoint in self.http_endpoints if endpoint.name != name]
+        self.http_endpoints = [
+            endpoint for endpoint in self.http_endpoints if endpoint.name != name
+        ]
         return self
 
     def get_http_endpoint(self, name: str) -> HttpEndpointSpec:

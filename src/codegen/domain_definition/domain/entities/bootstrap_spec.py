@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from pydantic import Field
 
-from codegen.shared.models import Entity
+from codegen.shared.domain.core import Entity
 from codegen.domain_definition.domain.entities.config_spec import ConfigSpec
 from codegen.domain_definition.domain.entities.container_spec import ContainerSpec
 
@@ -17,9 +17,7 @@ class BootstrapSpec(Entity):
     config: ConfigSpec | None = Field(default=None)
     container: ContainerSpec | None = Field(default=None)
 
-    def to_package_spec(
-        self, contexts: list["BoundedContext"]
-    ) -> "PackageSpec | None":
+    def to_package_spec(self, contexts: list["BoundedContext"]) -> "PackageSpec | None":
         """将 BootstrapSpec 转换为 PackageSpec
 
         Args:

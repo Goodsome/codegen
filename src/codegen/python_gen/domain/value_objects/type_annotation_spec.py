@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 from pydantic import Field
 
-from codegen.shared.models import ValueObject
+from codegen.shared.domain.core import ValueObject
 
 if TYPE_CHECKING:
     from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec

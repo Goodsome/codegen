@@ -1,7 +1,5 @@
-
-
 from codegen.shared.domain.value_objects.pascal_string import PascalString
-from codegen.shared.models import ValueObject
+from codegen.shared.domain.core import ValueObject
 from pydantic import Field
 from codegen.python_gen.domain.value_objects.python_enum_member_spec import (
     PythonEnumMemberSpec,
@@ -40,5 +38,3 @@ class PythonEnumSpec(ValueObject):
         if self.base_class:
             types.add(self.base_class)
         return types
-
-

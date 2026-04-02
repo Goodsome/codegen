@@ -21,7 +21,7 @@ from codegen.python_gen.domain.value_objects.type_annotation_spec import (
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.value_objects.snake_string import SnakeString
-from codegen.shared.models import ValueObject
+from codegen.shared.domain.core import ValueObject
 
 
 class MethodSpec(ValueObject):

@@ -6,7 +6,7 @@ from codegen.domain_definition.domain.entities.bootstrap_spec import BootstrapSp
 from codegen.domain_definition.domain.entities.bounded_context import BoundedContext
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
-from codegen.shared.models import AggregateRoot
+from codegen.shared.domain.core import AggregateRoot
 
 
 class Blueprint(AggregateRoot):
@@ -46,10 +46,7 @@ class Blueprint(AggregateRoot):
             if bootstrap_pkg:
                 context_packages.append(bootstrap_pkg)
         p = PackageSpec.create(name=project_name, sub_packages=context_packages)
-        return PackageSpec.create(
-            name="src",
-            sub_packages=[p]
-        )
+        return PackageSpec.create(name="src", sub_packages=[p])
 
     @classmethod
     def from_package_spec(cls: type[Self], package_spec: PackageSpec) -> Self:
@@ -60,7 +57,8 @@ class Blueprint(AggregateRoot):
             if p.name != "entrypoints"
         ]
         return cls.create(
-            name=package_spec.name, contexts=contexts,
+            name=package_spec.name,
+            contexts=contexts,
         )
 
     def upsert_context(self: Self, name: str, description: str) -> Self:

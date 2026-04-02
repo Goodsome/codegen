@@ -11,7 +11,7 @@ from codegen.domain_definition.domain.entities.service_spec import ServiceSpec
 from codegen.domain_definition.domain.entities.value_object_spec import ValueObjectSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
-from codegen.shared.models import Entity
+from codegen.shared.domain.core import Entity
 
 
 class DomainSpec(Entity):

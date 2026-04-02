@@ -2,7 +2,9 @@ from typing import TYPE_CHECKING
 
 from pydantic import Field
 
-from codegen.domain_definition.domain.value_objects.config_field_spec import ConfigFieldSpec
+from codegen.domain_definition.domain.value_objects.config_field_spec import (
+    ConfigFieldSpec,
+)
 from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
@@ -10,7 +12,7 @@ from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.value_objects.snake_string import SnakeString
-from codegen.shared.models import Entity
+from codegen.shared.domain.core import Entity
 
 if TYPE_CHECKING:
     from codegen.domain_definition.domain.entities.bounded_context import BoundedContext
@@ -26,11 +28,7 @@ class ConfigSpec(Entity):
 
     def to_class_spec(self, class_name: str | None = None) -> ClassSpec:
         """将 ConfigSpec 转换为 ClassSpec"""
-        name = (
-            str(self.class_name)
-            if self.class_name
-            else (class_name or "Settings")
-        )
+        name = str(self.class_name) if self.class_name else (class_name or "Settings")
         attributes: list[VariableSpec] = [
             field.to_variable_spec() for field in self.fields
         ]
@@ -73,9 +71,7 @@ class ConfigSpec(Entity):
             imports=imports,
         )
 
-    def to_app_config_module(
-        self, contexts: list["BoundedContext"]
-    ) -> ModuleSpec:
+    def to_app_config_module(self, contexts: list["BoundedContext"]) -> ModuleSpec:
         """创建 AppSettings 模块，包含所有 context 的嵌套配置"""
         app_settings = self.to_class_spec(class_name="AppSettings")
 

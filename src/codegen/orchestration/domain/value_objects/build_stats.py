@@ -1,6 +1,6 @@
 from codegen.orchestration.domain.enums import FileStatus
 from codegen.orchestration.domain.value_objects.file_result import FileResult
-from codegen.shared.models import ValueObject
+from codegen.shared.domain.core import ValueObject
 from pydantic import ConfigDict
 
 
@@ -26,4 +26,3 @@ class BuildStats(ValueObject):
             self.skipped_count += 1
         elif result.status == FileStatus.FAILED:
             self.failed_count += 1
-

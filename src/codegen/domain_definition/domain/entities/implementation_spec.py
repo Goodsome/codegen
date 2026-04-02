@@ -9,7 +9,7 @@ from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.value_objects.snake_string import SnakeString
-from codegen.shared.models import Entity
+from codegen.shared.domain.core import Entity
 from pydantic import Field
 
 
@@ -54,13 +54,10 @@ class ImplementationSpec(Entity, HasAttributes):
             )
             for f in self.private_methods
         ]
-        for method in methods[len(port.get_final_operations()):]:
+        for method in methods[len(port.get_final_operations()) :]:
             method.is_private = True
 
-        attributes = [
-            attr.to_variable_spec()
-            for attr in self.attributes
-        ]
+        attributes = [attr.to_variable_spec() for attr in self.attributes]
         class_name = self._get_class_name()
         class_spec = ClassSpec.create(
             name=class_name,
@@ -73,12 +70,15 @@ class ImplementationSpec(Entity, HasAttributes):
         return ModuleSpec.create(name=class_name, classes=[class_spec])
 
     @classmethod
-    def from_module_spec(cls, module_spec: ModuleSpec, technology: str) -> "ImplementationSpec":
+    def from_module_spec(
+        cls, module_spec: ModuleSpec, technology: str
+    ) -> "ImplementationSpec":
         """将 ModuleSpec 逆向解析为 ImplementationSpec"""
         for spec_cls in module_spec.classes:
             if spec_cls.inheritance:
                 attributes = [
-                    AttributeSpec.from_variable_spec(attr) for attr in spec_cls.attributes
+                    AttributeSpec.from_variable_spec(attr)
+                    for attr in spec_cls.attributes
                 ]
                 private_methods: list[MethodSpec] = []
                 for function in spec_cls.methods:
@@ -119,7 +119,9 @@ class ImplementationSpec(Entity, HasAttributes):
         """Add a private MethodSpec. Raises ValueError if method with same name exists."""
         for m in self.private_methods:
             if m.name == method.name:
-                raise ValueError(f"Private method '{method.name}' already exists in implementation '{self.name}'")
+                raise ValueError(
+                    f"Private method '{method.name}' already exists in implementation '{self.name}'"
+                )
         self.private_methods.append(method)
         return self
 
@@ -129,7 +131,9 @@ class ImplementationSpec(Entity, HasAttributes):
             if m.name == method.name:
                 self.private_methods[i] = method
                 return self
-        raise ValueError(f"Private method '{method.name}' not found in implementation '{self.name}'")
+        raise ValueError(
+            f"Private method '{method.name}' not found in implementation '{self.name}'"
+        )
 
     def remove_private_method(self, name: SnakeString) -> Self:
         """Remove a private MethodSpec by name. Returns self for chaining."""
@@ -141,4 +145,6 @@ class ImplementationSpec(Entity, HasAttributes):
         for m in self.private_methods:
             if m.name == name:
                 return m
-        raise ValueError(f"Private method '{name}' not found in implementation '{self.name}'")
+        raise ValueError(
+            f"Private method '{name}' not found in implementation '{self.name}'"
+        )

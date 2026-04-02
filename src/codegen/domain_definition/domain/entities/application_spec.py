@@ -4,7 +4,7 @@ from codegen.domain_definition.domain.entities.port_spec import PortSpec
 from codegen.domain_definition.domain.entities.service_spec import ServiceSpec
 from codegen.domain_definition.domain.entities.use_case_spec import UseCaseSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
-from codegen.shared.models import Entity
+from codegen.shared.domain.core import Entity
 from pydantic import Field
 
 
@@ -49,7 +49,9 @@ class ApplicationSpec(Entity):
         """Add a UseCaseSpec. Raises ValueError if use_case with same name exists."""
         for uc in self.use_cases:
             if uc.name == use_case.name:
-                raise ValueError(f"UseCase '{use_case.name}' already exists in application")
+                raise ValueError(
+                    f"UseCase '{use_case.name}' already exists in application"
+                )
         self.use_cases.append(use_case)
         return self
 
@@ -105,7 +107,9 @@ class ApplicationSpec(Entity):
         """Add a ServiceSpec. Raises ValueError if service with same name exists."""
         for s in self.services:
             if s.name == service.name:
-                raise ValueError(f"Service '{service.name}' already exists in application")
+                raise ValueError(
+                    f"Service '{service.name}' already exists in application"
+                )
         self.services.append(service)
         return self
 
@@ -128,4 +132,3 @@ class ApplicationSpec(Entity):
         """Remove a ServiceSpec by name. Returns self for chaining."""
         self.services = [s for s in self.services if s.name != name]
         return self
-

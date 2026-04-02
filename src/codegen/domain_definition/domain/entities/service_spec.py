@@ -10,7 +10,7 @@ from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.value_objects.snake_string import SnakeString
-from codegen.shared.models import Entity
+from codegen.shared.domain.core import Entity
 
 
 class ServiceSpec(Entity):
@@ -84,7 +84,9 @@ class ServiceSpec(Entity):
         """Add an AttributeSpec dependency. Raises ValueError if dependency with same name exists."""
         for dep in self.dependencies:
             if dep.name == dependency.name:
-                raise ValueError(f"Dependency '{dependency.name}' already exists in service '{self.name}'")
+                raise ValueError(
+                    f"Dependency '{dependency.name}' already exists in service '{self.name}'"
+                )
         self.dependencies.append(dependency)
         return self
 
@@ -94,7 +96,9 @@ class ServiceSpec(Entity):
             if dep.name == dependency.name:
                 self.dependencies[i] = dependency
                 return self
-        raise ValueError(f"Dependency '{dependency.name}' not found in service '{self.name}'")
+        raise ValueError(
+            f"Dependency '{dependency.name}' not found in service '{self.name}'"
+        )
 
     def remove_dependency(self, name: SnakeString) -> Self:
         """Remove an AttributeSpec dependency by name. Returns self for chaining."""
@@ -112,7 +116,9 @@ class ServiceSpec(Entity):
         """Add a MethodSpec operation. Raises ValueError if operation with same name exists."""
         for op in self.operations:
             if op.name == operation.name:
-                raise ValueError(f"Operation '{operation.name}' already exists in service '{self.name}'")
+                raise ValueError(
+                    f"Operation '{operation.name}' already exists in service '{self.name}'"
+                )
         self.operations.append(operation)
         return self
 
@@ -122,7 +128,9 @@ class ServiceSpec(Entity):
             if op.name == operation.name:
                 self.operations[i] = operation
                 return self
-        raise ValueError(f"Operation '{operation.name}' not found in service '{self.name}'")
+        raise ValueError(
+            f"Operation '{operation.name}' not found in service '{self.name}'"
+        )
 
     def remove_operation(self, name: SnakeString) -> Self:
         """Remove a MethodSpec operation by name. Returns self for chaining."""
@@ -135,4 +143,3 @@ class ServiceSpec(Entity):
             if op.name == name:
                 return op
         raise ValueError(f"Operation '{name}' not found in service '{self.name}'")
-

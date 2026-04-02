@@ -1,8 +1,6 @@
-
-
 from typing import Iterable
 
-from codegen.shared.models import ValueObject
+from codegen.shared.domain.core import ValueObject
 from codegen.python_gen.domain.value_objects.imported_name import ImportedName
 
 
@@ -17,7 +15,11 @@ class ImportFromSpec(ValueObject):
 
     @classmethod
     def create(
-        cls, module: str, names: Iterable[str], type_checking: bool = False, level: int = 0
+        cls,
+        module: str,
+        names: Iterable[str],
+        type_checking: bool = False,
+        level: int = 0,
     ) -> "ImportFromSpec":
         _names = frozenset(ImportedName(name=name) for name in names)
         return cls(

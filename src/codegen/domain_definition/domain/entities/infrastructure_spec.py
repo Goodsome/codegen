@@ -9,7 +9,7 @@ from codegen.domain_definition.domain.entities.implementation_spec import (
 from codegen.domain_definition.domain.entities.port_spec import PortSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
-from codegen.shared.models import Entity
+from codegen.shared.domain.core import Entity
 
 
 class InfrastructureSpec(Entity):
@@ -33,7 +33,7 @@ class InfrastructureSpec(Entity):
             if kind is PortType.REPOSITORY:
                 pkg_name = "repositories"
             else:
-                pkg_name = kind.value.lower() + 's'
+                pkg_name = kind.value.lower() + "s"
             kind_pkg = PackageSpec.create(name=pkg_name, modules=tech_modules)
             kind_packages.append(kind_pkg)
 
@@ -63,7 +63,9 @@ class InfrastructureSpec(Entity):
         """Add an ImplementationSpec. Raises ValueError if implementation with same name exists."""
         for impl in self.implementations:
             if impl.name == implementation.name:
-                raise ValueError(f"Implementation '{implementation.name}' already exists in infrastructure")
+                raise ValueError(
+                    f"Implementation '{implementation.name}' already exists in infrastructure"
+                )
         self.implementations.append(implementation)
         return self
 
@@ -73,7 +75,9 @@ class InfrastructureSpec(Entity):
             if impl.name == implementation.name:
                 self.implementations[i] = implementation
                 return self
-        raise ValueError(f"Implementation '{implementation.name}' not found in infrastructure")
+        raise ValueError(
+            f"Implementation '{implementation.name}' not found in infrastructure"
+        )
 
     def get_implementation(self, name: str) -> ImplementationSpec:
         """Get an ImplementationSpec by name. Raises ValueError if not found."""
@@ -84,6 +88,7 @@ class InfrastructureSpec(Entity):
 
     def remove_implementation(self, name: str) -> Self:
         """Remove an ImplementationSpec by name. Returns self for chaining."""
-        self.implementations = [impl for impl in self.implementations if impl.name != name]
+        self.implementations = [
+            impl for impl in self.implementations if impl.name != name
+        ]
         return self
-

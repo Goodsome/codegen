@@ -6,7 +6,7 @@ from codegen.python_gen.domain.value_objects.type_annotation_spec import (
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.value_objects.snake_string import SnakeString
-from codegen.shared.models import ValueObject
+from codegen.shared.domain.core import ValueObject
 from typing import Self
 
 
@@ -23,14 +23,14 @@ class RuleSpec(ValueObject):
         func_name = "test_" + self.name
         fixture_var = VariableSpec.create(
             name=fixture_name,
-            type_spec=TypeAnnotationSpec(name=PascalString(fixture_name))
+            type_spec=TypeAnnotationSpec(name=PascalString(fixture_name)),
         )
         chain_suite = (
             f"({fixture_var.name}\n"
-            f'    .given({repr(self.given)})\n'
+            f"    .given({repr(self.given)})\n"
             f"    .arrange_done()\n"
-            f'    .when({repr(self.when)})\n'
-            f'    .then({repr(self.then)})\n'
+            f"    .when({repr(self.when)})\n"
+            f"    .then({repr(self.then)})\n"
             f")"
         )
         return FunctionSpec.create(

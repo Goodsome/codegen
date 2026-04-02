@@ -1,5 +1,5 @@
 from codegen.domain_definition.domain.core.domain_concept import DomainConcept
-from codegen.shared.models import Entity
+from codegen.shared.domain.core import Entity
 
 
 class AggregateSpec(Entity, DomainConcept):

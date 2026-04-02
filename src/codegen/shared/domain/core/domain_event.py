@@ -1,17 +1,7 @@
-"""
-领域事件基类
-
-提供不可变的领域事件基础结构，包含：
-- 事件唯一标识
-- UTC 时区的发生时间
-- 事件类型标识
-- 事件版本
-"""
-
 from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class DomainEvent(BaseModel):

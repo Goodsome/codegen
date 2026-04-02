@@ -9,12 +9,16 @@ from codegen.python_gen.domain.enums import FunctionType
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
-from codegen.python_gen.domain.value_objects.module_assignment_spec import ModuleAssignmentSpec
+from codegen.python_gen.domain.value_objects.module_assignment_spec import (
+    ModuleAssignmentSpec,
+)
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
-from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import parse_type_str
+from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import (
+    parse_type_str,
+)
 from codegen.shared.domain.value_objects.snake_string import SnakeString
-from codegen.shared.models import ValueObject
+from codegen.shared.domain.core import ValueObject
 
 
 class McpToolSpec(ValueObject):
@@ -64,7 +68,9 @@ class McpToolSpec(ValueObject):
             name=func_name,
             description=self.description,
             parameters=[
-                VariableSpec.create(name=param_name, type_spec=parse_type_str(param_type)),
+                VariableSpec.create(
+                    name=param_name, type_spec=parse_type_str(param_type)
+                ),
             ],
             return_annotation=parse_type_str(result_type),
             function_type=FunctionType.FUNCTION,
@@ -135,12 +141,14 @@ class McpToolSpec(ValueObject):
         use_case_index: dict[str, UseCaseSpec],
     ) -> str | None:
         """从函数体推断 UseCase 名称"""
-        pattern = r'container\.(\w+)_use_case\(\)'
+        pattern = r"container\.(\w+)_use_case\(\)"
         match = re.search(pattern, suite)
         if match:
             method_name = match.group(1)
             # 将 snake_case 转换为 PascalCase
-            use_case_name = ''.join(word.capitalize() for word in method_name.split('_'))
+            use_case_name = "".join(
+                word.capitalize() for word in method_name.split("_")
+            )
             if use_case_name in use_case_index:
                 return use_case_name
         return None
@@ -170,7 +178,9 @@ class McpToolSpec(ValueObject):
         for tool in tools:
             use_case = use_case_index.get(tool.use_case)
             if not use_case:
-                raise ValueError(f"UseCase '{tool.use_case}' not found for MCP tool '{tool.name}'")
+                raise ValueError(
+                    f"UseCase '{tool.use_case}' not found for MCP tool '{tool.name}'"
+                )
             module = tool.to_module_spec(context_name, use_case, project_name)
             modules.append(module)
 

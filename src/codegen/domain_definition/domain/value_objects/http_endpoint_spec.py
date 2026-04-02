@@ -9,12 +9,16 @@ from codegen.python_gen.domain.enums import FunctionType
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
-from codegen.python_gen.domain.value_objects.module_assignment_spec import ModuleAssignmentSpec
+from codegen.python_gen.domain.value_objects.module_assignment_spec import (
+    ModuleAssignmentSpec,
+)
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
-from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import parse_type_str
+from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import (
+    parse_type_str,
+)
 from codegen.shared.domain.value_objects.snake_string import SnakeString
-from codegen.shared.models import ValueObject
+from codegen.shared.domain.core import ValueObject
 
 
 class HttpEndpointSpec(ValueObject):
@@ -68,7 +72,9 @@ class HttpEndpointSpec(ValueObject):
             name=func_name,
             description=self.description,
             parameters=[
-                VariableSpec.create(name=param_name, type_spec=parse_type_str(param_type)),
+                VariableSpec.create(
+                    name=param_name, type_spec=parse_type_str(param_type)
+                ),
             ],
             return_annotation=parse_type_str(result_type),
             function_type=FunctionType.FUNCTION,
@@ -95,7 +101,7 @@ class HttpEndpointSpec(ValueObject):
                     name="router",
                     value="APIRouter()",
                 ),
-            ]
+            ],
         )
 
     @classmethod
@@ -117,7 +123,9 @@ class HttpEndpointSpec(ValueObject):
         for func in module.functions:
             path, method = cls._parse_route_decorator(func.decorators)
             if path and method:
-                use_case_name = cls._infer_use_case_from_suite(func.suite, use_case_index)
+                use_case_name = cls._infer_use_case_from_suite(
+                    func.suite, use_case_index
+                )
                 if use_case_name:
                     return cls(
                         path=path,
@@ -148,22 +156,28 @@ class HttpEndpointSpec(ValueObject):
         use_case_index: dict[str, UseCaseSpec],
     ) -> str | None:
         """从函数体推断 UseCase 名称"""
-        pattern = r'container\.(\w+)_use_case\(\)'
+        pattern = r"container\.(\w+)_use_case\(\)"
         match = re.search(pattern, suite)
         if match:
             method_name = match.group(1)
             # 将 snake_case 转换为 PascalCase
-            use_case_name = ''.join(word.capitalize() for word in method_name.split('_'))
+            use_case_name = "".join(
+                word.capitalize() for word in method_name.split("_")
+            )
             if use_case_name in use_case_index:
                 return use_case_name
         return None
 
     @classmethod
-    def _parse_route_decorator(cls, decorators: list[str]) -> tuple[str | None, str | None]:
+    def _parse_route_decorator(
+        cls, decorators: list[str]
+    ) -> tuple[str | None, str | None]:
         """从装饰器解析路由信息"""
         for decorator in decorators:
             # 匹配 router.get("/path"), router.post("/path") 等
-            match = re.match(r'router\.(get|post|put|delete|patch)\(["\']([^"\']+)["\']\)', decorator)
+            match = re.match(
+                r'router\.(get|post|put|delete|patch)\(["\']([^"\']+)["\']\)', decorator
+            )
             if match:
                 method = match.group(1).upper()
                 path = match.group(2)
@@ -195,7 +209,9 @@ class HttpEndpointSpec(ValueObject):
         for endpoint in endpoints:
             use_case = use_case_index.get(endpoint.use_case)
             if not use_case:
-                raise ValueError(f"UseCase '{endpoint.use_case}' not found for HTTP endpoint '{endpoint.path}'")
+                raise ValueError(
+                    f"UseCase '{endpoint.use_case}' not found for HTTP endpoint '{endpoint.path}'"
+                )
             module = endpoint.to_module_spec(context_name, use_case, project_name)
             modules.append(module)
 

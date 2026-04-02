@@ -1,9 +1,11 @@
 from pydantic import Field
 
 from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
-from codegen.python_gen.domain.value_objects.type_annotation_spec import TypeAnnotationSpec
+from codegen.python_gen.domain.value_objects.type_annotation_spec import (
+    TypeAnnotationSpec,
+)
 from codegen.shared.domain.value_objects.snake_string import SnakeString
-from codegen.shared.models import ValueObject
+from codegen.shared.domain.core import ValueObject
 
 
 class VariableSpec(ValueObject):
@@ -15,7 +17,10 @@ class VariableSpec(ValueObject):
 
     @classmethod
     def create(
-        cls, name: str, type_spec: TypeAnnotationSpec | None, assignment: AssignmentSpec | None = None,
+        cls,
+        name: str,
+        type_spec: TypeAnnotationSpec | None,
+        assignment: AssignmentSpec | None = None,
     ) -> "VariableSpec":
         return cls(
             name=SnakeString(name),

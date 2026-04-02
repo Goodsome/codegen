@@ -10,11 +10,13 @@ from codegen.python_gen.domain.value_objects.python_enum_spec import PythonEnumS
 
 from pydantic.fields import Field
 
-from codegen.shared.models import ValueObject
+from codegen.shared.domain.core import ValueObject
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
-from codegen.python_gen.domain.value_objects.module_assignment_spec import ModuleAssignmentSpec
+from codegen.python_gen.domain.value_objects.module_assignment_spec import (
+    ModuleAssignmentSpec,
+)
 from codegen.python_gen.domain.value_objects.raw_code_spec import RawCodeSpec
 
 
@@ -27,7 +29,9 @@ class ModuleSpec(ValueObject):
     imports: list[ImportFromSpec] = Field(default_factory=list)
     enums: list[PythonEnumSpec] = Field(default_factory=list)
     assignments: list[ModuleAssignmentSpec] = Field(default_factory=list)
-    extra_code: list[RawCodeSpec] = Field(default_factory=list) # 逃生舱，非极端特殊情况，不能使用
+    extra_code: list[RawCodeSpec] = Field(
+        default_factory=list
+    )  # 逃生舱，非极端特殊情况，不能使用
 
     @classmethod
     def create(
@@ -59,7 +63,7 @@ class ModuleSpec(ValueObject):
             ClassSpec.create_aggregate(),
         ]
         return cls.create(name=name, classes=classes)
-    
+
     @classmethod
     def create_shared_events(cls) -> "ModuleSpec":
         name = "events"
@@ -149,22 +153,22 @@ class ModuleSpec(ValueObject):
                 imports_bag[i.module] = imports_bag[i.module].merge(i)
             else:
                 imports_bag[i.module] = i
-        
+
         imports = list(imports_bag.values())
-        
+
         other_assignments = {a.name: a for a in other.assignments}
         assignments: list[ModuleAssignmentSpec] = []
         for a in self.assignments:
-             if a.name in other_assignments:
-                 # Overwrite or Keep?
-                 # Usually later wins or verify equality. 
-                 # For simplicity, let's say other overrides self if present.
-                 assignments.append(other_assignments.pop(a.name))
-             else:
-                 assignments.append(a)
+            if a.name in other_assignments:
+                # Overwrite or Keep?
+                # Usually later wins or verify equality.
+                # For simplicity, let's say other overrides self if present.
+                assignments.append(other_assignments.pop(a.name))
+            else:
+                assignments.append(a)
         # Add remaining
         assignments.extend(other_assignments.values())
-        
+
         extra_code = self.extra_code + other.extra_code
 
         return ModuleSpec.create(

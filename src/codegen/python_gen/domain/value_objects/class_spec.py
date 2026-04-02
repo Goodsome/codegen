@@ -4,14 +4,12 @@ Name: ClassSpec
 Description: Represents a class in a Python module.
 """
 
-
-
 from pydantic.fields import Field
 
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
-from codegen.shared.models import ValueObject
+from codegen.shared.domain.core import ValueObject
 
 
 class ClassSpec(ValueObject):
@@ -50,7 +48,7 @@ class ClassSpec(ValueObject):
     @classmethod
     def create_aggregate(cls) -> "ClassSpec":
         return cls._create_base_model("AggregateRoot")
-    
+
     @classmethod
     def create_entity(cls) -> "ClassSpec":
         return cls._create_base_model("Entity")
@@ -58,7 +56,7 @@ class ClassSpec(ValueObject):
     @classmethod
     def create_event(cls) -> "ClassSpec":
         return cls._create_base_model("DomainEvent")
-    
+
     @classmethod
     def _create_base_model(cls, name: str) -> "ClassSpec":
         return cls.create(

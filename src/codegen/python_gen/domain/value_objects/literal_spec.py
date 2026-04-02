@@ -1,4 +1,4 @@
-from codegen.shared.models import ValueObject
+from codegen.shared.domain.core import ValueObject
 from typing import Any
 
 

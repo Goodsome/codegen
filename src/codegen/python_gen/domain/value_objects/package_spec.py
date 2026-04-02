@@ -10,7 +10,7 @@ from pathlib import Path
 from pydantic import Field
 
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
-from codegen.shared.models import ValueObject
+from codegen.shared.domain.core import ValueObject
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 
 
@@ -64,7 +64,7 @@ class PackageSpec(ValueObject):
             current_path = f"{root_path}.{self.name}"
         else:
             current_path = self.name
-        
+
         if self.name == "src":
             current_path = ""
 

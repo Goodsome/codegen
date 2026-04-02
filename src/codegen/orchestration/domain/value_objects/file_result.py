@@ -1,6 +1,6 @@
 from codegen.orchestration.domain.enums import FileStatus
 from pydantic import Field
-from codegen.shared.models import ValueObject
+from codegen.shared.domain.core import ValueObject
 
 
 class FileResult(ValueObject):

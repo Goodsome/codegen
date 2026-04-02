@@ -10,7 +10,7 @@ from codegen.python_gen.domain.value_objects.python_enum_member_spec import (
 from codegen.python_gen.domain.value_objects.python_enum_spec import PythonEnumSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.value_objects.snake_string import SnakeString
-from codegen.shared.models import Entity
+from codegen.shared.domain.core import Entity
 from pydantic import Field
 
 
@@ -70,7 +70,9 @@ class EnumSpec(Entity):
         """Add an EnumMemberSpec. Raises ValueError if member with same name exists."""
         for m in self.members:
             if m.name == member.name:
-                raise ValueError(f"Member '{member.name}' already exists in enum '{self.name}'")
+                raise ValueError(
+                    f"Member '{member.name}' already exists in enum '{self.name}'"
+                )
         self.members.append(member)
         return self
 
@@ -93,4 +95,3 @@ class EnumSpec(Entity):
             if m.name == name:
                 return m
         raise ValueError(f"Member '{name}' not found in enum '{self.name}'")
-

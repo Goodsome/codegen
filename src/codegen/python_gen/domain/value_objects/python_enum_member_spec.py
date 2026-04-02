@@ -1,6 +1,6 @@
 from codegen.shared.domain.value_objects.macro_string import MacroString
 
-from codegen.shared.models import ValueObject
+from codegen.shared.domain.core import ValueObject
 from pydantic import Field
 
 
@@ -20,7 +20,3 @@ class PythonEnumMemberSpec(ValueObject):
             value=value,
             description=description,
         )
-
-
-
-

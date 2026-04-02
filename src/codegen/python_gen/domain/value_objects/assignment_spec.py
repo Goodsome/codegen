@@ -1,6 +1,6 @@
 from codegen.python_gen.domain.enums import AssignmentFlavor
 from pydantic import Field
-from codegen.shared.models import ValueObject
+from codegen.shared.domain.core import ValueObject
 from typing import Any
 from codegen.python_gen.domain.value_objects.reference_spec import ReferenceSpec
 from codegen.python_gen.domain.value_objects.call_spec import CallSpec
@@ -26,34 +26,35 @@ class AssignmentSpec(ValueObject):
 
     @classmethod
     def from_literal(cls, value: Any) -> "AssignmentSpec":
-        return cls(
-            flavor=AssignmentFlavor.LITERAL,
-            literal=LiteralSpec(value=value)
-        )
-    
-    @classmethod
-    def from_symbol(cls, symbol: str) -> "AssignmentSpec":
-        return cls(
-            flavor=AssignmentFlavor.SYMBOL,
-            reference=ReferenceSpec(name=symbol)
-        )
+        return cls(flavor=AssignmentFlavor.LITERAL, literal=LiteralSpec(value=value))
 
     @classmethod
-    def from_call(cls, func_name: str, args: list["AssignmentSpec"] | None = None, kwargs: dict[str, "AssignmentSpec"] | None = None) -> "AssignmentSpec":
+    def from_symbol(cls, symbol: str) -> "AssignmentSpec":
+        return cls(flavor=AssignmentFlavor.SYMBOL, reference=ReferenceSpec(name=symbol))
+
+    @classmethod
+    def from_call(
+        cls,
+        func_name: str,
+        args: list["AssignmentSpec"] | None = None,
+        kwargs: dict[str, "AssignmentSpec"] | None = None,
+    ) -> "AssignmentSpec":
         return cls(
             flavor=AssignmentFlavor.CALL,
             call=CallSpec(
                 callee=func_name,
                 args=args or [],
                 kwargs=kwargs or {},
-            )
+            ),
         )
 
     @classmethod
-    def from_subscript(cls, value: "AssignmentSpec", slice: "AssignmentSpec") -> "AssignmentSpec":
+    def from_subscript(
+        cls, value: "AssignmentSpec", slice: "AssignmentSpec"
+    ) -> "AssignmentSpec":
         return cls(
             flavor=AssignmentFlavor.SUBSCRIPT,
-            subscript=SubscriptSpec(value=value, slice=slice)
+            subscript=SubscriptSpec(value=value, slice=slice),
         )
 
     def get_required_types(self) -> set[str]:

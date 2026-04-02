@@ -9,7 +9,7 @@ from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromS
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.shared.domain.value_objects.snake_string import SnakeString
-from codegen.shared.models import Entity
+from codegen.shared.domain.core import Entity
 
 if TYPE_CHECKING:
     from codegen.domain_definition.domain.entities.bounded_context import BoundedContext
@@ -59,7 +59,9 @@ class ContainerSpec(Entity):
 
     def to_app_container_module(self) -> ModuleSpec:
         """创建 app-level Container 模块"""
-        from codegen.domain_definition.domain.entities.bounded_context import BoundedContext
+        from codegen.domain_definition.domain.entities.bounded_context import (
+            BoundedContext,
+        )
 
         dummy_context = BoundedContext.create(name="App")
         container_class = self.to_class_spec(
@@ -79,7 +81,7 @@ class ContainerSpec(Entity):
         ]
 
         for binding in self.bindings:
-            impl_module = SnakeString(binding.implementation.split('.')[0])
+            impl_module = SnakeString(binding.implementation.split(".")[0])
             impl_name = binding.implementation.split(".")[-1]
             imports.append(
                 ImportFromSpec.create(

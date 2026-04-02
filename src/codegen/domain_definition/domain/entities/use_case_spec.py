@@ -14,7 +14,7 @@ from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import (
 )
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.value_objects.snake_string import SnakeString
-from codegen.shared.models import Entity
+from codegen.shared.domain.core import Entity
 
 
 class UseCaseSpec(Entity):

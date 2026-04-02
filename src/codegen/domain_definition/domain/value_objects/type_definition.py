@@ -1,6 +1,6 @@
 from codegen.shared.domain.enums import ContainerType
 from pydantic import Field
-from codegen.shared.models import ValueObject
+from codegen.shared.domain.core import ValueObject
 from codegen.python_gen.domain.value_objects.type_annotation_spec import (
     TypeAnnotationSpec,
 )
@@ -54,23 +54,37 @@ class TypeDefinition(ValueObject):
         if self.container == ContainerType.NONE:
             return TypeAnnotationSpec(name=core_type)
         elif self.container == ContainerType.LIST:
-            return TypeAnnotationSpec(name="list", args=[TypeAnnotationSpec(name=core_type)])
+            return TypeAnnotationSpec(
+                name="list", args=[TypeAnnotationSpec(name=core_type)]
+            )
         elif self.container == ContainerType.SET:
-            return TypeAnnotationSpec(name="set", args=[TypeAnnotationSpec(name=core_type)])
+            return TypeAnnotationSpec(
+                name="set", args=[TypeAnnotationSpec(name=core_type)]
+            )
         elif self.container == ContainerType.MAP:
             return TypeAnnotationSpec(
                 name="dict",
-                args=[TypeAnnotationSpec(name="str"), TypeAnnotationSpec(name=core_type)],
+                args=[
+                    TypeAnnotationSpec(name="str"),
+                    TypeAnnotationSpec(name=core_type),
+                ],
             )
         elif self.container == ContainerType.ITERABLE:
-            return TypeAnnotationSpec(name="Iterable", args=[TypeAnnotationSpec(name=core_type)])
+            return TypeAnnotationSpec(
+                name="Iterable", args=[TypeAnnotationSpec(name=core_type)]
+            )
         elif self.container == ContainerType.CALLABLE:
             return TypeAnnotationSpec(
                 name="Callable",
-                args=[TypeAnnotationSpec(name="..."), TypeAnnotationSpec(name=core_type)],
+                args=[
+                    TypeAnnotationSpec(name="..."),
+                    TypeAnnotationSpec(name=core_type),
+                ],
             )
         elif self.container == ContainerType.TYPE:
-            return TypeAnnotationSpec(name="type", args=[TypeAnnotationSpec(name=core_type)])
+            return TypeAnnotationSpec(
+                name="type", args=[TypeAnnotationSpec(name=core_type)]
+            )
         else:
             return TypeAnnotationSpec(name=core_type)
 
@@ -81,7 +95,9 @@ class TypeDefinition(ValueObject):
         )
 
     @classmethod
-    def from_python_annotation(cls, annotation: TypeAnnotationSpec | None) -> "TypeDefinition":
+    def from_python_annotation(
+        cls, annotation: TypeAnnotationSpec | None
+    ) -> "TypeDefinition":
         """从 Python 类型注解逆向解析为 TypeDefinition"""
         if annotation is None:
             return cls(type="Any", container=ContainerType.NONE, optional=False)
@@ -89,7 +105,9 @@ class TypeDefinition(ValueObject):
         is_optional, core_annotation = cls._extract_optional(annotation)
 
         try:
-            container, core_python_type_name = cls._extract_container_and_type(core_annotation)
+            container, core_python_type_name = cls._extract_container_and_type(
+                core_annotation
+            )
         except ValueError:
             return cls(
                 type="Any",
@@ -98,15 +116,21 @@ class TypeDefinition(ValueObject):
                 custom_type_string=annotation.render(),
             )
 
-        generic_type = _REVERSE_PRIMITIVE_MAP.get(core_python_type_name, core_python_type_name)
+        generic_type = _REVERSE_PRIMITIVE_MAP.get(
+            core_python_type_name, core_python_type_name
+        )
         return cls(type=generic_type, container=container, optional=is_optional)
 
     @classmethod
-    def _extract_optional(cls, annotation: TypeAnnotationSpec) -> tuple[bool, TypeAnnotationSpec]:
+    def _extract_optional(
+        cls, annotation: TypeAnnotationSpec
+    ) -> tuple[bool, TypeAnnotationSpec]:
         """如果是 Union[T, None] 或 Optional[T] 形式，返回 (True, T)"""
         if annotation.name == "Union":
             non_none_args = [arg for arg in annotation.args if arg.name != "None"]
-            if len(non_none_args) == 1 and any(arg.name == "None" for arg in annotation.args):
+            if len(non_none_args) == 1 and any(
+                arg.name == "None" for arg in annotation.args
+            ):
                 return (True, non_none_args[0])
 
         if annotation.name == "Optional" and len(annotation.args) == 1:
@@ -125,34 +149,47 @@ class TypeDefinition(ValueObject):
         if annotation.name == "list" and len(annotation.args) == 1:
             inner = annotation.args[0]
             if inner.args:
-                raise ValueError(f"Nested containers not supported: {annotation.render()}")
+                raise ValueError(
+                    f"Nested containers not supported: {annotation.render()}"
+                )
             return (ContainerType.LIST, inner.name)
 
         if annotation.name == "set" and len(annotation.args) == 1:
             inner = annotation.args[0]
             if inner.args:
-                raise ValueError(f"Nested containers not supported: {annotation.render()}")
+                raise ValueError(
+                    f"Nested containers not supported: {annotation.render()}"
+                )
             return (ContainerType.SET, inner.name)
 
         if annotation.name == "dict" and len(annotation.args) == 2:
             key_type, value_type = annotation.args[0].name, annotation.args[1].name
             if key_type == "str":
                 if annotation.args[1].args:
-                    raise ValueError(f"Nested containers not supported: {annotation.render()}")
+                    raise ValueError(
+                        f"Nested containers not supported: {annotation.render()}"
+                    )
                 return (ContainerType.MAP, value_type)
             raise ValueError(f"dict key type must be 'str': {annotation.render()}")
 
-        if annotation.name in ("Iterable", "Sequence", "Collection", "Iterator") and len(annotation.args) == 1:
+        if (
+            annotation.name in ("Iterable", "Sequence", "Collection", "Iterator")
+            and len(annotation.args) == 1
+        ):
             inner = annotation.args[0]
             if inner.args:
-                raise ValueError(f"Nested containers not supported: {annotation.render()}")
+                raise ValueError(
+                    f"Nested containers not supported: {annotation.render()}"
+                )
             return (ContainerType.ITERABLE, inner.name)
 
         if annotation.name == "Callable":
             if len(annotation.args) == 2:
                 return_type = annotation.args[1]
                 if return_type.args:
-                    raise ValueError(f"Nested containers not supported: {annotation.render()}")
+                    raise ValueError(
+                        f"Nested containers not supported: {annotation.render()}"
+                    )
                 return (ContainerType.CALLABLE, return_type.name)
             elif len(annotation.args) == 0:
                 return (ContainerType.NONE, "Any")
@@ -160,13 +197,17 @@ class TypeDefinition(ValueObject):
         if annotation.name == "type" and len(annotation.args) == 1:
             inner = annotation.args[0]
             if inner.args:
-                raise ValueError(f"Nested containers not supported: {annotation.render()}")
+                raise ValueError(
+                    f"Nested containers not supported: {annotation.render()}"
+                )
             return (ContainerType.TYPE, inner.name)
-        
+
         if annotation.name == "ClassVar" and len(annotation.args) == 1:
             inner = annotation.args[0]
             if inner.args:
-                raise ValueError(f"Nested containers not supported: {annotation.render()}")
+                raise ValueError(
+                    f"Nested containers not supported: {annotation.render()}"
+                )
             return (ContainerType.CLASS_VAR, inner.name)
 
         raise ValueError(f"Cannot convert complex type: {annotation.render()}")

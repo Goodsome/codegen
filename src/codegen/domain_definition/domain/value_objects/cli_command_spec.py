@@ -10,13 +10,17 @@ from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
-from codegen.python_gen.domain.value_objects.type_annotation_spec import TypeAnnotationSpec
+from codegen.python_gen.domain.value_objects.type_annotation_spec import (
+    TypeAnnotationSpec,
+)
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
-from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import parse_type_str
+from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import (
+    parse_type_str,
+)
 from codegen.shared.domain.value_objects.kebab_string import KebabString
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.value_objects.snake_string import SnakeString
-from codegen.shared.models import ValueObject
+from codegen.shared.domain.core import ValueObject
 
 
 class CliCommandSpec(ValueObject):
@@ -111,7 +115,7 @@ class CliCommandSpec(ValueObject):
             )
             parameters.append(
                 VariableSpec.create(
-                    name=param_name, 
+                    name=param_name,
                     type_spec=annotated_type,
                     assignment=default_assignment,
                 )
@@ -141,14 +145,14 @@ class CliCommandSpec(ValueObject):
                     type_spec=parse_type_str(use_case_type),
                     assignment=AssignmentSpec.from_subscript(
                         value=AssignmentSpec.from_symbol("Provide"),
-                        slice=AssignmentSpec.from_literal(provider_path)
-                    )
+                        slice=AssignmentSpec.from_literal(provider_path),
+                    ),
                 ),
             ],
             return_annotation=parse_type_str(result_type),
             function_type=FunctionType.FUNCTION,
             suite="return use_case.execute(cmd)",
-            decorators=["inject"]
+            decorators=["inject"],
         )
 
         return ModuleSpec.create(
@@ -228,7 +232,9 @@ class CliCommandSpec(ValueObject):
         for cmd in commands:
             use_case = use_case_index.get(cmd.use_case)
             if not use_case:
-                raise ValueError(f"UseCase '{cmd.use_case}' not found for CLI command '{cmd.name}'")
+                raise ValueError(
+                    f"UseCase '{cmd.use_case}' not found for CLI command '{cmd.name}'"
+                )
             module = cmd.to_module_spec(context_name, use_case)
             modules.append(module)
 
@@ -264,4 +270,3 @@ class CliCommandSpec(ValueObject):
                 commands.append(cmd)
 
         return commands
-

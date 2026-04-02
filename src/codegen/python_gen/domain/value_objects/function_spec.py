@@ -10,7 +10,7 @@ from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.python_gen.domain.enums import FunctionType
 from pydantic import Field
 
-from codegen.shared.models import ValueObject
+from codegen.shared.domain.core import ValueObject
 
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.python_gen.domain.value_objects.type_annotation_spec import (
@@ -52,8 +52,6 @@ class FunctionSpec(ValueObject):
             is_private=is_private,
             description=description,
         )
-
-
 
     def get_required_types(self) -> set[str]:
         types: set[str] = set()
