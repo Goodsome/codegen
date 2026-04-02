@@ -1,23 +1,27 @@
-from codegen.domain_definition.domain.value_objects.method_output import MethodOutput
+from typing import Self
+
+from pydantic import Field
+
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
-from codegen.shared.domain.value_objects.pascal_string import PascalString
-from codegen.shared.domain.value_objects.snake_string import SnakeString
-from codegen.shared.models import ValueObject
-from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
-from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
-from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
-from codegen.python_gen.domain.value_objects.type_annotation_spec import (
-    TypeAnnotationSpec,
-)
-from codegen.python_gen.domain.value_objects.module_assignment_spec import ModuleAssignmentSpec
-from codegen.python_gen.domain.enums import FunctionType
+from codegen.domain_definition.domain.value_objects.method_output import MethodOutput
+from codegen.domain_definition.domain.value_objects.rule_spec import RuleSpec
 from codegen.domain_definition.domain.value_objects.type_definition import (
     TypeDefinition,
 )
-from pydantic import Field
-from codegen.domain_definition.domain.value_objects.rule_spec import RuleSpec
-from typing import Self
+from codegen.python_gen.domain.enums import FunctionType
+from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
+from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
+from codegen.python_gen.domain.value_objects.module_assignment_spec import (
+    ModuleAssignmentSpec,
+)
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
+from codegen.python_gen.domain.value_objects.type_annotation_spec import (
+    TypeAnnotationSpec,
+)
+from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
+from codegen.shared.domain.value_objects.pascal_string import PascalString
+from codegen.shared.domain.value_objects.snake_string import SnakeString
+from codegen.shared.models import ValueObject
 
 
 class MethodSpec(ValueObject):
@@ -34,7 +38,7 @@ class MethodSpec(ValueObject):
         cls: type[Self], name: str, inputs: list[AttributeSpec], output: MethodOutput
     ) -> Self:
         return cls(name=SnakeString(name), inputs=inputs, output=output)
-        
+
     def function_type(self) -> FunctionType:
         if self.inputs and self.inputs[0].name == "cls":
             return FunctionType.CLASS_METHOD
@@ -43,7 +47,9 @@ class MethodSpec(ValueObject):
         return FunctionType.FUNCTION
 
     def to_function_spec(
-        self: Self, type: FunctionType, class_name: str | None = None
+        self: Self,
+        type: FunctionType | None = None,
+        class_name: str | None = None,
     ) -> FunctionSpec:
         """将 MethodSpec 转换为 PythonGen FunctionSpec"""
         parameters = [attr.to_variable_spec() for attr in self.inputs or []]
@@ -124,17 +130,15 @@ class MethodSpec(ValueObject):
     def to_test_module_spec(self: Self) -> ModuleSpec:
         """Generate test module with test functions for each rule."""
         bindings_name = f"{self.name}_bindings"
-        functions = [
-            rule.to_test_function_spec(bindings_name) for rule in self.rules
-        ]
+        functions = [rule.to_test_function_spec(bindings_name) for rule in self.rules]
         return ModuleSpec.create(
             name=f"test_{self.name}",
             functions=functions,
-            assignments=[ModuleAssignmentSpec(
-                name="_",
-                value=bindings_name,
-                require_types=[bindings_name]
-            )]
+            assignments=[
+                ModuleAssignmentSpec(
+                    name="_", value=bindings_name, require_types=[bindings_name]
+                )
+            ],
         )
 
     def to_bindings_module_spec(self: Self) -> ModuleSpec:
@@ -143,7 +147,7 @@ class MethodSpec(ValueObject):
         gf = self._get_match_semantic_function("given")
         wf = self._get_match_semantic_function("when")
         tf = self._get_match_semantic_function("then")
-        
+
         af = FunctionSpec.create(
             name="arrange_done",
             return_annotation=TypeAnnotationSpec(name="Self"),
@@ -154,7 +158,7 @@ class MethodSpec(ValueObject):
                 )
             ],
             function_type=FunctionType.INSTANCE_METHOD,
-            suite='''return self''',
+            suite="""return self""",
         )
         bc = ClassSpec.create(
             name=bindings_name,
@@ -168,7 +172,7 @@ class MethodSpec(ValueObject):
             classes=[bc],
             functions=[bf],
         )
-        
+
     def _get_match_semantic_function(self, name: str) -> FunctionSpec:
         return FunctionSpec.create(
             name=name,
@@ -181,7 +185,7 @@ class MethodSpec(ValueObject):
                 VariableSpec.create(
                     name="semantic_text",
                     type_spec=TypeAnnotationSpec(name="str"),
-                )
+                ),
             ],
             function_type=FunctionType.INSTANCE_METHOD,
             suite=f"""
@@ -200,4 +204,3 @@ return self""",
             function_type=FunctionType.FUNCTION,
             suite=f"""return {bindings_name}()""",
         )
-        

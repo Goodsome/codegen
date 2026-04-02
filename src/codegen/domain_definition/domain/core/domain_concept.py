@@ -1,0 +1,67 @@
+from typing import Iterable, Self
+from codegen.shared.domain.value_objects.pascal_string import PascalString
+from codegen.python_gen.domain.enums import FieldFlavor
+from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
+from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
+from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
+from codegen.domain_definition.domain.core.has_attributes import HasAttributes
+from codegen.domain_definition.domain.core.has_behaviors import HasBehaviors
+
+class DomainConcept(HasAttributes, HasBehaviors):
+    """Specification of a core entity to be generated."""
+
+    name: PascalString
+    description: str
+
+    @property
+    def entity_name(self) -> str:
+        return str(self.name)
+    
+    def to_module_spec(self: Self) -> ModuleSpec:
+        """将 DomainConcept 转换为 ModuleSpec"""
+        vs = self.to_variable_specs(FieldFlavor.PYDANTIC)
+        fs = self.to_function_specs()
+        class_spec = ClassSpec.create(
+            name=self.name,
+            description=self.description,
+            inheritance=["BaseModel"],
+            attributes=vs,
+            methods=fs,
+        )
+        return ModuleSpec.create(name=self.name, classes=[class_spec])
+
+    @classmethod
+    def to_package_spec(cls: type[Self], domain_concept: Iterable[Self]) -> PackageSpec:
+        """将多个 DomainConcept 转换为一个 'core' 包"""
+        modules = [dc.to_module_spec() for dc in domain_concept]
+        return PackageSpec.create(name=cls.__pkg_name__, modules=modules)
+
+    @classmethod
+    def from_module_spec(cls: type[Self], module: ModuleSpec) -> Self:
+        """将 ModuleSpec 逆向解析为 DomainConcept"""
+        cls_spec = module.classes[0]
+        attributes = cls.from_variable_specs(cls_spec.attributes)
+        behaviors = cls.from_function_specs(cls_spec.methods)
+        return cls(
+            name=cls_spec.name,
+            description=cls_spec.description,
+            attributes=attributes,
+            behaviors=behaviors,
+        )
+
+    @classmethod
+    def from_package_spec(cls: type[Self], package: PackageSpec) -> list[Self]:
+        """将 PackageSpec 包逆向解析为 DomainConcept 列表"""
+        if package.name != cls.__pkg_name__:
+            return []
+        aggregates: list[Self] = []
+        for module in package.modules:
+            if module.is_init_module():
+                continue
+            aggregates.append(cls.from_module_spec(module))
+        return aggregates
+
+    def update(self: Self, description: str | None = None) -> None:
+        """Update scalar metadata fields. Preserves internal structure."""
+        if description is not None:
+            self.description = description

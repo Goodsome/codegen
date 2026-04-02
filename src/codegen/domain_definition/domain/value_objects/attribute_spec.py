@@ -6,6 +6,7 @@ from codegen.domain_definition.domain.value_objects.type_definition import (
 from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.python_gen.domain.enums import AssignmentFlavor, FieldFlavor
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
+from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
 from pydantic import Field
 
 logger = logging.getLogger(__name__)
@@ -29,7 +30,6 @@ class AttributeSpec(TypeDefinition):
 
     def to_variable_spec(self, flavor: FieldFlavor | None = None) -> VariableSpec:
         """将 AttributeSpec 转换为 PythonGen VariableSpec"""
-        from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
 
         # 使用继承的 to_python_annotation() 方法转换类型
         annotation = self.to_python_annotation()

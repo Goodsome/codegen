@@ -118,6 +118,7 @@ contexts:
         name: __new__
         output:
           type: any
+      description: ''
       name: SnakeString
     - behaviors:
       - inputs:
@@ -128,6 +129,7 @@ contexts:
         name: __new__
         output:
           type: any
+      description: ''
       name: PascalString
     - behaviors:
       - inputs:
@@ -138,6 +140,7 @@ contexts:
         name: __new__
         output:
           type: any
+      description: ''
       name: KebabString
     - behaviors:
       - inputs:
@@ -192,6 +195,7 @@ contexts:
         name: __new__
         output:
           type: any
+      description: ''
       name: MacroString
   infrastructure:
     implementations:
@@ -2572,6 +2576,29 @@ contexts:
         name: get_attribute
         output:
           type: AttributeSpec
+      - description: 将 HasAttributes 转换为 PythonGen VariableSpec 列表
+        inputs:
+        - name: self
+          type: Self
+        - name: flavor
+          optional: true
+          type: FieldFlavor
+        name: to_variable_specs
+        output:
+          container: list
+          type: VariableSpec
+      - description: 将 VariableSpec 列表逆向解析为 HasAttributes
+        inputs:
+        - container: type
+          name: cls
+          type: Self
+        - container: iterable
+          name: specs
+          type: VariableSpec
+        name: from_variable_specs
+        output:
+          container: list
+          type: AttributeSpec
       description: 能力：拥有内部状态（属性）
       name: HasAttributes
     - attributes:
@@ -2580,14 +2607,20 @@ contexts:
         name: behaviors
         type: MethodSpec
       - container: class_var
-        name: __root_pkg_name__
+        name: __pkg_name__
         type: string
       behaviors:
+      - inputs:
+        - name: self
+          type: Self
+        name: root_pkg_name
+        output:
+          type: string
       - description: 'Dynamic: test package name (e.g., entity name)'
         inputs:
         - name: self
           type: Self
-        name: test_package_name
+        name: entity_name
         output:
           type: string
       - description: Add a MethodSpec behavior. Raises ValueError if behavior with
@@ -2635,8 +2668,91 @@ contexts:
         name: to_test_package_spec
         output:
           type: PackageSpec
+      - description: Convert behaviors to a list of FunctionSpecs.
+        inputs:
+        - name: self
+          type: Self
+        name: to_function_specs
+        output:
+          container: list
+          type: FunctionSpec
+      - description: 将 FunctionSpec 列表逆向解析为 MethodSpec 列表
+        inputs:
+        - container: type
+          name: cls
+          type: Self
+        - container: iterable
+          name: methods
+          type: FunctionSpec
+        name: from_function_specs
+        output:
+          container: list
+          type: MethodSpec
       description: 能力：拥有行为（方法）
       name: HasBehaviors
+    - attributes:
+      - name: name
+        type: PascalString
+      - name: description
+        type: string
+      behaviors:
+      - inputs:
+        - name: self
+          type: Self
+        name: entity_name
+        output:
+          type: string
+      - description: 将 DomainConcept 转换为 ModuleSpec
+        inputs:
+        - name: self
+          type: Self
+        name: to_module_spec
+        output:
+          type: ModuleSpec
+      - description: 将多个 DomainConcept 转换为一个 'core' 包
+        inputs:
+        - container: type
+          name: cls
+          type: Self
+        - container: iterable
+          name: domain_concept
+          type: Self
+        name: to_package_spec
+        output:
+          type: PackageSpec
+      - description: 将 ModuleSpec 逆向解析为 DomainConcept
+        inputs:
+        - container: type
+          name: cls
+          type: Self
+        - name: module
+          type: ModuleSpec
+        name: from_module_spec
+        output:
+          type: Self
+      - description: 将 PackageSpec 包逆向解析为 DomainConcept 列表
+        inputs:
+        - container: type
+          name: cls
+          type: Self
+        - name: package
+          type: PackageSpec
+        name: from_package_spec
+        output:
+          container: list
+          type: Self
+      - description: Update scalar metadata fields. Preserves internal structure.
+        inputs:
+        - name: self
+          type: Self
+        - name: description
+          optional: true
+          type: string
+        name: update
+        output:
+          type: None
+      description: Specification of a core entity to be generated.
+      name: DomainConcept
     entities:
     - attributes:
       - name: name
@@ -3163,70 +3279,9 @@ contexts:
       description: 接口层总规范
       name: InterfaceSpec
     - attributes:
-      - name: name
-        type: PascalString
-      - default: str
-        name: description
-        type: string
       - default: value_objects
-        name: __root_pkg_name__
+        name: __pkg_name__
         type: Any
-      behaviors:
-      - inputs:
-        - name: self
-          type: Self
-        name: test_package_name
-        output:
-          type: string
-      - description: 将 ValueObjectSpec 转换为 ModuleSpec
-        inputs:
-        - name: self
-          type: Self
-        name: to_module_spec
-        output:
-          type: ModuleSpec
-      - description: 将多个 ValueObjectSpec 转换为一个 'value_objects' 包
-        inputs:
-        - container: type
-          name: cls
-          type: Self
-        - container: iterable
-          name: value_objects
-          type: Self
-        name: to_package_spec
-        output:
-          type: PackageSpec
-      - description: 将 ModuleSpec 逆向解析为 ValueObjectSpec
-        inputs:
-        - container: type
-          name: cls
-          type: Self
-        - name: module
-          type: ModuleSpec
-        name: from_module_spec
-        output:
-          type: Self
-      - description: 将 'value_objects' 包逆向解析为 ValueObjectSpec 列表
-        inputs:
-        - container: type
-          name: cls
-          type: Self
-        - name: package
-          type: PackageSpec
-        name: from_package_spec
-        output:
-          container: list
-          type: Self
-      - description: Update scalar metadata fields. Preserves internal structure.
-        inputs:
-        - name: self
-          type: Self
-        - name: description
-          optional: true
-          type: string
-        name: update
-        output:
-          type: None
       description: Specification of a value object to be generated.
       name: ValueObjectSpec
     - attributes:
@@ -3477,69 +3532,9 @@ contexts:
       description: Specification of an implementation to be generated.
       name: ImplementationSpec
     - attributes:
-      - name: name
-        type: PascalString
-      - name: description
-        type: string
       - default: core
-        name: __root_pkg_name__
+        name: __pkg_name__
         type: Any
-      behaviors:
-      - inputs:
-        - name: self
-          type: Self
-        name: test_package_name
-        output:
-          type: string
-      - description: 将 AggregateSpec 转换为 ModuleSpec
-        inputs:
-        - name: self
-          type: Self
-        name: to_module_spec
-        output:
-          type: ModuleSpec
-      - description: 将多个 base_model 转换为一个 'core' 包
-        inputs:
-        - container: type
-          name: cls
-          type: Self
-        - container: iterable
-          name: aggregates
-          type: Self
-        name: to_package_spec
-        output:
-          type: PackageSpec
-      - description: 将 ModuleSpec 逆向解析为 AggregateSpec
-        inputs:
-        - container: type
-          name: cls
-          type: Self
-        - name: module
-          type: ModuleSpec
-        name: from_module_spec
-        output:
-          type: Self
-      - description: 将 'aggregates' 包逆向解析为 AggregateSpec 列表
-        inputs:
-        - container: type
-          name: cls
-          type: Self
-        - name: package
-          type: PackageSpec
-        name: from_package_spec
-        output:
-          container: list
-          type: Self
-      - description: Update scalar metadata fields. Preserves internal structure.
-        inputs:
-        - name: self
-          type: Self
-        - name: description
-          optional: true
-          type: string
-        name: update
-        output:
-          type: None
       description: Specification of a core entity to be generated.
       name: CoreSpec
     - attributes:
@@ -4088,70 +4083,9 @@ contexts:
       description: Specification of a domain service to be generated.
       name: ServiceSpec
     - attributes:
-      - name: name
-        type: PascalString
-      - default: str
-        name: description
-        type: string
       - default: entities
-        name: __root_pkg_name__
+        name: __pkg_name__
         type: Any
-      behaviors:
-      - inputs:
-        - name: self
-          type: Self
-        name: test_package_name
-        output:
-          type: string
-      - description: 将 EntitySpec 转换为 ModuleSpec
-        inputs:
-        - name: self
-          type: Self
-        name: to_module_spec
-        output:
-          type: ModuleSpec
-      - description: 将多个 EntitySpec 转换为一个 'entities' 包
-        inputs:
-        - container: type
-          name: cls
-          type: Self
-        - container: iterable
-          name: entities
-          type: Self
-        name: to_package_spec
-        output:
-          type: PackageSpec
-      - description: 将 ModuleSpec 逆向解析为 EntitySpec
-        inputs:
-        - container: type
-          name: cls
-          type: Self
-        - name: module
-          type: ModuleSpec
-        name: from_module_spec
-        output:
-          type: Self
-      - description: 将 'entities' 包逆向解析为 EntitySpec 列表
-        inputs:
-        - container: type
-          name: cls
-          type: Self
-        - name: package
-          type: PackageSpec
-        name: from_package_spec
-        output:
-          container: list
-          type: Self
-      - description: Update scalar metadata fields. Preserves internal structure.
-        inputs:
-        - name: self
-          type: Self
-        - name: description
-          optional: true
-          type: string
-        name: update
-        output:
-          type: None
       description: Specification of an entity.
       name: EntitySpec
     - attributes:
@@ -4395,69 +4329,9 @@ contexts:
       description: Specification of an enum to be generated.
       name: EnumSpec
     - attributes:
-      - name: name
-        type: PascalString
-      - name: description
-        type: string
       - default: aggregates
-        name: __root_pkg_name__
+        name: __pkg_name__
         type: Any
-      behaviors:
-      - inputs:
-        - name: self
-          type: Self
-        name: test_package_name
-        output:
-          type: string
-      - description: 将 AggregateSpec 转换为 ModuleSpec
-        inputs:
-        - name: self
-          type: Self
-        name: to_module_spec
-        output:
-          type: ModuleSpec
-      - description: 将多个 AggregateSpec 转换为一个 'aggregates' 包
-        inputs:
-        - container: type
-          name: cls
-          type: Self
-        - container: iterable
-          name: aggregates
-          type: Self
-        name: to_package_spec
-        output:
-          type: PackageSpec
-      - description: 将 ModuleSpec 逆向解析为 AggregateSpec
-        inputs:
-        - container: type
-          name: cls
-          type: Self
-        - name: module
-          type: ModuleSpec
-        name: from_module_spec
-        output:
-          type: Self
-      - description: 将 'aggregates' 包逆向解析为 AggregateSpec 列表
-        inputs:
-        - container: type
-          name: cls
-          type: Self
-        - name: package
-          type: PackageSpec
-        name: from_package_spec
-        output:
-          container: list
-          type: Self
-      - description: Update scalar metadata fields. Preserves internal structure.
-        inputs:
-        - name: self
-          type: Self
-        - name: description
-          optional: true
-          type: string
-        name: update
-        output:
-          type: None
       description: Specification of a domain aggregate to be generated.
       name: AggregateSpec
     - attributes:
@@ -4793,6 +4667,7 @@ contexts:
         - name: self
           type: Self
         - name: type
+          optional: true
           type: FunctionType
         - name: class_name
           optional: true

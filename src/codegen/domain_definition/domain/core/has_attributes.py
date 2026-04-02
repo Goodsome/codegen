@@ -1,7 +1,10 @@
-from typing import Self
+from typing import Self, Iterable
 
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
 from codegen.shared.domain.value_objects.snake_string import SnakeString
+from codegen.python_gen.domain.enums import FieldFlavor
+from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
+
 from pydantic import BaseModel, Field
 
 
@@ -41,3 +44,18 @@ class HasAttributes(BaseModel):
             if attr.name == name:
                 return attr
         raise ValueError(f"Attribute '{name}' not found in '{self}'")
+
+    def to_variable_specs(self, flavor: FieldFlavor | None = None) -> list[VariableSpec]:
+        """将 HasAttributes 转换为 PythonGen VariableSpec 列表"""
+        return [
+            attr.to_variable_spec(flavor=flavor)
+            for attr in self.attributes
+        ]
+    
+    @classmethod
+    def from_variable_specs(cls: type[Self], specs: Iterable[VariableSpec]) -> list[AttributeSpec]:
+        """将 VariableSpec 列表逆向解析为 HasAttributes"""
+        return [
+            AttributeSpec.from_variable_spec(spec)
+            for spec in specs
+        ]

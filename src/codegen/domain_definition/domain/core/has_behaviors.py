@@ -1,20 +1,26 @@
-from typing import Self, ClassVar
+from typing import Self, Iterable, ClassVar
+
+from pydantic import BaseModel, Field
 
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
+from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.value_objects.snake_string import SnakeString
-from pydantic import BaseModel, Field
 
 
 class HasBehaviors(BaseModel):
     """能力：拥有行为（方法）"""
 
     behaviors: list[MethodSpec] = Field(default_factory=list)
-
-    __root_pkg_name__: ClassVar[str]
+    
+    __pkg_name__: ClassVar[str]
 
     @property
-    def test_package_name(self) -> str:
+    def root_pkg_name(self) -> str:
+        raise NotImplementedError("Subclasses must implement 'test_package_name'")
+
+    @property
+    def entity_name(self) -> str:
         """Dynamic: test package name (e.g., entity name)"""
         raise NotImplementedError("Subclasses must implement 'test_package_name'")
 
@@ -59,8 +65,20 @@ class HasBehaviors(BaseModel):
             if tm.functions:
                 modules.append(tm)
                 modules.append(bm)
-        p = PackageSpec.create(name=self.test_package_name, modules=modules)
+        p = PackageSpec.create(name=self.entity_name, modules=modules)
         return PackageSpec.create(
-            name=self.__test_root_pkg_name__,
+            name=self.__pkg_name__,
             sub_packages=[p],
         )
+
+    def to_function_specs(self: Self) -> list[FunctionSpec]:
+        """Convert behaviors to a list of FunctionSpecs."""
+        return [beh.to_function_spec(class_name=self.entity_name) for beh in self.behaviors]
+
+    @classmethod
+    def from_function_specs(cls: type[Self], methods: Iterable[FunctionSpec]) -> list[MethodSpec]:
+        """将 FunctionSpec 列表逆向解析为 MethodSpec 列表"""
+        return [
+            MethodSpec.from_function_spec(method)
+            for method in methods
+        ]
