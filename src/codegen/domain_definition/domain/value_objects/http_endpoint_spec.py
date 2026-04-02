@@ -3,22 +3,22 @@ from typing import Self
 
 from pydantic import Field
 
-from codegen.domain_definition.domain.enums import UseCaseKind
 from codegen.domain_definition.domain.entities.use_case_spec import UseCaseSpec
+from codegen.domain_definition.domain.enums import UseCaseKind
 from codegen.python_gen.domain.enums import FunctionType
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
-from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.module_assignment_spec import (
     ModuleAssignmentSpec,
 )
+from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import (
     parse_type_str,
 )
-from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.shared.domain.core import ValueObject
+from codegen.shared.domain.value_objects.snake_string import SnakeString
 
 
 class HttpEndpointSpec(ValueObject):
@@ -109,7 +109,7 @@ class HttpEndpointSpec(ValueObject):
         cls,
         module: ModuleSpec,
         use_case_index: dict[str, UseCaseSpec],
-    ) -> "HttpEndpointSpec | None":
+    ) -> Self | None:
         """从 ModuleSpec 逆向解析为 HttpEndpointSpec
 
         Args:

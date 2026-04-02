@@ -168,7 +168,7 @@ class CliCommandSpec(ValueObject):
         cls,
         module: ModuleSpec,
         use_case_index: dict[str, UseCaseSpec],
-    ) -> "CliCommandSpec | None":
+    ) -> Self | None:
         """从 ModuleSpec 逆向解析为 CliCommandSpec
 
         Args:

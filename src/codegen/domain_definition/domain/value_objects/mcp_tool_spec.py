@@ -99,7 +99,7 @@ class McpToolSpec(ValueObject):
         cls,
         module: ModuleSpec,
         use_case_index: dict[str, UseCaseSpec],
-    ) -> "McpToolSpec | None":
+    ) -> Self | None:
         """从 ModuleSpec 逆向解析为 McpToolSpec
 
         Args:

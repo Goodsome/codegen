@@ -54,7 +54,9 @@ GLOBAL_REGISTRY = {
     "Configuration": "dependency_injector.providers",
     "inject": "dependency_injector.wiring",
     "Provide": "dependency_injector.wiring",
-    "pytest": "__root__"
+    "pytest": "__root__",
+    "CoreSchema": "pydantic_core.core_schema",
+    "BaseSettings": "pydantic_settings",
 }
 
 TEMPORARY_MAPPING = {"dataclass(frozen=True)": "dataclass"}

@@ -32,12 +32,14 @@ class DomainSpec(Entity):
         value_objects_pkg = ValueObjectSpec.to_package_spec(self.value_objects)
         services_pkg = ServiceSpec.to_package_spec(self.services)
         ports_pkg = PortSpec.to_package_spec(self.ports)
+        core_pkg = CoreSpec.to_package_spec(self.core)
         sub_packages = [
             aggregate_pkg,
             entity_pkg,
             value_objects_pkg,
             services_pkg,
             ports_pkg,
+            core_pkg,
         ]
         modules: list[ModuleSpec] = []
         if self.enums:

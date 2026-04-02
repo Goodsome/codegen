@@ -3,6 +3,7 @@ from typing import Any
 import caseconverter
 from pydantic import GetCoreSchemaHandler
 from pydantic_core import core_schema
+from pydantic_core.core_schema import CoreSchema
 
 
 class NamingString(str):
@@ -28,7 +29,7 @@ class NamingString(str):
     @classmethod
     def __get_pydantic_core_schema__(
         cls, source_type: Any, handler: GetCoreSchemaHandler
-    ) -> core_schema.CoreSchema:
+    ) -> CoreSchema:
         return core_schema.no_info_after_validator_function(
             cls,
             core_schema.str_schema(),

@@ -1,14 +1,10 @@
-from typing import TYPE_CHECKING
-
 from pydantic import Field
 
 from codegen.shared.domain.core import Entity
 from codegen.domain_definition.domain.entities.config_spec import ConfigSpec
 from codegen.domain_definition.domain.entities.container_spec import ContainerSpec
-
-if TYPE_CHECKING:
-    from codegen.domain_definition.domain.entities.bounded_context import BoundedContext
-    from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
+from codegen.domain_definition.domain.entities.bounded_context import BoundedContext
+from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 
 
 class BootstrapSpec(Entity):
@@ -17,7 +13,7 @@ class BootstrapSpec(Entity):
     config: ConfigSpec | None = Field(default=None)
     container: ContainerSpec | None = Field(default=None)
 
-    def to_package_spec(self, contexts: list["BoundedContext"]) -> "PackageSpec | None":
+    def to_package_spec(self, contexts: list[BoundedContext]) -> PackageSpec | None:
         """将 BootstrapSpec 转换为 PackageSpec
 
         Args:
@@ -26,8 +22,6 @@ class BootstrapSpec(Entity):
         Returns:
             PackageSpec for bootstrap package, or None if no bootstrap spec
         """
-        from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
-
         modules = []
 
         if self.config:

@@ -274,7 +274,7 @@ contexts:
           type: GetCoreSchemaHandler
         name: __get_pydantic_core_schema__
         output:
-          type: core_schema.CoreSchema
+          type: CoreSchema
       description: 基于 case-converter 的增强型字符串
       name: NamingString
     - base_types:
@@ -4399,7 +4399,8 @@ contexts:
           type: BoundedContext
         name: to_package_spec
         output:
-          type: PackageSpec | None
+          optional: true
+          type: PackageSpec
       description: Specification of the bootstrap configuration.
       name: BootstrapSpec
     - attributes:
@@ -4623,7 +4624,8 @@ contexts:
           type: UseCaseSpec
         name: from_module_spec
         output:
-          type: CliCommandSpec | None
+          optional: true
+          type: Self
       - description: Update scalar metadata fields. Preserves internal structure.
         inputs:
         - name: self
@@ -4879,7 +4881,8 @@ contexts:
           type: UseCaseSpec
         name: from_module_spec
         output:
-          type: HttpEndpointSpec | None
+          optional: true
+          type: Self
       - description: Update scalar metadata fields. Preserves internal structure.
         inputs:
         - name: self
@@ -5069,7 +5072,8 @@ contexts:
           type: UseCaseSpec
         name: from_module_spec
         output:
-          type: McpToolSpec | None
+          optional: true
+          type: Self
       - description: Update scalar metadata fields. Preserves internal structure.
         inputs:
         - name: self
