@@ -1,12 +1,15 @@
 from typing import ClassVar, Iterable, Self
-from codegen.shared.domain.value_objects.pascal_string import PascalString
-from codegen.python_gen.domain.enums import FieldFlavor
-from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
-from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
-from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
+
+from pydantic import Field
+
 from codegen.domain_definition.domain.core.has_attributes import HasAttributes
 from codegen.domain_definition.domain.core.has_behaviors import HasBehaviors
-from pydantic import Field
+from codegen.python_gen.domain.enums import FieldFlavor
+from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
+from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
+from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
+from codegen.shared.domain.value_objects.pascal_string import PascalString
+
 
 class DomainConcept(HasAttributes, HasBehaviors):
     """Specification of a core entity to be generated."""
@@ -14,13 +17,13 @@ class DomainConcept(HasAttributes, HasBehaviors):
     name: PascalString
     description: str
     base_types: list[str] = Field(default_factory=list)
-    
+
     __concept_name__: ClassVar[str]
 
     @property
     def entity_name(self) -> str:
         return str(self.name)
-    
+
     def to_module_spec(self: Self) -> ModuleSpec:
         """将 DomainConcept 转换为 ModuleSpec"""
         vs = self.to_variable_specs(FieldFlavor.PYDANTIC)
@@ -44,7 +47,11 @@ class DomainConcept(HasAttributes, HasBehaviors):
         cls_spec = module.classes[0]
         attributes = cls.from_variable_specs(cls_spec.attributes)
         behaviors = cls.from_function_specs(cls_spec.methods)
-        base_types = [i for i in cls_spec.inheritance if i not in ["Entity", "ValueObject", "AggregateRoot"]]
+        base_types = [
+            i
+            for i in cls_spec.inheritance
+            if i not in ["Entity", "ValueObject", "AggregateRoot"]
+        ]
         return cls(
             name=cls_spec.name,
             description=cls_spec.description,
@@ -71,7 +78,13 @@ class DomainConcept(HasAttributes, HasBehaviors):
             aggregates.append(cls.from_module_spec(module))
         return aggregates
 
-    def update(self: Self, description: str | None = None) -> None:
+    def update(
+        self: Self,
+        description: str | None = None,
+        base_types: list[str] | None = None,
+    ) -> None:
         """Update scalar metadata fields. Preserves internal structure."""
         if description is not None:
             self.description = description
+        if base_types is not None:
+            self.base_types = base_types

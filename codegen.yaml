@@ -2772,6 +2772,10 @@ contexts:
         - name: description
           optional: true
           type: string
+        - container: list
+          name: base_types
+          optional: true
+          type: string
         name: update
         output:
           type: None
