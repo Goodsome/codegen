@@ -2783,21 +2783,18 @@ contexts:
         type: PascalString
       - name: kind
         type: UseCaseKind
-      - container: list
-        default: list
+      - default: AttributeSpecList
         name: inputs
-        type: AttributeSpec
-      - container: list
-        default: list
+        type: AttributeSpecList
+      - default: AttributeSpecList
         name: outputs
-        type: AttributeSpec
+        type: AttributeSpecList
       - default: str
         name: description
         type: string
-      - container: list
-        default: list
+      - default: AttributeSpecList
         name: dependencies
-        type: AttributeSpec
+        type: AttributeSpecList
       behaviors:
       - inputs:
         - container: type
@@ -2874,124 +2871,6 @@ contexts:
         name: update
         output:
           type: Self
-      - description: Add an AttributeSpec input. Raises ValueError if input with same
-          name exists.
-        inputs:
-        - name: self
-          type: Self
-        - name: input
-          type: AttributeSpec
-        name: add_input
-        output:
-          type: Self
-      - description: Update an existing AttributeSpec input by name. Raises ValueError
-          if not found.
-        inputs:
-        - name: self
-          type: Self
-        - name: input
-          type: AttributeSpec
-        name: update_input
-        output:
-          type: Self
-      - description: Remove an AttributeSpec input by name. Returns self for chaining.
-        inputs:
-        - name: self
-          type: Self
-        - name: name
-          type: SnakeString
-        name: remove_input
-        output:
-          type: Self
-      - description: Get an AttributeSpec input by name. Raises ValueError if not
-          found.
-        inputs:
-        - name: self
-          type: Self
-        - name: name
-          type: SnakeString
-        name: get_input
-        output:
-          type: AttributeSpec
-      - description: Add an AttributeSpec output. Raises ValueError if output with
-          same name exists.
-        inputs:
-        - name: self
-          type: Self
-        - name: output
-          type: AttributeSpec
-        name: add_output
-        output:
-          type: Self
-      - description: Update an existing AttributeSpec output by name. Raises ValueError
-          if not found.
-        inputs:
-        - name: self
-          type: Self
-        - name: output
-          type: AttributeSpec
-        name: update_output
-        output:
-          type: Self
-      - description: Remove an AttributeSpec output by name. Returns self for chaining.
-        inputs:
-        - name: self
-          type: Self
-        - name: name
-          type: SnakeString
-        name: remove_output
-        output:
-          type: Self
-      - description: Get an AttributeSpec output by name. Raises ValueError if not
-          found.
-        inputs:
-        - name: self
-          type: Self
-        - name: name
-          type: SnakeString
-        name: get_output
-        output:
-          type: AttributeSpec
-      - description: Add an AttributeSpec dependency. Raises ValueError if dependency
-          with same name exists.
-        inputs:
-        - name: self
-          type: Self
-        - name: dependency
-          type: AttributeSpec
-        name: add_dependency
-        output:
-          type: Self
-      - description: Update an existing AttributeSpec dependency by name. Raises ValueError
-          if not found.
-        inputs:
-        - name: self
-          type: Self
-        - name: dependency
-          type: AttributeSpec
-        name: update_dependency
-        output:
-          type: Self
-      - description: Remove an AttributeSpec dependency by name. Returns self for
-          chaining.
-        inputs:
-        - name: self
-          type: Self
-        - name: name
-          type: SnakeString
-        name: remove_dependency
-        output:
-          type: Self
-      - description: Get an AttributeSpec dependency by name. Raises ValueError if
-          not found.
-        inputs:
-        - name: self
-          type: Self
-        - name: name
-          type: SnakeString
-        name: get_dependency
-        output:
-          type: AttributeSpec
       description: Specification of a use case to be generated.
       name: UseCaseSpec
     - attributes:
@@ -3451,10 +3330,9 @@ contexts:
       - default: AttributeSpecList
         name: attributes
         type: AttributeSpecList
-      - container: list
-        default: list
+      - default: MethodSpecList
         name: private_methods
-        type: MethodSpec
+        type: MethodSpecList
       behaviors:
       - inputs:
         - container: type
@@ -3523,44 +3401,6 @@ contexts:
         name: update
         output:
           type: None
-      - description: Add a private MethodSpec. Raises ValueError if method with same
-          name exists.
-        inputs:
-        - name: self
-          type: Self
-        - name: method
-          type: MethodSpec
-        name: add_private_method
-        output:
-          type: Self
-      - description: Update an existing private MethodSpec by name. Raises ValueError
-          if not found.
-        inputs:
-        - name: self
-          type: Self
-        - name: method
-          type: MethodSpec
-        name: update_private_method
-        output:
-          type: Self
-      - description: Remove a private MethodSpec by name. Returns self for chaining.
-        inputs:
-        - name: self
-          type: Self
-        - name: name
-          type: SnakeString
-        name: remove_private_method
-        output:
-          type: Self
-      - description: Get a private MethodSpec by name. Raises ValueError if not found.
-        inputs:
-        - name: self
-          type: Self
-        - name: name
-          type: SnakeString
-        name: get_private_method
-        output:
-          type: MethodSpec
       description: Specification of an implementation to be generated.
       name: ImplementationSpec
     - attributes:
@@ -4060,10 +3900,9 @@ contexts:
       - name: aggregate
         optional: true
         type: PascalString
-      - container: list
-        default: list
+      - default: MethodSpecList
         name: operations
-        type: MethodSpec
+        type: MethodSpecList
       behaviors:
       - inputs:
         - container: type
@@ -4126,13 +3965,6 @@ contexts:
         output:
           container: list
           type: Self
-      - inputs:
-        - name: self
-          type: Self
-        name: get_final_operations
-        output:
-          container: list
-          type: MethodSpec
       - description: Update scalar metadata fields. Preserves internal structure.
         inputs:
         - name: self
@@ -4149,45 +3981,6 @@ contexts:
         name: update
         output:
           type: None
-      - description: Add a MethodSpec operation. Raises ValueError if operation with
-          same name exists.
-        inputs:
-        - name: self
-          type: Self
-        - name: operation
-          type: MethodSpec
-        name: add_operation
-        output:
-          type: Self
-      - description: Update an existing MethodSpec operation by name. Raises ValueError
-          if not found.
-        inputs:
-        - name: self
-          type: Self
-        - name: operation
-          type: MethodSpec
-        name: update_operation
-        output:
-          type: Self
-      - description: Remove a MethodSpec operation by name. Returns self for chaining.
-        inputs:
-        - name: self
-          type: Self
-        - name: name
-          type: SnakeString
-        name: remove_operation
-        output:
-          type: Self
-      - description: Get a MethodSpec operation by name. Raises ValueError if not
-          found.
-        inputs:
-        - name: self
-          type: Self
-        - name: name
-          type: SnakeString
-        name: get_operation
-        output:
-          type: MethodSpec
       description: Specification of a domain port to be generated.
       name: PortSpec
     - attributes:
