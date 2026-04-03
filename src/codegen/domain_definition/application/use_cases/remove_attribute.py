@@ -47,11 +47,11 @@ class RemoveAttribute:
             case (ElementType.APP_SERVICE, AttributeKind.DEPENDENCY):
                 context.application.get_service(cmd.element_name).dependencies.remove(attr_name)
             case (ElementType.USE_CASE, AttributeKind.DEPENDENCY):
-                context.application.get_use_case(cmd.element_name).remove_dependency(attr_name)
+                context.application.get_use_case(cmd.element_name).dependencies.remove(attr_name)
             case (ElementType.USE_CASE, AttributeKind.INPUT):
-                context.application.get_use_case(cmd.element_name).remove_input(attr_name)
+                context.application.get_use_case(cmd.element_name).inputs.remove(attr_name)
             case (ElementType.USE_CASE, AttributeKind.OUTPUT):
-                context.application.get_use_case(cmd.element_name).remove_output(attr_name)
+                context.application.get_use_case(cmd.element_name).outputs.remove(attr_name)
             case (ElementType.IMPLEMENTATION, AttributeKind.ATTRIBUTE):
                 context.infrastructure.get_implementation(cmd.element_name).attributes.remove(attr_name)
             case _:

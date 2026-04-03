@@ -62,13 +62,13 @@ class AddAttribute:
                     attribute
                 )
             case [ElementType.USE_CASE, AttributeKind.DEPENDENCY]:
-                context.application.get_use_case(cmd.element_name).add_dependency(
+                context.application.get_use_case(cmd.element_name).dependencies.add(
                     attribute
                 )
             case [ElementType.USE_CASE, AttributeKind.INPUT]:
-                context.application.get_use_case(cmd.element_name).add_input(attribute)
+                context.application.get_use_case(cmd.element_name).inputs.add(attribute)
             case [ElementType.USE_CASE, AttributeKind.OUTPUT]:
-                context.application.get_use_case(cmd.element_name).add_output(attribute)
+                context.application.get_use_case(cmd.element_name).outputs.add(attribute)
             case [ElementType.IMPLEMENTATION, AttributeKind.ATTRIBUTE]:
                 context.infrastructure.get_implementation(
                     cmd.element_name

@@ -62,13 +62,13 @@ class UpdateAttribute:
                     updated
                 )
             case [ElementType.USE_CASE, AttributeKind.DEPENDENCY]:
-                context.application.get_use_case(cmd.element_name).update_dependency(
+                context.application.get_use_case(cmd.element_name).dependencies.update(
                     updated
                 )
             case [ElementType.USE_CASE, AttributeKind.INPUT]:
-                context.application.get_use_case(cmd.element_name).update_input(updated)
+                context.application.get_use_case(cmd.element_name).inputs.update(updated)
             case [ElementType.USE_CASE, AttributeKind.OUTPUT]:
-                context.application.get_use_case(cmd.element_name).update_output(
+                context.application.get_use_case(cmd.element_name).outputs.update(
                     updated
                 )
             case [ElementType.IMPLEMENTATION, AttributeKind.ATTRIBUTE]:
