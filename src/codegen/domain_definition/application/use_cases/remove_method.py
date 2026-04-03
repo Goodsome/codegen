@@ -55,9 +55,9 @@ class RemoveMethod:
                     method_name
                 )
             case (ElementType.DOMAIN_PORT, MethodKind.OPERATION):
-                context.domain.get_port(cmd.element_name).remove_operation(method_name)
+                context.domain.get_port(cmd.element_name).operations.remove(method_name)
             case (ElementType.APP_PORT, MethodKind.OPERATION):
-                context.application.get_port(cmd.element_name).remove_operation(
+                context.application.get_port(cmd.element_name).operations.remove(
                     method_name
                 )
             case (ElementType.IMPLEMENTATION, MethodKind.PRIVATE):

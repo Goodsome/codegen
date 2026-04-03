@@ -94,9 +94,9 @@ class UpdateMethod:
                     method
                 )
             case [ElementType.DOMAIN_PORT, MethodKind.OPERATION]:
-                context.domain.get_port(cmd.element_name).update_operation(method)
+                context.domain.get_port(cmd.element_name).operations.update(method)
             case [ElementType.APP_PORT, MethodKind.OPERATION]:
-                context.application.get_port(cmd.element_name).update_operation(method)
+                context.application.get_port(cmd.element_name).operations.update(method)
             case [ElementType.IMPLEMENTATION, MethodKind.PRIVATE]:
                 context.infrastructure.get_implementation(
                     cmd.element_name

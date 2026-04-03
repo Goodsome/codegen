@@ -43,9 +43,10 @@ class ImplementationSpec(Entity):
 
     def to_module_spec(self, port: PortSpec) -> ModuleSpec:
         """将 ImplementationSpec 转换为 ModuleSpec（需要 port 获取 operations）"""
+        port_ops = list(port.operations)
         methods = [
             f.to_function_spec(type=FunctionType.INSTANCE_METHOD)
-            for f in port.get_final_operations()
+            for f in port_ops
         ]
         methods += [
             f.to_function_spec(
@@ -54,7 +55,7 @@ class ImplementationSpec(Entity):
             )
             for f in self.private_methods
         ]
-        for method in methods[len(port.get_final_operations()) :]:
+        for method in methods[len(port_ops) :]:
             method.is_private = True
 
         attributes = self.attributes.to_variable_specs()

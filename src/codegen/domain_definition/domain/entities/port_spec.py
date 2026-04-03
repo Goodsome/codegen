@@ -2,6 +2,7 @@ from typing import Iterable, Self
 
 from pydantic import Field
 
+from codegen.domain_definition.domain.core.method_spec_list import MethodSpecList
 from codegen.domain_definition.domain.enums import PortType
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
 from codegen.python_gen.domain.enums import FunctionType
@@ -9,7 +10,6 @@ from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
-from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.shared.domain.core import Entity
 
 
@@ -20,7 +20,7 @@ class PortSpec(Entity):
     description: str = Field(default_factory=str)
     kind: PortType
     aggregate: PascalString | None = None
-    operations: list[MethodSpec] = Field(default_factory=list)
+    operations: MethodSpecList = Field(default_factory=MethodSpecList)
 
     @classmethod
     def create(
@@ -40,7 +40,7 @@ class PortSpec(Entity):
             kind=kind,
             description=description,
             aggregate=aggregate,
-            operations=operations or [],
+            operations=MethodSpecList(root=operations or []),
         )
 
     def to_module_spec(self) -> ModuleSpec:
@@ -50,7 +50,7 @@ class PortSpec(Entity):
                 type=FunctionType.INSTANCE_METHOD,
                 class_name=self.name,
             )
-            for method in self.get_final_operations()
+            for method in self.operations
         ]
         for method in methods:
             if "abstractmethod" not in method.decorators:
@@ -73,9 +73,7 @@ class PortSpec(Entity):
     def from_module_spec(cls, module: ModuleSpec) -> Self:
         """将 ModuleSpec 逆向解析为 PortSpec"""
         cls_spec = module.classes[0]
-        operations = [
-            MethodSpec.from_function_spec(method) for method in cls_spec.methods
-        ]
+        operations = MethodSpecList.from_function_specs(cls_spec.methods)
         if "Repository" in cls_spec.name:
             kind = "repository"
             aggregate = cls_spec.name.replace("Repository", "")
@@ -87,7 +85,7 @@ class PortSpec(Entity):
             kind=kind,
             description=cls_spec.description,
             aggregate=aggregate,
-            operations=operations,
+            operations=operations.root,
         )
 
     @classmethod
@@ -102,15 +100,6 @@ class PortSpec(Entity):
             ports.append(cls.from_module_spec(module))
         return ports
 
-    def get_final_operations(self) -> list[MethodSpec]:
-        default_operations: list[MethodSpec] = self.operations
-        if self.kind is not PortType.REPOSITORY:
-            return default_operations
-        if self.aggregate is None:
-            return default_operations
-
-        return default_operations
-
     def update(
         self,
         kind: str | None = None,
@@ -124,35 +113,3 @@ class PortSpec(Entity):
             self.kind = PortType(kind)
         if aggregate is not None:
             self.aggregate = PascalString(aggregate)
-
-    def add_operation(self, operation: MethodSpec) -> Self:
-        """Add a MethodSpec operation. Raises ValueError if operation with same name exists."""
-        for op in self.operations:
-            if op.name == operation.name:
-                raise ValueError(
-                    f"Operation '{operation.name}' already exists in port '{self.name}'"
-                )
-        self.operations.append(operation)
-        return self
-
-    def update_operation(self, operation: MethodSpec) -> Self:
-        """Update an existing MethodSpec operation by name. Raises ValueError if not found."""
-        for i, op in enumerate(self.operations):
-            if op.name == operation.name:
-                self.operations[i] = operation
-                return self
-        raise ValueError(
-            f"Operation '{operation.name}' not found in port '{self.name}'"
-        )
-
-    def remove_operation(self, name: SnakeString) -> Self:
-        """Remove a MethodSpec operation by name. Returns self for chaining."""
-        self.operations = [op for op in self.operations if op.name != name]
-        return self
-
-    def get_operation(self, name: SnakeString) -> MethodSpec:
-        """Get a MethodSpec operation by name. Raises ValueError if not found."""
-        for op in self.operations:
-            if op.name == name:
-                return op
-        raise ValueError(f"Operation '{name}' not found in port '{self.name}'")
