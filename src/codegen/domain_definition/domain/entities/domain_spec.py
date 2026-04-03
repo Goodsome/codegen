@@ -265,5 +265,7 @@ class DomainSpec(Entity):
         sp += [
             value_object.to_test_package_spec() for value_object in self.value_objects
         ]
+        sp += [service.to_test_package_spec() for service in self.services]
+        sp += [port.to_test_package_spec() for port in self.ports]
         sp += [core.to_test_package_spec() for core in self.core]
         return PackageSpec.create(name="domain", sub_packages=sp)

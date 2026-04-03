@@ -83,14 +83,8 @@ class DomainConcept(BaseModel):
 
     def to_test_package_spec(self: Self) -> PackageSpec:
         """Create test package for entity with behaviors that have rules."""
-        modules = []
-        for behavior in self.behaviors:
-            tm = behavior.to_test_module_spec()
-            bm = behavior.to_bindings_module_spec()
-            if tm.functions:
-                modules.append(tm)
-                modules.append(bm)
-        p = PackageSpec.create(name=self.entity_name, modules=modules)
+        tms = self.behaviors.to_test_modules()
+        p = PackageSpec.create(name=self.entity_name, modules=tms)
         return PackageSpec.create(
             name=self.__pkg_name__,
             sub_packages=[p],

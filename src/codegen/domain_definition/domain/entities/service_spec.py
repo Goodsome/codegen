@@ -71,3 +71,12 @@ class ServiceSpec(Entity):
         """Update scalar metadata fields. Preserves internal structure."""
         if description is not None:
             self.description = description
+
+    def to_test_package_spec(self: Self) -> PackageSpec:
+        """Create test package for service with operations that have rules."""
+        tms = self.operations.to_test_modules()
+        p = PackageSpec.create(name=str(self.name), modules=tms)
+        return PackageSpec.create(
+            name="services",
+            sub_packages=[p],
+        )

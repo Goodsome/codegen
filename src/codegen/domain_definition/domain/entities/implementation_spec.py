@@ -45,8 +45,7 @@ class ImplementationSpec(Entity):
         """将 ImplementationSpec 转换为 ModuleSpec（需要 port 获取 operations）"""
         port_ops = list(port.operations)
         methods = [
-            f.to_function_spec(type=FunctionType.INSTANCE_METHOD)
-            for f in port_ops
+            f.to_function_spec(type=FunctionType.INSTANCE_METHOD) for f in port_ops
         ]
         methods += [
             f.to_function_spec(

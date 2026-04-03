@@ -113,3 +113,12 @@ class PortSpec(Entity):
             self.kind = PortType(kind)
         if aggregate is not None:
             self.aggregate = PascalString(aggregate)
+
+    def to_test_package_spec(self: Self) -> PackageSpec:
+        """Create test package for port with operations that have rules."""
+        tms = self.operations.to_test_modules()
+        p = PackageSpec.create(name=str(self.name), modules=tms)
+        return PackageSpec.create(
+            name="ports",
+            sub_packages=[p],
+        )
