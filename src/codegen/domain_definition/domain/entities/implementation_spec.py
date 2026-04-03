@@ -1,9 +1,9 @@
 from typing import Self
 
+from codegen.domain_definition.domain.core.attribute_spec_list import AttributeSpecList
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
 from codegen.domain_definition.domain.entities.port_spec import PortSpec
-from codegen.domain_definition.domain.core.has_attributes import HasAttributes
 from codegen.python_gen.domain.enums import FunctionType
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
@@ -13,13 +13,14 @@ from codegen.shared.domain.core import Entity
 from pydantic import Field
 
 
-class ImplementationSpec(Entity, HasAttributes):
+class ImplementationSpec(Entity):
     """Specification of an implementation to be generated."""
 
     name: PascalString
     implements: PascalString
     technology: SnakeString
     description: str = Field(default_factory=str)
+    attributes: AttributeSpecList = Field(default_factory=AttributeSpecList)
     private_methods: list[MethodSpec] = Field(default_factory=list)
 
     @classmethod
@@ -37,7 +38,7 @@ class ImplementationSpec(Entity, HasAttributes):
             implements=PascalString(implements),
             technology=SnakeString(technology),
             description=description,
-            attributes=attributes or [],
+            attributes=AttributeSpecList(root=attributes or []),
             private_methods=private_methods or [],
         )
 
@@ -57,7 +58,7 @@ class ImplementationSpec(Entity, HasAttributes):
         for method in methods[len(port.get_final_operations()) :]:
             method.is_private = True
 
-        attributes = [attr.to_variable_spec() for attr in self.attributes]
+        attributes = self.attributes.to_variable_specs()
         class_name = self._get_class_name()
         class_spec = ClassSpec.create(
             name=class_name,

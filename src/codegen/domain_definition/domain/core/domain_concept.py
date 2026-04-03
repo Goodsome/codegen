@@ -2,7 +2,7 @@ from typing import ClassVar, Iterable, Self
 
 from pydantic import Field
 
-from codegen.domain_definition.domain.core.has_attributes import HasAttributes
+from codegen.domain_definition.domain.core.attribute_spec_list import AttributeSpecList
 from codegen.domain_definition.domain.core.method_spec_list import MethodSpecList
 from codegen.python_gen.domain.enums import FieldFlavor
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
@@ -11,12 +11,13 @@ from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 
 
-class DomainConcept(HasAttributes):
+class DomainConcept:
     """Specification of a core entity to be generated."""
 
     name: PascalString
     description: str
     base_types: list[str] = Field(default_factory=list)
+    attributes: AttributeSpecList = Field(default_factory=AttributeSpecList)
     behaviors: MethodSpecList = Field(default_factory=MethodSpecList)
 
     __concept_name__: ClassVar[str]
@@ -28,7 +29,7 @@ class DomainConcept(HasAttributes):
 
     def to_module_spec(self: Self) -> ModuleSpec:
         """将 DomainConcept 转换为 ModuleSpec"""
-        vs = self.to_variable_specs(FieldFlavor.PYDANTIC)
+        vs = self.attributes.to_variable_specs(flavor=FieldFlavor.PYDANTIC)
         fs = self.behaviors.to_function_specs()
         if self.__concept_name__ != "core":
             base_types = [PascalString(self.__concept_name__)] + self.base_types
@@ -47,7 +48,7 @@ class DomainConcept(HasAttributes):
     def from_module_spec(cls: type[Self], module: ModuleSpec) -> Self:
         """将 ModuleSpec 逆向解析为 DomainConcept"""
         cls_spec = module.classes[0]
-        attributes = cls.from_variable_specs(cls_spec.attributes)
+        attributes = AttributeSpecList.from_variable_specs(cls_spec.attributes)
         behaviors = MethodSpecList.from_function_specs(cls_spec.methods)
         base_types = [
             i
