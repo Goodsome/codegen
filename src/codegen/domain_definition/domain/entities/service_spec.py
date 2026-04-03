@@ -24,7 +24,7 @@ class ServiceSpec(Entity):
         """将 ServiceSpec 转换为 ModuleSpec"""
         attributes = self.dependencies.to_variable_specs(flavor=FieldFlavor.DATACLASS)
         methods = [
-            method.to_function_spec(type=FunctionType.INSTANCE_METHOD)
+            method.to_function_spec()
             for method in self.operations
         ]
         class_spec = ClassSpec.create(

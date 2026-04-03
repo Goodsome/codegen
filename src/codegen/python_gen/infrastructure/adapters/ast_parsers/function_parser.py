@@ -74,10 +74,8 @@ def parse_function(node: ast.FunctionDef | ast.AsyncFunctionDef) -> FunctionSpec
     elif is_instance:
         ft = FunctionType.INSTANCE_METHOD
     
-    is_private = node.name.startswith("_") and not node.name.startswith("__")
-    
     description = ast.get_docstring(node)
-    
+
     return FunctionSpec.create(
         name=node.name,
         return_annotation=return_annotation,
@@ -85,7 +83,6 @@ def parse_function(node: ast.FunctionDef | ast.AsyncFunctionDef) -> FunctionSpec
         parameters=params,
         suite=suite,
         function_type=ft,
-        is_private=is_private,
         description=description,
     )
 

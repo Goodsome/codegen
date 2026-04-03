@@ -27,7 +27,6 @@ class FunctionSpec(ValueObject):
     return_annotation: TypeAnnotationSpec
     suite: str = Field(default="")
     function_type: FunctionType = Field(default=FunctionType.FUNCTION)
-    is_private: bool = False
     description: str | None = None
 
     @classmethod
@@ -39,7 +38,6 @@ class FunctionSpec(ValueObject):
         parameters: list[VariableSpec] | None = None,
         suite: str = "",
         function_type: FunctionType = FunctionType.FUNCTION,
-        is_private: bool = False,
         description: str | None = None,
     ):
         return cls(
@@ -49,7 +47,6 @@ class FunctionSpec(ValueObject):
             suite=suite,
             return_annotation=return_annotation,
             function_type=function_type,
-            is_private=is_private,
             description=description,
         )
 
@@ -82,7 +79,6 @@ class FunctionSpec(ValueObject):
             suite=suite,
             return_annotation=self.return_annotation,
             function_type=self.function_type,
-            is_private=self.is_private,
             description=description,
         )
 

@@ -46,10 +46,7 @@ class PortSpec(Entity):
     def to_module_spec(self) -> ModuleSpec:
         """将 PortSpec 转换为 ModuleSpec"""
         methods = [
-            method.to_function_spec(
-                type=FunctionType.INSTANCE_METHOD,
-                class_name=self.name,
-            )
+            method.to_function_spec()
             for method in self.operations
         ]
         for method in methods:

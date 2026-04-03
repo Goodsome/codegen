@@ -46,11 +46,7 @@ class MethodSpec(ValueObject):
             return FunctionType.INSTANCE_METHOD
         return FunctionType.FUNCTION
 
-    def to_function_spec(
-        self: Self,
-        type: FunctionType | None = None,
-        class_name: str | None = None,
-    ) -> FunctionSpec:
+    def to_function_spec(self: Self) -> FunctionSpec:
         """将 MethodSpec 转换为 PythonGen FunctionSpec"""
         parameters = [attr.to_variable_spec() for attr in self.inputs or []]
         decorators = []
@@ -59,22 +55,9 @@ class MethodSpec(ValueObject):
             decorators.append("classmethod")
         elif ft == FunctionType.STATIC_METHOD:
             decorators.append("staticmethod")
-        function_name = self.name
-        return_type = self.output.custom_type_string or self.output.type
-        if class_name and return_type == class_name:
-            return_annotation = TypeAnnotationSpec(name="Self")
-            if self.output.optional:
-                return_annotation = TypeAnnotationSpec(
-                    name="Union",
-                    args=[
-                        TypeAnnotationSpec(name="Self"),
-                        TypeAnnotationSpec(name="None"),
-                    ],
-                )
-        else:
-            return_annotation = self.output.to_python_annotation()
+        return_annotation = self.output.to_python_annotation()
         return FunctionSpec.create(
-            name=function_name,
+            name=self.name,
             parameters=parameters,
             decorators=decorators,
             return_annotation=return_annotation,

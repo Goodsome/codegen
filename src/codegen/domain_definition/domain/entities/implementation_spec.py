@@ -45,17 +45,12 @@ class ImplementationSpec(Entity):
         """将 ImplementationSpec 转换为 ModuleSpec（需要 port 获取 operations）"""
         port_ops = list(port.operations)
         methods = [
-            f.to_function_spec(type=FunctionType.INSTANCE_METHOD) for f in port_ops
+            f.to_function_spec() for f in port_ops
         ]
         methods += [
-            f.to_function_spec(
-                type=FunctionType.INSTANCE_METHOD,
-                class_name=self._get_class_name(),
-            )
+            f.to_function_spec()
             for f in self.private_methods
         ]
-        for method in methods[len(port_ops) :]:
-            method.is_private = True
 
         attributes = self.attributes.to_variable_specs()
         class_name = self._get_class_name()
@@ -80,7 +75,7 @@ class ImplementationSpec(Entity):
                 private_methods_list = [
                     MethodSpec.from_function_spec(function)
                     for function in spec_cls.methods
-                    if not function.is_init_method() and function.is_private
+                    if not function.is_init_method() and function.name.startswith("_") and not function.name.startswith("__")
                 ]
                 return cls.create(
                     name=spec_cls.name,
