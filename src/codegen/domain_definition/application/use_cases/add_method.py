@@ -92,7 +92,7 @@ class AddMethod:
             case (ElementType.IMPLEMENTATION, MethodKind.PRIVATE):
                 context.infrastructure.get_implementation(
                     cmd.element_name
-                ).add_private_method(method)
+                ).private_methods.add(method)
             case _:
                 raise ValueError(
                     f"Unsupported combination: element_type='{cmd.element_type.value}', "

@@ -63,7 +63,7 @@ class RemoveMethod:
             case (ElementType.IMPLEMENTATION, MethodKind.PRIVATE):
                 context.infrastructure.get_implementation(
                     cmd.element_name
-                ).remove_private_method(method_name)
+                ).private_methods.remove(method_name)
             case _:
                 raise ValueError(
                     f"Unsupported combination: element_type='{cmd.element_type.value}', "

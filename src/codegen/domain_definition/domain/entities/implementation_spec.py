@@ -1,6 +1,5 @@
-from typing import Self
-
 from codegen.domain_definition.domain.core.attribute_spec_list import AttributeSpecList
+from codegen.domain_definition.domain.core.method_spec_list import MethodSpecList
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
 from codegen.domain_definition.domain.entities.port_spec import PortSpec
@@ -21,7 +20,7 @@ class ImplementationSpec(Entity):
     technology: SnakeString
     description: str = Field(default_factory=str)
     attributes: AttributeSpecList = Field(default_factory=AttributeSpecList)
-    private_methods: list[MethodSpec] = Field(default_factory=list)
+    private_methods: MethodSpecList = Field(default_factory=MethodSpecList)
 
     @classmethod
     def create(
@@ -39,7 +38,7 @@ class ImplementationSpec(Entity):
             technology=SnakeString(technology),
             description=description,
             attributes=AttributeSpecList(root=attributes or []),
-            private_methods=private_methods or [],
+            private_methods=MethodSpecList(root=private_methods or []),
         )
 
     def to_module_spec(self, port: PortSpec) -> ModuleSpec:
@@ -77,23 +76,19 @@ class ImplementationSpec(Entity):
         """将 ModuleSpec 逆向解析为 ImplementationSpec"""
         for spec_cls in module_spec.classes:
             if spec_cls.inheritance:
-                attributes = [
-                    AttributeSpec.from_variable_spec(attr)
-                    for attr in spec_cls.attributes
+                attributes = AttributeSpecList.from_variable_specs(spec_cls.attributes)
+                private_methods_list = [
+                    MethodSpec.from_function_spec(function)
+                    for function in spec_cls.methods
+                    if not function.is_init_method() and function.is_private
                 ]
-                private_methods: list[MethodSpec] = []
-                for function in spec_cls.methods:
-                    if function.is_init_method():
-                        continue
-                    if function.is_private:
-                        private_methods.append(MethodSpec.from_function_spec(function))
                 return cls.create(
                     name=spec_cls.name,
                     implements=spec_cls.inheritance[0],
                     technology=technology,
                     description=spec_cls.description,
-                    attributes=attributes,
-                    private_methods=private_methods,
+                    attributes=attributes.root,
+                    private_methods=private_methods_list,
                 )
         raise ValueError(f"No Implementation found in module, {module_spec.name}")
 
@@ -115,37 +110,3 @@ class ImplementationSpec(Entity):
             self.technology = SnakeString(technology)
         if description is not None:
             self.description = description
-
-    def add_private_method(self, method: MethodSpec) -> Self:
-        """Add a private MethodSpec. Raises ValueError if method with same name exists."""
-        for m in self.private_methods:
-            if m.name == method.name:
-                raise ValueError(
-                    f"Private method '{method.name}' already exists in implementation '{self.name}'"
-                )
-        self.private_methods.append(method)
-        return self
-
-    def update_private_method(self, method: MethodSpec) -> Self:
-        """Update an existing private MethodSpec by name. Raises ValueError if not found."""
-        for i, m in enumerate(self.private_methods):
-            if m.name == method.name:
-                self.private_methods[i] = method
-                return self
-        raise ValueError(
-            f"Private method '{method.name}' not found in implementation '{self.name}'"
-        )
-
-    def remove_private_method(self, name: SnakeString) -> Self:
-        """Remove a private MethodSpec by name. Returns self for chaining."""
-        self.private_methods = [m for m in self.private_methods if m.name != name]
-        return self
-
-    def get_private_method(self, name: SnakeString) -> MethodSpec:
-        """Get a private MethodSpec by name. Raises ValueError if not found."""
-        for m in self.private_methods:
-            if m.name == name:
-                return m
-        raise ValueError(
-            f"Private method '{name}' not found in implementation '{self.name}'"
-        )

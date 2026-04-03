@@ -100,7 +100,7 @@ class UpdateMethod:
             case [ElementType.IMPLEMENTATION, MethodKind.PRIVATE]:
                 context.infrastructure.get_implementation(
                     cmd.element_name
-                ).update_private_method(method)
+                ).private_methods.update(method)
             case _:
                 raise ValueError(
                     f"Unsupported combination: element_type='{cmd.element_type.value}', method_kind='{cmd.method_kind.value}'"
