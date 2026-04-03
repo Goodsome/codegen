@@ -1,5 +1,7 @@
 from typing import Iterable, Self
 
+from pydantic import Field
+
 from codegen.domain_definition.domain.core.has_dependencies import HasDependencies
 from codegen.domain_definition.domain.core.method_spec_list import MethodSpecList
 from codegen.python_gen.domain.enums import FunctionType, FieldFlavor
@@ -15,7 +17,7 @@ class ServiceSpec(Entity, HasDependencies):
 
     name: PascalString
     description: str = ""
-    operations: MethodSpecList = MethodSpecList()
+    operations: MethodSpecList = Field(default_factory=MethodSpecList)
 
     def to_module_spec(self) -> ModuleSpec:
         """将 ServiceSpec 转换为 ModuleSpec"""

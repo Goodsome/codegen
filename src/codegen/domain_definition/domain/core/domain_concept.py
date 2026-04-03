@@ -3,7 +3,7 @@ from typing import ClassVar, Iterable, Self
 from pydantic import Field
 
 from codegen.domain_definition.domain.core.has_attributes import HasAttributes
-from codegen.domain_definition.domain.core.has_behaviors import HasBehaviors
+from codegen.domain_definition.domain.core.method_spec_list import MethodSpecList
 from codegen.python_gen.domain.enums import FieldFlavor
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
@@ -11,14 +11,16 @@ from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 
 
-class DomainConcept(HasAttributes, HasBehaviors):
+class DomainConcept(HasAttributes):
     """Specification of a core entity to be generated."""
 
     name: PascalString
     description: str
     base_types: list[str] = Field(default_factory=list)
+    behaviors: MethodSpecList = Field(default_factory=MethodSpecList)
 
     __concept_name__: ClassVar[str]
+    __pkg_name__: ClassVar[str]
 
     @property
     def entity_name(self) -> str:
@@ -27,7 +29,7 @@ class DomainConcept(HasAttributes, HasBehaviors):
     def to_module_spec(self: Self) -> ModuleSpec:
         """将 DomainConcept 转换为 ModuleSpec"""
         vs = self.to_variable_specs(FieldFlavor.PYDANTIC)
-        fs = self.to_function_specs()
+        fs = self.behaviors.to_function_specs()
         if self.__concept_name__ != "core":
             base_types = [PascalString(self.__concept_name__)] + self.base_types
         else:
@@ -46,7 +48,7 @@ class DomainConcept(HasAttributes, HasBehaviors):
         """将 ModuleSpec 逆向解析为 DomainConcept"""
         cls_spec = module.classes[0]
         attributes = cls.from_variable_specs(cls_spec.attributes)
-        behaviors = cls.from_function_specs(cls_spec.methods)
+        behaviors = MethodSpecList.from_function_specs(cls_spec.methods)
         base_types = [
             i
             for i in cls_spec.inheritance
@@ -77,6 +79,21 @@ class DomainConcept(HasAttributes, HasBehaviors):
                 continue
             aggregates.append(cls.from_module_spec(module))
         return aggregates
+
+    def to_test_package_spec(self: Self) -> PackageSpec:
+        """Create test package for entity with behaviors that have rules."""
+        modules = []
+        for behavior in self.behaviors:
+            tm = behavior.to_test_module_spec()
+            bm = behavior.to_bindings_module_spec()
+            if tm.functions:
+                modules.append(tm)
+                modules.append(bm)
+        p = PackageSpec.create(name=self.entity_name, modules=modules)
+        return PackageSpec.create(
+            name=self.__pkg_name__,
+            sub_packages=[p],
+        )
 
     def update(
         self: Self,

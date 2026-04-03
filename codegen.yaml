@@ -2953,12 +2953,17 @@ contexts:
         default: list
         name: base_types
         type: string
+      - default: MethodSpecList
+        name: behaviors
+        type: MethodSpecList
       - container: class_var
         name: __concept_name__
         type: string
+      - container: class_var
+        name: __pkg_name__
+        type: string
       base_types:
       - HasAttributes
-      - HasBehaviors
       behaviors:
       - inputs:
         - name: self
@@ -3005,6 +3010,13 @@ contexts:
         output:
           container: list
           type: Self
+      - description: Create test package for entity with behaviors that have rules.
+        inputs:
+        - name: self
+          type: Self
+        name: to_test_package_spec
+        output:
+          type: PackageSpec
       - description: Update scalar metadata fields. Preserves internal structure.
         inputs:
         - name: self
@@ -4223,7 +4235,8 @@ contexts:
       - default: ''
         name: description
         type: string
-      - name: operations
+      - default: MethodSpecList
+        name: operations
         type: MethodSpecList
       base_types:
       - HasDependencies
