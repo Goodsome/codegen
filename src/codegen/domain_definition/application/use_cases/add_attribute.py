@@ -48,11 +48,11 @@ class AddAttribute:
         )
         match (cmd.element_type, cmd.attribute_kind):
             case [ElementType.AGGREGATE, AttributeKind.ATTRIBUTE]:
-                context.domain.get_aggregate(cmd.element_name).add_attribute(attribute)
+                context.domain.get_aggregate(cmd.element_name).attributes.add(attribute)
             case [ElementType.ENTITY, AttributeKind.ATTRIBUTE]:
-                context.domain.get_entity(cmd.element_name).add_attribute(attribute)
+                context.domain.get_entity(cmd.element_name).attributes.add(attribute)
             case [ElementType.VALUE_OBJECT, AttributeKind.ATTRIBUTE]:
-                context.domain.get_value_object(cmd.element_name).add_attribute(
+                context.domain.get_value_object(cmd.element_name).attributes.add(
                     attribute
                 )
             case [ElementType.DOMAIN_SERVICE, AttributeKind.DEPENDENCY]:
@@ -72,7 +72,7 @@ class AddAttribute:
             case [ElementType.IMPLEMENTATION, AttributeKind.ATTRIBUTE]:
                 context.infrastructure.get_implementation(
                     cmd.element_name
-                ).add_attribute(attribute)
+                ).attributes.add(attribute)
             case _:
                 raise ValueError(
                     f"Unsupported combination: element_type='{cmd.element_type.value}', attribute_kind='{cmd.attribute_kind.value}'"

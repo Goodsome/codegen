@@ -48,11 +48,11 @@ class UpdateAttribute:
         )
         match (cmd.element_type, cmd.attribute_kind):
             case [ElementType.AGGREGATE, AttributeKind.ATTRIBUTE]:
-                context.domain.get_aggregate(cmd.element_name).update_attribute(updated)
+                context.domain.get_aggregate(cmd.element_name).attributes.update(updated)
             case [ElementType.ENTITY, AttributeKind.ATTRIBUTE]:
-                context.domain.get_entity(cmd.element_name).update_attribute(updated)
+                context.domain.get_entity(cmd.element_name).attributes.update(updated)
             case [ElementType.VALUE_OBJECT, AttributeKind.ATTRIBUTE]:
-                context.domain.get_value_object(cmd.element_name).update_attribute(
+                context.domain.get_value_object(cmd.element_name).attributes.update(
                     updated
                 )
             case [ElementType.DOMAIN_SERVICE, AttributeKind.DEPENDENCY]:
@@ -74,7 +74,7 @@ class UpdateAttribute:
             case [ElementType.IMPLEMENTATION, AttributeKind.ATTRIBUTE]:
                 context.infrastructure.get_implementation(
                     cmd.element_name
-                ).update_attribute(updated)
+                ).attributes.update(updated)
             case _:
                 raise ValueError(
                     f"Unsupported combination: element_type='{cmd.element_type.value}', attribute_kind='{cmd.attribute_kind.value}'"

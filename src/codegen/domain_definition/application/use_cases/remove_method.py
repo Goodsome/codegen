@@ -37,13 +37,13 @@ class RemoveMethod:
 
         match (cmd.element_type, cmd.method_kind):
             case (ElementType.AGGREGATE, MethodKind.BEHAVIOR):
-                context.domain.get_aggregate(cmd.element_name).remove_behavior(
+                context.domain.get_aggregate(cmd.element_name).behaviors.remove(
                     method_name
                 )
             case (ElementType.ENTITY, MethodKind.BEHAVIOR):
-                context.domain.get_entity(cmd.element_name).remove_behavior(method_name)
+                context.domain.get_entity(cmd.element_name).behaviors.remove(method_name)
             case (ElementType.VALUE_OBJECT, MethodKind.BEHAVIOR):
-                context.domain.get_value_object(cmd.element_name).remove_behavior(
+                context.domain.get_value_object(cmd.element_name).behaviors.remove(
                     method_name
                 )
             case (ElementType.DOMAIN_SERVICE, MethodKind.OPERATION):

@@ -76,11 +76,11 @@ class AddMethod:
 
         match (cmd.element_type, cmd.method_kind):
             case (ElementType.AGGREGATE, MethodKind.BEHAVIOR):
-                context.domain.get_aggregate(cmd.element_name).add_behavior(method)
+                context.domain.get_aggregate(cmd.element_name).behaviors.add(method)
             case (ElementType.ENTITY, MethodKind.BEHAVIOR):
-                context.domain.get_entity(cmd.element_name).add_behavior(method)
+                context.domain.get_entity(cmd.element_name).behaviors.add(method)
             case (ElementType.VALUE_OBJECT, MethodKind.BEHAVIOR):
-                context.domain.get_value_object(cmd.element_name).add_behavior(method)
+                context.domain.get_value_object(cmd.element_name).behaviors.add(method)
             case (ElementType.DOMAIN_SERVICE, MethodKind.OPERATION):
                 context.domain.get_service(cmd.element_name).operations.add(method)
             case (ElementType.APP_SERVICE, MethodKind.OPERATION):

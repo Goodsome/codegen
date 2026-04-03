@@ -37,11 +37,11 @@ class RemoveAttribute:
 
         match (cmd.element_type, cmd.attribute_kind):
             case (ElementType.AGGREGATE, AttributeKind.ATTRIBUTE):
-                context.domain.get_aggregate(cmd.element_name).remove_attribute(attr_name)
+                context.domain.get_aggregate(cmd.element_name).attributes.remove(attr_name)
             case (ElementType.ENTITY, AttributeKind.ATTRIBUTE):
-                context.domain.get_entity(cmd.element_name).remove_attribute(attr_name)
+                context.domain.get_entity(cmd.element_name).attributes.remove(attr_name)
             case (ElementType.VALUE_OBJECT, AttributeKind.ATTRIBUTE):
-                context.domain.get_value_object(cmd.element_name).remove_attribute(attr_name)
+                context.domain.get_value_object(cmd.element_name).attributes.remove(attr_name)
             case (ElementType.DOMAIN_SERVICE, AttributeKind.DEPENDENCY):
                 context.domain.get_service(cmd.element_name).remove_dependency(attr_name)
             case (ElementType.APP_SERVICE, AttributeKind.DEPENDENCY):
@@ -53,7 +53,7 @@ class RemoveAttribute:
             case (ElementType.USE_CASE, AttributeKind.OUTPUT):
                 context.application.get_use_case(cmd.element_name).remove_output(attr_name)
             case (ElementType.IMPLEMENTATION, AttributeKind.ATTRIBUTE):
-                context.infrastructure.get_implementation(cmd.element_name).remove_attribute(attr_name)
+                context.infrastructure.get_implementation(cmd.element_name).attributes.remove(attr_name)
             case _:
                 raise ValueError(
                     f"Unsupported combination: element_type='{cmd.element_type.value}', "
