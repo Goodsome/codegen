@@ -88,9 +88,9 @@ class UpdateMethod:
                     method
                 )
             case [ElementType.DOMAIN_SERVICE, MethodKind.OPERATION]:
-                context.domain.get_service(cmd.element_name).update_operation(method)
+                context.domain.get_service(cmd.element_name).operations.update(method)
             case [ElementType.APP_SERVICE, MethodKind.OPERATION]:
-                context.application.get_service(cmd.element_name).update_operation(
+                context.application.get_service(cmd.element_name).operations.update(
                     method
                 )
             case [ElementType.DOMAIN_PORT, MethodKind.OPERATION]:

@@ -2541,6 +2541,82 @@ contexts:
     - attributes:
       - container: list
         default: list
+        name: root
+        type: MethodSpec
+      base_types:
+      - RootModel[list[MethodSpec]]
+      behaviors:
+      - inputs:
+        - name: self
+          type: Self
+        name: __iter__
+        output:
+          container: iterable
+          type: MethodSpec
+      - inputs:
+        - name: self
+          type: Self
+        - name: method_spec
+          type: MethodSpec
+        name: add
+        output:
+          type: Self
+      - inputs:
+        - name: self
+          type: Self
+        - name: name
+          type: SnakeString
+        name: get
+        output:
+          type: MethodSpec
+      - inputs:
+        - name: self
+          type: Self
+        - name: method_spec
+          type: MethodSpec
+        name: update
+        output:
+          type: Self
+      - inputs:
+        - name: self
+          type: Self
+        - name: name
+          type: SnakeString
+        name: remove
+        output:
+          type: Self
+      - description: Convert behaviors to a list of FunctionSpecs.
+        inputs:
+        - name: self
+          type: Self
+        name: to_function_specs
+        output:
+          container: list
+          type: FunctionSpec
+      - description: 将 FunctionSpec 列表逆向解析为 MethodSpec 列表
+        inputs:
+        - container: type
+          name: cls
+          type: Self
+        - container: iterable
+          name: methods
+          type: FunctionSpec
+        name: from_function_specs
+        output:
+          type: Self
+      - description: Create test package for entity with behaviors that have rules.
+        inputs:
+        - name: self
+          type: Self
+        name: to_test_modules
+        output:
+          container: list
+          type: ModuleSpec
+      description: ''
+      name: MethodSpecList
+    - attributes:
+      - container: list
+        default: list
         name: attributes
         type: AttributeSpec
       base_types:
@@ -4147,9 +4223,10 @@ contexts:
       - default: ''
         name: description
         type: string
+      - name: operations
+        type: MethodSpecList
       base_types:
       - HasDependencies
-      - HasOperations
       behaviors:
       - description: 将 ServiceSpec 转换为 ModuleSpec
         inputs:

@@ -82,15 +82,17 @@ class AddMethod:
             case (ElementType.VALUE_OBJECT, MethodKind.BEHAVIOR):
                 context.domain.get_value_object(cmd.element_name).add_behavior(method)
             case (ElementType.DOMAIN_SERVICE, MethodKind.OPERATION):
-                context.domain.get_service(cmd.element_name).add_operation(method)
+                context.domain.get_service(cmd.element_name).operations.add(method)
             case (ElementType.APP_SERVICE, MethodKind.OPERATION):
-                context.application.get_service(cmd.element_name).add_operation(method)
+                context.application.get_service(cmd.element_name).operations.add(method)
             case (ElementType.DOMAIN_PORT, MethodKind.OPERATION):
                 context.domain.get_port(cmd.element_name).add_operation(method)
             case (ElementType.APP_PORT, MethodKind.OPERATION):
                 context.application.get_port(cmd.element_name).add_operation(method)
             case (ElementType.IMPLEMENTATION, MethodKind.PRIVATE):
-                context.infrastructure.get_implementation(cmd.element_name).add_private_method(method)
+                context.infrastructure.get_implementation(
+                    cmd.element_name
+                ).add_private_method(method)
             case _:
                 raise ValueError(
                     f"Unsupported combination: element_type='{cmd.element_type.value}', "
