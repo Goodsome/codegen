@@ -2617,34 +2617,24 @@ contexts:
     - attributes:
       - container: list
         default: list
-        name: attributes
+        name: root
         type: AttributeSpec
       base_types:
-      - BaseModel
-      - NamedElementOpsMixin
+      - RootModel[list[AttributeSpec]]
       behaviors:
       - inputs:
         - name: self
           type: Self
-        - name: attribute
-          type: AttributeSpec
-        name: add_attribute
+        name: __iter__
         output:
-          type: Self
+          container: iterable
+          type: AttributeSpec
       - inputs:
         - name: self
           type: Self
-        - name: attribute
+        - name: attribute_spec
           type: AttributeSpec
-        name: update_attribute
-        output:
-          type: Self
-      - inputs:
-        - name: self
-          type: Self
-        - name: name
-          type: SnakeString
-        name: remove_attribute
+        name: add
         output:
           type: Self
       - inputs:
@@ -2652,10 +2642,26 @@ contexts:
           type: Self
         - name: name
           type: SnakeString
-        name: get_attribute
+        name: get
         output:
           type: AttributeSpec
-      - description: 将 HasAttributes 转换为 PythonGen VariableSpec 列表
+      - inputs:
+        - name: self
+          type: Self
+        - name: attribute_spec
+          type: AttributeSpec
+        name: update
+        output:
+          type: Self
+      - inputs:
+        - name: self
+          type: Self
+        - name: name
+          type: SnakeString
+        name: remove
+        output:
+          type: Self
+      - description: Convert attributes to a list of VariableSpecs.
         inputs:
         - name: self
           type: Self
@@ -2666,7 +2672,7 @@ contexts:
         output:
           container: list
           type: VariableSpec
-      - description: 将 VariableSpec 列表逆向解析为 HasAttributes
+      - description: Convert VariableSpec list to AttributeSpecList.
         inputs:
         - container: type
           name: cls
@@ -2676,274 +2682,9 @@ contexts:
           type: VariableSpec
         name: from_variable_specs
         output:
-          container: list
-          type: AttributeSpec
-      description: 能力：拥有内部状态（属性）
-      name: HasAttributes
-    - attributes:
-      - container: list
-        default: list
-        name: behaviors
-        type: MethodSpec
-      - container: class_var
-        name: __pkg_name__
-        type: string
-      base_types:
-      - BaseModel
-      - NamedElementOpsMixin
-      behaviors:
-      - inputs:
-        - name: self
           type: Self
-        name: root_pkg_name
-        output:
-          type: string
-      - description: 'Dynamic: test package name (e.g., entity name)'
-        inputs:
-        - name: self
-          type: Self
-        name: entity_name
-        output:
-          type: string
-      - inputs:
-        - name: self
-          type: Self
-        - name: behavior
-          type: MethodSpec
-        name: add_behavior
-        output:
-          type: Self
-      - inputs:
-        - name: self
-          type: Self
-        - name: behavior
-          type: MethodSpec
-        name: update_behavior
-        output:
-          type: Self
-      - inputs:
-        - name: self
-          type: Self
-        - name: name
-          type: any
-        name: remove_behavior
-        output:
-          type: Self
-      - inputs:
-        - name: self
-          type: Self
-        - name: name
-          type: any
-        name: get_behavior
-        output:
-          type: MethodSpec
-      - description: Create test package for entity with behaviors that have rules.
-        inputs:
-        - name: self
-          type: Self
-        name: to_test_package_spec
-        output:
-          type: PackageSpec
-      - description: Convert behaviors to a list of FunctionSpecs.
-        inputs:
-        - name: self
-          type: Self
-        name: to_function_specs
-        output:
-          container: list
-          type: FunctionSpec
-      - description: 将 FunctionSpec 列表逆向解析为 MethodSpec 列表
-        inputs:
-        - container: type
-          name: cls
-          type: Self
-        - container: iterable
-          name: methods
-          type: FunctionSpec
-        name: from_function_specs
-        output:
-          container: list
-          type: MethodSpec
-      description: 能力：拥有行为（方法）
-      name: HasBehaviors
-    - attributes:
-      - container: list
-        default: list
-        name: operations
-        type: MethodSpec
-      base_types:
-      - BaseModel
-      - NamedElementOpsMixin
-      behaviors:
-      - inputs:
-        - name: self
-          type: Self
-        - name: operation
-          type: MethodSpec
-        name: add_operation
-        output:
-          type: Self
-      - inputs:
-        - name: self
-          type: Self
-        - name: operation
-          type: MethodSpec
-        name: update_operation
-        output:
-          type: Self
-      - inputs:
-        - name: self
-          type: Self
-        - name: name
-          type: any
-        name: remove_operation
-        output:
-          type: Self
-      - inputs:
-        - name: self
-          type: Self
-        - name: name
-          type: any
-        name: get_operation
-        output:
-          type: MethodSpec
-      - description: 将 HasOperations 转换为 PythonGen FunctionSpec 列表
-        inputs:
-        - name: self
-          type: Self
-        name: to_function_specs
-        output:
-          container: list
-          type: FunctionSpec
-      - description: 将 FunctionSpec 列表逆向解析为 HasOperations
-        inputs:
-        - container: type
-          name: cls
-          type: Self
-        - container: iterable
-          name: specs
-          type: FunctionSpec
-        name: from_function_specs
-        output:
-          container: list
-          type: MethodSpec
-      description: 能力：拥有操作（方法）
-      name: HasOperations
-    - behaviors:
-      - inputs:
-        - name: self
-          type: Self
-        - name: field_name
-          type: string
-        - name: item
-          type: any
-        - name: type_name
-          type: string
-        name: _add_item
-        output:
-          type: Self
-      - inputs:
-        - name: self
-          type: Self
-        - name: field_name
-          type: string
-        - name: item
-          type: any
-        - name: type_name
-          type: string
-        name: _update_item
-        output:
-          type: Self
-      - inputs:
-        - name: self
-          type: Self
-        - name: field_name
-          type: string
-        - name: name
-          type: string
-        name: _remove_item
-        output:
-          type: Self
-      - inputs:
-        - name: self
-          type: Self
-        - name: field_name
-          type: string
-        - name: name
-          type: string
-        - name: type_name
-          type: string
-        name: _get_item
-        output:
-          type: any
-      description: 底层逻辑复用：管理具备 name 属性的子元素集合
-      name: NamedElementOpsMixin
-    - attributes:
-      - container: list
-        default: list
-        name: dependencies
-        type: AttributeSpec
-      base_types:
-      - BaseModel
-      - NamedElementOpsMixin
-      behaviors:
-      - inputs:
-        - name: self
-          type: Self
-        - name: dependency
-          type: AttributeSpec
-        name: add_dependency
-        output:
-          type: Self
-      - inputs:
-        - name: self
-          type: Self
-        - name: dependency
-          type: AttributeSpec
-        name: update_dependency
-        output:
-          type: Self
-      - inputs:
-        - name: self
-          type: Self
-        - name: name
-          type: any
-        name: remove_dependency
-        output:
-          type: Self
-      - inputs:
-        - name: self
-          type: Self
-        - name: name
-          type: any
-        name: get_dependency
-        output:
-          type: AttributeSpec
-      - description: 将 HasDependencies 转换为 PythonGen VariableSpec 列表
-        inputs:
-        - name: self
-          type: Self
-        - name: flavor
-          optional: true
-          type: FieldFlavor
-        name: to_variable_specs
-        output:
-          container: list
-          type: VariableSpec
-      - description: 将 VariableSpec 列表逆向解析为 HasDependencies
-        inputs:
-        - container: type
-          name: cls
-          type: Self
-        - container: iterable
-          name: specs
-          type: VariableSpec
-        name: from_variable_specs
-        output:
-          container: list
-          type: AttributeSpec
-      description: 能力：拥有依赖项
-      name: HasDependencies
+      description: ''
+      name: AttributeSpecList
     - attributes:
       - name: name
         type: PascalString
@@ -2953,6 +2694,9 @@ contexts:
         default: list
         name: base_types
         type: string
+      - default: AttributeSpecList
+        name: attributes
+        type: AttributeSpecList
       - default: MethodSpecList
         name: behaviors
         type: MethodSpecList
@@ -2963,7 +2707,7 @@ contexts:
         name: __pkg_name__
         type: string
       base_types:
-      - HasAttributes
+      - BaseModel
       behaviors:
       - inputs:
         - name: self
@@ -3704,12 +3448,13 @@ contexts:
       - default: str
         name: description
         type: string
+      - default: AttributeSpecList
+        name: attributes
+        type: AttributeSpecList
       - container: list
         default: list
         name: private_methods
         type: MethodSpec
-      base_types:
-      - HasAttributes
       behaviors:
       - inputs:
         - container: type
@@ -4235,11 +3980,12 @@ contexts:
       - default: ''
         name: description
         type: string
+      - default: AttributeSpecList
+        name: dependencies
+        type: AttributeSpecList
       - default: MethodSpecList
         name: operations
         type: MethodSpecList
-      base_types:
-      - HasDependencies
       behaviors:
       - description: 将 ServiceSpec 转换为 ModuleSpec
         inputs:

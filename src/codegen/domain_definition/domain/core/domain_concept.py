@@ -1,6 +1,6 @@
 from typing import ClassVar, Iterable, Self
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 from codegen.domain_definition.domain.core.attribute_spec_list import AttributeSpecList
 from codegen.domain_definition.domain.core.method_spec_list import MethodSpecList
@@ -11,7 +11,7 @@ from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 
 
-class DomainConcept:
+class DomainConcept(BaseModel):
     """Specification of a core entity to be generated."""
 
     name: PascalString

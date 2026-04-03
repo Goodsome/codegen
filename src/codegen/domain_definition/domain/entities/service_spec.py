@@ -1,10 +1,8 @@
 from typing import Iterable, Self
 
+from codegen.domain_definition.domain.core.attribute_spec_list import AttributeSpecList
 from pydantic import Field
 
-from codegen.domain_definition.domain.core.dependency_spec_list import (
-    DependencySpecList,
-)
 from codegen.domain_definition.domain.core.method_spec_list import MethodSpecList
 from codegen.python_gen.domain.enums import FunctionType, FieldFlavor
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
@@ -19,7 +17,7 @@ class ServiceSpec(Entity):
 
     name: PascalString
     description: str = ""
-    dependencies: DependencySpecList = Field(default_factory=DependencySpecList)
+    dependencies: AttributeSpecList = Field(default_factory=AttributeSpecList)
     operations: MethodSpecList = Field(default_factory=MethodSpecList)
 
     def to_module_spec(self) -> ModuleSpec:
@@ -48,7 +46,7 @@ class ServiceSpec(Entity):
     def from_module_spec(cls, module: ModuleSpec) -> Self:
         """将 ModuleSpec 逆向解析为 ServiceSpec"""
         cls_spec = module.classes[0]
-        dependencies = DependencySpecList.from_variable_specs(cls_spec.attributes)
+        dependencies = AttributeSpecList.from_variable_specs(cls_spec.attributes)
         operations = MethodSpecList.from_function_specs(cls_spec.methods)
         return cls(
             name=cls_spec.name,
