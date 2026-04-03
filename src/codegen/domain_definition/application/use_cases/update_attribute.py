@@ -56,9 +56,9 @@ class UpdateAttribute:
                     updated
                 )
             case [ElementType.DOMAIN_SERVICE, AttributeKind.DEPENDENCY]:
-                context.domain.get_service(cmd.element_name).update_dependency(updated)
+                context.domain.get_service(cmd.element_name).dependencies.update(updated)
             case [ElementType.APP_SERVICE, AttributeKind.DEPENDENCY]:
-                context.application.get_service(cmd.element_name).update_dependency(
+                context.application.get_service(cmd.element_name).dependencies.update(
                     updated
                 )
             case [ElementType.USE_CASE, AttributeKind.DEPENDENCY]:

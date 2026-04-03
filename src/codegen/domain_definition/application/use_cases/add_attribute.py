@@ -56,9 +56,9 @@ class AddAttribute:
                     attribute
                 )
             case [ElementType.DOMAIN_SERVICE, AttributeKind.DEPENDENCY]:
-                context.domain.get_service(cmd.element_name).add_dependency(attribute)
+                context.domain.get_service(cmd.element_name).dependencies.add(attribute)
             case [ElementType.APP_SERVICE, AttributeKind.DEPENDENCY]:
-                context.application.get_service(cmd.element_name).add_dependency(
+                context.application.get_service(cmd.element_name).dependencies.add(
                     attribute
                 )
             case [ElementType.USE_CASE, AttributeKind.DEPENDENCY]:

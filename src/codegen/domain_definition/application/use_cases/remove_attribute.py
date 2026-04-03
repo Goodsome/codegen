@@ -43,9 +43,9 @@ class RemoveAttribute:
             case (ElementType.VALUE_OBJECT, AttributeKind.ATTRIBUTE):
                 context.domain.get_value_object(cmd.element_name).attributes.remove(attr_name)
             case (ElementType.DOMAIN_SERVICE, AttributeKind.DEPENDENCY):
-                context.domain.get_service(cmd.element_name).remove_dependency(attr_name)
+                context.domain.get_service(cmd.element_name).dependencies.remove(attr_name)
             case (ElementType.APP_SERVICE, AttributeKind.DEPENDENCY):
-                context.application.get_service(cmd.element_name).remove_dependency(attr_name)
+                context.application.get_service(cmd.element_name).dependencies.remove(attr_name)
             case (ElementType.USE_CASE, AttributeKind.DEPENDENCY):
                 context.application.get_use_case(cmd.element_name).remove_dependency(attr_name)
             case (ElementType.USE_CASE, AttributeKind.INPUT):

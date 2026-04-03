@@ -2,7 +2,9 @@ from typing import Iterable, Self
 
 from pydantic import Field
 
-from codegen.domain_definition.domain.core.has_dependencies import HasDependencies
+from codegen.domain_definition.domain.core.dependency_spec_list import (
+    DependencySpecList,
+)
 from codegen.domain_definition.domain.core.method_spec_list import MethodSpecList
 from codegen.python_gen.domain.enums import FunctionType, FieldFlavor
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
@@ -12,16 +14,17 @@ from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.core import Entity
 
 
-class ServiceSpec(Entity, HasDependencies):
+class ServiceSpec(Entity):
     """Specification of a domain service to be generated."""
 
     name: PascalString
     description: str = ""
+    dependencies: DependencySpecList = Field(default_factory=DependencySpecList)
     operations: MethodSpecList = Field(default_factory=MethodSpecList)
 
     def to_module_spec(self) -> ModuleSpec:
         """将 ServiceSpec 转换为 ModuleSpec"""
-        attributes = self.to_variable_specs(flavor=FieldFlavor.DATACLASS)
+        attributes = self.dependencies.to_variable_specs(flavor=FieldFlavor.DATACLASS)
         methods = [
             method.to_function_spec(type=FunctionType.INSTANCE_METHOD)
             for method in self.operations
@@ -45,7 +48,7 @@ class ServiceSpec(Entity, HasDependencies):
     def from_module_spec(cls, module: ModuleSpec) -> Self:
         """将 ModuleSpec 逆向解析为 ServiceSpec"""
         cls_spec = module.classes[0]
-        dependencies = cls.from_variable_specs(cls_spec.attributes)
+        dependencies = DependencySpecList.from_variable_specs(cls_spec.attributes)
         operations = MethodSpecList.from_function_specs(cls_spec.methods)
         return cls(
             name=cls_spec.name,
