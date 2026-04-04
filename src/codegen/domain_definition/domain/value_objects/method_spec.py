@@ -40,10 +40,11 @@ class MethodSpec(ValueObject):
         return cls(name=SnakeString(name), inputs=inputs, output=output)
 
     def function_type(self) -> FunctionType:
-        if self.inputs and self.inputs[0].name == "cls":
-            return FunctionType.CLASS_METHOD
-        if self.inputs and self.inputs[0].name == "self":
-            return FunctionType.INSTANCE_METHOD
+        for attr in self.inputs:
+            if attr.name == "cls":
+                return FunctionType.CLASS_METHOD
+            if attr.name == "self":
+                return FunctionType.INSTANCE_METHOD
         return FunctionType.FUNCTION
 
     def to_function_spec(self: Self) -> FunctionSpec:
