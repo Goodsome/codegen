@@ -57,6 +57,7 @@ GLOBAL_REGISTRY = {
     "pytest": "__root__",
     "CoreSchema": "pydantic_core.core_schema",
     "BaseSettings": "pydantic_settings",
+    "Session": "sqlalchemy.orm",
 }
 
 TEMPORARY_MAPPING = {"dataclass(frozen=True)": "dataclass"}

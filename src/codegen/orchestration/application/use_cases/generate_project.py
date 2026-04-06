@@ -46,7 +46,6 @@ class GenerateProject:
         gen_tests_result = self.generator.execute(
             GeneratePackageCommand(
                 package_spec=tps,
-                overwrite=overwrite,
             )
         )
         return GenerateProjectResult(

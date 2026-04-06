@@ -34,6 +34,27 @@ class GeneratePackage:
     translator: PythonSyntaxTranslator
     code_formatter: CodeFormatter
 
+    def _get_file_status(
+        self, rel_path: Path, overwrite: bool, file_exists: bool
+    ) -> FileStatus:
+        # Return early for non-existent files
+        if not file_exists:
+            return FileStatus.CREATED
+
+        if rel_path.parts[0] == "tests" and rel_path.name.startswith("test_"):
+            return FileStatus.UPDATED
+
+        # Return early when overwrite is disabled
+        if not overwrite:
+            return FileStatus.SKIPPED
+
+        # Skip tests/bindings_* files even when overwrite is enabled
+        if rel_path.parts[0] == "tests" and rel_path.name.startswith("bindings_"):
+            return FileStatus.SKIPPED
+
+        # All checks passed, allow update
+        return FileStatus.UPDATED
+
     def execute(self, cmd: GeneratePackageCommand) -> GeneratePackageResult:
         start_time = time.time()
         build_result = BuildResult(status=BuildStatus.SUCCESS)
@@ -47,7 +68,7 @@ class GeneratePackage:
                 pkg = cmd.package_spec.merge(current_pkg)
             else:
                 pkg = cmd.package_spec
-            
+
             source_tree = self.translator.generate_source_tree(
                 package_spec=pkg,
                 target_nodes=cmd.nodes,
@@ -56,21 +77,9 @@ class GeneratePackage:
             for rel_path_str, content in source_tree.items():
                 rel_path = Path(rel_path_str)
                 try:
-                    try:
-                        content = self.code_formatter.format_code(content)
-                    except Exception as fe:
-                        logger.warning(f"Failed to format code for {rel_path}: {fe}")
-                        # We still try to write it, but we could mark it.
-                        # For now, let's just use the unformatted content.
-
-                    # Check existence and content
-                    if not self.file_system_port.exists(rel_path):
-                        status = FileStatus.CREATED
-                    else:
-                        if cmd.overwrite:
-                            status = FileStatus.UPDATED
-                        else:
-                            status = FileStatus.SKIPPED
+                    content = self.code_formatter.format_code(content)
+                    file_exists = self.file_system_port.exists(rel_path)
+                    status = self._get_file_status(rel_path, cmd.overwrite, file_exists)
 
                     if status != FileStatus.SKIPPED:
                         self.file_system_port.write_file(
