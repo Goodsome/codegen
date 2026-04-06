@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Lint code**: `ruff check .`
 - **Run tests**: `uv run pytest`
 - **Run a single test**: `pytest tests/path/to/test_file.py::test_function_name`
-- **Build code**: `codegen build` (compiles `codegen.yaml` into Python code)
+- **Scaffold code**: `codegen scaffold` (generates Python code skeleton from `codegen.yaml`)
 - **Reverse engineer**: `codegen reverse` (updates `codegen.yaml` from Python code)
 - **Output schema**: `codegen schema` (outputs JSON schema for the blueprint)
 - **Initialize blueprint**: `codegen init` (creates a new `codegen.yaml`)
@@ -20,10 +20,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Vision
 
 用确定性的静态工具，为不确定性的 LLM 划定不可逾越的“脚手架”和“护栏”。
-
-## Skills
-
-- **[Codegen CRUD Use Case](./docs/codegen-crud-use-case.md)** - 如何实现 CRUD 用例的完整流程
 
 ## Project Architecture & Structure
 Codegen is a CLI tool that generates Domain-Driven Design (DDD) boilerplate code in Python from a single blueprint file (`codegen.yaml`).

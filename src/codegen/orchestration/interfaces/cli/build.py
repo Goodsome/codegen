@@ -1,5 +1,6 @@
 """
-CLI build command - Compile codegen.yaml into Python code.
+CLI scaffold command - Generate Python code skeleton from codegen.yaml.
+'build' is retained as an alias for backward compatibility.
 """
 from typing import Annotated, Optional
 
@@ -24,7 +25,7 @@ console = Console()
 
 
 def print_build_report(result: BuildResult, report_name: str) -> None:
-    """Renders a human-friendly report of the build execution."""
+    """Renders a human-friendly report of the scaffold execution."""
     status_style = "green"
     if result.status == BuildStatus.WARNING:
         status_style = "yellow"
@@ -33,8 +34,8 @@ def print_build_report(result: BuildResult, report_name: str) -> None:
 
     console.print(
         Panel(
-            f"Build Finished with status: [{status_style} bold]{result.status.value}[/]",
-            title=f"Build Summary - {report_name}",
+            f"Scaffold Finished with status: [{status_style} bold]{result.status.value}[/]",
+            title=f"Scaffold Summary - {report_name}",
             expand=False,
             border_style=status_style,
         )
@@ -86,7 +87,7 @@ def print_build_report(result: BuildResult, report_name: str) -> None:
     console.print(Panel(stats_text, title="Statistics", border_style="blue"))
 
     if result.messages:
-        console.print("\n[bold]Build Messages:[/bold]")
+        console.print("\n[bold]Scaffold Messages:[/bold]")
         for msg in result.messages:
             console.print(f"- {msg}")
 
@@ -102,30 +103,30 @@ def _generate_project(
     return result
 
 
-def build(
+def scaffold(
     nodes: Annotated[Optional[list[str]], typer.Option(
         "--node", "-n",
         help="Specify specific model(s) to update. Can be used multiple times. "
-             "By default, build only creates new models and skips existing ones. "
+             "By default, scaffold only creates new models and skips existing ones. "
              "Use this option to update existing models.",
     )] = None,
     generate_tests: Annotated[bool, typer.Option("--generate-tests")] = False,
 ) -> None:
     """
-    Build: Compile codegen.yaml into Python code.
+    Scaffold: Generate Python code skeleton from codegen.yaml.
 
     By default, this command only creates NEW models and skips any existing models.
     To update existing models, use the --node option to specify which models to regenerate.
 
     Examples:
         # Create new models only (skip existing)
-        codegen build
+        codegen scaffold
 
         # Update specific existing models
-        codegen build --node Order
+        codegen scaffold --node Order
 
         # Update multiple existing models
-        codegen build -n Order -n Customer
+        codegen scaffold -n Order -n Customer
     """
     cmd = GenerateProjectCommand(
         nodes=nodes,
@@ -140,4 +141,6 @@ def build(
 
     if result.result.status == BuildStatus.FAILURE:
         raise typer.Exit(code=1)
+
+
 

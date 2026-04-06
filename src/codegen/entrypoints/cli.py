@@ -1,7 +1,7 @@
 import typer
 
 from codegen.bootstrap import bootstrap
-from codegen.orchestration.interfaces.cli.build import build
+from codegen.orchestration.interfaces.cli.build import scaffold
 from codegen.orchestration.interfaces.cli.reverse import reverse
 from codegen.python_gen.interfaces.cli.schema import schema
 from codegen.domain_definition.interfaces.cli.tree import tree as tree_cmd
@@ -81,7 +81,7 @@ app = typer.Typer(
 
 **Core Commands (Lifecycle)**:
   init       Initialize a new codegen.yaml blueprint
-  build      Compile codegen.yaml into Python code
+  scaffold   Generate Python code skeleton from codegen.yaml
   reverse    Reverse-engineer Python code into codegen.yaml
   schema     Output JSON schema for the blueprint
 
@@ -127,7 +127,7 @@ app.add_typer(field_app, name="field")
 # Root Commands
 # ============================================================================
 
-app.command()(build)
+app.command()(scaffold)
 app.command()(reverse)
 app.command()(schema)
 app.command()(init)
