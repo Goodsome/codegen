@@ -31,6 +31,7 @@ def add_method(
     description: Annotated[str, typer.Argument()],
     output_type: Annotated[str, typer.Argument(help="Output type")],
     inputs: Annotated[str | None, typer.Option("--inputs", "-i", help="JSON string of inputs list")] = None,
+    rules: Annotated[str | None, typer.Option("--rules", "-r", help="JSON string of rules list")] = None,
     output_optional: Annotated[bool, typer.Option("--output-optional")] = False,
 ) -> None:
     """
@@ -45,6 +46,10 @@ def add_method(
     if inputs:
         parsed_inputs = json.loads(inputs)
 
+    parsed_rules = []
+    if rules:
+        parsed_rules = json.loads(rules)
+
     cmd = AddMethodCommand(
         context_name=context_name,
         element_type=element_type,
@@ -53,6 +58,7 @@ def add_method(
         name=name,
         description=description,
         inputs=parsed_inputs,
+        rules=parsed_rules,
         output_type=output_type,
         output_optional=output_optional,
     )

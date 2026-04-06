@@ -27,6 +27,7 @@ def update_method(
     description: Annotated[str, typer.Argument()],
     output_type: Annotated[str, typer.Argument()],
     inputs: Annotated[str | None, typer.Option("--inputs", "-i")] = None,
+    rules: Annotated[str | None, typer.Option("--rules", "-r")] = None,
     output_container: Annotated[
         ContainerType, typer.Option("--output-container", "-oc")
     ] = ContainerType.NONE,
@@ -45,6 +46,11 @@ def update_method(
     parsed_inputs = None
     if inputs:
         parsed_inputs = json.loads(inputs)
+
+    parsed_rules = None
+    if rules:
+        parsed_rules = json.loads(rules)
+
     cmd = UpdateMethodCommand(
         context_name=context_name,
         element_type=element_type,
@@ -53,6 +59,7 @@ def update_method(
         name=name,
         description=description,
         inputs=parsed_inputs,
+        rules=parsed_rules,
         output_type=output_type,
         output_optional=output_optional,
         output_container=output_container,

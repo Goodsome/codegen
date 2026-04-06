@@ -8,6 +8,7 @@ from codegen.domain_definition.domain.ports.blueprint_storage import BlueprintSt
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
 from codegen.domain_definition.domain.value_objects.method_output import MethodOutput
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
+from codegen.domain_definition.domain.value_objects.rule_spec import RuleSpec
 from codegen.shared.domain.enums import ContainerType
 from codegen.shared.domain.value_objects.snake_string import SnakeString
 
@@ -22,6 +23,7 @@ class AddMethodCommand(BaseModel):
     name: str
     description: str
     inputs: list[dict[str, Any]] = Field(default_factory=list)
+    rules: list[dict[str, Any]] = Field(default_factory=list)
     output_type: str = Field(default="void")
     output_container: ContainerType = Field(default=ContainerType.NONE)
     output_optional: bool = Field(default=False)
@@ -59,6 +61,17 @@ class AddMethod:
             for inp in cmd.inputs
         ]
 
+        # Build rules from list of dicts
+        rules = [
+            RuleSpec(
+                name=SnakeString(rule["name"]),
+                given=rule["given"],
+                when=rule["when"],
+                then=rule["then"],
+            )
+            for rule in cmd.rules
+        ]
+
         # Build output
         output = MethodOutput(
             type=cmd.output_type,
@@ -72,6 +85,7 @@ class AddMethod:
             description=cmd.description,
             inputs=inputs,
             output=output,
+            rules=rules,
         )
 
         match (cmd.element_type, cmd.method_kind):

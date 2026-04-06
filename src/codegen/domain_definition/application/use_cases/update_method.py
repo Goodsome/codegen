@@ -6,6 +6,7 @@ from codegen.domain_definition.domain.ports.blueprint_storage import BlueprintSt
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
 from codegen.domain_definition.domain.value_objects.method_output import MethodOutput
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
+from codegen.domain_definition.domain.value_objects.rule_spec import RuleSpec
 from codegen.shared.domain.enums import ContainerType
 from codegen.shared.domain.value_objects.snake_string import SnakeString
 
@@ -18,6 +19,7 @@ class UpdateMethodCommand(BaseModel):
     name: str
     description: str
     inputs: list[dict[str, Any]] | None = Field(default=None)
+    rules: list[dict[str, Any]] | None = Field(default=None)
     output_type: str
     output_container: ContainerType = Field(default=ContainerType.NONE)
     output_optional: bool = Field(default=False)
@@ -53,6 +55,19 @@ class UpdateMethod:
                 )
                 for inp in cmd.inputs
             ]
+
+        rules = None
+        if cmd.rules is not None:
+            rules = [
+                RuleSpec(
+                    name=SnakeString(rule["name"]),
+                    given=rule["given"],
+                    when=rule["when"],
+                    then=rule["then"],
+                )
+                for rule in cmd.rules
+            ]
+
         output = None
         if any(
             [
@@ -77,6 +92,7 @@ class UpdateMethod:
             description=cmd.description,
             inputs=inputs,
             output=output,
+            rules=rules or [],
         )
         match (cmd.element_type, cmd.method_kind):
             case [ElementType.AGGREGATE, MethodKind.BEHAVIOR]:
