@@ -1,11 +1,12 @@
+from typing import Self
 from codegen.domain_definition.domain.core.attribute_spec_list import AttributeSpecList
 from codegen.domain_definition.domain.core.method_spec_list import MethodSpecList
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
 from codegen.domain_definition.domain.entities.port_spec import PortSpec
-from codegen.python_gen.domain.enums import FunctionType
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
+from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.shared.domain.core import Entity
@@ -105,3 +106,12 @@ class ImplementationSpec(Entity):
             self.technology = SnakeString(technology)
         if description is not None:
             self.description = description
+
+    def to_test_package_spec(self: Self, port: PortSpec) -> PackageSpec:
+        """Create test package for implementation with operations that have rules."""
+        tms = port.operations.to_test_modules()
+        p = PackageSpec.create(name=str(self.name), modules=tms)
+        return PackageSpec.create(
+            name="implementations",
+            sub_packages=[p],
+        )

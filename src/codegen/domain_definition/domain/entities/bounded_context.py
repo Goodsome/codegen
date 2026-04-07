@@ -164,4 +164,7 @@ class BoundedContext(Entity):
     def to_test_package_spec(self: Self) -> PackageSpec:
         """Create test package for bounded context."""
         domain_pkg = self.domain.to_test_package_spec()
-        return PackageSpec.create(name=str(self.name), sub_packages=[domain_pkg])
+        infrastructure_pkg = self.infrastructure.to_test_package_spec(
+            port_finder=self.get_port_spec
+        )
+        return PackageSpec.create(name=str(self.name), sub_packages=[domain_pkg, infrastructure_pkg])

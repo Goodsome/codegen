@@ -92,3 +92,19 @@ class InfrastructureSpec(Entity):
             impl for impl in self.implementations if impl.name != name
         ]
         return self
+
+    def to_test_package_spec(
+        self,
+        port_finder: Callable[[str], PortSpec],
+    ) -> PackageSpec:
+        """Create test package for infrastructure with implementations that have rules."""
+        implementation_packages: list[PackageSpec] = []
+        for impl in self.implementations:
+            port = port_finder(impl.implements)
+            impl_pkg = impl.to_test_package_spec(port)
+            implementation_packages.append(impl_pkg)
+
+        return PackageSpec.create(
+            name="infrastructure",
+            sub_packages=implementation_packages
+        )
