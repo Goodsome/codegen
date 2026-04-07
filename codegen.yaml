@@ -635,6 +635,12 @@ contexts:
         optional: true
         name: description
       behaviors:
+      - name: validate_parameter_order
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: Self
       - name: create
         inputs:
         - type: Self
@@ -3938,6 +3944,8 @@ contexts:
         name: name
       - type: string
         name: description
+      - type: string
+        name: output_type
       - type: Any
         optional: true
         custom_type_string: list[dict[str, Any]] | None
@@ -3946,8 +3954,6 @@ contexts:
         optional: true
         custom_type_string: list[dict[str, Any]] | None
         name: rules
-      - type: string
-        name: output_type
       - type: ContainerType
         name: output_container
         default: ContainerType.NONE

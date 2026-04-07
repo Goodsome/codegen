@@ -18,9 +18,9 @@ class UpdateMethodCommand(BaseModel):
     element_name: str
     name: str
     description: str
+    output_type: str
     inputs: list[dict[str, Any]] | None = Field(default=None)
     rules: list[dict[str, Any]] | None = Field(default=None)
-    output_type: str
     output_container: ContainerType = Field(default=ContainerType.NONE)
     output_optional: bool = Field(default=False)
     output_custom_type_string: str | None = Field(default=None)
