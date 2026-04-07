@@ -4,11 +4,12 @@ Name: FunctionSpec
 Description: Represents a function in a Python module.
 """
 
+from typing import Self
 from codegen.shared.domain.value_objects.snake_string import SnakeString
 
 
 from codegen.python_gen.domain.enums import FunctionType
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from codegen.shared.domain.core import ValueObject
 
@@ -28,6 +29,19 @@ class FunctionSpec(ValueObject):
     suite: str = Field(default="")
     function_type: FunctionType = Field(default=FunctionType.FUNCTION)
     description: str | None = None
+
+    @model_validator(mode='after')
+    def validate_parameter_order(self) -> Self:
+        seen_default = False
+        for param in self.parameters:
+            if param.assignment is not None:
+                seen_default = True
+            elif seen_default:
+                raise ValueError(
+                    f"函数 '{self.name}' 参数顺序不合法: "
+                    f"非默认参数 '{param.name}' 不能跟在默认参数之后。"
+                )
+        return self
 
     @classmethod
     def create(

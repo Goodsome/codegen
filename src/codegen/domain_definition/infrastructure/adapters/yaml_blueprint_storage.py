@@ -52,7 +52,7 @@ class YamlBlueprintStorage(BlueprintStorage):
                 yaml.safe_dump(
                     cleaned_data,
                     f,
-                    sort_keys=True,
+                    sort_keys=False,
                     allow_unicode=True,
                     indent=2,
                     default_flow_style=False,
