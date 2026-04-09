@@ -257,6 +257,13 @@ class DomainSpec(Entity):
         self.ports = [p for p in self.ports if p.name != name]
         return self
 
+    def get_core(self: Self, name: str) -> CoreSpec:
+        """Get a CoreSpec by name. Raises ValueError if not found."""
+        for core in self.core:
+            if core.name == name:
+                return core
+        raise ValueError(f"Core '{name}' not found in domain")
+
     def to_test_package_spec(self: Self) -> PackageSpec:
         """Create test package for domain with aggregates that have rules."""
         sp: list[PackageSpec] = []
@@ -268,3 +275,33 @@ class DomainSpec(Entity):
         sp += [service.to_test_package_spec() for service in self.services]
         sp += [core.to_test_package_spec() for core in self.core]
         return PackageSpec.create(name="domain", sub_packages=sp)
+
+    def load_test_package(self: Self, test_pkg: PackageSpec) -> Self:
+        """Load test package into the domain spec. Returns self for chaining."""
+        for pkg in test_pkg.sub_packages:
+            # Load aggregate tests
+            if pkg.name == "aggregates":
+                for agg_pkg in pkg.sub_packages:
+                    agg = self.get_aggregate(agg_pkg.name)
+                    agg.load_test_package(agg_pkg)
+            # Load entity tests
+            elif pkg.name == "entities":
+                for entity_pkg in pkg.sub_packages:
+                    entity = self.get_entity(entity_pkg.name)
+                    entity.load_test_package(entity_pkg)
+            # Load value object tests
+            elif pkg.name == "value_objects":
+                for vo_pkg in pkg.sub_packages:
+                    vo = self.get_value_object(vo_pkg.name)
+                    vo.load_test_package(vo_pkg)
+            # Load service tests
+            elif pkg.name == "services":
+                for svc_pkg in pkg.sub_packages:
+                    svc = self.get_service(svc_pkg.name)
+                    svc.load_test_package(svc_pkg)
+            # Load core tests
+            elif pkg.name == "core":
+                for core_pkg in pkg.sub_packages:
+                    core = self.get_core(core_pkg.name)
+                    core.load_test_package(core_pkg)
+        return self

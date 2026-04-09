@@ -4,7 +4,7 @@ from codegen.domain_definition.domain.core.attribute_spec_list import AttributeS
 from pydantic import Field
 
 from codegen.domain_definition.domain.core.method_spec_list import MethodSpecList
-from codegen.python_gen.domain.enums import FunctionType, FieldFlavor
+from codegen.python_gen.domain.enums import FieldFlavor
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec

@@ -5,7 +5,6 @@ from pydantic import Field
 from codegen.domain_definition.domain.core.method_spec_list import MethodSpecList
 from codegen.domain_definition.domain.enums import PortType
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
-from codegen.python_gen.domain.enums import FunctionType
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec

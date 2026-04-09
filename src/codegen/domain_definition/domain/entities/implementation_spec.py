@@ -115,3 +115,14 @@ class ImplementationSpec(Entity):
             name="implementations",
             sub_packages=[p],
         )
+
+    def load_test_package(self: Self, test_pkg: PackageSpec, port: PortSpec) -> Self:
+        """Load test package into the implementation spec. Returns self for chaining."""
+        for module in test_pkg.modules:
+            # Load test cases into corresponding port operations
+            for method in port.operations:
+                test_module_name = f"test_{method.name.to_snake()}"
+                if module.name == test_module_name:
+                    method.load_test_module(module)
+
+        return self

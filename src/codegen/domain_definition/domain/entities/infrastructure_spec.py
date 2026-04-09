@@ -10,6 +10,7 @@ from codegen.domain_definition.domain.entities.port_spec import PortSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.core import Entity
+from codegen.shared.domain.value_objects.pascal_string import PascalString
 
 
 class InfrastructureSpec(Entity):
@@ -82,7 +83,7 @@ class InfrastructureSpec(Entity):
     def get_implementation(self, name: str) -> ImplementationSpec:
         """Get an ImplementationSpec by name. Raises ValueError if not found."""
         for impl in self.implementations:
-            if impl.name == name:
+            if impl.name == PascalString(name):
                 return impl
         raise ValueError(f"Implementation '{name}' not found in infrastructure")
 
@@ -108,3 +109,13 @@ class InfrastructureSpec(Entity):
             name="infrastructure",
             sub_packages=implementation_packages
         )
+
+    def load_test_package(self: Self, test_pkg: PackageSpec, port_finder: Callable[[str], PortSpec]) -> Self:
+        """Load test package into the infrastructure spec. Returns self for chaining."""
+        for pkg in test_pkg.sub_packages:
+            if pkg.name == "implementations":
+                for impl_pkg in pkg.sub_packages:
+                    impl = self.get_implementation(impl_pkg.name)
+                    port = port_finder(impl.implements)
+                    impl.load_test_package(impl_pkg, port)
+        return self

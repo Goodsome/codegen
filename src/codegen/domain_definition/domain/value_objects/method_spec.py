@@ -188,3 +188,13 @@ return self""",
             function_type=FunctionType.FUNCTION,
             suite=f"""return {bindings_name}()""",
         )
+
+    def load_test_module(self: Self, module: ModuleSpec) -> Self:
+        """Load test cases from module into method rules. Returns self for chaining."""
+        for function in module.functions:
+            # Skip fixtures and special functions
+            if function.name.startswith("test_"):
+                rule = RuleSpec.from_test_function(function)
+                self.rules.append(rule)
+
+        return self

@@ -69,7 +69,7 @@ class Blueprint(AggregateRoot):
     def get_context(self: Self, name: str) -> BoundedContext:
         """Get a BoundedContext by name. Raises ValueError if not found."""
         for ctx in self.contexts:
-            if ctx.name == name:
+            if ctx.name == PascalString(name):
                 return ctx
         raise ValueError(f"Context '{name}' not found in blueprint")
 
@@ -78,3 +78,13 @@ class Blueprint(AggregateRoot):
         context_packages = [ctx.to_test_package_spec() for ctx in self.contexts]
         unit_pkg = PackageSpec.create(name="unit", sub_packages=context_packages)
         return PackageSpec.create(name="tests", sub_packages=[unit_pkg])
+
+    def load_test_package(self: Self, test_pkg: PackageSpec) -> Self:
+        """Load test package into the blueprint. Returns self for chaining."""
+        if test_pkg.name != "tests":
+            return self
+        for pkg in test_pkg.sub_packages:
+            for ctx_pkg in pkg.sub_packages:
+                ctx = self.get_context(ctx_pkg.name)
+                ctx.load_test_package(ctx_pkg)
+        return self

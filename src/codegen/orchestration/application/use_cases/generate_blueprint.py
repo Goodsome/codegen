@@ -12,6 +12,7 @@ from codegen.domain_definition.domain.aggregates.blueprint import Blueprint
 class GenerateBlueprintCommand:
 
     path: Path
+    test_path: Path = Path("tests")
 
 
 @dataclass(frozen=True)
@@ -30,6 +31,10 @@ class GenerateBlueprint:
         project_pkg = self.parser.execute(
             ParsePackageQuery(package_path=cmd.path)
         ).package_spec
+        test_pkg = self.parser.execute(
+            ParsePackageQuery(package_path=cmd.test_path)
+        ).package_spec
         blueprint = Blueprint.from_package_spec(project_pkg)
+        blueprint.load_test_package(test_pkg)
         self.storage.save(blueprint)
         return GenerateBlueprintResult(result="Generated blueprint.")

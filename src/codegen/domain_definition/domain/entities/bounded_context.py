@@ -168,3 +168,12 @@ class BoundedContext(Entity):
             port_finder=self.get_port_spec
         )
         return PackageSpec.create(name=str(self.name), sub_packages=[domain_pkg, infrastructure_pkg])
+
+    def load_test_package(self: Self, test_pkg: PackageSpec) -> Self:
+        """Load test package into the bounded context. Returns self for chaining."""
+        for pkg in test_pkg.sub_packages:
+            if pkg.name == "domain":
+                self.domain.load_test_package(pkg)
+            elif pkg.name == "infrastructure":
+                self.infrastructure.load_test_package(pkg, port_finder=self.get_port_spec)
+        return self

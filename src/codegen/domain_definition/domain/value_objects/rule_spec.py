@@ -1,3 +1,4 @@
+import re
 from codegen.python_gen.domain.enums import FunctionType
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.type_annotation_spec import (
@@ -39,4 +40,37 @@ class RuleSpec(ValueObject):
             return_annotation=TypeAnnotationSpec(name="None"),
             function_type=FunctionType.FUNCTION,
             suite=chain_suite,
+        )
+
+    @classmethod
+    def from_test_function(cls: type[Self], function: FunctionSpec) -> Self:
+        """Parse test function to create RuleSpec instance."""
+        # Extract rule name from function name (remove test_ prefix)
+        name = function.name.removeprefix("test_")
+
+        # Parse given/when/then from function suite
+        given = ""
+        when = ""
+        then = ""
+
+        suite = function.suite
+
+        # Match patterns: .given("xxx") / .given('xxx'), ignoring whitespace and newlines
+        given_match = re.search(r"\.given\(\s*([\"'])(.*?)\1\s*\)", suite, re.DOTALL)
+        when_match = re.search(r"\.when\(\s*([\"'])(.*?)\1\s*\)", suite, re.DOTALL)
+        then_match = re.search(r"\.then\(\s*([\"'])(.*?)\1\s*\)", suite, re.DOTALL)
+
+        if given_match:
+            given = given_match.group(2)
+        if when_match:
+            when = when_match.group(2)
+        if then_match:
+            then = then_match.group(2)
+            
+
+        return cls(
+            name=SnakeString(name),
+            given=given,
+            when=when,
+            then=then
         )

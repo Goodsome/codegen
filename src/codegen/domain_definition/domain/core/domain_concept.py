@@ -100,3 +100,14 @@ class DomainConcept(BaseModel):
             self.description = description
         if base_types is not None:
             self.base_types = base_types
+
+    def load_test_package(self: Self, test_pkg: PackageSpec) -> Self:
+        """Load test package into the domain concept. Returns self for chaining."""
+        for module in test_pkg.modules:
+            # Load test cases into corresponding behaviors
+            for behavior in self.behaviors:
+                test_module_name = f"test_{behavior.name.to_snake()}"
+                if module.name == test_module_name:
+                    behavior.load_test_module(module)
+
+        return self
