@@ -41,7 +41,7 @@ class UpdateMethod:
         if blueprint is None:
             raise ValueError("Blueprint not loaded")
         context = blueprint.get_context(cmd.context_name)
-        inputs = None
+        inputs = []
         if cmd.inputs is not None:
             inputs = [
                 AttributeSpec(
