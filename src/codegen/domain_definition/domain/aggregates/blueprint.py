@@ -5,8 +5,8 @@ from pydantic import Field
 from codegen.domain_definition.domain.entities.bootstrap_spec import BootstrapSpec
 from codegen.domain_definition.domain.entities.bounded_context import BoundedContext
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
-from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.core.aggregate_root import AggregateRoot
+from codegen.shared.domain.value_objects.pascal_string import PascalString
 
 
 class Blueprint(AggregateRoot):
@@ -77,7 +77,15 @@ class Blueprint(AggregateRoot):
         """Create top-level tests package with unit subpackage containing all context tests."""
         context_packages = [ctx.to_test_package_spec() for ctx in self.contexts]
         unit_pkg = PackageSpec.create(name="unit", sub_packages=context_packages)
-        return PackageSpec.create(name="tests", sub_packages=[unit_pkg])
+        integration_pkg = PackageSpec.create(
+            name="integration",
+            sub_packages=[
+                ctx.to_integration_test_package_spec() for ctx in self.contexts
+            ],
+        )
+        return PackageSpec.create(
+            name="tests", sub_packages=[unit_pkg, integration_pkg]
+        )
 
     def load_test_package(self: Self, test_pkg: PackageSpec) -> Self:
         """Load test package into the blueprint. Returns self for chaining."""

@@ -164,11 +164,15 @@ class BoundedContext(Entity):
     def to_test_package_spec(self: Self) -> PackageSpec:
         """Create test package for bounded context."""
         domain_pkg = self.domain.to_test_package_spec()
+        return PackageSpec.create(name=str(self.name), sub_packages=[domain_pkg])
+     
+    def to_integration_test_package_spec(self: Self) -> PackageSpec:
+        """Create test package for bounded context."""
         infrastructure_pkg = self.infrastructure.to_test_package_spec(
             port_finder=self.get_port_spec
         )
-        return PackageSpec.create(name=str(self.name), sub_packages=[domain_pkg, infrastructure_pkg])
-
+        return PackageSpec.create(name=str(self.name), sub_packages=[infrastructure_pkg])
+        
     def load_test_package(self: Self, test_pkg: PackageSpec) -> Self:
         """Load test package into the bounded context. Returns self for chaining."""
         for pkg in test_pkg.sub_packages:
