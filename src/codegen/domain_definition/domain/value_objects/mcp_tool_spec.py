@@ -64,15 +64,6 @@ class McpToolSpec(ValueObject):
             ),
         ]
 
-        # 生成主函数
-        func = FunctionSpec.create(
-            name=self.name,
-            description=self.description,
-            parameters=parameters,
-            return_annotation=parse_type_str(result_type),
-            function_type=FunctionType.FUNCTION,
-        )
-
         # 生成辅助函数：使用依赖注入
         use_case_type = use_case.name
         provider_path = f"{ctx_snake}.{uc_snake}"
@@ -98,6 +89,15 @@ class McpToolSpec(ValueObject):
             decorators=["inject"],
         )
 
+        func = FunctionSpec.create(
+            name=self.name,
+            description=self.description or use_case.description,
+            parameters=parameters,
+            return_annotation=parse_type_str(result_type),
+            function_type=FunctionType.FUNCTION,
+            suite=f"return {do_func.name}({param_name})",
+        )
+        
         return ModuleSpec.create(
             name=self.name,
             functions=[do_func, func],
