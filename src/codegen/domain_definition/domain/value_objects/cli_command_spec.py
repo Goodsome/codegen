@@ -213,7 +213,6 @@ class CliCommandSpec(ValueObject):
         commands: list["CliCommandSpec"],
         context_name: str,
         use_cases: list[UseCaseSpec],
-        project_name: str = "",
     ) -> PackageSpec:
         """将 CLI 命令列表转换为 PackageSpec
 

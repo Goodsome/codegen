@@ -45,7 +45,7 @@ class InfrastructureSpec(Entity):
         """将 PackageSpec 逆向解析为 InfrastructureSpec"""
         implementations = []
         for kind_pkg in package_spec.sub_packages:
-            if kind_pkg.name == "utils":
+            if kind_pkg.name in ("utils", "orm_models"):
                 continue
             for tech_model in kind_pkg.modules:
                 if tech_model.is_init_module():

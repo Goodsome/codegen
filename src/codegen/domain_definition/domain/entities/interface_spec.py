@@ -45,19 +45,19 @@ class InterfaceSpec(Entity):
 
         if self.cli_commands:
             cli_pkg = CliCommandSpec.commands_to_package_spec(
-                self.cli_commands, context_name, use_cases, project_name
+                self.cli_commands, context_name, use_cases
             )
             sub_packages.append(cli_pkg)
 
         if self.mcp_tools:
             mcp_pkg = McpToolSpec.tools_to_package_spec(
-                self.mcp_tools, context_name, use_cases, project_name
+                self.mcp_tools, context_name, use_cases,
             )
             sub_packages.append(mcp_pkg)
 
         if self.http_endpoints:
             http_pkg = HttpEndpointSpec.endpoints_to_package_spec(
-                self.http_endpoints, context_name, use_cases, project_name
+                self.http_endpoints, context_name, use_cases
             )
             sub_packages.append(http_pkg)
 

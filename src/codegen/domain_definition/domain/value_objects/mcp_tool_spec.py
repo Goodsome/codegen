@@ -4,6 +4,7 @@ from typing import Self
 from pydantic import Field
 
 from codegen.domain_definition.domain.enums import UseCaseKind
+from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
 from codegen.domain_definition.domain.entities.use_case_spec import UseCaseSpec
 from codegen.python_gen.domain.enums import FunctionType
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
@@ -24,74 +25,83 @@ from codegen.shared.domain.core import ValueObject
 class McpToolSpec(ValueObject):
     """MCP Tool 规范"""
 
-    name: str
+    name: SnakeString
     use_case: str
     description: str = Field(default_factory=str)
+
 
     def to_module_spec(
         self,
         context_name: str,
         use_case: UseCaseSpec,
-        project_name: str = "",
     ) -> ModuleSpec:
-        """生成单个 MCP tool 模块
+        """生成单个 CLI 命令模块
 
         Args:
             context_name: 上下文名称
             use_case: UseCase 规范
-            project_name: 项目名称
 
         Returns:
-            ModuleSpec for MCP tool
+            ModuleSpec for CLI command
         """
-        # 确定参数类型
+        # 确定参数类型和属性列表
         if use_case.kind == UseCaseKind.COMMAND:
-            param_type = f"{use_case.name}Command"
+            param_type_name = f"{use_case.name}Command"
             param_name = "cmd"
         else:
-            param_type = f"{use_case.name}Query"
+            param_type_name = f"{use_case.name}Query"
             param_name = "query"
 
         result_type = f"{use_case.name}Result"
-        func_name = self.name.replace(" ", "_").replace("-", "_")
         uc_snake = str(SnakeString(use_case.name))
         ctx_snake = str(SnakeString(context_name))
 
-        # 构建完整包路径前缀
-        pkg_prefix = f"{project_name}." if project_name else ""
+        # 生成 Typer 参数
+        parameters: list[VariableSpec] = [
+            VariableSpec.create(
+                name=param_name,
+                type_spec=parse_type_str(param_type_name),
+            ),
+        ]
 
-        # 生成函数体
-        suite = f"use_case = container.{uc_snake}_use_case()\nreturn use_case.execute({param_name})"
-
-        # 生成函数
+        # 生成主函数
         func = FunctionSpec.create(
-            name=func_name,
+            name=self.name,
             description=self.description,
+            parameters=parameters,
+            return_annotation=parse_type_str(result_type),
+            function_type=FunctionType.FUNCTION,
+        )
+
+        # 生成辅助函数：使用依赖注入
+        use_case_type = use_case.name
+        provider_path = f"{ctx_snake}.{uc_snake}"
+        do_func = FunctionSpec.create(
+            name=f"_{uc_snake}",
             parameters=[
                 VariableSpec.create(
-                    name=param_name, type_spec=parse_type_str(param_type)
+                    name=param_name,
+                    type_spec=parse_type_str(param_type_name),
+                ),
+                VariableSpec.create(
+                    name="use_case",
+                    type_spec=parse_type_str(use_case_type),
+                    assignment=AssignmentSpec.from_subscript(
+                        value=AssignmentSpec.from_symbol("Provide"),
+                        slice=AssignmentSpec.from_literal(provider_path),
+                    ),
                 ),
             ],
             return_annotation=parse_type_str(result_type),
             function_type=FunctionType.FUNCTION,
-            suite=suite,
+            suite=f"return use_case.execute({param_name})",
+            decorators=["inject"],
         )
 
         return ModuleSpec.create(
-            name=func_name,
-            functions=[func],
-            imports=[
-                ImportFromSpec.create(
-                    module=f"{pkg_prefix}{ctx_snake}.container",
-                    names=["Container"],
-                ),
-            ],
-            assignments=[
-                ModuleAssignmentSpec.create(
-                    name="container",
-                    value="Container()",
-                ),
-            ],
+            name=self.name,
+            functions=[do_func, func],
+            imports=[],
         )
 
     @classmethod
@@ -100,27 +110,31 @@ class McpToolSpec(ValueObject):
         module: ModuleSpec,
         use_case_index: dict[str, UseCaseSpec],
     ) -> Self | None:
-        """从 ModuleSpec 逆向解析为 McpToolSpec
+        """从 ModuleSpec 逆向解析为 CliCommandSpec
 
         Args:
-            module: MCP tool 模块
+            module: CLI 命令模块
             use_case_index: UseCase 名称索引
 
         Returns:
-            McpToolSpec or None if无法解析
+            CliCommandSpec or None if无法解析
         """
-        # 从模块名推断 tool 名
-        tool_name = str(module.name)
+        # 从模块名推断命令名
+        cmd_name = str(module.name).replace("_", "-")
 
-        # 从函数中推断 UseCase
+        # 找到带有 @inject 装饰器的辅助函数，从中提取 use_case 类型
         for func in module.functions:
-            use_case_name = cls._infer_use_case_from_suite(func.suite, use_case_index)
-            if use_case_name:
-                return cls(
-                    name=tool_name,
-                    use_case=use_case_name,
-                    description=func.suite.split("\n")[0] if func.suite else "",
-                )
+            if "inject" in func.decorators:
+                # 在函数参数中查找 use_case 参数
+                for param in func.parameters:
+                    if param.name == "use_case" and param.type_spec:
+                        use_case_name = param.type_spec.name
+                        if use_case_name in use_case_index:
+                            return cls(
+                                name=cmd_name,
+                                use_case=use_case_name,
+                                description=func.description or "",
+                            )
         return None
 
     def update(
@@ -159,7 +173,6 @@ class McpToolSpec(ValueObject):
         tools: list["McpToolSpec"],
         context_name: str,
         use_cases: list[UseCaseSpec],
-        project_name: str = "",
     ) -> PackageSpec:
         """将 MCP tool 列表转换为 PackageSpec
 
@@ -181,7 +194,7 @@ class McpToolSpec(ValueObject):
                 raise ValueError(
                     f"UseCase '{tool.use_case}' not found for MCP tool '{tool.name}'"
                 )
-            module = tool.to_module_spec(context_name, use_case, project_name)
+            module = tool.to_module_spec(context_name, use_case)
             modules.append(module)
 
         return PackageSpec.create(

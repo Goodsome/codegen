@@ -30,7 +30,7 @@ class BoundedContext(Entity):
     config: ConfigSpec = Field(default_factory=ConfigSpec)
     container: ContainerSpec = Field(default_factory=ContainerSpec)
 
-    def to_package_spec(self: Self, project_name: str = "") -> PackageSpec:
+    def to_package_spec(self: Self) -> PackageSpec:
         """Convert this BoundedContext to a PackageSpec."""
         domain_pkg = self.domain.to_package_spec()
         application_pkg = self.application.to_package_spec()
@@ -70,7 +70,6 @@ class BoundedContext(Entity):
             interfaces_pkg = self.interfaces.to_package_spec(
                 context_name=str(self.name),
                 use_cases=self.application.use_cases,
-                project_name=project_name,
             )
             sub_packages.append(interfaces_pkg)
         return PackageSpec.create(

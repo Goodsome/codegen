@@ -39,7 +39,7 @@ class Blueprint(AggregateRoot):
         """Convert this Blueprint to a PackageSpec."""
         project_name = self.name.to_snake()
         context_packages = [
-            c.to_package_spec(project_name=project_name) for c in self.contexts
+            c.to_package_spec() for c in self.contexts
         ]
         if self.bootstrap:
             bootstrap_pkg = self.bootstrap.to_package_spec(self.contexts)

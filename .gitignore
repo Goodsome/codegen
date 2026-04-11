@@ -29,3 +29,5 @@ Thumbs.db
 /build/
 /dist/
 /project_context.txt
+
+logs/
