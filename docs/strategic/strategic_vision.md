@@ -8,7 +8,6 @@ type: project
 
 ## 1. 北极星目标
 用确定性的静态工具，为不确定性的 LLM 划定不可逾越的“脚手架”和“护栏”。
-Codegen 是全球首个**AI原生 (AI-Native) 的领域驱动设计代码生成工具，完全由 Agent 驱动开发，提供从 YAML 驱动的代码脚手架能力。
 
 ## 2. 域划分 (Domain Classification)
 

@@ -48,9 +48,10 @@ graph TB
   - 提供模型转换能力，适配下游代码生成器需求
 - **对外提供接口**：
   - 蓝图加载/保存服务
-  - 路径查询服务
   - 命令式更新服务 (AddEntity, AddAttribute 等)
   - 模型转换导出服务
+- **对外依赖**：
+  - 模型自转换成 PythonGen 的模型
 
 ### 2. Orchestration (编排)
 - **边界内职责**：
@@ -64,12 +65,11 @@ graph TB
 
 ### 3. PythonGen (Python 代码生成)
 - **边界内职责**：
-  - 将 DomainDefinition 模型转换为 Python AST 节点
+  - 将 PackageSpec / ModuleSpec 模型转换为 Python AST 节点
   - 代码生成与文件写入
-  - 反向工程：从现有 Python 代码更新蓝图
+  - 反向工程：从现有 Python 代码解析成结构化的 PackageSpec
   - 代码格式化与质量保证
 - **对外依赖**：
-  - DomainDefinition 上下文的模型转换服务
   - Shared Kernel 的工具类支持
 
 ### 4. Shared Kernel (共享内核)

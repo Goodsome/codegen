@@ -4,18 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 - **Install dependencies**: `uv sync` or `pip install -e ".[dev]"` (Python 3.13+, uses `uv.lock`)
-- **Format code**: `black .`
 - **Lint code**: `ruff check .`
 - **Run tests**: `uv run pytest`
 - **Run a single test**: `pytest tests/path/to/test_file.py::test_function_name`
-- **Scaffold code**: `codegen scaffold` (generates Python code skeleton from `codegen.yaml`)
-- **Reverse engineer**: `codegen reverse` (updates `codegen.yaml` from Python code)
-- **Output schema**: `codegen schema` (outputs JSON schema for the blueprint)
-- **Initialize blueprint**: `codegen init` (creates a new `codegen.yaml`)
-- **View blueprint**: `codegen tree` (displays blueprint as visual tree)
-- **Query blueprint**: `codegen get <path>` (e.g., `codegen get contexts.sales`)
-- **Update blueprint**: `codegen set <path> <value>` or `codegen rm <path>`
-- **Run MCP Server**: `codegen mcp`
 
 ## Project Vision
 
