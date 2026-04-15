@@ -428,6 +428,8 @@ contexts:
       inputs:
       - type: Path
         name: path
+      - type: Path
+        name: test_path
       outputs:
       - type: string
         name: result
@@ -1713,6 +1715,15 @@ contexts:
           name: base_types
         output:
           type: None
+      - name: load_test_package
+        description: Load test package into the domain concept. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: PackageSpec
+          name: test_pkg
+        output:
+          type: Self
     aggregates:
     - name: Blueprint
       description: Root of the generation model. Represents the entire project definition.
@@ -1787,6 +1798,15 @@ contexts:
           name: self
         output:
           type: PackageSpec
+      - name: load_test_package
+        description: Load test package into the blueprint. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: PackageSpec
+          name: test_pkg
+        output:
+          type: Self
     enums:
     - name: PortType
       members:
@@ -1967,9 +1987,6 @@ contexts:
         - type: UseCaseSpec
           container: list
           name: use_cases
-        - type: string
-          name: project_name
-          default: ''
         output:
           type: PackageSpec
       - name: commands_from_package_spec
@@ -2071,6 +2088,16 @@ contexts:
           name: self
         output:
           type: FunctionSpec
+      - name: load_test_module
+        description: Load test cases from module into method rules. Returns self for
+          chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: ModuleSpec
+          name: module
+        output:
+          type: Self
     - name: TypeDefinition
       description: 类型定义的公共部分，被 AttributeSpec 和 MethodOutput 共同继承。
       attributes:
@@ -2289,6 +2316,16 @@ contexts:
           name: fixture_name
         output:
           type: FunctionSpec
+      - name: from_test_function
+        description: Parse test function to create RuleSpec instance.
+        inputs:
+        - type: Self
+          container: type
+          name: cls
+        - type: FunctionSpec
+          name: function
+        output:
+          type: Self
     - name: AttributeSpec
       description: Standard specification for a class attribute.
       base_types:
@@ -2340,7 +2377,7 @@ contexts:
     - name: McpToolSpec
       description: MCP Tool 规范
       attributes:
-      - type: string
+      - type: SnakeString
         name: name
       - type: string
         name: use_case
@@ -2349,9 +2386,8 @@ contexts:
         default: str
       behaviors:
       - name: to_module_spec
-        description: "生成单个 MCP tool 模块\n\nArgs:\n    context_name: 上下文名称\n    use_case:\
-          \ UseCase 规范\n    project_name: 项目名称\n\nReturns:\n    ModuleSpec for MCP\
-          \ tool"
+        description: "生成单个 CLI 命令模块\n\nArgs:\n    context_name: 上下文名称\n    use_case:\
+          \ UseCase 规范\n\nReturns:\n    ModuleSpec for CLI command"
         inputs:
         - type: Self
           name: self
@@ -2359,15 +2395,12 @@ contexts:
           name: context_name
         - type: UseCaseSpec
           name: use_case
-        - type: string
-          name: project_name
-          default: ''
         output:
           type: ModuleSpec
       - name: from_module_spec
-        description: "从 ModuleSpec 逆向解析为 McpToolSpec\n\nArgs:\n    module: MCP tool\
-          \ 模块\n    use_case_index: UseCase 名称索引\n\nReturns:\n    McpToolSpec or None\
-          \ if无法解析"
+        description: "从 ModuleSpec 逆向解析为 CliCommandSpec\n\nArgs:\n    module: CLI\
+          \ 命令模块\n    use_case_index: UseCase 名称索引\n\nReturns:\n    CliCommandSpec\
+          \ or None if无法解析"
         inputs:
         - type: Self
           container: type
@@ -2423,9 +2456,6 @@ contexts:
         - type: UseCaseSpec
           container: list
           name: use_cases
-        - type: string
-          name: project_name
-          default: ''
         output:
           type: PackageSpec
       - name: tools_from_package_spec
@@ -2924,6 +2954,30 @@ contexts:
           name: name
         output:
           type: Self
+      - name: to_test_package_spec
+        description: Create test package for infrastructure with implementations that
+          have rules.
+        inputs:
+        - type: Self
+          name: self
+        - type: PortSpec
+          container: callable
+          name: port_finder
+        output:
+          type: PackageSpec
+      - name: load_test_package
+        description: Load test package into the infrastructure spec. Returns self
+          for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: PackageSpec
+          name: test_pkg
+        - type: PortSpec
+          container: callable
+          name: port_finder
+        output:
+          type: Self
     - name: ContainerSpec
       description: Specification for a container (dependency injection).
       attributes:
@@ -3069,6 +3123,28 @@ contexts:
           name: description
         output:
           type: None
+      - name: to_test_package_spec
+        description: Create test package for implementation with operations that have
+          rules.
+        inputs:
+        - type: Self
+          name: self
+        - type: PortSpec
+          name: port
+        output:
+          type: PackageSpec
+      - name: load_test_package
+        description: Load test package into the implementation spec. Returns self
+          for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: PackageSpec
+          name: test_pkg
+        - type: PortSpec
+          name: port
+        output:
+          type: Self
     - name: CoreSpec
       description: Specification of a core entity to be generated.
       base_types:
@@ -3355,6 +3431,15 @@ contexts:
           name: name
         output:
           type: Self
+      - name: get_core
+        description: Get a CoreSpec by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: CoreSpec
       - name: to_test_package_spec
         description: Create test package for domain with aggregates that have rules.
         inputs:
@@ -3362,6 +3447,15 @@ contexts:
           name: self
         output:
           type: PackageSpec
+      - name: load_test_package
+        description: Load test package into the domain spec. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: PackageSpec
+          name: test_pkg
+        output:
+          type: Self
     - name: BoundedContext
       description: A logical boundary within the system.
       attributes:
@@ -3391,9 +3485,6 @@ contexts:
         inputs:
         - type: Self
           name: self
-        - type: string
-          name: project_name
-          default: ''
         output:
           type: PackageSpec
       - name: _collect_class_specs_in_ports
@@ -3480,6 +3571,23 @@ contexts:
           name: self
         output:
           type: PackageSpec
+      - name: to_integration_test_package_spec
+        description: Create test package for bounded context.
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: PackageSpec
+      - name: load_test_package
+        description: Load test package into the bounded context. Returns self for
+          chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: PackageSpec
+          name: test_pkg
+        output:
+          type: Self
     - name: ServiceSpec
       description: Specification of a domain service to be generated.
       attributes:
@@ -3870,3 +3978,1137 @@ contexts:
           name: blueprint
         output:
           type: None
+  application:
+    use_cases:
+    - name: UpdateCliCommand
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        optional: true
+        name: use_case
+      - type: string
+        optional: true
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: UpdateHttpEndpoint
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: path
+      - type: string
+        optional: true
+        name: method
+      - type: string
+        optional: true
+        name: use_case
+      - type: string
+        optional: true
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: InitProject
+      kind: command
+      inputs:
+      - type: string
+        optional: true
+        name: project_name
+      - type: string
+        optional: true
+        name: project_description
+      outputs:
+      - type: Blueprint
+        name: blueprint
+      description: Initializes a new project blueprint with a default Shared context.
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: UpdateMethod
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: ElementType
+        name: element_type
+      - type: MethodKind
+        name: method_kind
+      - type: string
+        name: element_name
+      - type: string
+        name: name
+      - type: string
+        name: description
+      - type: string
+        name: output_type
+      - type: Any
+        optional: true
+        custom_type_string: list[dict[str, Any]] | None
+        name: inputs
+      - type: Any
+        optional: true
+        custom_type_string: list[dict[str, Any]] | None
+        name: rules
+      - type: ContainerType
+        name: output_container
+        default: ContainerType.NONE
+      - type: boolean
+        name: output_optional
+        default: false
+      - type: string
+        optional: true
+        name: output_custom_type_string
+      outputs:
+      - type: boolean
+        name: success
+      description: Use case to update a method of an element.
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: UpdateEntity
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        optional: true
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: RemoveDomainPort
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: UpdateAttribute
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: ElementType
+        name: element_type
+      - type: AttributeKind
+        name: attribute_kind
+      - type: string
+        name: element_name
+      - type: string
+        name: name
+      - type: string
+        optional: true
+        name: type
+      - type: string
+        optional: true
+        name: description
+      - type: any
+        optional: true
+        name: default
+      - type: ContainerType
+        optional: true
+        name: container
+      - type: boolean
+        optional: true
+        name: optional
+      - type: string
+        optional: true
+        name: custom_type_string
+      outputs:
+      - type: boolean
+        name: success
+      description: Use case to update an attribute, dependency, input, or output of
+        an element.
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: RemoveEntity
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: UpdateEnum
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        optional: true
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: RemoveMethod
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: ElementType
+        name: element_type
+      - type: MethodKind
+        name: method_kind
+      - type: string
+        name: element_name
+      - type: string
+        name: name
+      outputs:
+      - type: boolean
+        name: success
+      description: Use case to remove a method from an element.
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: GetDomainPort
+      kind: query
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: PortSpec
+        name: port
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: AddHttpEndpoint
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: path
+      - type: string
+        name: method
+      - type: string
+        name: use_case
+      - type: string
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: GetMcpTool
+      kind: query
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: McpToolSpec
+        name: mcp_tool
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: AddAppService
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: AddUseCase
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: RemoveAppPort
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: UpdateUseCase
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        optional: true
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: GetDomainService
+      kind: query
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: ServiceSpec
+        name: service
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: UpdateAggregate
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        optional: true
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: GetAppService
+      kind: query
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: ServiceSpec
+        name: service
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: AddDomainService
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: GetEnum
+      kind: query
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: EnumSpec
+        name: enum
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: GetHttpEndpoint
+      kind: query
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: path
+      outputs:
+      - type: HttpEndpointSpec
+        name: http_endpoint
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: GetEntity
+      kind: query
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: EntitySpec
+        name: entity
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: AddEntity
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: AddMethod
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: ElementType
+        name: element_type
+      - type: MethodKind
+        name: method_kind
+      - type: string
+        name: element_name
+      - type: string
+        name: name
+      - type: string
+        name: description
+      - type: Any
+        custom_type_string: list[dict[str, Any]]
+        name: inputs
+        default: list
+      - type: Any
+        custom_type_string: list[dict[str, Any]]
+        name: rules
+        default: list
+      - type: string
+        name: output_type
+        default: void
+      - type: ContainerType
+        name: output_container
+        default: ContainerType.NONE
+      - type: boolean
+        name: output_optional
+        default: false
+      - type: string
+        optional: true
+        name: output_custom_type_string
+      outputs:
+      - type: boolean
+        name: success
+      description: Use case to add a method to an element.
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: AddDomainPort
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: RemoveDomainService
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: UpdateDomainService
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        optional: true
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: RemoveAppService
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: AddValueObject
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: AddAppPort
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: UpdateAppPort
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        optional: true
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: RemoveUseCase
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: UpdateMcpTool
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        optional: true
+        name: use_case
+      - type: string
+        optional: true
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: AddMcpTool
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        name: use_case
+      - type: string
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: AddAttribute
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: ElementType
+        name: element_type
+      - type: AttributeKind
+        name: attribute_kind
+      - type: string
+        name: element_name
+      - type: string
+        name: name
+      - type: string
+        name: type
+      - type: string
+        optional: true
+        name: description
+      - type: any
+        optional: true
+        name: default
+      - type: ContainerType
+        name: container
+        default: ContainerType.NONE
+      - type: boolean
+        name: optional
+        default: false
+      - type: string
+        optional: true
+        name: custom_type_string
+      outputs:
+      - type: boolean
+        name: success
+      description: Use case to add an attribute, dependency, input, or output to an
+        element.
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: GetCliCommand
+      kind: query
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: CliCommandSpec
+        name: cli_command
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: AddEnum
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: RemoveEnum
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: RemoveAggregate
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: GetUseCase
+      kind: query
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: UseCaseSpec
+        name: use_case
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: RemoveAttribute
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: ElementType
+        name: element_type
+      - type: AttributeKind
+        name: attribute_kind
+      - type: string
+        name: element_name
+      - type: string
+        name: name
+      outputs:
+      - type: boolean
+        name: success
+      description: Use case to remove an attribute, dependency, input, or output from
+        an element.
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: GetValueObject
+      kind: query
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: ValueObjectSpec
+        name: value_object
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: UpdateImplementation
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        optional: true
+        name: implements
+      - type: string
+        optional: true
+        name: technology
+      - type: string
+        optional: true
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: UpdateDomainPort
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        optional: true
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: AddImplementation
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        name: implements
+      - type: string
+        name: technology
+      - type: string
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: RemoveImplementation
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: AddAggregate
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: RemoveCliCommand
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: RemoveHttpEndpoint
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: path
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: RemoveMcpTool
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: GetImplementation
+      kind: query
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: ImplementationSpec
+        name: implementation
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: UpdateAppService
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        optional: true
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: GetAppPort
+      kind: query
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: PortSpec
+        name: port
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: RemoveValueObject
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: GetAggregate
+      kind: query
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: AggregateSpec
+        name: aggregate
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: UpdateValueObject
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        optional: true
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: LoadBlueprint
+      kind: command
+      inputs:
+      - type: string
+        optional: true
+        name: node
+      outputs:
+      - type: Blueprint
+        name: blueprint
+      description: Loads the blueprint from a file.
+      dependencies:
+      - type: BlueprintStorage
+        name: blueprint_loader
+    - name: AddCliCommand
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        name: use_case
+      - type: string
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+  infrastructure:
+    implementations:
+    - name: YamlBlueprintStorage
+      implements: BlueprintStorage
+      technology: yaml
+      description: Blueprint loader that reads from a YAML file.
+      attributes:
+      - type: Path
+        name: config_path
+  interfaces:
+    cli_commands:
+    - name: update-cli-command
+      use_case: UpdateCliCommand
+    - name: update-http-endpoint
+      use_case: UpdateHttpEndpoint
+    - name: update-method
+      use_case: UpdateMethod
+    - name: update-entity
+      use_case: UpdateEntity
+    - name: remove-domain-port
+      use_case: RemoveDomainPort
+    - name: update-attribute
+      use_case: UpdateAttribute
+    - name: tree
+      use_case: LoadBlueprint
+    - name: remove-entity
+      use_case: RemoveEntity
+    - name: update-enum
+      use_case: UpdateEnum
+    - name: remove-method
+      use_case: RemoveMethod
+    - name: get-domain-port
+      use_case: GetDomainPort
+    - name: add-http-endpoint
+      use_case: AddHttpEndpoint
+    - name: get-mcp-tool
+      use_case: GetMcpTool
+    - name: add-app-service
+      use_case: AddAppService
+    - name: add-use-case
+      use_case: AddUseCase
+    - name: remove-app-port
+      use_case: RemoveAppPort
+    - name: update-use-case
+      use_case: UpdateUseCase
+    - name: get-domain-service
+      use_case: GetDomainService
+    - name: update-aggregate
+      use_case: UpdateAggregate
+    - name: get-app-service
+      use_case: GetAppService
+    - name: add-domain-service
+      use_case: AddDomainService
+    - name: get-enum
+      use_case: GetEnum
+    - name: get-http-endpoint
+      use_case: GetHttpEndpoint
+    - name: get-entity
+      use_case: GetEntity
+    - name: add-entity
+      use_case: AddEntity
+    - name: add-method
+      use_case: AddMethod
+    - name: add-domain-port
+      use_case: AddDomainPort
+    - name: remove-domain-service
+      use_case: RemoveDomainService
+    - name: update-domain-service
+      use_case: UpdateDomainService
+    - name: remove-app-service
+      use_case: RemoveAppService
+    - name: add-value-object
+      use_case: AddValueObject
+    - name: add-app-port
+      use_case: AddAppPort
+    - name: update-app-port
+      use_case: UpdateAppPort
+    - name: remove-use-case
+      use_case: RemoveUseCase
+    - name: update-mcp-tool
+      use_case: UpdateMcpTool
+    - name: add-mcp-tool
+      use_case: AddMcpTool
+    - name: add-attribute
+      use_case: AddAttribute
+    - name: get-cli-command
+      use_case: GetCliCommand
+    - name: add-enum
+      use_case: AddEnum
+    - name: remove-enum
+      use_case: RemoveEnum
+    - name: remove-aggregate
+      use_case: RemoveAggregate
+    - name: get-use-case
+      use_case: GetUseCase
+    - name: remove-attribute
+      use_case: RemoveAttribute
+    - name: get-value-object
+      use_case: GetValueObject
+    - name: update-implementation
+      use_case: UpdateImplementation
+    - name: update-domain-port
+      use_case: UpdateDomainPort
+    - name: add-implementation
+      use_case: AddImplementation
+    - name: remove-implementation
+      use_case: RemoveImplementation
+    - name: add-aggregate
+      use_case: AddAggregate
+    - name: remove-cli-command
+      use_case: RemoveCliCommand
+    - name: remove-http-endpoint
+      use_case: RemoveHttpEndpoint
+    - name: remove-mcp-tool
+      use_case: RemoveMcpTool
+    - name: get-implementation
+      use_case: GetImplementation
+    - name: init
+      use_case: InitProject
+    - name: update-app-service
+      use_case: UpdateAppService
+    - name: get-app-port
+      use_case: GetAppPort
+    - name: remove-value-object
+      use_case: RemoveValueObject
+    - name: get-aggregate
+      use_case: GetAggregate
+    - name: update-value-object
+      use_case: UpdateValueObject
+    - name: add-cli-command
+      use_case: AddCliCommand
