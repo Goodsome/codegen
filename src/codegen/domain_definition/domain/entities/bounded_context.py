@@ -46,26 +46,24 @@ class BoundedContext(Entity):
             application_pkg,
             infrastructure_pkg,
         ]
-        if self.config:
-            config_module = self.config.to_module_spec(
-                class_name=f"{self.name}Settings"
-            )
-            modules.append(config_module)
-        container_spec = self.container
-        if not container_spec:
-            bindings: list[PortBinding] = []
-            seen_ports = set()
-            for impl in self.infrastructure.implementations:
-                if impl.implements not in seen_ports:
-                    bindings.append(
-                        PortBinding(port=impl.implements, implementation=impl.name)
-                    )
-                    seen_ports.add(impl.implements)
-            container_spec = ContainerSpec(bindings=bindings)
-        container_module = container_spec.to_module_spec(
-            context=self, class_name="Container"
-        )
-        modules.append(container_module)
+        # if self.config:
+        #     config_module = self.config.to_module_spec(
+        #         class_name=f"{self.name}Settings"
+        #     )
+        #     modules.append(config_module)
+        # container_spec = self.container
+        # if not container_spec:
+        #     bindings: list[PortBinding] = []
+        #     seen_ports = set()
+        #     for impl in self.infrastructure.implementations:
+        #         if impl.implements not in seen_ports:
+        #             bindings.append(
+        #                 PortBinding(port=impl.implements, implementation=impl.name)
+        #             )
+        #             seen_ports.add(impl.implements)
+        #     container_spec = ContainerSpec(bindings=bindings)
+        # container_module = container_spec.to_module_spec( context=self, class_name="Container" )
+        # modules.append(container_module)
         if self.interfaces:
             interfaces_pkg = self.interfaces.to_package_spec(
                 context_name=str(self.name),
