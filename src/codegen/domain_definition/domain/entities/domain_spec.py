@@ -4,6 +4,7 @@ from pydantic import Field
 
 from codegen.domain_definition.domain.entities.aggregate_spec import AggregateSpec
 from codegen.domain_definition.domain.entities.core_spec import CoreSpec
+from codegen.domain_definition.domain.entities.domain_event_spec import DomainEventSpec
 from codegen.domain_definition.domain.entities.entity_spec import EntitySpec
 from codegen.domain_definition.domain.entities.enum_spec import EnumSpec
 from codegen.domain_definition.domain.entities.port_spec import PortSpec
@@ -24,6 +25,7 @@ class DomainSpec(Entity):
     entities: list[EntitySpec] = Field(default_factory=list)
     services: list[ServiceSpec] = Field(default_factory=list)
     ports: list[PortSpec] = Field(default_factory=list)
+    domain_events: list[DomainEventSpec] = Field(default_factory=list)
 
     def to_package_spec(self: Self) -> PackageSpec:
         """将 DomainSpec 转换为 PackageSpec"""
@@ -33,6 +35,7 @@ class DomainSpec(Entity):
         services_pkg = ServiceSpec.to_package_spec(self.services)
         ports_pkg = PortSpec.to_package_spec(self.ports)
         core_pkg = CoreSpec.to_package_spec(self.core)
+        domain_events_pkg = DomainEventSpec.to_package_spec(self.domain_events)
         sub_packages = [
             aggregate_pkg,
             entity_pkg,
@@ -40,6 +43,7 @@ class DomainSpec(Entity):
             services_pkg,
             ports_pkg,
             core_pkg,
+            domain_events_pkg,
         ]
         modules: list[ModuleSpec] = []
         if self.enums:
@@ -58,6 +62,7 @@ class DomainSpec(Entity):
         ports = []
         enums: list[EnumSpec] = []
         core = []
+        domain_events = []
         for pkg in package_spec.sub_packages:
             if pkg.name == "aggregates":
                 aggregates = AggregateSpec.from_package_spec(pkg)
@@ -71,6 +76,8 @@ class DomainSpec(Entity):
                 ports = PortSpec.from_package_spec(pkg)
             elif pkg.name == "core":
                 core = CoreSpec.from_package_spec(pkg)
+            elif pkg.name == "events":
+                domain_events = DomainEventSpec.from_package_spec(pkg)
 
         for module in package_spec.modules:
             if module.name == "enums":
@@ -83,6 +90,7 @@ class DomainSpec(Entity):
             ports=ports,
             enums=enums,
             core=core,
+            domain_events=domain_events,
         )
 
     def add_aggregate(self: Self, aggregate: AggregateSpec) -> Self:
@@ -171,6 +179,36 @@ class DomainSpec(Entity):
     def remove_value_object(self: Self, name: str) -> Self:
         """Remove a ValueObjectSpec by name. Returns self for chaining."""
         self.value_objects = [vo for vo in self.value_objects if vo.name != name]
+        return self
+
+    def add_domain_event(self: Self, domain_event: DomainEventSpec) -> Self:
+        """Add a DomainEventSpec. Raises ValueError if domain event with same name exists."""
+        for de in self.domain_events:
+            if de.name == domain_event.name:
+                raise ValueError(
+                    f"DomainEvent '{domain_event.name}' already exists in domain"
+                )
+        self.domain_events.append(domain_event)
+        return self
+
+    def update_domain_event(self: Self, domain_event: DomainEventSpec) -> Self:
+        """Update an existing DomainEventSpec by name. Raises ValueError if not found."""
+        for i, de in enumerate(self.domain_events):
+            if de.name == domain_event.name:
+                self.domain_events[i] = domain_event
+                return self
+        raise ValueError(f"DomainEvent '{domain_event.name}' not found in domain")
+
+    def get_domain_event(self: Self, name: str) -> DomainEventSpec:
+        """Get a DomainEventSpec by name. Raises ValueError if not found."""
+        for de in self.domain_events:
+            if de.name == name:
+                return de
+        raise ValueError(f"DomainEvent '{name}' not found in domain")
+
+    def remove_domain_event(self: Self, name: str) -> Self:
+        """Remove a DomainEventSpec by name. Returns self for chaining."""
+        self.domain_events = [de for de in self.domain_events if de.name != name]
         return self
 
     def add_entity(self: Self, entity: EntitySpec) -> Self:
@@ -272,6 +310,9 @@ class DomainSpec(Entity):
         sp += [
             value_object.to_test_package_spec() for value_object in self.value_objects
         ]
+        sp += [
+            domain_event.to_test_package_spec() for domain_event in self.domain_events
+        ]
         sp += [service.to_test_package_spec() for service in self.services]
         sp += [core.to_test_package_spec() for core in self.core]
         return PackageSpec.create(name="domain", sub_packages=sp)
@@ -294,6 +335,11 @@ class DomainSpec(Entity):
                 for vo_pkg in pkg.sub_packages:
                     vo = self.get_value_object(vo_pkg.name)
                     vo.load_test_package(vo_pkg)
+            # Load domain event tests
+            elif pkg.name == "domain_events":
+                for de_pkg in pkg.sub_packages:
+                    de = self.get_domain_event(de_pkg.name)
+                    de.load_test_package(de_pkg)
             # Load service tests
             elif pkg.name == "services":
                 for svc_pkg in pkg.sub_packages:
