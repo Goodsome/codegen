@@ -5,6 +5,7 @@ from pydantic import Field
 from codegen.domain_definition.domain.entities.aggregate_spec import AggregateSpec
 from codegen.domain_definition.domain.entities.core_spec import CoreSpec
 from codegen.domain_definition.domain.entities.domain_event_spec import DomainEventSpec
+from codegen.domain_definition.domain.entities.domain_exception_spec import DomainExceptionSpec
 from codegen.domain_definition.domain.entities.entity_spec import EntitySpec
 from codegen.domain_definition.domain.entities.enum_spec import EnumSpec
 from codegen.domain_definition.domain.entities.port_spec import PortSpec
@@ -26,6 +27,7 @@ class DomainSpec(Entity):
     services: list[ServiceSpec] = Field(default_factory=list)
     ports: list[PortSpec] = Field(default_factory=list)
     domain_events: list[DomainEventSpec] = Field(default_factory=list)
+    domain_exceptions: list[DomainExceptionSpec] = Field(default_factory=list)
 
     def to_package_spec(self: Self) -> PackageSpec:
         """将 DomainSpec 转换为 PackageSpec"""
@@ -36,6 +38,7 @@ class DomainSpec(Entity):
         ports_pkg = PortSpec.to_package_spec(self.ports)
         core_pkg = CoreSpec.to_package_spec(self.core)
         domain_events_pkg = DomainEventSpec.to_package_spec(self.domain_events)
+        domain_exceptions_pkg = DomainExceptionSpec.to_package_spec(self.domain_exceptions)
         sub_packages = [
             aggregate_pkg,
             entity_pkg,
@@ -44,6 +47,7 @@ class DomainSpec(Entity):
             ports_pkg,
             core_pkg,
             domain_events_pkg,
+            domain_exceptions_pkg,
         ]
         modules: list[ModuleSpec] = []
         if self.enums:
@@ -63,6 +67,7 @@ class DomainSpec(Entity):
         enums: list[EnumSpec] = []
         core = []
         domain_events = []
+        domain_exceptions = []
         for pkg in package_spec.sub_packages:
             if pkg.name == "aggregates":
                 aggregates = AggregateSpec.from_package_spec(pkg)
@@ -78,6 +83,8 @@ class DomainSpec(Entity):
                 core = CoreSpec.from_package_spec(pkg)
             elif pkg.name == "events":
                 domain_events = DomainEventSpec.from_package_spec(pkg)
+            elif pkg.name == "exceptions":
+                domain_exceptions = DomainExceptionSpec.from_package_spec(pkg)
 
         for module in package_spec.modules:
             if module.name == "enums":
@@ -91,6 +98,7 @@ class DomainSpec(Entity):
             enums=enums,
             core=core,
             domain_events=domain_events,
+            domain_exceptions=domain_exceptions,
         )
 
     def add_aggregate(self: Self, aggregate: AggregateSpec) -> Self:
@@ -211,6 +219,36 @@ class DomainSpec(Entity):
         self.domain_events = [de for de in self.domain_events if de.name != name]
         return self
 
+    def add_domain_exception(self: Self, domain_exception: DomainExceptionSpec) -> Self:
+        """Add a DomainExceptionSpec. Raises ValueError if domain exception with same name exists."""
+        for de in self.domain_exceptions:
+            if de.name == domain_exception.name:
+                raise ValueError(
+                    f"DomainException '{domain_exception.name}' already exists in domain"
+                )
+        self.domain_exceptions.append(domain_exception)
+        return self
+
+    def update_domain_exception(self: Self, domain_exception: DomainExceptionSpec) -> Self:
+        """Update an existing DomainExceptionSpec by name. Raises ValueError if not found."""
+        for i, de in enumerate(self.domain_exceptions):
+            if de.name == domain_exception.name:
+                self.domain_exceptions[i] = domain_exception
+                return self
+        raise ValueError(f"DomainException '{domain_exception.name}' not found in domain")
+
+    def get_domain_exception(self: Self, name: str) -> DomainExceptionSpec:
+        """Get a DomainExceptionSpec by name. Raises ValueError if not found."""
+        for de in self.domain_exceptions:
+            if de.name == name:
+                return de
+        raise ValueError(f"DomainException '{name}' not found in domain")
+
+    def remove_domain_exception(self: Self, name: str) -> Self:
+        """Remove a DomainExceptionSpec by name. Returns self for chaining."""
+        self.domain_exceptions = [de for de in self.domain_exceptions if de.name != name]
+        return self
+
     def add_entity(self: Self, entity: EntitySpec) -> Self:
         """Add an EntitySpec. Raises ValueError if entity with same name exists."""
         for e in self.entities:
@@ -313,6 +351,9 @@ class DomainSpec(Entity):
         sp += [
             domain_event.to_test_package_spec() for domain_event in self.domain_events
         ]
+        sp += [
+            domain_exception.to_test_package_spec() for domain_exception in self.domain_exceptions
+        ]
         sp += [service.to_test_package_spec() for service in self.services]
         sp += [core.to_test_package_spec() for core in self.core]
         return PackageSpec.create(name="domain", sub_packages=sp)
@@ -339,6 +380,11 @@ class DomainSpec(Entity):
             elif pkg.name == "domain_events":
                 for de_pkg in pkg.sub_packages:
                     de = self.get_domain_event(de_pkg.name)
+                    de.load_test_package(de_pkg)
+            # Load domain exception tests
+            elif pkg.name == "domain_exceptions":
+                for de_pkg in pkg.sub_packages:
+                    de = self.get_domain_exception(de_pkg.name)
                     de.load_test_package(de_pkg)
             # Load service tests
             elif pkg.name == "services":
