@@ -28,6 +28,19 @@ from codegen.domain_definition.interfaces.cli.add_domain_service import add_doma
 from codegen.domain_definition.interfaces.cli.update_domain_service import update_domain_service
 from codegen.domain_definition.interfaces.cli.get_domain_service import get_domain_service
 from codegen.domain_definition.interfaces.cli.remove_domain_service import remove_domain_service
+from codegen.domain_definition.interfaces.cli.get_domain import get_domain
+from codegen.domain_definition.interfaces.cli.add_domain_event import add_domain_event
+from codegen.domain_definition.interfaces.cli.update_domain_event import update_domain_event
+from codegen.domain_definition.interfaces.cli.get_domain_event import get_domain_event
+from codegen.domain_definition.interfaces.cli.remove_domain_event import remove_domain_event
+from codegen.domain_definition.interfaces.cli.add_domain_exception import add_domain_exception
+from codegen.domain_definition.interfaces.cli.update_domain_exception import update_domain_exception
+from codegen.domain_definition.interfaces.cli.get_domain_exception import get_domain_exception
+from codegen.domain_definition.interfaces.cli.remove_domain_exception import remove_domain_exception
+from codegen.domain_definition.interfaces.cli.add_repository import add_repository
+from codegen.domain_definition.interfaces.cli.update_repository import update_repository
+from codegen.domain_definition.interfaces.cli.get_repository import get_repository
+from codegen.domain_definition.interfaces.cli.remove_repository import remove_repository
 from codegen.domain_definition.interfaces.cli.add_domain_port import add_domain_port
 from codegen.domain_definition.interfaces.cli.update_domain_port import update_domain_port
 from codegen.domain_definition.interfaces.cli.get_domain_port import get_domain_port
@@ -157,6 +170,19 @@ domain_app.command(name="add-domain-service")(add_domain_service)
 domain_app.command(name="update-domain-service")(update_domain_service)
 domain_app.command(name="get-domain-service")(get_domain_service)
 domain_app.command(name="remove-domain-service")(remove_domain_service)
+domain_app.command(name="get-domain")(get_domain)
+domain_app.command(name="add-domain-event")(add_domain_event)
+domain_app.command(name="update-domain-event")(update_domain_event)
+domain_app.command(name="get-domain-event")(get_domain_event)
+domain_app.command(name="remove-domain-event")(remove_domain_event)
+domain_app.command(name="add-domain-exception")(add_domain_exception)
+domain_app.command(name="update-domain-exception")(update_domain_exception)
+domain_app.command(name="get-domain-exception")(get_domain_exception)
+domain_app.command(name="remove-domain-exception")(remove_domain_exception)
+domain_app.command(name="add-repository")(add_repository)
+domain_app.command(name="update-repository")(update_repository)
+domain_app.command(name="get-repository")(get_repository)
+domain_app.command(name="remove-repository")(remove_repository)
 domain_app.command(name="add-domain-port")(add_domain_port)
 domain_app.command(name="update-domain-port")(update_domain_port)
 domain_app.command(name="get-domain-port")(get_domain_port)

@@ -87,6 +87,27 @@ from codegen.domain_definition.application.use_cases.add_method import AddMethod
 from codegen.domain_definition.application.use_cases.update_method import UpdateMethod
 from codegen.domain_definition.application.use_cases.remove_method import RemoveMethod
 
+# Domain event use cases
+from codegen.domain_definition.application.use_cases.add_domain_event import AddDomainEvent
+from codegen.domain_definition.application.use_cases.update_domain_event import UpdateDomainEvent
+from codegen.domain_definition.application.use_cases.get_domain_event import GetDomainEvent
+from codegen.domain_definition.application.use_cases.remove_domain_event import RemoveDomainEvent
+
+# Domain exception use cases
+from codegen.domain_definition.application.use_cases.add_domain_exception import AddDomainException
+from codegen.domain_definition.application.use_cases.update_domain_exception import UpdateDomainException
+from codegen.domain_definition.application.use_cases.get_domain_exception import GetDomainException
+from codegen.domain_definition.application.use_cases.remove_domain_exception import RemoveDomainException
+
+# Repository use cases
+from codegen.domain_definition.application.use_cases.add_repository import AddRepository
+from codegen.domain_definition.application.use_cases.update_repository import UpdateRepository
+from codegen.domain_definition.application.use_cases.get_repository import GetRepository
+from codegen.domain_definition.application.use_cases.remove_repository import RemoveRepository
+
+# Domain spec use case
+from codegen.domain_definition.application.use_cases.get_domain import GetDomain
+
 # Other use cases
 from codegen.domain_definition.application.use_cases.init_project import InitProject
 from codegen.domain_definition.application.use_cases.load_blueprint import LoadBlueprint
@@ -147,6 +168,35 @@ class Container(DeclarativeContainer):
     update_domain_service = Factory(UpdateDomainService, storage=yaml_blueprint_storage)
     get_domain_service = Factory(GetDomainService, storage=yaml_blueprint_storage)
     remove_domain_service = Factory(RemoveDomainService, storage=yaml_blueprint_storage)
+
+    # =========================================================================
+    # Domain event use cases
+    # =========================================================================
+    add_domain_event = Factory(AddDomainEvent, storage=yaml_blueprint_storage)
+    update_domain_event = Factory(UpdateDomainEvent, storage=yaml_blueprint_storage)
+    get_domain_event = Factory(GetDomainEvent, storage=yaml_blueprint_storage)
+    remove_domain_event = Factory(RemoveDomainEvent, storage=yaml_blueprint_storage)
+
+    # =========================================================================
+    # Domain exception use cases
+    # =========================================================================
+    add_domain_exception = Factory(AddDomainException, storage=yaml_blueprint_storage)
+    update_domain_exception = Factory(UpdateDomainException, storage=yaml_blueprint_storage)
+    get_domain_exception = Factory(GetDomainException, storage=yaml_blueprint_storage)
+    remove_domain_exception = Factory(RemoveDomainException, storage=yaml_blueprint_storage)
+
+    # =========================================================================
+    # Repository use cases
+    # =========================================================================
+    add_repository = Factory(AddRepository, storage=yaml_blueprint_storage)
+    update_repository = Factory(UpdateRepository, storage=yaml_blueprint_storage)
+    get_repository = Factory(GetRepository, storage=yaml_blueprint_storage)
+    remove_repository = Factory(RemoveRepository, storage=yaml_blueprint_storage)
+
+    # =========================================================================
+    # Domain spec use case
+    # =========================================================================
+    get_domain = Factory(GetDomain, storage=yaml_blueprint_storage)
 
     # =========================================================================
     # Domain port use cases
