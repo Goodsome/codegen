@@ -103,6 +103,8 @@ class UpdateMethod:
                 context.domain.get_value_object(cmd.element_name).behaviors.update(
                     method
                 )
+            case [ElementType.REPOSITORY, MethodKind.BEHAVIOR]:
+                context.domain.get_repository(cmd.element_name).behaviors.update(method)
             case [ElementType.DOMAIN_SERVICE, MethodKind.OPERATION]:
                 context.domain.get_service(cmd.element_name).operations.update(method)
             case [ElementType.APP_SERVICE, MethodKind.OPERATION]:

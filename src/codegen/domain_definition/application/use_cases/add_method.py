@@ -95,6 +95,8 @@ class AddMethod:
                 context.domain.get_entity(cmd.element_name).behaviors.add(method)
             case (ElementType.VALUE_OBJECT, MethodKind.BEHAVIOR):
                 context.domain.get_value_object(cmd.element_name).behaviors.add(method)
+            case (ElementType.REPOSITORY, MethodKind.BEHAVIOR):
+                context.domain.get_repository(cmd.element_name).behaviors.add(method)
             case (ElementType.DOMAIN_SERVICE, MethodKind.OPERATION):
                 context.domain.get_service(cmd.element_name).operations.add(method)
             case (ElementType.APP_SERVICE, MethodKind.OPERATION):

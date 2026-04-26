@@ -42,6 +42,10 @@ class RemoveAttribute:
                 context.domain.get_entity(cmd.element_name).attributes.remove(attr_name)
             case (ElementType.VALUE_OBJECT, AttributeKind.ATTRIBUTE):
                 context.domain.get_value_object(cmd.element_name).attributes.remove(attr_name)
+            case (ElementType.DOMAIN_EVENT, AttributeKind.ATTRIBUTE):
+                context.domain.get_domain_event(cmd.element_name).attributes.remove(attr_name)
+            case (ElementType.DOMAIN_EXCEPTION, AttributeKind.ATTRIBUTE):
+                context.domain.get_domain_exception(cmd.element_name).attributes.remove(attr_name)
             case (ElementType.DOMAIN_SERVICE, AttributeKind.DEPENDENCY):
                 context.domain.get_service(cmd.element_name).dependencies.remove(attr_name)
             case (ElementType.APP_SERVICE, AttributeKind.DEPENDENCY):

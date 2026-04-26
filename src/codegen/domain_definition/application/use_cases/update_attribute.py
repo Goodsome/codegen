@@ -55,6 +55,14 @@ class UpdateAttribute:
                 context.domain.get_value_object(cmd.element_name).attributes.update(
                     updated
                 )
+            case [ElementType.DOMAIN_EVENT, AttributeKind.ATTRIBUTE]:
+                context.domain.get_domain_event(cmd.element_name).attributes.update(
+                    updated
+                )
+            case [ElementType.DOMAIN_EXCEPTION, AttributeKind.ATTRIBUTE]:
+                context.domain.get_domain_exception(cmd.element_name).attributes.update(
+                    updated
+                )
             case [ElementType.DOMAIN_SERVICE, AttributeKind.DEPENDENCY]:
                 context.domain.get_service(cmd.element_name).dependencies.update(updated)
             case [ElementType.APP_SERVICE, AttributeKind.DEPENDENCY]:

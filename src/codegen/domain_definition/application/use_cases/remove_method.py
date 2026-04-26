@@ -46,6 +46,10 @@ class RemoveMethod:
                 context.domain.get_value_object(cmd.element_name).behaviors.remove(
                     method_name
                 )
+            case (ElementType.REPOSITORY, MethodKind.BEHAVIOR):
+                context.domain.get_repository(cmd.element_name).behaviors.remove(
+                    method_name
+                )
             case (ElementType.DOMAIN_SERVICE, MethodKind.OPERATION):
                 context.domain.get_service(cmd.element_name).operations.remove(
                     method_name
