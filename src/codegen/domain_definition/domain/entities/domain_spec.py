@@ -403,41 +403,41 @@ class DomainSpec(Entity):
             # Load aggregate tests
             if pkg.name == "aggregates":
                 for agg_pkg in pkg.sub_packages:
-                    agg = self.get_aggregate(agg_pkg.name)
+                    agg = self.get_aggregate(agg_pkg.name.to_pascal())
                     agg.load_test_package(agg_pkg)
             # Load entity tests
             elif pkg.name == "entities":
                 for entity_pkg in pkg.sub_packages:
-                    entity = self.get_entity(entity_pkg.name)
+                    entity = self.get_entity(entity_pkg.name.to_pascal())
                     entity.load_test_package(entity_pkg)
             # Load value object tests
             elif pkg.name == "value_objects":
                 for vo_pkg in pkg.sub_packages:
-                    vo = self.get_value_object(vo_pkg.name)
+                    vo = self.get_value_object(vo_pkg.name.to_pascal())
                     vo.load_test_package(vo_pkg)
             # Load domain event tests
             elif pkg.name == "domain_events":
                 for de_pkg in pkg.sub_packages:
-                    de = self.get_domain_event(de_pkg.name)
+                    de = self.get_domain_event(de_pkg.name.to_pascal())
                     de.load_test_package(de_pkg)
             # Load domain exception tests
             elif pkg.name == "domain_exceptions":
                 for de_pkg in pkg.sub_packages:
-                    de = self.get_domain_exception(de_pkg.name)
+                    de = self.get_domain_exception(de_pkg.name.to_pascal())
                     de.load_test_package(de_pkg)
             # Load repository tests
             elif pkg.name == "repositories":
                 for r_pkg in pkg.sub_packages:
-                    r = self.get_repository(r_pkg.name)
+                    r = self.get_repository(r_pkg.name.to_pascal())
                     r.load_test_package(r_pkg)
             # Load service tests
             elif pkg.name == "services":
                 for svc_pkg in pkg.sub_packages:
-                    svc = self.get_service(svc_pkg.name)
+                    svc = self.get_service(svc_pkg.name.to_pascal())
                     svc.load_test_package(svc_pkg)
             # Load core tests
             elif pkg.name == "core":
                 for core_pkg in pkg.sub_packages:
-                    core = self.get_core(core_pkg.name)
+                    core = self.get_core(core_pkg.name.to_pascal())
                     core.load_test_package(core_pkg)
         return self

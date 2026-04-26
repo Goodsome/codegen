@@ -80,3 +80,14 @@ class ServiceSpec(Entity):
             name="services",
             sub_packages=[p],
         )
+
+    def load_test_package(self: Self, test_pkg: PackageSpec) -> Self:
+        """Load test package into the domain concept. Returns self for chaining."""
+        for module in test_pkg.modules:
+            # Load test cases into corresponding behaviors
+            for o in self.operations:
+                test_module_name = f"test_{o.name.to_snake()}"
+                if module.name == test_module_name:
+                    o.load_test_module(module)
+
+        return self
