@@ -53,7 +53,7 @@ class DomainConcept(BaseModel):
         base_types = [
             i
             for i in cls_spec.inheritance
-            if i not in ["Entity", "ValueObject", "AggregateRoot", "DomainEvent", "DomainException"]
+            if i not in ["Entity", "ValueObject", "AggregateRoot", "DomainEvent", "DomainException", "Repository"]
         ]
         return cls(
             name=cls_spec.name,

@@ -5,11 +5,7 @@
       "description":"Specification of a domain aggregate to be generated.",
       "properties":{
         "attributes":{
-          "items":{
-            "$ref":"#/$defs/AttributeSpec"
-          },
-          "title":"Attributes",
-          "type":"array"
+          "$ref":"#/$defs/AttributeSpecList"
         },
         "base_types":{
           "items":{
@@ -19,11 +15,7 @@
           "type":"array"
         },
         "behaviors":{
-          "items":{
-            "$ref":"#/$defs/MethodSpec"
-          },
-          "title":"Behaviors",
-          "type":"array"
+          "$ref":"#/$defs/MethodSpecList"
         },
         "description":{
           "title":"Description",
@@ -131,6 +123,13 @@
       ],
       "title":"AttributeSpec",
       "type":"object"
+    },
+    "AttributeSpecList":{
+      "items":{
+        "$ref":"#/$defs/AttributeSpec"
+      },
+      "title":"AttributeSpecList",
+      "type":"array"
     },
     "BootstrapSpec":{
       "additionalProperties":false,
@@ -364,11 +363,7 @@
       "description":"Specification of a core entity to be generated.",
       "properties":{
         "attributes":{
-          "items":{
-            "$ref":"#/$defs/AttributeSpec"
-          },
-          "title":"Attributes",
-          "type":"array"
+          "$ref":"#/$defs/AttributeSpecList"
         },
         "base_types":{
           "items":{
@@ -378,11 +373,7 @@
           "type":"array"
         },
         "behaviors":{
-          "items":{
-            "$ref":"#/$defs/MethodSpec"
-          },
-          "title":"Behaviors",
-          "type":"array"
+          "$ref":"#/$defs/MethodSpecList"
         },
         "description":{
           "title":"Description",
@@ -398,6 +389,72 @@
         "description"
       ],
       "title":"CoreSpec",
+      "type":"object"
+    },
+    "DomainEventSpec":{
+      "additionalProperties":false,
+      "description":"Specification of a domain event to be generated.",
+      "properties":{
+        "attributes":{
+          "$ref":"#/$defs/AttributeSpecList"
+        },
+        "base_types":{
+          "items":{
+            "type":"string"
+          },
+          "title":"Base Types",
+          "type":"array"
+        },
+        "behaviors":{
+          "$ref":"#/$defs/MethodSpecList"
+        },
+        "description":{
+          "title":"Description",
+          "type":"string"
+        },
+        "name":{
+          "title":"Name",
+          "type":"string"
+        }
+      },
+      "required":[
+        "name",
+        "description"
+      ],
+      "title":"DomainEventSpec",
+      "type":"object"
+    },
+    "DomainExceptionSpec":{
+      "additionalProperties":false,
+      "description":"Specification of a domain exception to be generated.",
+      "properties":{
+        "attributes":{
+          "$ref":"#/$defs/AttributeSpecList"
+        },
+        "base_types":{
+          "items":{
+            "type":"string"
+          },
+          "title":"Base Types",
+          "type":"array"
+        },
+        "behaviors":{
+          "$ref":"#/$defs/MethodSpecList"
+        },
+        "description":{
+          "title":"Description",
+          "type":"string"
+        },
+        "name":{
+          "title":"Name",
+          "type":"string"
+        }
+      },
+      "required":[
+        "name",
+        "description"
+      ],
+      "title":"DomainExceptionSpec",
       "type":"object"
     },
     "DomainSpec":{
@@ -416,6 +473,20 @@
             "$ref":"#/$defs/CoreSpec"
           },
           "title":"Core",
+          "type":"array"
+        },
+        "domain_events":{
+          "items":{
+            "$ref":"#/$defs/DomainEventSpec"
+          },
+          "title":"Domain Events",
+          "type":"array"
+        },
+        "domain_exceptions":{
+          "items":{
+            "$ref":"#/$defs/DomainExceptionSpec"
+          },
+          "title":"Domain Exceptions",
           "type":"array"
         },
         "entities":{
@@ -437,6 +508,13 @@
             "$ref":"#/$defs/PortSpec"
           },
           "title":"Ports",
+          "type":"array"
+        },
+        "repositories":{
+          "items":{
+            "$ref":"#/$defs/RepositorySpec"
+          },
+          "title":"Repositories",
           "type":"array"
         },
         "services":{
@@ -462,11 +540,7 @@
       "description":"Specification of an entity.",
       "properties":{
         "attributes":{
-          "items":{
-            "$ref":"#/$defs/AttributeSpec"
-          },
-          "title":"Attributes",
-          "type":"array"
+          "$ref":"#/$defs/AttributeSpecList"
         },
         "base_types":{
           "items":{
@@ -476,11 +550,7 @@
           "type":"array"
         },
         "behaviors":{
-          "items":{
-            "$ref":"#/$defs/MethodSpec"
-          },
-          "title":"Behaviors",
-          "type":"array"
+          "$ref":"#/$defs/MethodSpecList"
         },
         "description":{
           "title":"Description",
@@ -593,11 +663,7 @@
       "description":"Specification of an implementation to be generated.",
       "properties":{
         "attributes":{
-          "items":{
-            "$ref":"#/$defs/AttributeSpec"
-          },
-          "title":"Attributes",
-          "type":"array"
+          "$ref":"#/$defs/AttributeSpecList"
         },
         "description":{
           "title":"Description",
@@ -612,11 +678,7 @@
           "type":"string"
         },
         "private_methods":{
-          "items":{
-            "$ref":"#/$defs/MethodSpec"
-          },
-          "title":"Private Methods",
-          "type":"array"
+          "$ref":"#/$defs/MethodSpecList"
         },
         "technology":{
           "title":"Technology",
@@ -779,6 +841,13 @@
       "title":"MethodSpec",
       "type":"object"
     },
+    "MethodSpecList":{
+      "items":{
+        "$ref":"#/$defs/MethodSpec"
+      },
+      "title":"MethodSpecList",
+      "type":"array"
+    },
     "PortBinding":{
       "additionalProperties":false,
       "description":"Binding between a port and an adapter.",
@@ -827,11 +896,7 @@
           "type":"string"
         },
         "operations":{
-          "items":{
-            "$ref":"#/$defs/MethodSpec"
-          },
-          "title":"Operations",
-          "type":"array"
+          "$ref":"#/$defs/MethodSpecList"
         }
       },
       "required":[
@@ -850,6 +915,39 @@
       ],
       "title":"PortType",
       "type":"string"
+    },
+    "RepositorySpec":{
+      "additionalProperties":false,
+      "description":"Specification of a domain repository to be generated.",
+      "properties":{
+        "attributes":{
+          "$ref":"#/$defs/AttributeSpecList"
+        },
+        "base_types":{
+          "items":{
+            "type":"string"
+          },
+          "title":"Base Types",
+          "type":"array"
+        },
+        "behaviors":{
+          "$ref":"#/$defs/MethodSpecList"
+        },
+        "description":{
+          "title":"Description",
+          "type":"string"
+        },
+        "name":{
+          "title":"Name",
+          "type":"string"
+        }
+      },
+      "required":[
+        "name",
+        "description"
+      ],
+      "title":"RepositorySpec",
+      "type":"object"
     },
     "RuleSpec":{
       "additionalProperties":false,
@@ -886,13 +984,10 @@
       "description":"Specification of a domain service to be generated.",
       "properties":{
         "dependencies":{
-          "items":{
-            "$ref":"#/$defs/AttributeSpec"
-          },
-          "title":"Dependencies",
-          "type":"array"
+          "$ref":"#/$defs/AttributeSpecList"
         },
         "description":{
+          "default":"",
           "title":"Description",
           "type":"string"
         },
@@ -901,11 +996,7 @@
           "type":"string"
         },
         "operations":{
-          "items":{
-            "$ref":"#/$defs/MethodSpec"
-          },
-          "title":"Operations",
-          "type":"array"
+          "$ref":"#/$defs/MethodSpecList"
         }
       },
       "required":[
@@ -927,22 +1018,14 @@
       "description":"Specification of a use case to be generated.",
       "properties":{
         "dependencies":{
-          "items":{
-            "$ref":"#/$defs/AttributeSpec"
-          },
-          "title":"Dependencies",
-          "type":"array"
+          "$ref":"#/$defs/AttributeSpecList"
         },
         "description":{
           "title":"Description",
           "type":"string"
         },
         "inputs":{
-          "items":{
-            "$ref":"#/$defs/AttributeSpec"
-          },
-          "title":"Inputs",
-          "type":"array"
+          "$ref":"#/$defs/AttributeSpecList"
         },
         "kind":{
           "$ref":"#/$defs/UseCaseKind"
@@ -952,11 +1035,7 @@
           "type":"string"
         },
         "outputs":{
-          "items":{
-            "$ref":"#/$defs/AttributeSpec"
-          },
-          "title":"Outputs",
-          "type":"array"
+          "$ref":"#/$defs/AttributeSpecList"
         }
       },
       "required":[
@@ -971,11 +1050,7 @@
       "description":"Specification of a value object to be generated.",
       "properties":{
         "attributes":{
-          "items":{
-            "$ref":"#/$defs/AttributeSpec"
-          },
-          "title":"Attributes",
-          "type":"array"
+          "$ref":"#/$defs/AttributeSpecList"
         },
         "base_types":{
           "items":{
@@ -985,11 +1060,7 @@
           "type":"array"
         },
         "behaviors":{
-          "items":{
-            "$ref":"#/$defs/MethodSpec"
-          },
-          "title":"Behaviors",
-          "type":"array"
+          "$ref":"#/$defs/MethodSpecList"
         },
         "description":{
           "title":"Description",
