@@ -36,6 +36,8 @@ class InfrastructureSpec(Entity):
         for kind_pkg in package_spec.sub_packages:
             if kind_pkg.name == "adapters":
                 implementations += ImplementationSpec.from_package_spec(kind_pkg)
+            if kind_pkg.name == "repositories":
+                implementations += ImplementationSpec.from_package_spec(kind_pkg)
                 
         return cls(implementations=implementations)
 

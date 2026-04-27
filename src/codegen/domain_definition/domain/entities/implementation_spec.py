@@ -143,7 +143,7 @@ class ImplementationSpec(Entity):
     ) -> list[Self]:
         """Convert a package spec back to a list of implementations."""
         implementations: list[Self] = []
-        if package_spec.name != "adapters":
+        if package_spec.name not in ["adapters", "repositories"]:
             return implementations
         for module in package_spec.modules:
             if module.is_init_module():
