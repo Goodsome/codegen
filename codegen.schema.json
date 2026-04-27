@@ -872,24 +872,9 @@
       "additionalProperties":false,
       "description":"Specification of a domain port to be generated.",
       "properties":{
-        "aggregate":{
-          "anyOf":[
-            {
-              "type":"string"
-            },
-            {
-              "type":"null"
-            }
-          ],
-          "default":null,
-          "title":"Aggregate"
-        },
         "description":{
           "title":"Description",
           "type":"string"
-        },
-        "kind":{
-          "$ref":"#/$defs/PortType"
         },
         "name":{
           "title":"Name",
@@ -900,21 +885,10 @@
         }
       },
       "required":[
-        "name",
-        "kind"
+        "name"
       ],
       "title":"PortSpec",
       "type":"object"
-    },
-    "PortType":{
-      "enum":[
-        "adapter",
-        "repository",
-        "client",
-        "provider"
-      ],
-      "title":"PortType",
-      "type":"string"
     },
     "RepositorySpec":{
       "additionalProperties":false,

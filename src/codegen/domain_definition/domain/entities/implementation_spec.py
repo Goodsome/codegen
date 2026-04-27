@@ -1,16 +1,18 @@
-from typing import Self
+from typing import Callable, Self
+
+from pydantic import Field
+
 from codegen.domain_definition.domain.core.attribute_spec_list import AttributeSpecList
 from codegen.domain_definition.domain.core.method_spec_list import MethodSpecList
+from codegen.domain_definition.domain.entities.port_spec import PortSpec
 from codegen.domain_definition.domain.value_objects.attribute_spec import AttributeSpec
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
-from codegen.domain_definition.domain.entities.port_spec import PortSpec
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
+from codegen.shared.domain.core import Entity
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.value_objects.snake_string import SnakeString
-from codegen.shared.domain.core import Entity
-from pydantic import Field
 
 
 class ImplementationSpec(Entity):
@@ -45,13 +47,8 @@ class ImplementationSpec(Entity):
     def to_module_spec(self, port: PortSpec) -> ModuleSpec:
         """将 ImplementationSpec 转换为 ModuleSpec（需要 port 获取 operations）"""
         port_ops = list(port.operations)
-        methods = [
-            f.to_function_spec() for f in port_ops
-        ]
-        methods += [
-            f.to_function_spec()
-            for f in self.private_methods
-        ]
+        methods = [f.to_function_spec() for f in port_ops]
+        methods += [f.to_function_spec() for f in self.private_methods]
 
         attributes = self.attributes.to_variable_specs()
         class_name = self._get_class_name()
@@ -68,7 +65,7 @@ class ImplementationSpec(Entity):
     @classmethod
     def from_module_spec(
         cls, module_spec: ModuleSpec, technology: str
-    ) -> "ImplementationSpec":
+    ) -> Self:
         """将 ModuleSpec 逆向解析为 ImplementationSpec"""
         for spec_cls in module_spec.classes:
             if spec_cls.inheritance:
@@ -76,7 +73,9 @@ class ImplementationSpec(Entity):
                 private_methods_list = [
                     MethodSpec.from_function_spec(function)
                     for function in spec_cls.methods
-                    if not function.is_init_method() and function.name.startswith("_") and not function.name.startswith("__")
+                    if not function.is_init_method()
+                    and function.name.startswith("_")
+                    and not function.name.startswith("__")
                 ]
                 return cls.create(
                     name=spec_cls.name,
@@ -126,3 +125,30 @@ class ImplementationSpec(Entity):
                     method.load_test_module(module)
 
         return self
+
+    @classmethod
+    def to_package_spec(
+        cls: type[Self],
+        implementations: list[Self],
+        port_finder: Callable[[str], PortSpec],
+    ) -> PackageSpec:
+        """Convert a list of implementations to a package spec."""
+        modules = [i.to_module_spec(port_finder(i.implements)) for i in implementations]
+        return PackageSpec.create(name="adapters", modules=modules)
+
+    @classmethod
+    def from_package_spec(
+        cls: type[Self],
+        package_spec: PackageSpec,
+    ) -> list[Self]:
+        """Convert a package spec back to a list of implementations."""
+        implementations: list[Self] = []
+        if package_spec.name != "adapters":
+            return implementations
+        for module in package_spec.modules:
+            if module.is_init_module():
+                continue
+            technology = module.name.split("_")[0]
+            implementations.append(cls.from_module_spec(module, technology))
+        return implementations
+        

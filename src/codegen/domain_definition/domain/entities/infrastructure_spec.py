@@ -2,12 +2,10 @@ from typing import Callable, Self
 
 from pydantic import Field
 
-from codegen.domain_definition.domain.enums import PortType
 from codegen.domain_definition.domain.entities.implementation_spec import (
     ImplementationSpec,
 )
 from codegen.domain_definition.domain.entities.port_spec import PortSpec
-from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.core import Entity
 from codegen.shared.domain.value_objects.pascal_string import PascalString
@@ -23,41 +21,22 @@ class InfrastructureSpec(Entity):
         port_finder: Callable[[str], PortSpec],
     ) -> PackageSpec:
         """将 InfrastructureSpec 转换为 PackageSpec"""
-        module_bags: dict[PortType, list[ModuleSpec]] = {}
-        for impl in self.implementations:
-            port = port_finder(impl.implements)
-            module = impl.to_module_spec(port)
-            module_bags.setdefault(port.kind, []).append(module)
+        impl_pkg = ImplementationSpec.to_package_spec(
+            implementations=self.implementations,
+            port_finder=port_finder,
+        )
+        sub_packages = [impl_pkg]
 
-        kind_packages: list[PackageSpec] = []
-        for kind, tech_modules in module_bags.items():
-            if kind is PortType.REPOSITORY:
-                pkg_name = "repositories"
-            else:
-                pkg_name = kind.value.lower() + "s"
-            kind_pkg = PackageSpec.create(name=pkg_name, modules=tech_modules)
-            kind_packages.append(kind_pkg)
-
-        return PackageSpec.create(name="infrastructure", sub_packages=kind_packages)
+        return PackageSpec.create(name="infrastructure", sub_packages=sub_packages)
 
     @classmethod
     def from_package_spec(cls, package_spec: PackageSpec) -> "InfrastructureSpec":
         """将 PackageSpec 逆向解析为 InfrastructureSpec"""
-        implementations = []
+        implementations: list[ImplementationSpec] = []
         for kind_pkg in package_spec.sub_packages:
-            if kind_pkg.name in ("utils", "orm_models"):
-                continue
-            for tech_model in kind_pkg.modules:
-                if tech_model.is_init_module():
-                    continue
-                technology = tech_model.name.split("_")[0]
-                implementations.append(
-                    ImplementationSpec.from_module_spec(
-                        module_spec=tech_model,
-                        technology=technology,
-                    )
-                )
-
+            if kind_pkg.name == "adapters":
+                implementations += ImplementationSpec.from_package_spec(kind_pkg)
+                
         return cls(implementations=implementations)
 
     def add_implementation(self, implementation: ImplementationSpec) -> Self:

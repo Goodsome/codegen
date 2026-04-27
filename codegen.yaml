@@ -231,7 +231,6 @@ contexts:
     ports:
     - name: FileSystemPort
       description: Port for interacting with the file system.
-      kind: adapter
       operations:
       - name: read_file
         inputs:
@@ -1388,7 +1387,6 @@ contexts:
     - name: SourceCodePort
       description: Port for bidirectional translation between Spec objects and Python
         source code.
-      kind: adapter
       operations:
       - name: render_module
         inputs:
@@ -1413,7 +1411,6 @@ contexts:
           type: ModuleSpec
     - name: CodeFormatter
       description: Formats Python source code.
-      kind: adapter
       operations:
       - name: format_code
         inputs:
@@ -1812,16 +1809,6 @@ contexts:
         output:
           type: Self
     enums:
-    - name: PortType
-      members:
-      - name: ADAPTER
-        value: adapter
-      - name: REPOSITORY
-        value: repository
-      - name: CLIENT
-        value: client
-      - name: PROVIDER
-        value: provider
     - name: UseCaseKind
       members:
       - name: COMMAND
@@ -3121,7 +3108,7 @@ contexts:
         - type: string
           name: technology
         output:
-          type: ImplementationSpec
+          type: Self
       - name: _get_class_name
         inputs:
         - type: Self
@@ -3166,6 +3153,31 @@ contexts:
           name: port
         output:
           type: Self
+      - name: to_package_spec
+        description: Convert a list of implementations to a package spec.
+        inputs:
+        - type: Self
+          container: type
+          name: cls
+        - type: Self
+          container: list
+          name: implementations
+        - type: PortSpec
+          container: callable
+          name: port_finder
+        output:
+          type: PackageSpec
+      - name: from_package_spec
+        description: Convert a package spec back to a list of implementations.
+        inputs:
+        - type: Self
+          container: type
+          name: cls
+        - type: PackageSpec
+          name: package_spec
+        output:
+          type: Self
+          container: list
     - name: CoreSpec
       description: Specification of a core entity to be generated.
       base_types:
@@ -3845,8 +3857,6 @@ contexts:
       - type: string
         name: description
         default: str
-      - type: PortType
-        name: kind
       - type: MethodSpecList
         name: operations
         default: MethodSpecList
@@ -3858,9 +3868,6 @@ contexts:
           name: cls
         - type: string
           name: name
-        - type: Any
-          custom_type_string: Union[PortType, str]
-          name: kind
         - type: string
           name: description
           default: ''
@@ -3914,9 +3921,6 @@ contexts:
         inputs:
         - type: Self
           name: self
-        - type: string
-          optional: true
-          name: kind
         - type: string
           optional: true
           name: description
@@ -4130,7 +4134,6 @@ contexts:
     ports:
     - name: BlueprintStorage
       description: Loads the blueprint from a file.
-      kind: adapter
       operations:
       - name: load
         inputs:

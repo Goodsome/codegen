@@ -39,3 +39,4 @@ include = []
 [tool.pyright]
 include = ["src"]
 extraPaths = ["src"]
+reportUnusedCallResult = "none"

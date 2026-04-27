@@ -29,7 +29,6 @@ class AddAppPort:
 
         port = PortSpec.create(
             name=cmd.name,
-            kind="adapter",
             description=cmd.description,
         )
         context.application.add_port(port)

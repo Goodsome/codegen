@@ -29,7 +29,6 @@ class AddDomainPort:
 
         port = PortSpec.create(
             name=cmd.name,
-            kind="adapter",
             description=cmd.description,
         )
         context.domain.add_port(port)

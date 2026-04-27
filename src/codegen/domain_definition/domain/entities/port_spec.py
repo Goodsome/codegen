@@ -3,7 +3,6 @@ from typing import Iterable, Self
 from pydantic import Field
 
 from codegen.domain_definition.domain.core.method_spec_list import MethodSpecList
-from codegen.domain_definition.domain.enums import PortType
 from codegen.domain_definition.domain.value_objects.method_spec import MethodSpec
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
@@ -17,22 +16,17 @@ class PortSpec(Entity):
 
     name: PascalString
     description: str = Field(default_factory=str)
-    kind: PortType
     operations: MethodSpecList = Field(default_factory=MethodSpecList)
 
     @classmethod
     def create(
         cls,
         name: str,
-        kind: PortType | str,
         description: str = "",
         operations: list[MethodSpec] | None = None,
     ) -> Self:
-        if isinstance(kind, str):
-            kind = PortType(kind)
         return cls(
             name=PascalString(name),
-            kind=kind,
             description=description,
             operations=MethodSpecList(root=operations or []),
         )
@@ -65,15 +59,8 @@ class PortSpec(Entity):
         """将 ModuleSpec 逆向解析为 PortSpec"""
         cls_spec = module.classes[0]
         operations = MethodSpecList.from_function_specs(cls_spec.methods)
-        if "Repository" in cls_spec.name:
-            kind = "repository"
-        elif cls_spec.name in ["UnitOfWork"]:
-            kind = "repository"
-        else:
-            kind = "adapter"
         return cls.create(
             name=cls_spec.name,
-            kind=kind,
             description=cls_spec.description,
             operations=operations.root,
         )
@@ -92,14 +79,11 @@ class PortSpec(Entity):
 
     def update(
         self,
-        kind: str | None = None,
         description: str | None = None,
     ) -> None:
         """Update scalar metadata fields. Preserves internal structure."""
         if description is not None:
             self.description = description
-        if kind is not None:
-            self.kind = PortType(kind)
 
     def to_test_package_spec(self: Self) -> PackageSpec:
         """Create test package for port with operations that have rules."""
