@@ -18,7 +18,6 @@ class PortSpec(Entity):
     name: PascalString
     description: str = Field(default_factory=str)
     kind: PortType
-    aggregate: PascalString | None = None
     operations: MethodSpecList = Field(default_factory=MethodSpecList)
 
     @classmethod
@@ -27,18 +26,14 @@ class PortSpec(Entity):
         name: str,
         kind: PortType | str,
         description: str = "",
-        aggregate: str | None = None,
         operations: list[MethodSpec] | None = None,
     ) -> Self:
         if isinstance(kind, str):
             kind = PortType(kind)
-        if aggregate is not None:
-            aggregate = PascalString(aggregate)
         return cls(
             name=PascalString(name),
             kind=kind,
             description=description,
-            aggregate=aggregate,
             operations=MethodSpecList(root=operations or []),
         )
 
@@ -72,18 +67,14 @@ class PortSpec(Entity):
         operations = MethodSpecList.from_function_specs(cls_spec.methods)
         if "Repository" in cls_spec.name:
             kind = "repository"
-            aggregate = cls_spec.name.replace("Repository", "")
         elif cls_spec.name in ["UnitOfWork"]:
             kind = "repository"
-            aggregate = None
         else:
             kind = "adapter"
-            aggregate = None
         return cls.create(
             name=cls_spec.name,
             kind=kind,
             description=cls_spec.description,
-            aggregate=aggregate,
             operations=operations.root,
         )
 
@@ -103,15 +94,12 @@ class PortSpec(Entity):
         self,
         kind: str | None = None,
         description: str | None = None,
-        aggregate: str | None = None,
     ) -> None:
         """Update scalar metadata fields. Preserves internal structure."""
         if description is not None:
             self.description = description
         if kind is not None:
             self.kind = PortType(kind)
-        if aggregate is not None:
-            self.aggregate = PascalString(aggregate)
 
     def to_test_package_spec(self: Self) -> PackageSpec:
         """Create test package for port with operations that have rules."""

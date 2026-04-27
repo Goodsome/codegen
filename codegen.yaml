@@ -4,6 +4,10 @@ contexts:
 - name: Shared
   domain:
     core:
+    - name: DomainException
+      description: Base class for domain exceptions.
+      base_types:
+      - Exception
     - name: ValueObject
       description: 值对象基类 特征： 1. 不可变（frozen=True） 2. 相等性基于所有属性值 3. 无唯一标识
       base_types:
@@ -1838,6 +1842,12 @@ contexts:
         value: domain_service
       - name: DOMAIN_PORT
         value: domain_port
+      - name: DOMAIN_EVENT
+        value: domain_event
+      - name: DOMAIN_EXCEPTION
+        value: domain_exception
+      - name: REPOSITORY
+        value: repository
       - name: USE_CASE
         value: use_case
       - name: APP_PORT
@@ -3037,6 +3047,17 @@ contexts:
         output:
           type: VariableSpec
           optional: true
+    - name: DomainExceptionSpec
+      description: Specification of a domain exception to be generated.
+      base_types:
+      - DomainConcept
+      attributes:
+      - type: Any
+        name: __concept_name__
+        default: domain_exception
+      - type: Any
+        name: __pkg_name__
+        default: exceptions
     - name: ImplementationSpec
       description: Specification of an implementation to be generated.
       attributes:
@@ -3187,6 +3208,18 @@ contexts:
         container: list
         name: ports
         default: list
+      - type: DomainEventSpec
+        container: list
+        name: domain_events
+        default: list
+      - type: DomainExceptionSpec
+        container: list
+        name: domain_exceptions
+        default: list
+      - type: RepositorySpec
+        container: list
+        name: repositories
+        default: list
       behaviors:
       - name: to_package_spec
         description: 将 DomainSpec 转换为 PackageSpec
@@ -3311,6 +3344,120 @@ contexts:
           type: ValueObjectSpec
       - name: remove_value_object
         description: Remove a ValueObjectSpec by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: Self
+      - name: add_domain_event
+        description: Add a DomainEventSpec. Raises ValueError if domain event with
+          same name exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: DomainEventSpec
+          name: domain_event
+        output:
+          type: Self
+      - name: update_domain_event
+        description: Update an existing DomainEventSpec by name. Raises ValueError
+          if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: DomainEventSpec
+          name: domain_event
+        output:
+          type: Self
+      - name: get_domain_event
+        description: Get a DomainEventSpec by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: DomainEventSpec
+      - name: remove_domain_event
+        description: Remove a DomainEventSpec by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: Self
+      - name: add_domain_exception
+        description: Add a DomainExceptionSpec. Raises ValueError if domain exception
+          with same name exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: DomainExceptionSpec
+          name: domain_exception
+        output:
+          type: Self
+      - name: update_domain_exception
+        description: Update an existing DomainExceptionSpec by name. Raises ValueError
+          if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: DomainExceptionSpec
+          name: domain_exception
+        output:
+          type: Self
+      - name: get_domain_exception
+        description: Get a DomainExceptionSpec by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: DomainExceptionSpec
+      - name: remove_domain_exception
+        description: Remove a DomainExceptionSpec by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: Self
+      - name: add_repository
+        description: Add a RepositorySpec. Raises ValueError if repository with same
+          name exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: RepositorySpec
+          name: repository
+        output:
+          type: Self
+      - name: update_repository
+        description: Update an existing RepositorySpec by name. Raises ValueError
+          if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: RepositorySpec
+          name: repository
+        output:
+          type: Self
+      - name: get_repository
+        description: Get a RepositorySpec by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: RepositorySpec
+      - name: remove_repository
+        description: Remove a RepositorySpec by name. Returns self for chaining.
         inputs:
         - type: Self
           name: self
@@ -3659,6 +3806,26 @@ contexts:
           name: self
         output:
           type: PackageSpec
+      - name: load_test_package
+        description: Load test package into the domain concept. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: PackageSpec
+          name: test_pkg
+        output:
+          type: Self
+    - name: DomainEventSpec
+      description: Specification of a domain event to be generated.
+      base_types:
+      - DomainConcept
+      attributes:
+      - type: Any
+        name: __concept_name__
+        default: domain_event
+      - type: Any
+        name: __pkg_name__
+        default: events
     - name: EntitySpec
       description: Specification of an entity.
       base_types:
@@ -3680,9 +3847,6 @@ contexts:
         default: str
       - type: PortType
         name: kind
-      - type: PascalString
-        optional: true
-        name: aggregate
       - type: MethodSpecList
         name: operations
         default: MethodSpecList
@@ -3700,9 +3864,6 @@ contexts:
         - type: string
           name: description
           default: ''
-        - type: string
-          optional: true
-          name: aggregate
         - type: MethodSpec
           container: list
           optional: true
@@ -3759,9 +3920,6 @@ contexts:
         - type: string
           optional: true
           name: description
-        - type: string
-          optional: true
-          name: aggregate
         output:
           type: None
       - name: to_test_package_spec
@@ -3870,6 +4028,17 @@ contexts:
           name: name
         output:
           type: EnumMemberSpec
+    - name: RepositorySpec
+      description: Specification of a domain repository to be generated.
+      base_types:
+      - DomainConcept
+      attributes:
+      - type: Any
+        name: __concept_name__
+        default: repository
+      - type: Any
+        name: __pkg_name__
+        default: repositories
     - name: AggregateSpec
       description: Specification of a domain aggregate to be generated.
       base_types:
@@ -4146,6 +4315,19 @@ contexts:
       dependencies:
       - type: BlueprintStorage
         name: storage
+    - name: RemoveDomainEvent
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
     - name: RemoveEntity
       kind: command
       inputs:
@@ -4192,6 +4374,35 @@ contexts:
       - type: boolean
         name: success
       description: Use case to remove a method from an element.
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: UpdateDomainEvent
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        optional: true
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: RemoveDomainException
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: boolean
+        name: success
       dependencies:
       - type: BlueprintStorage
         name: storage
@@ -4283,6 +4494,19 @@ contexts:
       dependencies:
       - type: BlueprintStorage
         name: storage
+    - name: RemoveRepository
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
     - name: UpdateUseCase
       kind: command
       inputs:
@@ -4309,6 +4533,21 @@ contexts:
       outputs:
       - type: ServiceSpec
         name: service
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: AddRepository
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        name: description
+      outputs:
+      - type: boolean
+        name: success
       dependencies:
       - type: BlueprintStorage
         name: storage
@@ -4366,6 +4605,19 @@ contexts:
       outputs:
       - type: EnumSpec
         name: enum
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: GetDomainException
+      kind: query
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: DomainExceptionSpec
+        name: domain_exception
       dependencies:
       - type: BlueprintStorage
         name: storage
@@ -4480,6 +4732,19 @@ contexts:
       dependencies:
       - type: BlueprintStorage
         name: storage
+    - name: GetDomainEvent
+      kind: query
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: DomainEventSpec
+        name: domain_event
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
     - name: UpdateDomainService
       kind: command
       inputs:
@@ -4510,6 +4775,37 @@ contexts:
       - type: BlueprintStorage
         name: storage
     - name: AddValueObject
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: UpdateDomainException
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        optional: true
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: AddDomainException
       kind: command
       inputs:
       - type: string
@@ -4580,6 +4876,21 @@ contexts:
         name: use_case
       - type: string
         optional: true
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: AddDomainEvent
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
         name: description
       outputs:
       - type: boolean
@@ -4696,6 +5007,22 @@ contexts:
       dependencies:
       - type: BlueprintStorage
         name: storage
+    - name: UpdateRepository
+      kind: command
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      - type: string
+        optional: true
+        name: description
+      outputs:
+      - type: boolean
+        name: success
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
     - name: GetUseCase
       kind: query
       inputs:
@@ -4706,6 +5033,19 @@ contexts:
       outputs:
       - type: UseCaseSpec
         name: use_case
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
+    - name: GetRepository
+      kind: query
+      inputs:
+      - type: string
+        name: context_name
+      - type: string
+        name: name
+      outputs:
+      - type: RepositorySpec
+        name: repository
       dependencies:
       - type: BlueprintStorage
         name: storage
@@ -4867,6 +5207,17 @@ contexts:
       dependencies:
       - type: BlueprintStorage
         name: storage
+    - name: GetDomain
+      kind: query
+      inputs:
+      - type: string
+        name: context_name
+      outputs:
+      - type: DomainSpec
+        name: domain
+      dependencies:
+      - type: BlueprintStorage
+        name: storage
     - name: GetImplementation
       kind: query
       inputs:
@@ -5004,6 +5355,8 @@ contexts:
       use_case: RemoveDomainPort
     - name: update-attribute
       use_case: UpdateAttribute
+    - name: remove-domain-event
+      use_case: RemoveDomainEvent
     - name: tree
       use_case: LoadBlueprint
     - name: remove-entity
@@ -5012,6 +5365,10 @@ contexts:
       use_case: UpdateEnum
     - name: remove-method
       use_case: RemoveMethod
+    - name: update-domain-event
+      use_case: UpdateDomainEvent
+    - name: remove-domain-exception
+      use_case: RemoveDomainException
     - name: get-domain-port
       use_case: GetDomainPort
     - name: add-http-endpoint
@@ -5024,10 +5381,14 @@ contexts:
       use_case: AddUseCase
     - name: remove-app-port
       use_case: RemoveAppPort
+    - name: remove-repository
+      use_case: RemoveRepository
     - name: update-use-case
       use_case: UpdateUseCase
     - name: get-domain-service
       use_case: GetDomainService
+    - name: add-repository
+      use_case: AddRepository
     - name: update-aggregate
       use_case: UpdateAggregate
     - name: get-app-service
@@ -5036,6 +5397,8 @@ contexts:
       use_case: AddDomainService
     - name: get-enum
       use_case: GetEnum
+    - name: get-domain-exception
+      use_case: GetDomainException
     - name: get-http-endpoint
       use_case: GetHttpEndpoint
     - name: get-entity
@@ -5048,12 +5411,18 @@ contexts:
       use_case: AddDomainPort
     - name: remove-domain-service
       use_case: RemoveDomainService
+    - name: get-domain-event
+      use_case: GetDomainEvent
     - name: update-domain-service
       use_case: UpdateDomainService
     - name: remove-app-service
       use_case: RemoveAppService
     - name: add-value-object
       use_case: AddValueObject
+    - name: update-domain-exception
+      use_case: UpdateDomainException
+    - name: add-domain-exception
+      use_case: AddDomainException
     - name: add-app-port
       use_case: AddAppPort
     - name: update-app-port
@@ -5062,6 +5431,8 @@ contexts:
       use_case: RemoveUseCase
     - name: update-mcp-tool
       use_case: UpdateMcpTool
+    - name: add-domain-event
+      use_case: AddDomainEvent
     - name: add-mcp-tool
       use_case: AddMcpTool
     - name: add-attribute
@@ -5074,8 +5445,12 @@ contexts:
       use_case: RemoveEnum
     - name: remove-aggregate
       use_case: RemoveAggregate
+    - name: update-repository
+      use_case: UpdateRepository
     - name: get-use-case
       use_case: GetUseCase
+    - name: get-repository
+      use_case: GetRepository
     - name: remove-attribute
       use_case: RemoveAttribute
     - name: get-value-object
@@ -5096,6 +5471,8 @@ contexts:
       use_case: RemoveHttpEndpoint
     - name: remove-mcp-tool
       use_case: RemoveMcpTool
+    - name: get-domain
+      use_case: GetDomain
     - name: get-implementation
       use_case: GetImplementation
     - name: init

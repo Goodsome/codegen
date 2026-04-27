@@ -22,7 +22,8 @@ BUILTIN_TYPES = {
     "set",
     "staticmethod",
     "classmethod",
-    "type"
+    "type",
+    "Exception",
 }
 
 GLOBAL_REGISTRY = {
