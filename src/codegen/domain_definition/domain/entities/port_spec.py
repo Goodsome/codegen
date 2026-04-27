@@ -73,6 +73,9 @@ class PortSpec(Entity):
         if "Repository" in cls_spec.name:
             kind = "repository"
             aggregate = cls_spec.name.replace("Repository", "")
+        elif cls_spec.name in ["UnitOfWork"]:
+            kind = "repository"
+            aggregate = None
         else:
             kind = "adapter"
             aggregate = None
