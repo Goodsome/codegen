@@ -1,4 +1,5 @@
-from typing import Self
+import logging
+from typing import Literal, Self
 
 from pydantic import Field
 
@@ -23,6 +24,8 @@ from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.shared.domain.core import ValueObject
 
+
+logger = logging.getLogger(__name__)
 
 class MethodSpec(ValueObject):
     """Standard specification for a class method."""
@@ -131,7 +134,9 @@ class MethodSpec(ValueObject):
         gf = self._get_match_semantic_function("given")
         wf = self._get_match_semantic_function("when")
         tf = self._get_match_semantic_function("then")
-
+        and_f = self._get_dispatch_function("and_")
+        but_f = self._get_dispatch_function("but")
+        
         af = FunctionSpec.create(
             name="arrange_done",
             return_annotation=TypeAnnotationSpec(name="Self"),
@@ -146,9 +151,15 @@ class MethodSpec(ValueObject):
         )
         bc = ClassSpec.create(
             name=bindings_name,
-            methods=[gf, af, wf, tf],
+            methods=[gf, af, wf, tf, and_f, but_f],
             decorators=["dataclass"],
-            attributes=[],
+            attributes=[
+                AttributeSpec.create(
+                    name="_last_step_type",
+                    type="str",
+                    optional=True,
+                ).to_variable_spec()
+            ],
         )
         bf = self._get_bindings_fixture()
         return ModuleSpec.create(
@@ -173,10 +184,44 @@ class MethodSpec(ValueObject):
             ],
             function_type=FunctionType.INSTANCE_METHOD,
             suite=f"""
+self._last_step_type = "{name}"
+
 match semantic_text:
     case _:
         raise NotImplementedError(f"未实现的 {name} 语义: {{semantic_text}}")
 return self""",
+        )
+    
+    def _get_dispatch_function(self, name: Literal["and_", "but"]) -> FunctionSpec:
+        f_suite = """
+if not self._last_step_type:
+    raise RuntimeError("Cannot use 'and/but' before any Given/When/Then step.")
+if self._last_step_type == "given":
+    return self.given(semantic_text)
+if self._last_step_type == "when":
+    return self.when(semantic_text)
+if self._last_step_type == "then":
+    return self.then(semantic_text)
+raise RuntimeError(f"Unexpected last step type: {self._last_step_type}")
+"""
+
+        logger.info(f"生成 {name} 分派函数")
+        
+        return FunctionSpec.create(
+            name=name,
+            return_annotation=TypeAnnotationSpec(name="Self"),
+            parameters=[
+                VariableSpec.create(
+                    name="self",
+                    type_spec=TypeAnnotationSpec(name="Self"),
+                ),
+                VariableSpec.create(
+                    name="semantic_text",
+                    type_spec=TypeAnnotationSpec(name="str"),
+                ),
+            ],
+            function_type=FunctionType.INSTANCE_METHOD,
+            suite=f_suite,
         )
 
     def _get_bindings_fixture(self) -> FunctionSpec:
