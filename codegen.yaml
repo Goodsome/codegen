@@ -86,13 +86,6 @@ contexts:
         default: 1
       - type: Any
         name: model_config
-      behaviors:
-      - name: __init__
-        inputs:
-        - type: Self
-          name: self
-        output:
-          type: any
     enums:
     - name: ContainerType
       members:
@@ -134,41 +127,14 @@ contexts:
       description: ''
       base_types:
       - NamingString
-      behaviors:
-      - name: __new__
-        inputs:
-        - type: any
-          name: cls
-        - type: string
-          name: value
-        output:
-          type: any
     - name: PascalString
       description: ''
       base_types:
       - NamingString
-      behaviors:
-      - name: __new__
-        inputs:
-        - type: any
-          name: cls
-        - type: string
-          name: value
-        output:
-          type: any
     - name: KebabString
       description: ''
       base_types:
       - NamingString
-      behaviors:
-      - name: __new__
-        inputs:
-        - type: any
-          name: cls
-        - type: string
-          name: value
-        output:
-          type: any
     - name: NamingString
       description: 基于 case-converter 的增强型字符串
       base_types:
@@ -204,30 +170,10 @@ contexts:
           name: self
         output:
           type: string
-      - name: __get_pydantic_core_schema__
-        inputs:
-        - type: Self
-          container: type
-          name: cls
-        - type: any
-          name: source_type
-        - type: GetCoreSchemaHandler
-          name: handler
-        output:
-          type: CoreSchema
     - name: MacroString
       description: ''
       base_types:
       - NamingString
-      behaviors:
-      - name: __new__
-        inputs:
-        - type: any
-          name: cls
-        - type: string
-          name: value
-        output:
-          type: any
     ports:
     - name: FileSystemPort
       description: Port for interacting with the file system.
@@ -1107,18 +1053,6 @@ contexts:
         output:
           type: string
           container: map
-      - name: _build_symbol_table
-        description: 递归扫描所有模块，记录每个类属于哪个绝对路径
-        inputs:
-        - type: Self
-          name: self
-        - type: string
-          name: root_path
-        - type: string
-          container: map
-          name: table
-        output:
-          type: any
       - name: collect_class_spec
         inputs:
         - type: Self
@@ -1364,25 +1298,6 @@ contexts:
         output:
           type: Any
           custom_type_string: dict[Path, str]
-      - name: _collect_files_recursively
-        inputs:
-        - type: Self
-          name: self
-        - type: PackageSpec
-          name: current_spec
-        - type: DependencyResolver
-          name: resolver
-        - type: Any
-          custom_type_string: dict[Path, str]
-          name: output_dict
-        - type: Path
-          name: current_path
-        - type: string
-          container: list
-          optional: true
-          name: target_nodes
-        output:
-          type: None
     ports:
     - name: SourceCodePort
       description: Port for bidirectional translation between Spec objects and Python
@@ -1487,13 +1402,6 @@ contexts:
         name: root
         default: list
       behaviors:
-      - name: __iter__
-        inputs:
-        - type: Self
-          name: self
-        output:
-          type: MethodSpec
-          container: iterable
       - name: add
         inputs:
         - type: Self
@@ -1563,13 +1471,6 @@ contexts:
         name: root
         default: list
       behaviors:
-      - name: __iter__
-        inputs:
-        - type: Self
-          name: self
-        output:
-          type: AttributeSpec
-          container: iterable
       - name: add
         inputs:
         - type: Self
@@ -2071,20 +1972,6 @@ contexts:
           name: self
         output:
           type: ModuleSpec
-      - name: _get_match_semantic_function
-        inputs:
-        - type: Self
-          name: self
-        - type: string
-          name: name
-        output:
-          type: FunctionSpec
-      - name: _get_bindings_fixture
-        inputs:
-        - type: Self
-          name: self
-        output:
-          type: FunctionSpec
       - name: load_test_module
         description: Load test cases from module into method rules. Returns self for
           chaining.
@@ -2117,24 +2004,6 @@ contexts:
           name: self
         output:
           type: TypeAnnotationSpec
-      - name: _apply_container
-        description: 根据 container 类型包装核心类型
-        inputs:
-        - type: Self
-          name: self
-        - type: string
-          name: core_type
-        output:
-          type: TypeAnnotationSpec
-      - name: _make_optional
-        description: 将类型包装为可选类型 (Union[T, None])
-        inputs:
-        - type: Self
-          name: self
-        - type: TypeAnnotationSpec
-          name: annotation
-        output:
-          type: TypeAnnotationSpec
       - name: from_python_annotation
         description: 从 Python 类型注解逆向解析为 TypeDefinition
         inputs:
@@ -2146,28 +2015,6 @@ contexts:
           name: annotation
         output:
           type: TypeDefinition
-      - name: _extract_optional
-        description: 如果是 Union[T, None] 或 Optional[T] 形式，返回 (True, T)
-        inputs:
-        - type: Self
-          container: type
-          name: cls
-        - type: TypeAnnotationSpec
-          name: annotation
-        output:
-          type: Any
-          custom_type_string: tuple[bool, TypeAnnotationSpec]
-      - name: _extract_container_and_type
-        description: 从 TypeAnnotationSpec 提取容器类型和核心类型名
-        inputs:
-        - type: Self
-          container: type
-          name: cls
-        - type: TypeAnnotationSpec
-          name: annotation
-        output:
-          type: Any
-          custom_type_string: tuple[ContainerType, str]
     - name: HttpEndpointSpec
       description: HTTP Endpoint 规范
       attributes:
@@ -2229,32 +2076,6 @@ contexts:
           name: description
         output:
           type: None
-      - name: _infer_use_case_from_suite
-        description: 从函数体推断 UseCase 名称
-        inputs:
-        - type: Self
-          container: type
-          name: cls
-        - type: string
-          name: suite
-        - type: UseCaseSpec
-          container: map
-          name: use_case_index
-        output:
-          type: string
-          optional: true
-      - name: _parse_route_decorator
-        description: 从装饰器解析路由信息
-        inputs:
-        - type: Self
-          container: type
-          name: cls
-        - type: string
-          container: list
-          name: decorators
-        output:
-          type: Any
-          custom_type_string: tuple[str | None, str | None]
       - name: endpoints_to_package_spec
         description: "将 HTTP endpoint 列表转换为 PackageSpec\n\nArgs:\n    endpoints: HTTP\
           \ endpoint 列表\n    context_name: 上下文名称\n    use_cases: UseCase 列表，用于解析类型\n\
@@ -2423,20 +2244,6 @@ contexts:
           name: description
         output:
           type: None
-      - name: _infer_use_case_from_suite
-        description: 从函数体推断 UseCase 名称
-        inputs:
-        - type: Self
-          container: type
-          name: cls
-        - type: string
-          name: suite
-        - type: UseCaseSpec
-          container: map
-          name: use_case_index
-        output:
-          type: string
-          optional: true
       - name: tools_to_package_spec
         description: "将 MCP tool 列表转换为 PackageSpec\n\nArgs:\n    tools: MCP tool 列表\n\
           \    context_name: 上下文名称\n    use_cases: UseCase 列表，用于解析类型\n    project_name:\
@@ -2525,24 +2332,6 @@ contexts:
           name: self
         output:
           type: ModuleSpec
-      - name: _build_input_class_spec
-        description: Build input ClassSpec from inputs list.
-        inputs:
-        - type: Self
-          name: self
-        - type: string
-          name: class_name
-        output:
-          type: ClassSpec
-      - name: _build_output_class_spec
-        description: Build output ClassSpec from outputs list.
-        inputs:
-        - type: Self
-          name: self
-        - type: string
-          name: class_name
-        output:
-          type: ClassSpec
       - name: from_module_spec
         description: 将 ModuleSpec 逆向解析为 UseCaseSpec
         inputs:
@@ -3014,26 +2803,6 @@ contexts:
           name: self
         output:
           type: ModuleSpec
-      - name: _create_provider_variable
-        description: 创建 provider VariableSpec
-        inputs:
-        - type: Self
-          name: self
-        - type: PortBinding
-          name: binding
-        output:
-          type: VariableSpec
-          optional: true
-      - name: _create_use_case_provider_variable
-        description: 创建 use_case provider VariableSpec
-        inputs:
-        - type: Self
-          name: self
-        - type: UseCaseSpec
-          name: use_case
-        output:
-          type: VariableSpec
-          optional: true
     - name: DomainExceptionSpec
       description: Specification of a domain exception to be generated.
       base_types:
@@ -3109,12 +2878,6 @@ contexts:
           name: technology
         output:
           type: Self
-      - name: _get_class_name
-        inputs:
-        - type: Self
-          name: self
-        output:
-          type: string
       - name: update
         description: Update scalar metadata fields. Preserves internal structure.
         inputs:
@@ -3646,18 +3409,6 @@ contexts:
           name: self
         output:
           type: PackageSpec
-      - name: _collect_class_specs_in_ports
-        description: Recursively collect class specs from ports packages.
-        inputs:
-        - type: Self
-          name: self
-        - type: ClassSpec
-          container: map
-          name: class_specs
-        - type: PackageSpec
-          name: package_spec
-        output:
-          type: None
       - name: from_package_spec
         description: Create a BoundedContext from a PackageSpec.
         inputs:
@@ -4104,13 +3855,6 @@ contexts:
           name: class_name
         output:
           type: ClassSpec
-      - name: _create_model_config_attribute
-        description: 创建 model_config 属性
-        inputs:
-        - type: Self
-          name: self
-        output:
-          type: VariableSpec
       - name: to_module_spec
         description: 将 ConfigSpec 转换为 ModuleSpec
         inputs:
