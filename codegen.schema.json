@@ -677,9 +677,6 @@
           "title":"Name",
           "type":"string"
         },
-        "private_methods":{
-          "$ref":"#/$defs/MethodSpecList"
-        },
         "technology":{
           "title":"Technology",
           "type":"string"

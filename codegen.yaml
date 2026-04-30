@@ -2829,9 +2829,6 @@ contexts:
       - type: AttributeSpecList
         name: attributes
         default: AttributeSpecList
-      - type: MethodSpecList
-        name: private_methods
-        default: MethodSpecList
       behaviors:
       - name: create
         inputs:
@@ -2851,10 +2848,6 @@ contexts:
           container: list
           optional: true
           name: attributes
-        - type: MethodSpec
-          container: list
-          optional: true
-          name: private_methods
         output:
           type: any
       - name: to_module_spec

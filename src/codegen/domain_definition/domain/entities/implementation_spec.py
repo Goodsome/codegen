@@ -23,7 +23,6 @@ class ImplementationSpec(Entity):
     technology: SnakeString
     description: str = Field(default_factory=str)
     attributes: AttributeSpecList = Field(default_factory=AttributeSpecList)
-    private_methods: MethodSpecList = Field(default_factory=MethodSpecList)
 
     @classmethod
     def create(
@@ -33,7 +32,6 @@ class ImplementationSpec(Entity):
         technology: str,
         description: str = "",
         attributes: list[AttributeSpec] | None = None,
-        private_methods: list[MethodSpec] | None = None,
     ):
         return cls(
             name=PascalString(name),
@@ -41,14 +39,12 @@ class ImplementationSpec(Entity):
             technology=SnakeString(technology),
             description=description,
             attributes=AttributeSpecList(root=attributes or []),
-            private_methods=MethodSpecList(root=private_methods or []),
         )
 
     def to_module_spec(self, port: PortSpec) -> ModuleSpec:
         """将 ImplementationSpec 转换为 ModuleSpec（需要 port 获取 operations）"""
         port_ops = list(port.operations)
         methods = [f.to_function_spec() for f in port_ops]
-        methods += [f.to_function_spec() for f in self.private_methods]
 
         attributes = self.attributes.to_variable_specs()
         class_name = self._get_class_name()
@@ -70,20 +66,12 @@ class ImplementationSpec(Entity):
         for spec_cls in module_spec.classes:
             if spec_cls.inheritance:
                 attributes = AttributeSpecList.from_variable_specs(spec_cls.attributes)
-                private_methods_list = [
-                    MethodSpec.from_function_spec(function)
-                    for function in spec_cls.methods
-                    if not function.is_init_method()
-                    and function.name.startswith("_")
-                    and not function.name.startswith("__")
-                ]
                 return cls.create(
                     name=spec_cls.name,
                     implements=spec_cls.inheritance[0],
                     technology=technology,
                     description=spec_cls.description,
                     attributes=attributes.root,
-                    private_methods=private_methods_list,
                 )
         raise ValueError(f"No Implementation found in module, {module_spec.name}")
 

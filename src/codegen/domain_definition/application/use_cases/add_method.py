@@ -105,10 +105,6 @@ class AddMethod:
                 context.domain.get_port(cmd.element_name).operations.add(method)
             case (ElementType.APP_PORT, MethodKind.OPERATION):
                 context.application.get_port(cmd.element_name).operations.add(method)
-            case (ElementType.IMPLEMENTATION, MethodKind.PRIVATE):
-                context.infrastructure.get_implementation(
-                    cmd.element_name
-                ).private_methods.add(method)
             case _:
                 raise ValueError(
                     f"Unsupported combination: element_type='{cmd.element_type.value}', "
