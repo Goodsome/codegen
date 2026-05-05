@@ -47,6 +47,8 @@ class DomainConcept(BaseModel):
     @classmethod
     def from_module_spec(cls: type[Self], module: ModuleSpec) -> Self:
         """将 ModuleSpec 逆向解析为 DomainConcept"""
+        if not module.classes:
+            raise ValueError(f"ModuleSpec {module.name} must contain at least one class")
         cls_spec = module.classes[0]
         attributes = AttributeSpecList.from_variable_specs(cls_spec.attributes)
         behaviors = MethodSpecList.from_function_specs(cls_spec.methods)
