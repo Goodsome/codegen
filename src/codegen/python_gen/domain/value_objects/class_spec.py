@@ -53,10 +53,17 @@ class ClassSpec(ValueObject):
 
     def get_method(self, method_name: str) -> FunctionSpec:
         """获取指定名称的方法，不存在则 raise error"""
+        m = self.find_method(method_name=method_name)
+        if m is None:
+            raise ValueError(f"Method '{method_name}' not found in class '{self.name}'")
+        else:
+            return m
+
+    def find_method(self, method_name: str) -> FunctionSpec | None:
         for method in self.methods:
             if method.name == method_name:
                 return method
-        raise ValueError(f"Method '{method_name}' not found in class '{self.name}'")
+        return None
 
     def merge(self, other: "ClassSpec") -> "ClassSpec":
         if self.name != other.name:

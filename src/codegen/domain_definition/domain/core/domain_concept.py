@@ -1,4 +1,5 @@
-from typing import ClassVar, Iterable, Self
+from typing import ClassVar, Self
+from collections.abc import Iterable
 
 from pydantic import BaseModel, Field
 
@@ -27,43 +28,50 @@ class DomainConcept(BaseModel):
     def entity_name(self) -> str:
         return str(self.name)
 
-    def to_module_spec(self: Self) -> ModuleSpec:
-        """将 DomainConcept 转换为 ModuleSpec"""
+    def to_class_spec(self: Self) -> ClassSpec:
         vs = self.attributes.to_variable_specs(flavor=FieldFlavor.PYDANTIC)
         fs = self.behaviors.to_function_specs()
         if self.__concept_name__ != "core":
             base_types = [PascalString(self.__concept_name__)] + self.base_types
         else:
             base_types = self.base_types
-        class_spec = ClassSpec.create(
+        return ClassSpec.create(
             name=self.name,
             description=self.description,
             inheritance=base_types,
             attributes=vs,
             methods=fs,
         )
-        return ModuleSpec.create(name=self.name, classes=[class_spec])
+        
+    def to_module_spec(self: Self) -> ModuleSpec:
+        """将 DomainConcept 转换为 ModuleSpec"""
+        cs = self.to_class_spec()
+        return ModuleSpec.create(name=self.name, classes=[cs])
 
     @classmethod
-    def from_module_spec(cls: type[Self], module: ModuleSpec) -> Self:
-        """将 ModuleSpec 逆向解析为 DomainConcept"""
-        if not module.classes:
-            raise ValueError(f"ModuleSpec {module.name} must contain at least one class")
-        cls_spec = module.classes[0]
-        attributes = AttributeSpecList.from_variable_specs(cls_spec.attributes)
-        behaviors = MethodSpecList.from_function_specs(cls_spec.methods)
+    def from_class_spec(cls: type[Self], class_spec: ClassSpec) -> Self:
+        attributes = AttributeSpecList.from_variable_specs(class_spec.attributes)
+        behaviors = MethodSpecList.from_function_specs(class_spec.methods)
         base_types = [
             i
-            for i in cls_spec.inheritance
+            for i in class_spec.inheritance
             if i not in ["Entity", "ValueObject", "AggregateRoot", "DomainEvent", "DomainException", "Repository"]
         ]
         return cls(
-            name=cls_spec.name,
-            description=cls_spec.description,
+            name=class_spec.name,
+            description=class_spec.description,
             base_types=base_types,
             attributes=attributes,
             behaviors=behaviors,
         )
+        
+    @classmethod
+    def from_module_spec(cls: type[Self], module: ModuleSpec) -> Self:
+        """将 ModuleSpec 逆向解析为 DomainConcept"""
+        cls_spec = module.get_class(
+            class_name=module.name,
+        )
+        return cls.from_class_spec(cls_spec)
 
     @classmethod
     def to_package_spec(cls: type[Self], domain_concept: Iterable[Self]) -> PackageSpec:

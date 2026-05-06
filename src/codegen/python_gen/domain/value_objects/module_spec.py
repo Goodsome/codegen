@@ -4,6 +4,7 @@ Name: ModuleSpec
 Description: Represents a Python module.
 """
 
+from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.value_objects.snake_string import SnakeString
 from codegen.python_gen.domain.value_objects.python_enum_spec import PythonEnumSpec
 
@@ -92,7 +93,7 @@ class ModuleSpec(ValueObject):
     def get_class(self, class_name: str) -> ClassSpec:
         """获取模块中指定名称的类，不存在则 raise error"""
         for cls in self.classes:
-            if cls.name == class_name:
+            if cls.name == PascalString(class_name):
                 return cls
         raise ValueError(f"Class '{class_name}' not found in module '{self.name}'")
 
