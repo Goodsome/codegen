@@ -59,6 +59,7 @@ GLOBAL_REGISTRY = {
     "CoreSchema": "pydantic_core.core_schema",
     "BaseSettings": "pydantic_settings",
     "Session": "sqlalchemy.orm",
+    "DomainEvent": "event_hub",
 }
 
 TEMPORARY_MAPPING = {"dataclass(frozen=True)": "dataclass"}
