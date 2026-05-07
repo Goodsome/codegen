@@ -61,7 +61,7 @@ class DomainExceptionSpec(Entity, DomainConcept):
         return [fs]
 
     @classmethod
-    def _get_attributes(cls: type[Self], class_spec: ClassSpec) -> AttributeSpecList
+    def _get_attributes(cls: type[Self], class_spec: ClassSpec) -> AttributeSpecList:
         init_method = class_spec.find_method( method_name="__init__", )
         if init_method is None:
             return AttributeSpecList()
