@@ -553,6 +553,15 @@ contexts:
           name: method_name
         output:
           type: FunctionSpec
+      - name: find_method
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: method_name
+        output:
+          type: FunctionSpec
+          optional: true
       - name: merge
         inputs:
         - type: Self
@@ -1557,6 +1566,12 @@ contexts:
           name: self
         output:
           type: string
+      - name: to_class_spec
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: ClassSpec
       - name: to_module_spec
         description: 将 DomainConcept 转换为 ModuleSpec
         inputs:
@@ -1564,6 +1579,15 @@ contexts:
           name: self
         output:
           type: ModuleSpec
+      - name: from_class_spec
+        inputs:
+        - type: Self
+          container: type
+          name: cls
+        - type: ClassSpec
+          name: class_spec
+        output:
+          type: Self
       - name: from_module_spec
         description: 将 ModuleSpec 逆向解析为 DomainConcept
         inputs:
@@ -2387,7 +2411,7 @@ contexts:
         - type: PackageSpec
           name: package_spec
         output:
-          type: ApplicationSpec
+          type: Self
       - name: add_use_case
         description: Add a UseCaseSpec. Raises ValueError if use_case with same name
           exists.
@@ -2814,6 +2838,22 @@ contexts:
       - type: Any
         name: __pkg_name__
         default: exceptions
+      behaviors:
+      - name: to_class_spec
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: ClassSpec
+      - name: from_class_spec
+        inputs:
+        - type: Self
+          container: type
+          name: cls
+        - type: ClassSpec
+          name: class_spec
+        output:
+          type: Self
     - name: ImplementationSpec
       description: Specification of an implementation to be generated.
       attributes:
