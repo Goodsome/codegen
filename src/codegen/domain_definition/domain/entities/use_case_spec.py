@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 
 from pydantic import Field
@@ -14,6 +16,7 @@ from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import (
     parse_type_str,
 )
 from codegen.shared.domain.value_objects.pascal_string import PascalString
+from codegen.domain_definition.domain.entities.dto_spec import DtoSpec
 from codegen.shared.domain.core import Entity
 
 
@@ -112,7 +115,7 @@ class UseCaseSpec(Entity):
         )
 
     @classmethod
-    def from_module_spec(cls, module: ModuleSpec) -> "UseCaseSpec":
+    def from_module_spec(cls, module: ModuleSpec) -> UseCaseSpec:
         """将 ModuleSpec 逆向解析为 UseCaseSpec"""
         # 1. Find UseCase class by module name
         uc_name = PascalString(str(module.name))
@@ -160,7 +163,7 @@ class UseCaseSpec(Entity):
         outputs = AttributeSpecList.from_variable_specs(result_class.attributes)
 
         return cls(
-            name=str(uc_name),
+            name=uc_name,
             kind=kind,
             inputs=inputs,
             outputs=outputs,
@@ -179,3 +182,39 @@ class UseCaseSpec(Entity):
         if description is not None:
             self.description = description
         return self
+
+    def collect_dtos(self: Self) -> list[DtoSpec]:
+        """Convert inputs and outputs into DtoSpec instances.
+
+        Returns a list of DtoSpec: {Name}Command/{Name}Query from inputs,
+        {Name}Result from outputs.
+        """
+        if not self.inputs.root and not self.outputs.root:
+            return []
+
+        input_dto = self._build_input_dto()
+        output_dto = self._build_output_dto()
+        return [input_dto, output_dto]
+
+    def _input_dto_name(self: Self) -> PascalString:
+        """Derive the input DTO name from use case name and kind."""
+        suffix = "Command" if self.kind == UseCaseKind.COMMAND else "Query"
+        return PascalString(f"{self.name}{suffix}")
+
+    def _build_input_dto(self: Self) -> DtoSpec:
+        """Build input DtoSpec from inputs."""
+        return DtoSpec(
+            name=self._input_dto_name(),
+            description="",
+            base_types=["BaseModel"],
+            attributes=self.inputs,
+        )
+
+    def _build_output_dto(self: Self) -> DtoSpec:
+        """Build output DtoSpec from outputs."""
+        return DtoSpec(
+            name=PascalString(f"{self.name}Result"),
+            description="",
+            base_types=["BaseModel"],
+            attributes=self.outputs,
+        )

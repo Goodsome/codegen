@@ -2379,6 +2379,26 @@ contexts:
           name: description
         output:
           type: Self
+      - name: collect_dtos
+        description: "Convert inputs and outputs into DtoSpec instances.\n\nReturns\
+          \ a list of DtoSpec: {Name}Command/{Name}Query from inputs, {Name}Result\
+          \ from outputs."
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: DtoSpec
+          container: list
+        rules:
+        - name: use_case_with_inputs_outputs_returns_two_dtos
+          given: a UseCaseSpec (kind=COMMAND) with inputs and outputs
+          when: collect_dtos() is called
+          then: "return two DtoSpecs: one named {Name}Command (attributes from inputs),\
+            \ one named {Name}Result (attributes from outputs)"
+        - name: use_case_without_inputs_outputs_returns_empty
+          given: a UseCaseSpec with empty inputs and outputs
+          when: collect_dtos() is called
+          then: return an empty list
     - name: ApplicationSpec
       description: Specification of an application to be generated.
       attributes:
@@ -2393,6 +2413,10 @@ contexts:
       - type: ServiceSpec
         container: list
         name: services
+        default: list
+      - type: DtoSpec
+        container: list
+        name: dtos
         default: list
       behaviors:
       - name: to_package_spec
@@ -2518,6 +2542,59 @@ contexts:
           type: ServiceSpec
       - name: remove_service
         description: Remove a ServiceSpec by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: Self
+      - name: migrate
+        description: "Auto-collect DTOs from use_cases when dtos is empty. Preserves\
+          \ existing dtos if already populated."
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: None
+        rules:
+        - name: migrate_collects_dtos_when_empty
+          given: an ApplicationSpec where dtos is empty but use_cases have inputs/outputs
+          when: migrate() is called
+          then: dtos is populated with all DtoSpecs collected from use_cases
+        - name: migrate_preserves_existing_dtos
+          given: an ApplicationSpec where dtos already contains manually set DtoSpecs
+          when: migrate() is called
+          then: dtos remains unchanged
+      - name: add_dto
+        description: Add a DtoSpec. Raises ValueError if dto with same name exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: DtoSpec
+          name: dto
+        output:
+          type: Self
+      - name: update_dto
+        description: Update an existing DtoSpec by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: DtoSpec
+          name: dto
+        output:
+          type: Self
+      - name: get_dto
+        description: Get a DtoSpec by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: DtoSpec
+      - name: remove_dto
+        description: Remove a DtoSpec by name. Returns self for chaining.
         inputs:
         - type: Self
           name: self
@@ -2854,6 +2931,17 @@ contexts:
           name: class_spec
         output:
           type: Self
+    - name: DtoSpec
+      description: Specification of a DTO to be generated.
+      base_types:
+      - DomainConcept
+      attributes:
+      - type: Any
+        name: __concept_name__
+        default: dto
+      - type: Any
+        name: __pkg_name__
+        default: dtos
     - name: ImplementationSpec
       description: Specification of an implementation to be generated.
       attributes:
@@ -3027,6 +3115,10 @@ contexts:
       - type: RepositorySpec
         container: list
         name: repositories
+        default: list
+      - type: DtoSpec
+        container: list
+        name: dtos
         default: list
       behaviors:
       - name: to_package_spec
@@ -3379,6 +3471,42 @@ contexts:
           type: PortSpec
       - name: remove_port
         description: Remove a PortSpec by name. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: Self
+      - name: add_dto
+        description: Add a DtoSpec. Raises ValueError if dto with same name exists.
+        inputs:
+        - type: Self
+          name: self
+        - type: DtoSpec
+          name: dto
+        output:
+          type: Self
+      - name: update_dto
+        description: Update an existing DtoSpec by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: DtoSpec
+          name: dto
+        output:
+          type: Self
+      - name: get_dto
+        description: Get a DtoSpec by name. Raises ValueError if not found.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: DtoSpec
+      - name: remove_dto
+        description: Remove a DtoSpec by name. Returns self for chaining.
         inputs:
         - type: Self
           name: self

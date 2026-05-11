@@ -50,7 +50,7 @@ class MethodSpecList(RootModel[list[MethodSpec]]):
     @classmethod
     def from_function_specs(cls: type[Self], methods: Iterable[FunctionSpec]) -> Self:
         """将 FunctionSpec 列表逆向解析为 MethodSpec 列表"""
-        return cls(root=[MethodSpec.from_function_spec(method) for method in methods if not method.name.startswith("_")])
+        return cls(root=[MethodSpec.from_function_spec(method) for method in methods])
 
     def to_test_modules(self: Self) -> list[ModuleSpec]:
         """Create test package for entity with behaviors that have rules."""

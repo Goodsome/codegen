@@ -75,7 +75,7 @@ class DomainConcept(BaseModel):
 
     @classmethod
     def to_package_spec(cls: type[Self], domain_concept: Iterable[Self]) -> PackageSpec:
-        """将多个 DomainConcept 转换为一个 'core' 包"""
+        """将多个 DomainConcept 转换为一个包"""
         modules = [dc.to_module_spec() for dc in domain_concept]
         return PackageSpec.create(name=cls.__pkg_name__, modules=modules)
 
