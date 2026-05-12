@@ -1,5 +1,6 @@
 from functools import cached_property
 from typing import Self
+
 from pydantic import Field
 
 from codegen.domain_definition.domain.entities.application_spec import ApplicationSpec
@@ -14,8 +15,8 @@ from codegen.domain_definition.domain.entities.port_spec import PortSpec
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
-from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.core import Entity
+from codegen.shared.domain.value_objects.pascal_string import PascalString
 
 
 class BoundedContext(Entity):
@@ -67,6 +68,7 @@ class BoundedContext(Entity):
             interfaces_pkg = self.interfaces.to_package_spec(
                 context_name=str(self.name),
                 use_cases=self.application.use_cases,
+                dto_finder=self.application.get_dto,
             )
             sub_packages.append(interfaces_pkg)
         return PackageSpec.create(
@@ -161,19 +163,26 @@ class BoundedContext(Entity):
         """Create test package for bounded context."""
         domain_pkg = self.domain.to_test_package_spec()
         return PackageSpec.create(name=str(self.name), sub_packages=[domain_pkg])
-     
+
     def to_integration_test_package_spec(self: Self) -> PackageSpec:
         """Create test package for bounded context."""
         infrastructure_pkg = self.infrastructure.to_test_package_spec(
             port_finder=self.get_port_spec
         )
-        return PackageSpec.create(name=str(self.name), sub_packages=[infrastructure_pkg])
-        
+        application_pkg = self.application.to_test_package_spec()
+        return PackageSpec.create(
+            name=str(self.name),
+            sub_packages=[infrastructure_pkg, application_pkg],
+        )
+
     def load_test_package(self: Self, test_pkg: PackageSpec) -> Self:
         """Load test package into the bounded context. Returns self for chaining."""
         for pkg in test_pkg.sub_packages:
             if pkg.name == "domain":
                 self.domain.load_test_package(pkg)
             elif pkg.name == "infrastructure":
+                self.infrastructure.load_test_package(
+                    pkg, port_finder=self.get_port_spec
+                )
                 self.infrastructure.load_test_package(pkg, port_finder=self.get_port_spec)
         return self

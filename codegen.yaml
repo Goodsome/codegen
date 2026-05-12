@@ -407,7 +407,6 @@ contexts:
   application:
     use_cases:
     - name: GenerateProject
-      kind: command
       attributes:
       - type: LoadBlueprint
         name: loader
@@ -423,7 +422,6 @@ contexts:
         output:
           type: GenerateProjectResult
     - name: GenerateBlueprint
-      kind: command
       attributes:
       - type: ParsePackage
         name: parser
@@ -1467,7 +1465,6 @@ contexts:
   application:
     use_cases:
     - name: ParsePackage
-      kind: command
       description: Parses Python package to PackageSpec.
       attributes:
       - type: PythonSyntaxTranslator
@@ -1482,7 +1479,6 @@ contexts:
         output:
           type: ParsePackageResult
     - name: GenerateSchemaJson
-      kind: command
       attributes:
       - type: FileSystemPort
         name: file_system_port
@@ -1496,7 +1492,6 @@ contexts:
         output:
           type: GenerateSchemaJsonResult
     - name: GeneratePackage
-      kind: command
       attributes:
       - type: FileSystemPort
         name: file_system_port
@@ -2068,6 +2063,9 @@ contexts:
           name: context_name
         - type: UseCaseSpec
           name: use_case
+        - type: DtoSpec
+          container: callable
+          name: dto_finder
         output:
           type: ModuleSpec
       - name: from_module_spec
@@ -2115,6 +2113,9 @@ contexts:
         - type: UseCaseSpec
           container: list
           name: use_cases
+        - type: DtoSpec
+          container: callable
+          name: dto_finder
         output:
           type: PackageSpec
       - name: commands_from_package_spec
@@ -2616,14 +2617,6 @@ contexts:
       attributes:
       - type: PascalString
         name: name
-      - type: UseCaseKind
-        name: kind
-      - type: AttributeSpecList
-        name: inputs
-        default: AttributeSpecList
-      - type: AttributeSpecList
-        name: outputs
-        default: AttributeSpecList
       - type: string
         name: description
         default: str
@@ -2634,6 +2627,18 @@ contexts:
         name: behaviors
         default: MethodSpecList
       behaviors:
+      - name: get_input_name
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: string
+      - name: get_result_name
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: string
       - name: to_class_spec
         inputs:
         - type: Self
@@ -2664,19 +2669,6 @@ contexts:
           name: cls
         - type: ModuleSpec
           name: module
-        output:
-          type: Self
-      - name: update
-        description: Update scalar metadata fields. Preserves internal structure.
-        inputs:
-        - type: Self
-          name: self
-        - type: Any
-          custom_type_string: str | UseCaseKind | None
-          name: kind
-        - type: string
-          optional: true
-          name: description
         output:
           type: Self
     - name: ApplicationSpec
@@ -2894,9 +2886,9 @@ contexts:
         - type: UseCaseSpec
           container: list
           name: use_cases
-        - type: string
-          name: project_name
-          default: ''
+        - type: DtoSpec
+          container: callable
+          name: dto_finder
         output:
           type: PackageSpec
       - name: from_package_spec
@@ -4343,7 +4335,6 @@ contexts:
   application:
     use_cases:
     - name: InitProject
-      kind: command
       description: Initializes a new project blueprint with a default Shared context.
       attributes:
       - type: BlueprintStorage
@@ -4358,7 +4349,6 @@ contexts:
         output:
           type: InitProjectResult
     - name: LoadBlueprint
-      kind: command
       description: Loads the blueprint from a file.
       attributes:
       - type: BlueprintStorage

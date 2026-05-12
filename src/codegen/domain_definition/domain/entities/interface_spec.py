@@ -1,5 +1,6 @@
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Callable, Self
 
+from codegen.domain_definition.domain.entities.dto_spec import DtoSpec
 from codegen.shared.domain.core import Entity
 from codegen.domain_definition.domain.value_objects.cli_command_spec import (
     CliCommandSpec,
@@ -27,7 +28,7 @@ class InterfaceSpec(Entity):
         self,
         context_name: str,
         use_cases: list["UseCaseSpec"],
-        project_name: str = "",
+        dto_finder: Callable[[str], DtoSpec],
     ) -> "PackageSpec":
         """将 InterfaceSpec 转换为 PackageSpec
 
@@ -45,7 +46,8 @@ class InterfaceSpec(Entity):
 
         if self.cli_commands:
             cli_pkg = CliCommandSpec.commands_to_package_spec(
-                self.cli_commands, context_name, use_cases
+                self.cli_commands, context_name, use_cases, 
+                dto_finder=dto_finder,
             )
             sub_packages.append(cli_pkg)
 

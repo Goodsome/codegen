@@ -4,7 +4,6 @@ from typing import Self
 from pydantic import Field
 
 from codegen.domain_definition.domain.entities.use_case_spec import UseCaseSpec
-from codegen.domain_definition.domain.enums import UseCaseKind
 from codegen.python_gen.domain.enums import FunctionType
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
 from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
@@ -45,15 +44,9 @@ class HttpEndpointSpec(ValueObject):
         Returns:
             ModuleSpec for HTTP endpoint
         """
-        # 确定参数类型
-        if use_case.kind == UseCaseKind.COMMAND:
-            param_type = f"{use_case.name}Command"
-            param_name = "cmd"
-        else:
-            param_type = f"{use_case.name}Query"
-            param_name = "query"
-
-        result_type = f"{use_case.name}Result"
+        param_type = use_case.get_input_name()
+        result_type = use_case.get_result_name()
+        param_name = "cmd"
         uc_snake = str(SnakeString(use_case.name))
         ctx_snake = str(SnakeString(context_name))
 

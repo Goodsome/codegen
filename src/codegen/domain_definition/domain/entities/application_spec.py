@@ -41,22 +41,13 @@ class ApplicationSpec(Entity):
                     if mod.is_init_module():
                         continue
                     use_cases.append(UseCaseSpec.from_module_spec(mod))
-                    for class_spec in mod.classes:
-                        if class_spec.name == mod.name.to_pascal():
-                            continue
-                        dto = DtoSpec.from_class_spec(class_spec)
-                        if not dto.base_types:
-                            dto.base_types = ["BaseModel"]
-                        dtos.append(dto)
             elif sub_pkg.name == "ports":
                 for mod in sub_pkg.modules:
                     if not mod.is_init_module():
                         ports.append(PortSpec.from_module_spec(mod))
             elif sub_pkg.name == "dtos":
                 dtos.extend(DtoSpec.from_package_spec(sub_pkg))
-        s = cls(use_cases=use_cases, ports=ports)
-        for dto in dtos:
-            s.add_dto(dto)
+        s = cls(use_cases=use_cases, ports=ports, dtos=dtos)
         return s
 
     def add_use_case(self: Self, use_case: UseCaseSpec) -> Self:
@@ -173,4 +164,25 @@ class ApplicationSpec(Entity):
     def remove_dto(self: Self, name: str) -> Self:
         """Remove a DtoSpec by name. Returns self for chaining."""
         self.dtos = [d for d in self.dtos if d.name != name]
+        return self
+
+
+    def to_test_package_spec(
+        self,
+    ) -> PackageSpec:
+        """Create test package for infrastructure with implementations that have rules."""
+        sp: list[PackageSpec] = []
+        sp += [uc.to_test_package_spec() for uc in self.use_cases]
+        return PackageSpec.create(
+            name="application",
+            sub_packages=sp
+        )
+
+    def load_test_package(self: Self, test_pkg: PackageSpec) -> Self:
+        """Load test package into the infrastructure spec. Returns self for chaining."""
+        for pkg in test_pkg.sub_packages:
+            if pkg.name == "use_cases":
+                for uc_pkg in pkg.sub_packages:
+                    uc = self.get_use_case(uc_pkg.name.to_pascal())
+                    uc.load_test_package(uc_pkg)
         return self

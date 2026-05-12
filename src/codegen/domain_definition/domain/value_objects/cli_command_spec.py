@@ -1,8 +1,8 @@
-from typing import Self
+from typing import Callable, Self
 
 from pydantic import Field
 
-from codegen.domain_definition.domain.enums import UseCaseKind
+from codegen.domain_definition.domain.entities.dto_spec import DtoSpec
 from codegen.domain_definition.domain.entities.use_case_spec import UseCaseSpec
 from codegen.python_gen.domain.enums import FunctionType
 from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
@@ -34,6 +34,7 @@ class CliCommandSpec(ValueObject):
         self,
         context_name: str,
         use_case: UseCaseSpec,
+        dto_finder: Callable[[str], DtoSpec],
     ) -> ModuleSpec:
         """生成单个 CLI 命令模块
 
@@ -44,12 +45,9 @@ class CliCommandSpec(ValueObject):
         Returns:
             ModuleSpec for CLI command
         """
-        # 确定参数类型和属性列表
-        attributes = use_case.inputs
-        if use_case.kind == UseCaseKind.COMMAND:
-            param_type_name = f"{use_case.name}Command"
-        else:
-            param_type_name = f"{use_case.name}Query"
+        param_type_name = use_case.get_input_name()
+        input_dto: DtoSpec = dto_finder(param_type_name)
+        attributes = input_dto.attributes
 
         result_type = f"{use_case.name}Result"
         func_name = self.name.replace(" ", "_").replace("-", "_")
@@ -213,6 +211,7 @@ class CliCommandSpec(ValueObject):
         commands: list["CliCommandSpec"],
         context_name: str,
         use_cases: list[UseCaseSpec],
+        dto_finder: Callable[[str], DtoSpec],
     ) -> PackageSpec:
         """将 CLI 命令列表转换为 PackageSpec
 
@@ -234,7 +233,11 @@ class CliCommandSpec(ValueObject):
                 raise ValueError(
                     f"UseCase '{cmd.use_case}' not found for CLI command '{cmd.name}'"
                 )
-            module = cmd.to_module_spec(context_name, use_case)
+            module = cmd.to_module_spec(
+                context_name, 
+                use_case,
+                dto_finder=dto_finder
+            )
             modules.append(module)
 
         return PackageSpec.create(

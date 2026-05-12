@@ -1016,14 +1016,6 @@
       "title":"ServiceSpec",
       "type":"object"
     },
-    "UseCaseKind":{
-      "enum":[
-        "command",
-        "query"
-      ],
-      "title":"UseCaseKind",
-      "type":"string"
-    },
     "UseCaseSpec":{
       "additionalProperties":false,
       "description":"Specification of a use case to be generated.",
@@ -1038,23 +1030,13 @@
           "title":"Description",
           "type":"string"
         },
-        "inputs":{
-          "$ref":"#/$defs/AttributeSpecList"
-        },
-        "kind":{
-          "$ref":"#/$defs/UseCaseKind"
-        },
         "name":{
           "title":"Name",
           "type":"string"
-        },
-        "outputs":{
-          "$ref":"#/$defs/AttributeSpecList"
         }
       },
       "required":[
-        "name",
-        "kind"
+        "name"
       ],
       "title":"UseCaseSpec",
       "type":"object"

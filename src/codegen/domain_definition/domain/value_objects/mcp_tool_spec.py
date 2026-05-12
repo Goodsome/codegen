@@ -3,7 +3,6 @@ from typing import Self
 
 from pydantic import Field
 
-from codegen.domain_definition.domain.enums import UseCaseKind
 from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSpec
 from codegen.domain_definition.domain.entities.use_case_spec import UseCaseSpec
 from codegen.python_gen.domain.enums import FunctionType
@@ -41,14 +40,9 @@ class McpToolSpec(ValueObject):
             ModuleSpec for CLI command
         """
         # 确定参数类型和属性列表
-        if use_case.kind == UseCaseKind.COMMAND:
-            param_type_name = f"{use_case.name}Command"
-            param_name = "cmd"
-        else:
-            param_type_name = f"{use_case.name}Query"
-            param_name = "query"
-
-        result_type = f"{use_case.name}Result"
+        param_type_name = use_case.get_input_name()
+        result_type = use_case.get_result_name()
+        param_name = "cmd"
         uc_snake = str(SnakeString(use_case.name))
         ctx_snake = str(SnakeString(context_name))
 
