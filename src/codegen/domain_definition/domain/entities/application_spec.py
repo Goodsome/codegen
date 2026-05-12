@@ -7,6 +7,7 @@ from codegen.domain_definition.domain.entities.use_case_spec import UseCaseSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from pydantic import Field
 from codegen.shared.domain.core.entity import Entity
+from codegen.shared.domain.value_objects.pascal_string import PascalString
 
 
 class ApplicationSpec(Entity):
@@ -39,16 +40,25 @@ class ApplicationSpec(Entity):
         for sub_pkg in package_spec.sub_packages:
             if sub_pkg.name == "use_cases":
                 for mod in sub_pkg.modules:
-                    if not mod.is_init_module():
-                        use_cases.append(UseCaseSpec.from_module_spec(mod))
+                    if mod.is_init_module():
+                        continue
+                    use_cases.append(UseCaseSpec.from_module_spec(mod))
+                    for class_spec in mod.classes:
+                        if class_spec.name == mod.name.to_pascal():
+                            continue
+                        dto = DtoSpec.from_class_spec(class_spec)
+                        if not dto.base_types:
+                            dto.base_types = ["BaseModel"]
+                        dtos.append(dto)
             elif sub_pkg.name == "ports":
                 for mod in sub_pkg.modules:
                     if not mod.is_init_module():
                         ports.append(PortSpec.from_module_spec(mod))
             elif sub_pkg.name == "dtos":
-                dtos = DtoSpec.from_package_spec(sub_pkg)
-        s = cls(use_cases=use_cases, ports=ports, dtos=dtos)
-        s.migrate()
+                dtos.extend(DtoSpec.from_package_spec(sub_pkg))
+        s = cls(use_cases=use_cases, ports=ports)
+        for dto in dtos:
+            s.add_dto(dto)
         return s
 
     def add_use_case(self: Self, use_case: UseCaseSpec) -> Self:
@@ -148,16 +158,13 @@ class ApplicationSpec(Entity):
         """
         for uc in self.use_cases:
             for dto in uc.collect_dtos():
-                for current_dto in self.dtos:
-                    if dto.name == current_dto.name:
-                        continue
-                    self.dtos.append(dto)
+                self.add_dto(dto)
 
     def add_dto(self: Self, dto: DtoSpec) -> Self:
         """Add a DtoSpec. Raises ValueError if dto with same name exists."""
         for d in self.dtos:
             if d.name == dto.name:
-                raise ValueError(f"Dto '{dto.name}' already exists in application")
+                return self
         self.dtos.append(dto)
         return self
 

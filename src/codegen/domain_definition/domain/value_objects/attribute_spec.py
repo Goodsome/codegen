@@ -51,6 +51,8 @@ class AttributeSpec(TypeDefinition):
                 func_name = "Field" if flavor == FieldFlavor.PYDANTIC else "field"
                 if isinstance(self.default, list):
                     kwargs={"default_factory": AssignmentSpec.from_code("list")}
+                elif self.default in ["list", "str"]:
+                    kwargs={"default_factory": assignment}
                 else:
                     kwargs={"default": assignment}
                     
