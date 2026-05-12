@@ -41,14 +41,16 @@ class TypeAnnotationSpec(ValueObject):
             if isinstance(arg, TypeAnnotationSpec):
                 sub_renders.append(arg.render())
             # For AssignmentSpec (e.g., typer.Argument(...)), skip during render
-        if self.name == "Union" and "None" in sub_renders:
+        if self.name == "Union":
             return " | ".join(sub_renders)
         args = ", ".join(sub_renders)
         return f"{self.name}[{args}]"
 
     def get_all_referenced_names(self) -> set[str]:
         """递归获取所有引用的类型名称"""
-        names = {self.name}
+        names: set[str] = set()
+        if self.name != "Union":
+            names.add(self.name)
         for arg in self.args:
             if isinstance(arg, TypeAnnotationSpec):
                 names.update(arg.get_all_referenced_names())

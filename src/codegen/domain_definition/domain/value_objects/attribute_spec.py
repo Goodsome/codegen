@@ -52,7 +52,7 @@ class AttributeSpec(TypeDefinition):
                 if isinstance(self.default, list):
                     kwargs={"default_factory": AssignmentSpec.from_code("list")}
                 else:
-                    kwargs={"default_factory": assignment}
+                    kwargs={"default": assignment}
                     
                 assignment = AssignmentSpec.from_call(
                     func_name=func_name,

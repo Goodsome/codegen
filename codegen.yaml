@@ -907,15 +907,6 @@ contexts:
       - type: AssignmentSpec
         container: map
         name: kwargs
-    - name: TypeSpec
-      description: 描述变量的类型注解结构 (LHS)。 对应 AST 中的 annotation 节点。
-      attributes:
-      - type: string
-        name: core_type
-      - type: ContainerType
-        name: container
-      - type: boolean
-        name: nullable
     - name: ImportedName
       description: Represents a name imported from another module.
       attributes:
@@ -1465,14 +1456,6 @@ contexts:
         name: translator
     - name: GenerateSchemaJson
       kind: command
-      inputs:
-      - type: string
-        optional: true
-        name: schema
-      outputs:
-      - type: string
-        optional: true
-        name: result
       dependencies:
       - type: FileSystemPort
         name: file_system_port
@@ -1537,126 +1520,6 @@ contexts:
         container: list
         optional: true
         name: nodes
-    - name: GenerateSchemaJsonCommand
-      description: ''
-      base_types:
-      - BaseModel
-      attributes:
-      - type: string
-        optional: true
-        name: schema
-    - name: GenerateSchemaJsonCommand
-      description: ''
-      base_types:
-      - BaseModel
-      attributes:
-      - type: string
-        optional: true
-        name: schema
-    - name: GenerateSchemaJsonCommand
-      description: ''
-      base_types:
-      - BaseModel
-      attributes:
-      - type: string
-        optional: true
-        name: schema
-    - name: GenerateSchemaJsonCommand
-      description: ''
-      base_types:
-      - BaseModel
-      attributes:
-      - type: string
-        optional: true
-        name: schema
-    - name: GenerateSchemaJsonCommand
-      description: ''
-      base_types:
-      - BaseModel
-      attributes:
-      - type: string
-        optional: true
-        name: schema
-    - name: GenerateSchemaJsonResult
-      description: ''
-      base_types:
-      - BaseModel
-      attributes:
-      - type: string
-        optional: true
-        name: result
-    - name: GenerateSchemaJsonResult
-      description: ''
-      base_types:
-      - BaseModel
-      attributes:
-      - type: string
-        optional: true
-        name: result
-    - name: GenerateSchemaJsonResult
-      description: ''
-      base_types:
-      - BaseModel
-      attributes:
-      - type: string
-        optional: true
-        name: result
-    - name: GenerateSchemaJsonResult
-      description: ''
-      base_types:
-      - BaseModel
-      attributes:
-      - type: string
-        optional: true
-        name: result
-    - name: GenerateSchemaJsonResult
-      description: ''
-      base_types:
-      - BaseModel
-      attributes:
-      - type: string
-        optional: true
-        name: result
-    - name: GenerateSchemaJsonResult
-      description: ''
-      base_types:
-      - BaseModel
-      attributes:
-      - type: string
-        optional: true
-        name: result
-    - name: GenerateSchemaJsonResult
-      description: ''
-      base_types:
-      - BaseModel
-      attributes:
-      - type: string
-        optional: true
-        name: result
-    - name: GenerateSchemaJsonResult
-      description: ''
-      base_types:
-      - BaseModel
-      attributes:
-      - type: string
-        optional: true
-        name: result
-    - name: GenerateSchemaJsonResult
-      description: ''
-      base_types:
-      - BaseModel
-      attributes:
-      - type: string
-        optional: true
-        name: result
-    - name: GenerateSchemaJsonResult
-      description: ''
-      base_types:
-      - BaseModel
-      attributes:
-      - type: string
-        optional: true
-        name: result
   infrastructure:
     implementations:
     - name: AstTranslator
@@ -1956,7 +1819,7 @@ contexts:
           container: type
           name: cls
         - type: Any
-          custom_type_string: Union[str, PascalString]
+          custom_type_string: str | PascalString
           name: name
         - type: BoundedContext
           container: list
@@ -2719,7 +2582,7 @@ contexts:
         - type: string
           name: name
         - type: Any
-          custom_type_string: Union[str, UseCaseKind]
+          custom_type_string: str | UseCaseKind
           name: kind
         - type: AttributeSpec
           container: list
