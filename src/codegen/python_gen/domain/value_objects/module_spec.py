@@ -92,7 +92,7 @@ class ModuleSpec(ValueObject):
 
     def get_class_or_none(self, class_name: str) -> ClassSpec | None:
         for cls in self.classes:
-            if cls.name == PascalString(class_name):
+            if cls.name.to_snake() == SnakeString(class_name):
                 return cls
         return None
 

@@ -51,7 +51,9 @@ class AttributeSpec(TypeDefinition):
                 func_name = "Field" if flavor == FieldFlavor.PYDANTIC else "field"
                 if isinstance(self.default, list):
                     kwargs={"default_factory": AssignmentSpec.from_code("list")}
-                elif self.default in ["list", "str"]:
+                elif self.default in ["list", "str", "dict"]:
+                    kwargs={"default_factory": assignment}
+                elif isinstance(self.default, str) and self.default.startswith("lambda"):
                     kwargs={"default_factory": assignment}
                 else:
                     kwargs={"default": assignment}
