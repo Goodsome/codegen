@@ -3,31 +3,23 @@ from codegen.python_gen.application.use_cases.parse_package import (
     ParsePackage,
     ParsePackageQuery,
 )
-from pathlib import Path
 from codegen.domain_definition.domain.ports.blueprint_storage import BlueprintStorage
 from codegen.domain_definition.domain.aggregates.blueprint import Blueprint
-
-
-@dataclass(frozen=True)
-class GenerateBlueprintCommand:
-
-    path: Path
-    test_path: Path = Path("tests")
-
-
-@dataclass(frozen=True)
-class GenerateBlueprintResult:
-
-    result: str
+from typing import Self
+from codegen.orchestration.application.dtos.generate_blueprint_result import (
+    GenerateBlueprintResult,
+)
+from codegen.orchestration.application.dtos.generate_blueprint_command import (
+    GenerateBlueprintCommand,
+)
 
 
 @dataclass
 class GenerateBlueprint:
-
     parser: ParsePackage
     storage: BlueprintStorage
 
-    def execute(self, cmd: GenerateBlueprintCommand) -> GenerateBlueprintResult:
+    def execute(self: Self, cmd: GenerateBlueprintCommand) -> GenerateBlueprintResult:
         project_pkg = self.parser.execute(
             ParsePackageQuery(package_path=cmd.path)
         ).package_spec

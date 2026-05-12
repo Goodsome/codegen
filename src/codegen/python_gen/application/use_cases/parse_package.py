@@ -1,21 +1,10 @@
 from dataclasses import dataclass
-from pathlib import Path
-from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.python_gen.domain.services.python_syntax_translator import (
     PythonSyntaxTranslator,
 )
-
-
-@dataclass(frozen=True)
-class ParsePackageQuery:
-
-    package_path: Path
-
-
-@dataclass(frozen=True)
-class ParsePackageResult:
-
-    package_spec: PackageSpec
+from codegen.python_gen.application.dtos.parse_package_query import ParsePackageQuery
+from codegen.python_gen.application.dtos.parse_package_result import ParsePackageResult
+from typing import Self
 
 
 @dataclass
@@ -24,6 +13,6 @@ class ParsePackage:
 
     translator: PythonSyntaxTranslator
 
-    def execute(self, query: ParsePackageQuery) -> ParsePackageResult:
+    def execute(self: Self, query: ParsePackageQuery) -> ParsePackageResult:
         spec = self.translator.to_package_spec(query.package_path)
         return ParsePackageResult(package_spec=spec)

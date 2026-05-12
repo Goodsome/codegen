@@ -8,11 +8,7 @@ from codegen.python_gen.domain.value_objects.assignment_spec import AssignmentSp
 from codegen.domain_definition.domain.entities.use_case_spec import UseCaseSpec
 from codegen.python_gen.domain.enums import FunctionType
 from codegen.python_gen.domain.value_objects.function_spec import FunctionSpec
-from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
-from codegen.python_gen.domain.value_objects.module_assignment_spec import (
-    ModuleAssignmentSpec,
-)
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.python_gen.domain.value_objects.variable_spec import VariableSpec
 from codegen.python_gen.infrastructure.adapters.ast_parsers.type_parser import (

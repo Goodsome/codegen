@@ -146,10 +146,12 @@ class ApplicationSpec(Entity):
         Otherwise, iterates over use_cases, calls collect_dtos(),
         and merges the results into self.dtos.
         """
-        if self.dtos:
-            return
         for uc in self.use_cases:
-            self.dtos.extend(uc.collect_dtos())
+            for dto in uc.collect_dtos():
+                for current_dto in self.dtos:
+                    if dto.name == current_dto.name:
+                        continue
+                    self.dtos.append(dto)
 
     def add_dto(self: Self, dto: DtoSpec) -> Self:
         """Add a DtoSpec. Raises ValueError if dto with same name exists."""

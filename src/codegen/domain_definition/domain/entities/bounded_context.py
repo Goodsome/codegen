@@ -11,7 +11,6 @@ from codegen.domain_definition.domain.entities.infrastructure_spec import (
 )
 from codegen.domain_definition.domain.entities.interface_spec import InterfaceSpec
 from codegen.domain_definition.domain.entities.port_spec import PortSpec
-from codegen.domain_definition.domain.value_objects.port_binding import PortBinding
 from codegen.python_gen.domain.value_objects.class_spec import ClassSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec

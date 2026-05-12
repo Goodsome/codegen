@@ -408,19 +408,6 @@ contexts:
     use_cases:
     - name: GenerateProject
       kind: command
-      inputs:
-      - type: string
-        container: list
-        optional: true
-        name: nodes
-      - type: boolean
-        name: generate_tests
-        default: false
-      outputs:
-      - type: BuildResult
-        name: result
-      - type: BuildResult
-        name: tests_result
       dependencies:
       - type: LoadBlueprint
         name: loader
@@ -428,20 +415,19 @@ contexts:
         name: generator
     - name: GenerateBlueprint
       kind: command
-      inputs:
-      - type: Path
-        name: path
-      - type: Path
-        name: test_path
-      outputs:
-      - type: string
-        name: result
       dependencies:
       - type: ParsePackage
         name: parser
       - type: BlueprintStorage
         name: storage
     dtos:
+    - name: GenerateBlueprintResult
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        name: result
     - name: GenerateProjectCommand
       description: ''
       base_types:
@@ -454,15 +440,6 @@ contexts:
       - type: boolean
         name: generate_tests
         default: false
-    - name: GenerateProjectResult
-      description: ''
-      base_types:
-      - BaseModel
-      attributes:
-      - type: BuildResult
-        name: result
-      - type: BuildResult
-        name: tests_result
     - name: GenerateBlueprintCommand
       description: ''
       base_types:
@@ -472,13 +449,15 @@ contexts:
         name: path
       - type: Path
         name: test_path
-    - name: GenerateBlueprintResult
+    - name: GenerateProjectResult
       description: ''
       base_types:
       - BaseModel
       attributes:
-      - type: string
+      - type: BuildResult
         name: result
+      - type: BuildResult
+        name: tests_result
   interfaces:
     cli_commands:
     - name: build
@@ -1480,36 +1459,25 @@ contexts:
     use_cases:
     - name: ParsePackage
       kind: query
-      inputs:
-      - type: Path
-        name: package_path
-      outputs:
-      - type: PackageSpec
-        name: package_spec
       description: Parses Python package to PackageSpec.
       dependencies:
       - type: PythonSyntaxTranslator
         name: translator
     - name: GenerateSchemaJson
       kind: command
+      inputs:
+      - type: string
+        optional: true
+        name: schema
+      outputs:
+      - type: string
+        optional: true
+        name: result
       dependencies:
       - type: FileSystemPort
         name: file_system_port
     - name: GeneratePackage
       kind: command
-      inputs:
-      - type: PackageSpec
-        name: package_spec
-      - type: boolean
-        name: overwrite
-        default: false
-      - type: string
-        container: list
-        optional: true
-        name: nodes
-      outputs:
-      - type: BuildResult
-        name: result
       dependencies:
       - type: FileSystemPort
         name: file_system_port
@@ -1518,6 +1486,21 @@ contexts:
       - type: CodeFormatter
         name: code_formatter
     dtos:
+    - name: GeneratePackageResult
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: BuildResult
+        name: result
+    - name: GenerateSchemaJsonCommand
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        optional: true
+        name: schema_
     - name: ParsePackageQuery
       description: ''
       base_types:
@@ -1525,6 +1508,14 @@ contexts:
       attributes:
       - type: Path
         name: package_path
+    - name: GenerateSchemaJsonResult
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        optional: true
+        name: result
     - name: ParsePackageResult
       description: ''
       base_types:
@@ -1546,12 +1537,125 @@ contexts:
         container: list
         optional: true
         name: nodes
-    - name: GeneratePackageResult
+    - name: GenerateSchemaJsonCommand
       description: ''
       base_types:
       - BaseModel
       attributes:
-      - type: BuildResult
+      - type: string
+        optional: true
+        name: schema
+    - name: GenerateSchemaJsonCommand
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        optional: true
+        name: schema
+    - name: GenerateSchemaJsonCommand
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        optional: true
+        name: schema
+    - name: GenerateSchemaJsonCommand
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        optional: true
+        name: schema
+    - name: GenerateSchemaJsonCommand
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        optional: true
+        name: schema
+    - name: GenerateSchemaJsonResult
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        optional: true
+        name: result
+    - name: GenerateSchemaJsonResult
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        optional: true
+        name: result
+    - name: GenerateSchemaJsonResult
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        optional: true
+        name: result
+    - name: GenerateSchemaJsonResult
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        optional: true
+        name: result
+    - name: GenerateSchemaJsonResult
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        optional: true
+        name: result
+    - name: GenerateSchemaJsonResult
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        optional: true
+        name: result
+    - name: GenerateSchemaJsonResult
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        optional: true
+        name: result
+    - name: GenerateSchemaJsonResult
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        optional: true
+        name: result
+    - name: GenerateSchemaJsonResult
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        optional: true
+        name: result
+    - name: GenerateSchemaJsonResult
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        optional: true
         name: result
   infrastructure:
     implementations:
@@ -4396,34 +4500,39 @@ contexts:
     use_cases:
     - name: InitProject
       kind: command
-      inputs:
-      - type: string
-        optional: true
-        name: project_name
-      - type: string
-        optional: true
-        name: project_description
-      outputs:
-      - type: Blueprint
-        name: blueprint
       description: Initializes a new project blueprint with a default Shared context.
       dependencies:
       - type: BlueprintStorage
         name: storage
     - name: LoadBlueprint
       kind: command
-      inputs:
-      - type: string
-        optional: true
-        name: node
-      outputs:
-      - type: Blueprint
-        name: blueprint
       description: Loads the blueprint from a file.
       dependencies:
       - type: BlueprintStorage
         name: blueprint_loader
     dtos:
+    - name: LoadBlueprintCommand
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        optional: true
+        name: node
+    - name: InitProjectResult
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: Blueprint
+        name: blueprint
+    - name: LoadBlueprintResult
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: Blueprint
+        name: blueprint
     - name: InitProjectCommand
       description: ''
       base_types:
@@ -4435,28 +4544,6 @@ contexts:
       - type: string
         optional: true
         name: project_description
-    - name: InitProjectResult
-      description: ''
-      base_types:
-      - BaseModel
-      attributes:
-      - type: Blueprint
-        name: blueprint
-    - name: LoadBlueprintCommand
-      description: ''
-      base_types:
-      - BaseModel
-      attributes:
-      - type: string
-        optional: true
-        name: node
-    - name: LoadBlueprintResult
-      description: ''
-      base_types:
-      - BaseModel
-      attributes:
-      - type: Blueprint
-        name: blueprint
   infrastructure:
     implementations:
     - name: YamlBlueprintStorage
