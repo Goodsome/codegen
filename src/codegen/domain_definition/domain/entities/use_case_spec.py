@@ -61,7 +61,6 @@ class UseCaseSpec(Entity):
             if self.kind == UseCaseKind.COMMAND
             else f"{self.name}Query"
         )
-        input_class = self._build_input_class_spec(input_class_name)
         params = [
             VariableSpec.create(name="self", type_spec=parse_type_str("Self")),
             VariableSpec.create(
@@ -69,11 +68,8 @@ class UseCaseSpec(Entity):
                 type_spec=parse_type_str(input_class_name),
             ),
         ]
-        classes.append(input_class)
 
         result_class_name = f"{self.name}Result"
-        result_class = self._build_output_class_spec(result_class_name)
-        classes.append(result_class)
 
         uc_attributes = self.dependencies.to_variable_specs(
             flavor=FieldFlavor.DATACLASS
@@ -93,26 +89,6 @@ class UseCaseSpec(Entity):
         )
         classes.append(uc_class)
         return ModuleSpec.create(name=self.name, classes=classes)
-
-    def _build_input_class_spec(self, class_name: str) -> ClassSpec:
-        """Build input ClassSpec from inputs list."""
-        variable_specs = self.inputs.to_variable_specs(flavor=FieldFlavor.PYDANTIC)
-        return ClassSpec.create(
-            name=class_name,
-            description="",
-            inheritance=["BaseModel"],
-            attributes=variable_specs,
-        )
-
-    def _build_output_class_spec(self, class_name: str) -> ClassSpec:
-        """Build output ClassSpec from outputs list."""
-        variable_specs = self.outputs.to_variable_specs(flavor=FieldFlavor.PYDANTIC)
-        return ClassSpec.create(
-            name=class_name,
-            description="",
-            inheritance=["BaseModel"],
-            attributes=variable_specs,
-        )
 
     @classmethod
     def from_module_spec(cls, module: ModuleSpec) -> UseCaseSpec:
@@ -151,16 +127,19 @@ class UseCaseSpec(Entity):
             raise ValueError(
                 f"Execute parameter has no type in UseCase class '{uc_name}'"
             )
-        input_class = module.get_class(input_type_name)
+        input_class = module.get_class_or_none(input_type_name)
+        inputs = AttributeSpecList(root=[])
+        if input_class:
+            inputs = AttributeSpecList.from_variable_specs(input_class.attributes)
+            
         if result_type_name is None:
             raise ValueError(
                 f"Execute return type not found in UseCase class '{uc_name}'"
             )
-        result_class = module.get_class(result_type_name)
-
-        # 8. Convert to inputs/outputs
-        inputs = AttributeSpecList.from_variable_specs(input_class.attributes)
-        outputs = AttributeSpecList.from_variable_specs(result_class.attributes)
+        result_class = module.get_class_or_none(result_type_name)
+        outputs = AttributeSpecList(root=[])
+        if result_class:
+            outputs = AttributeSpecList.from_variable_specs(result_class.attributes)
 
         return cls(
             name=uc_name,

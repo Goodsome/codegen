@@ -31,7 +31,7 @@ class DomainConcept(BaseModel):
     def to_class_spec(self: Self) -> ClassSpec:
         vs = self.attributes.to_variable_specs(flavor=FieldFlavor.PYDANTIC)
         fs = self.behaviors.to_function_specs()
-        if self.__concept_name__ != "core":
+        if self.__concept_name__ not in  ["core", "dto"]:
             base_types = [PascalString(self.__concept_name__)] + self.base_types
         else:
             base_types = self.base_types

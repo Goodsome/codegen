@@ -90,12 +90,18 @@ class ModuleSpec(ValueObject):
         """检查模块中是否存在指定名称的类"""
         return any(cls.name == class_name for cls in self.classes)
 
-    def get_class(self, class_name: str) -> ClassSpec:
-        """获取模块中指定名称的类，不存在则 raise error"""
+    def get_class_or_none(self, class_name: str) -> ClassSpec | None:
         for cls in self.classes:
             if cls.name == PascalString(class_name):
                 return cls
-        raise ValueError(f"Class '{class_name}' not found in module '{self.name}'")
+        return None
+
+    def get_class(self, class_name: str) -> ClassSpec:
+        """获取模块中指定名称的类，不存在则 raise error"""
+        cls = self.get_class_or_none(class_name)
+        if cls is None:
+            raise ValueError(f"Class '{class_name}' not found in module '{self.name}'")
+        return cls
 
     def has_function(self, function_name: str) -> bool:
         """检查模块中是否存在指定名称的函数"""
