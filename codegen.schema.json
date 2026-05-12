@@ -464,39 +464,6 @@
       "title":"DomainExceptionSpec",
       "type":"object"
     },
-    "DtoSpec":{
-      "additionalProperties":false,
-      "description":"Specification of a DTO to be generated.",
-      "properties":{
-        "attributes":{
-          "$ref":"#/$defs/AttributeSpecList"
-        },
-        "base_types":{
-          "items":{
-            "type":"string"
-          },
-          "title":"Base Types",
-          "type":"array"
-        },
-        "behaviors":{
-          "$ref":"#/$defs/MethodSpecList"
-        },
-        "description":{
-          "title":"Description",
-          "type":"string"
-        },
-        "name":{
-          "title":"Name",
-          "type":"string"
-        }
-      },
-      "required":[
-        "name",
-        "description"
-      ],
-      "title":"DtoSpec",
-      "type":"object"
-    },
     "DomainSpec":{
       "additionalProperties":false,
       "description":"Specification of a domain to be generated.",
@@ -573,6 +540,39 @@
         }
       },
       "title":"DomainSpec",
+      "type":"object"
+    },
+    "DtoSpec":{
+      "additionalProperties":false,
+      "description":"Specification of a DTO to be generated.",
+      "properties":{
+        "attributes":{
+          "$ref":"#/$defs/AttributeSpecList"
+        },
+        "base_types":{
+          "items":{
+            "type":"string"
+          },
+          "title":"Base Types",
+          "type":"array"
+        },
+        "behaviors":{
+          "$ref":"#/$defs/MethodSpecList"
+        },
+        "description":{
+          "title":"Description",
+          "type":"string"
+        },
+        "name":{
+          "title":"Name",
+          "type":"string"
+        }
+      },
+      "required":[
+        "name",
+        "description"
+      ],
+      "title":"DtoSpec",
       "type":"object"
     },
     "EntitySpec":{
@@ -1028,8 +1028,11 @@
       "additionalProperties":false,
       "description":"Specification of a use case to be generated.",
       "properties":{
-        "dependencies":{
+        "attributes":{
           "$ref":"#/$defs/AttributeSpecList"
+        },
+        "behaviors":{
+          "$ref":"#/$defs/MethodSpecList"
         },
         "description":{
           "title":"Description",

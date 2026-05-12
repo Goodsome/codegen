@@ -7,7 +7,6 @@ from codegen.domain_definition.domain.entities.use_case_spec import UseCaseSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from pydantic import Field
 from codegen.shared.domain.core.entity import Entity
-from codegen.shared.domain.value_objects.pascal_string import PascalString
 
 
 class ApplicationSpec(Entity):
@@ -20,7 +19,6 @@ class ApplicationSpec(Entity):
 
     def to_package_spec(self: Self) -> PackageSpec:
         """将 ApplicationSpec 转换为 PackageSpec"""
-        self.migrate()
         use_case_modules = [uc.to_module_spec() for uc in self.use_cases]
         port_modules = [p.to_module_spec() for p in self.ports]
         use_cases_pkg = PackageSpec.create(name="use_cases", modules=use_case_modules)
@@ -148,17 +146,6 @@ class ApplicationSpec(Entity):
         """Remove a ServiceSpec by name. Returns self for chaining."""
         self.services = [s for s in self.services if s.name != name]
         return self
-
-    def migrate(self: Self) -> None:
-        """Collect DTOs from use cases into self.dtos.
-
-        If dtos is already populated, this is a no-op.
-        Otherwise, iterates over use_cases, calls collect_dtos(),
-        and merges the results into self.dtos.
-        """
-        for uc in self.use_cases:
-            for dto in uc.collect_dtos():
-                self.add_dto(dto)
 
     def add_dto(self: Self, dto: DtoSpec) -> Self:
         """Add a DtoSpec. Raises ValueError if dto with same name exists."""

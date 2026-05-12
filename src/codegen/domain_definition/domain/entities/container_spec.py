@@ -118,7 +118,7 @@ class ContainerSpec(Entity):
         provider_name = SnakeString(use_case_name)
 
         kwargs: dict[str, AssignmentSpec] = {}
-        for dep in use_case.dependencies:
+        for dep in use_case.attributes:
             for binding in self.bindings:
                 if binding.port == dep.type:
                     kwarg_impl_name = SnakeString(binding.implementation)

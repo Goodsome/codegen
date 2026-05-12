@@ -408,18 +408,36 @@ contexts:
     use_cases:
     - name: GenerateProject
       kind: command
-      dependencies:
+      attributes:
       - type: LoadBlueprint
         name: loader
       - type: GeneratePackage
         name: generator
+      behaviors:
+      - name: execute
+        inputs:
+        - type: Self
+          name: self
+        - type: GenerateProjectCommand
+          name: cmd
+        output:
+          type: GenerateProjectResult
     - name: GenerateBlueprint
       kind: command
-      dependencies:
+      attributes:
       - type: ParsePackage
         name: parser
       - type: BlueprintStorage
         name: storage
+      behaviors:
+      - name: execute
+        inputs:
+        - type: Self
+          name: self
+        - type: GenerateBlueprintCommand
+          name: cmd
+        output:
+          type: GenerateBlueprintResult
     dtos:
     - name: GenerateBlueprintResult
       description: ''
@@ -1449,25 +1467,64 @@ contexts:
   application:
     use_cases:
     - name: ParsePackage
-      kind: query
+      kind: command
       description: Parses Python package to PackageSpec.
-      dependencies:
+      attributes:
       - type: PythonSyntaxTranslator
         name: translator
+      behaviors:
+      - name: execute
+        inputs:
+        - type: Self
+          name: self
+        - type: ParsePackageQuery
+          name: query
+        output:
+          type: ParsePackageResult
     - name: GenerateSchemaJson
       kind: command
-      dependencies:
+      attributes:
       - type: FileSystemPort
         name: file_system_port
+      behaviors:
+      - name: execute
+        inputs:
+        - type: Self
+          name: self
+        - type: GenerateSchemaJsonCommand
+          name: cmd
+        output:
+          type: GenerateSchemaJsonResult
     - name: GeneratePackage
       kind: command
-      dependencies:
+      attributes:
       - type: FileSystemPort
         name: file_system_port
       - type: PythonSyntaxTranslator
         name: translator
       - type: CodeFormatter
         name: code_formatter
+      behaviors:
+      - name: _get_file_status
+        inputs:
+        - type: Self
+          name: self
+        - type: Path
+          name: rel_path
+        - type: boolean
+          name: overwrite
+        - type: boolean
+          name: file_exists
+        output:
+          type: FileStatus
+      - name: execute
+        inputs:
+        - type: Self
+          name: self
+        - type: GeneratePackageCommand
+          name: cmd
+        output:
+          type: GeneratePackageResult
     dtos:
     - name: GeneratePackageResult
       description: ''
@@ -2571,36 +2628,18 @@ contexts:
         name: description
         default: str
       - type: AttributeSpecList
-        name: dependencies
+        name: attributes
         default: AttributeSpecList
+      - type: MethodSpecList
+        name: behaviors
+        default: MethodSpecList
       behaviors:
-      - name: create
+      - name: to_class_spec
         inputs:
         - type: Self
-          container: type
-          name: cls
-        - type: string
-          name: name
-        - type: Any
-          custom_type_string: str | UseCaseKind
-          name: kind
-        - type: AttributeSpec
-          container: list
-          optional: true
-          name: inputs
-        - type: AttributeSpec
-          container: list
-          optional: true
-          name: outputs
-        - type: AttributeSpec
-          container: list
-          optional: true
-          name: dependencies
-        - type: string
-          name: description
-          default: ''
+          name: self
         output:
-          type: any
+          type: ClassSpec
       - name: to_module_spec
         description: 将 UseCaseSpec 转换为 ModuleSpec
         inputs:
@@ -2608,8 +2647,17 @@ contexts:
           name: self
         output:
           type: ModuleSpec
+      - name: from_class_spec
+        inputs:
+        - type: Self
+          container: type
+          name: cls
+        - type: ClassSpec
+          name: class_spec
+        output:
+          type: Self
       - name: from_module_spec
-        description: 将 ModuleSpec 逆向解析为 UseCaseSpec
+        description: 将 ModuleSpec 逆向解析为 DomainConcept
         inputs:
         - type: Self
           container: type
@@ -2617,7 +2665,7 @@ contexts:
         - type: ModuleSpec
           name: module
         output:
-          type: UseCaseSpec
+          type: Self
       - name: update
         description: Update scalar metadata fields. Preserves internal structure.
         inputs:
@@ -2631,50 +2679,6 @@ contexts:
           name: description
         output:
           type: Self
-      - name: collect_dtos
-        description: 'Convert inputs and outputs into DtoSpec instances.
-
-
-          Returns a list of DtoSpec: {Name}Command/{Name}Query from inputs,
-
-          {Name}Result from outputs.'
-        inputs:
-        - type: Self
-          name: self
-        output:
-          type: DtoSpec
-          container: list
-        rules:
-        - name: use_case_with_inputs_outputs_returns_two_dtos
-          given: a UseCaseSpec (kind=COMMAND) with inputs and outputs
-          when: collect_dtos() is called
-          then: 'return two DtoSpecs: one named {Name}Command (attributes from inputs),
-            one named {Name}Result (attributes from outputs)'
-        - name: use_case_without_inputs_outputs_returns_empty
-          given: a UseCaseSpec with empty inputs and outputs
-          when: collect_dtos() is called
-          then: return an empty list
-      - name: _input_dto_name
-        description: Derive the input DTO name from use case name and kind.
-        inputs:
-        - type: Self
-          name: self
-        output:
-          type: PascalString
-      - name: _build_input_dto
-        description: Build input DtoSpec from inputs.
-        inputs:
-        - type: Self
-          name: self
-        output:
-          type: DtoSpec
-      - name: _build_output_dto
-        description: Build output DtoSpec from outputs.
-        inputs:
-        - type: Self
-          name: self
-        output:
-          type: DtoSpec
     - name: ApplicationSpec
       description: Specification of an application to be generated.
       attributes:
@@ -2825,29 +2829,6 @@ contexts:
           name: name
         output:
           type: Self
-      - name: migrate
-        description: 'Collect DTOs from use cases into self.dtos.
-
-
-          If dtos is already populated, this is a no-op.
-
-          Otherwise, iterates over use_cases, calls collect_dtos(),
-
-          and merges the results into self.dtos.'
-        inputs:
-        - type: Self
-          name: self
-        output:
-          type: None
-        rules:
-        - name: migrate_collects_dtos_when_empty
-          given: an ApplicationSpec where dtos is empty but use_cases have inputs/outputs
-          when: migrate() is called
-          then: dtos is populated with all DtoSpecs collected from use_cases
-        - name: migrate_preserves_existing_dtos
-          given: an ApplicationSpec where dtos already contains manually set DtoSpecs
-          when: migrate() is called
-          then: dtos remains unchanged
       - name: add_dto
         description: Add a DtoSpec. Raises ValueError if dto with same name exists.
         inputs:
@@ -4364,15 +4345,33 @@ contexts:
     - name: InitProject
       kind: command
       description: Initializes a new project blueprint with a default Shared context.
-      dependencies:
+      attributes:
       - type: BlueprintStorage
         name: storage
+      behaviors:
+      - name: execute
+        inputs:
+        - type: Self
+          name: self
+        - type: InitProjectCommand
+          name: cmd
+        output:
+          type: InitProjectResult
     - name: LoadBlueprint
       kind: command
       description: Loads the blueprint from a file.
-      dependencies:
+      attributes:
       - type: BlueprintStorage
         name: blueprint_loader
+      behaviors:
+      - name: execute
+        inputs:
+        - type: Self
+          name: self
+        - type: LoadBlueprintCommand
+          name: cmd
+        output:
+          type: LoadBlueprintResult
     dtos:
     - name: LoadBlueprintCommand
       description: ''

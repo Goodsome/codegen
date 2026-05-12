@@ -35,8 +35,6 @@ class DomainConcept(BaseModel):
             base_types = [PascalString(self.__concept_name__)] + self.base_types
         else:
             base_types = self.base_types
-        if self.name == "ClaimTaskCommand":
-            print(self.name, base_types)
         return ClassSpec.create(
             name=self.name,
             description=self.description,
