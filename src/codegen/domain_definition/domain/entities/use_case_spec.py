@@ -40,6 +40,7 @@ class UseCaseSpec(Entity):
             description=self.description,
             attributes=vs,
             methods=fs,
+            decorators=["dataclass"]
         )
         
     def to_module_spec(self) -> ModuleSpec:

@@ -28,24 +28,16 @@ class GeneratePackage:
     code_formatter: CodeFormatter
 
     def _get_file_status(
-        self, rel_path: Path, overwrite: bool, file_exists: bool
+        self: Self, rel_path: Path, overwrite: bool, file_exists: bool
     ) -> FileStatus:
-        # Return early for non-existent files
         if not file_exists:
             return FileStatus.CREATED
-
         if rel_path.parts[0] == "tests" and rel_path.name.startswith("test_"):
             return FileStatus.UPDATED
-
-        # Return early when overwrite is disabled
         if not overwrite:
             return FileStatus.SKIPPED
-
-        # Skip tests/bindings_* files even when overwrite is enabled
         if rel_path.parts[0] == "tests" and rel_path.name.startswith("bindings_"):
             return FileStatus.SKIPPED
-
-        # All checks passed, allow update
         return FileStatus.UPDATED
 
     def execute(self: Self, cmd: GeneratePackageCommand) -> GeneratePackageResult:
