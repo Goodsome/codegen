@@ -56,8 +56,9 @@ def build_function(func_spec: FunctionSpec) -> ast.FunctionDef | ast.AsyncFuncti
             decorator_list.append(ast.parse(d, mode='eval').body)
         except SyntaxError:
             pass
+    func_def = ast.AsyncFunctionDef if func_spec.is_async else ast.FunctionDef
             
-    return ast.FunctionDef(
+    return func_def(
         name=func_spec.name,
         args=arguments,
         body=body,

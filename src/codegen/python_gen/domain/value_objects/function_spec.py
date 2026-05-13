@@ -29,6 +29,7 @@ class FunctionSpec(ValueObject):
     suite: str = Field(default="")
     function_type: FunctionType = Field(default=FunctionType.FUNCTION)
     description: str | None = None
+    is_async: bool = False
 
     @model_validator(mode='after')
     def validate_parameter_order(self) -> Self:
@@ -53,6 +54,7 @@ class FunctionSpec(ValueObject):
         suite: str = "",
         function_type: FunctionType = FunctionType.FUNCTION,
         description: str | None = None,
+        is_async: bool = False,
     ):
         return cls(
             name=SnakeString(name),
@@ -62,6 +64,7 @@ class FunctionSpec(ValueObject):
             return_annotation=return_annotation,
             function_type=function_type,
             description=description,
+            is_async=is_async,
         )
 
     def get_required_types(self) -> set[str]:
@@ -94,6 +97,7 @@ class FunctionSpec(ValueObject):
             return_annotation=self.return_annotation,
             function_type=self.function_type,
             description=description,
+            is_async=self.is_async,
         )
 
     def is_init_method(self) -> bool:

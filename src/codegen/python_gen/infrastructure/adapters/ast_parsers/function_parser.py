@@ -75,6 +75,7 @@ def parse_function(node: ast.FunctionDef | ast.AsyncFunctionDef) -> FunctionSpec
         ft = FunctionType.INSTANCE_METHOD
     
     description = ast.get_docstring(node)
+    is_async = isinstance(node, ast.AsyncFunctionDef)
 
     return FunctionSpec.create(
         name=node.name,
@@ -84,6 +85,7 @@ def parse_function(node: ast.FunctionDef | ast.AsyncFunctionDef) -> FunctionSpec
         suite=suite,
         function_type=ft,
         description=description,
+        is_async=is_async,
     )
 
 def parse_parameter_from_assign(node: ast.AnnAssign | ast.Assign) -> list[VariableSpec]:

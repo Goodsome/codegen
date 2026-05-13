@@ -35,6 +35,7 @@ class MethodSpec(ValueObject):
     inputs: list[AttributeSpec] = Field(default_factory=list)
     output: MethodOutput
     rules: list[RuleSpec] = Field(default_factory=list)
+    is_async: bool = False
 
     @classmethod
     def create(
@@ -67,6 +68,7 @@ class MethodSpec(ValueObject):
             return_annotation=return_annotation,
             function_type=ft,
             suite="...",
+            is_async=self.is_async,
         )
 
     @classmethod
@@ -112,6 +114,7 @@ class MethodSpec(ValueObject):
                 optional=type_def.optional,
                 custom_type_string=type_def.custom_type_string,
             ),
+            is_async=function_spec.is_async,
         )
 
     def to_test_module_spec(self: Self) -> ModuleSpec:
