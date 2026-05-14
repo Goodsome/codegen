@@ -66,6 +66,56 @@ contexts:
       attributes:
       - type: Any
         name: model_config
+    - name: Identifier
+      description: Unique identifier.
+      attributes:
+      - type: uuid
+        name: value
+      behaviors:
+      - name: create
+        inputs:
+        - type: Self
+          container: type
+          name: cls
+        output:
+          type: any
+      - name: reconstitute
+        inputs:
+        - type: Self
+          container: type
+          name: cls
+        - type: Any
+          custom_type_string: UUID | str
+          name: value
+        output:
+          type: any
+      - name: __str__
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: any
+      - name: __hash__
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: integer
+      - name: serialize
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: string
+      - name: validate_from_primitive
+        inputs:
+        - type: Self
+          container: type
+          name: cls
+        - type: any
+          name: data
+        output:
+          type: any
     - name: DomainEvent
       description: 领域事件基类 所有领域事件必须： 1. 不可变（frozen=True） 2. 包含唯一标识和时间戳 3. 使用 UTC 时区
         4. 携带事件类型标识
@@ -97,38 +147,40 @@ contexts:
     - name: ContainerType
       members:
       - name: NONE
-        value: none
+        value: auto()
       - name: LIST
-        value: list
+        value: auto()
       - name: SET
-        value: set
+        value: auto()
       - name: MAP
-        value: map
+        value: auto()
       - name: ITERABLE
-        value: iterable
+        value: auto()
       - name: CALLABLE
-        value: callable
+        value: auto()
       - name: TYPE
-        value: type
+        value: auto()
       - name: CLASS_VAR
-        value: class_var
+        value: auto()
     - name: PrimitiveType
       description: 通用原语类型，不依赖具体语言。
       members:
       - name: STRING
-        value: string
+        value: auto()
       - name: INTEGER
-        value: integer
+        value: auto()
       - name: FLOAT
-        value: float
+        value: auto()
       - name: BOOLEAN
-        value: boolean
+        value: auto()
       - name: DATETIME
-        value: datetime
+        value: auto()
       - name: UUID
-        value: uuid
+        value: auto()
       - name: ANY
-        value: any
+        value: auto()
+      - name: 'NULL'
+        value: auto()
     value_objects:
     - name: SnakeString
       description: ''
@@ -480,6 +532,131 @@ contexts:
       use_case: GenerateProject
     - name: reverse
       use_case: GenerateBlueprint
+- name: CodeMetadata
+  domain:
+    aggregates:
+    - name: Component
+      description: ''
+      attributes:
+      - type: ComponentId
+        name: id
+      - type: ComponentType
+        name: type
+      - type: string
+        name: name
+      - type: string
+        name: description
+      - type: string
+        name: context
+      - type: Attribute
+        container: list
+        name: attributes
+      - type: Behavior
+        container: list
+        name: behaviors
+    enums:
+    - name: GherkinKeyword
+      description: Gherkin 语法关键字，用于 BDD 场景步骤的语义标注。
+      members:
+      - name: GIVEN
+        value: auto()
+      - name: WHEN
+        value: auto()
+      - name: THEN
+        value: auto()
+      - name: AND
+        value: auto()
+      - name: BUT
+        value: auto()
+    - name: ComponentType
+      members:
+      - name: AGGREGATE
+        value: auto()
+      - name: ENTITY
+        value: auto()
+      - name: VALUE_OBJECT
+        value: auto()
+      - name: ENUM
+        value: auto()
+      - name: DOMAIN_SERVICE
+        value: auto()
+      - name: DOMAIN_PORT
+        value: auto()
+      - name: DOMAIN_EVENT
+        value: auto()
+      - name: DOMAIN_EXCEPTION
+        value: auto()
+      - name: REPOSITORY
+        value: auto()
+      - name: USE_CASE
+        value: auto()
+      - name: APP_PORT
+        value: auto()
+      - name: APP_SERVICE
+        value: auto()
+      - name: IMPLEMENTATION
+        value: auto()
+      - name: CLI_COMMAND
+        value: auto()
+      - name: MCP_TOOL
+        value: auto()
+      - name: HTTP_ENDPOINT
+        value: auto()
+    value_objects:
+    - name: TypeDef
+      description: ''
+      attributes:
+      - type: Any
+        custom_type_string: PrimitiveType | ComponentId | ContainerType
+        name: origin
+      - type: Any
+        custom_type_string: tuple[Self]
+        name: args
+    - name: Scenario
+      description: Gherkin 场景，由名称和有序步骤列表组成。
+      attributes:
+      - type: string
+        name: name
+      - type: GherkinStep
+        container: list
+        name: steps
+        default: list
+    - name: GherkinStep
+      description: Gherkin 场景中的单一步骤，由关键字和步骤文本组成。
+      attributes:
+      - type: GherkinKeyword
+        name: keyword
+      - type: string
+        name: text
+    entities:
+    - name: Attribute
+      description: ''
+      attributes:
+      - type: AttributeId
+        name: id
+      - type: string
+        name: name
+      - type: string
+        name: description
+      - type: TypeDef
+        name: type
+    - name: Behavior
+      description: ''
+      attributes:
+      - type: BehaviorId
+        name: id
+      - type: string
+        name: name
+      - type: string
+        name: description
+      - type: Scenario
+        container: list
+        name: scenarios
+      - type: Attribute
+        container: list
+        name: inputs
+      - type: TypeDef
+        name: output
 - name: PythonGen
   domain:
     enums:
@@ -681,6 +858,9 @@ contexts:
       - type: string
         optional: true
         name: description
+      - type: boolean
+        name: is_async
+        default: false
       behaviors:
       - name: validate_parameter_order
         inputs:
@@ -714,6 +894,9 @@ contexts:
         - type: string
           optional: true
           name: description
+        - type: boolean
+          name: is_async
+          default: false
         output:
           type: any
       - name: get_required_types
@@ -1941,40 +2124,6 @@ contexts:
         value: command
       - name: QUERY
         value: query
-    - name: ElementType
-      members:
-      - name: AGGREGATE
-        value: aggregate
-      - name: ENTITY
-        value: entity
-      - name: VALUE_OBJECT
-        value: value_object
-      - name: ENUM
-        value: enum
-      - name: DOMAIN_SERVICE
-        value: domain_service
-      - name: DOMAIN_PORT
-        value: domain_port
-      - name: DOMAIN_EVENT
-        value: domain_event
-      - name: DOMAIN_EXCEPTION
-        value: domain_exception
-      - name: REPOSITORY
-        value: repository
-      - name: USE_CASE
-        value: use_case
-      - name: APP_PORT
-        value: app_port
-      - name: APP_SERVICE
-        value: app_service
-      - name: IMPLEMENTATION
-        value: implementation
-      - name: CLI_COMMAND
-        value: cli_command
-      - name: MCP_TOOL
-        value: mcp_tool
-      - name: HTTP_ENDPOINT
-        value: http_endpoint
     - name: AttributeKind
       members:
       - name: ATTRIBUTE
@@ -2151,6 +2300,9 @@ contexts:
         container: list
         name: rules
         default: list
+      - type: boolean
+        name: is_async
+        default: false
       behaviors:
       - name: create
         inputs:
@@ -2671,6 +2823,22 @@ contexts:
           name: module
         output:
           type: Self
+      - name: to_test_package_spec
+        description: Create test package for entity with behaviors that have rules.
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: PackageSpec
+      - name: load_test_package
+        description: Load test package into the domain concept. Returns self for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: PackageSpec
+          name: test_pkg
+        output:
+          type: Self
     - name: ApplicationSpec
       description: Specification of an application to be generated.
       attributes:
@@ -2856,6 +3024,24 @@ contexts:
           name: self
         - type: string
           name: name
+        output:
+          type: Self
+      - name: to_test_package_spec
+        description: Create test package for infrastructure with implementations that
+          have rules.
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: PackageSpec
+      - name: load_test_package
+        description: Load test package into the infrastructure spec. Returns self
+          for chaining.
+        inputs:
+        - type: Self
+          name: self
+        - type: PackageSpec
+          name: test_pkg
         output:
           type: Self
     - name: InterfaceSpec

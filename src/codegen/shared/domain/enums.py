@@ -1,38 +1,26 @@
-from enum import Enum
+from enum import StrEnum, auto
 
 
-class ContainerType(Enum):
+class ContainerType(StrEnum):
 
-    NONE = "none"
-
-    LIST = "list"
-
-    SET = "set"
-
-    MAP = "map"
-
-    ITERABLE = "iterable"
-
-    CALLABLE = "callable"
-
-    TYPE = "type"
-    
-    CLASS_VAR = "class_var"
+    NONE = auto()
+    LIST = auto()
+    SET = auto()
+    MAP = auto()
+    ITERABLE = auto()
+    CALLABLE = auto()
+    TYPE = auto()
+    CLASS_VAR = auto()
 
 
-class PrimitiveType(Enum):
+class PrimitiveType(StrEnum):
     """通用原语类型，不依赖具体语言。"""
 
-    STRING = "string"
-
-    INTEGER = "integer"
-
-    FLOAT = "float"
-
-    BOOLEAN = "boolean"
-
-    DATETIME = "datetime"
-
-    UUID = "uuid"
-
-    ANY = "any"
+    STRING = auto()
+    INTEGER = auto()
+    FLOAT = auto()
+    BOOLEAN = auto()
+    DATETIME = auto()
+    UUID = auto()
+    ANY = auto()
+    NULL = auto()
