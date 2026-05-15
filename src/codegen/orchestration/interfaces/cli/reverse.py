@@ -40,6 +40,10 @@ def reverse(
         "--package",
         help="Path to existing Python package to reverse engineer (default: auto-detect from src/)",
     )] = None,
+    context: Annotated[str | None, typer.Option(
+        "--context",
+        help="Context to use for reverse engineering",
+    )] = None,
 ) -> None:
     """
     Reverse: Reverse-engineer Python code into codegen.yaml.
@@ -54,6 +58,6 @@ def reverse(
     if package_path is None:
         package_path = get_default_package_path()
 
-    cmd = GenerateBlueprintCommand(path=package_path)
+    cmd = GenerateBlueprintCommand(path=package_path, context=context)
     _generate_blueprint(cmd)
     typer.echo("Reverse engineering completed. Blueprint saved to codegen.yaml")

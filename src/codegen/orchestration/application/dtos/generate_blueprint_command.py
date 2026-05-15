@@ -5,3 +5,4 @@ from pydantic import BaseModel
 class GenerateBlueprintCommand(BaseModel):
     path: Path
     test_path: Path = Path("tests")
+    context: str | None = None

@@ -1,5 +1,5 @@
 from uuid import UUID
-from sqlalchemy import String, Text
+from sqlalchemy import String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from codegen.shared.infrastructure.orm import BaseORM
@@ -12,11 +12,16 @@ if TYPE_CHECKING:
 class ComponentModel(BaseORM):
     __tablename__: str = "components"
 
+    __table_args__ = (
+        UniqueConstraint("context", "name", name="uq_component_context_name"),
+    )
+    
+
     id: Mapped[UUID] = mapped_column(primary_key=True)
     type: Mapped[str] = mapped_column(String(50), index=True)
+    context: Mapped[str] = mapped_column(String(255), index=True)
     name: Mapped[str] = mapped_column(String(255))
     description: Mapped[str] = mapped_column(Text)
-    context: Mapped[str] = mapped_column(Text)
 
     # 关联：一个组件拥有多个属性
     attributes: Mapped[list["AttributeModel"]] = relationship(

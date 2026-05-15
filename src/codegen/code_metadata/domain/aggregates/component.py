@@ -1,3 +1,4 @@
+from typing import override
 from pydantic import Field
 
 from codegen.code_metadata.domain.entities.attribute import Attribute
@@ -16,3 +17,7 @@ class Component(AggregateRoot):
 
     attributes: list[Attribute] = Field(default_factory=list)
     behaviors: list[Behavior] = Field(default_factory=list)
+
+    @override
+    def __hash__(self) -> int:
+        return hash(self.id)

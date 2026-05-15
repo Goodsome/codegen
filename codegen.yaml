@@ -1,6 +1,7 @@
 # yaml-language-server: $schema=./codegen.schema.json
 name: Codegen
 contexts:
+- name: Bootstrap
 - name: Shared
   domain:
     core:
@@ -627,6 +628,8 @@ contexts:
         name: parser
       - type: BlueprintStorage
         name: storage
+      - type: UpsertComponent
+        name: upsert_component
       behaviors:
       - name: execute
         inputs:
@@ -665,6 +668,9 @@ contexts:
         name: path
       - type: Path
         name: test_path
+      - type: string
+        optional: true
+        name: context
     - name: GenerateProjectResult
       description: ''
       base_types:
@@ -704,6 +710,13 @@ contexts:
         container: list
         name: behaviors
         default: list
+      behaviors:
+      - name: __hash__
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: integer
     enums:
     - name: GherkinKeyword
       description: Gherkin 语法关键字，用于 BDD 场景步骤的语义标注。
@@ -831,6 +844,20 @@ contexts:
         output:
           type: string
   application:
+    ports:
+    - name: ComponentQueryService
+      operations:
+      - name: find_by_name
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        - type: string
+          name: context
+        output:
+          type: ComponentDTO
+          optional: true
     dtos:
     - name: CreateComponentResult
       description: ''
@@ -882,6 +909,13 @@ contexts:
         name: description
       - type: TypeDefDTO
         name: type
+    - name: UpsertComponentResult
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        name: component_id
     - name: BehaviorDTO
       description: ''
       base_types:
@@ -899,6 +933,19 @@ contexts:
         name: inputs
       - type: TypeDefDTO
         name: output
+    - name: UpsertComponentCommand
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        name: type
+      - type: string
+        name: name
+      - type: string
+        name: description
+      - type: string
+        name: context
     - name: TypeDefDTO
       description: ''
       base_types:
@@ -911,6 +958,8 @@ contexts:
       base_types:
       - BaseModel
       attributes:
+      - type: string
+        name: id
       - type: string
         name: type
       - type: string
@@ -2296,6 +2345,16 @@ contexts:
           name: test_pkg
         output:
           type: Self
+      - name: to_component_dto
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: context
+        - type: string
+          name: component_type
+        output:
+          type: UpsertComponentCommand
     aggregates:
     - name: Blueprint
       description: Root of the generation model. Represents the entire project definition.
@@ -2379,6 +2438,14 @@ contexts:
           name: test_pkg
         output:
           type: Self
+      - name: collect_components
+        description: Collect all components from the blueprint.
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: UpsertComponentCommand
+          container: list
     enums:
     - name: UseCaseKind
       members:
@@ -4245,6 +4312,16 @@ contexts:
           name: test_pkg
         output:
           type: Self
+      - name: collect_components
+        description: Collect all components from the domain spec.
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: context
+        output:
+          type: UpsertComponentCommand
+          container: list
     - name: BoundedContext
       description: A logical boundary within the system.
       attributes:
@@ -4377,6 +4454,14 @@ contexts:
           name: test_pkg
         output:
           type: Self
+      - name: collect_components
+        description: Collect all components from the bounded context.
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: UpsertComponentCommand
+          container: list
     - name: ServiceSpec
       description: Specification of a domain service to be generated.
       attributes:

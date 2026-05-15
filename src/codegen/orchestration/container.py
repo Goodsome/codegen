@@ -9,6 +9,7 @@ class Container(DeclarativeContainer):
     generate_package = Dependency()
     parse_package = Dependency()
     blueprint_storage = Dependency()
+    upsert_component = Dependency()
 
     generate_project = Factory(
         GenerateProject,
@@ -20,4 +21,5 @@ class Container(DeclarativeContainer):
         GenerateBlueprint,
         parser=parse_package,
         storage=blueprint_storage,
+        upsert_component=upsert_component,
     )

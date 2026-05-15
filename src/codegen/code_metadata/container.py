@@ -3,7 +3,9 @@ from dependency_injector.providers import Configuration, Dependency, Factory
 from event_hub import EventHub
 
 from codegen.code_metadata.application.commands.create_component import CreateComponent
+from codegen.code_metadata.application.commands.upsert_component import UpsertComponent
 from codegen.code_metadata.domain.ports.component_repository import ComponentRepository
+from codegen.code_metadata.infrastructure.persistence.repositories.sql_alchemy_component_query_service import SQLAlchemyComponentQueryService
 from codegen.code_metadata.infrastructure.persistence.repositories.sql_alchemy_component_repository import SqlAlchemyComponentRepository
 from codegen.shared.infrastructure.database import Database
 from codegen.shared.infrastructure.sql_alchemy_unit_of_work import SqlAlchemyUnitOfWork
@@ -21,6 +23,11 @@ class Container(DeclarativeContainer):
         SqlAlchemyComponentRepository,
     )
 
+    component_query_service: Factory[SQLAlchemyComponentQueryService] = Factory(
+        SQLAlchemyComponentQueryService,
+        session_factory=database.provided.session_factory,
+    )
+
     unit_of_work: Factory[SqlAlchemyUnitOfWork[ComponentRepository]] = Factory(
         SqlAlchemyUnitOfWork,
         session_factory=database.provided.session_factory,
@@ -32,3 +39,10 @@ class Container(DeclarativeContainer):
         CreateComponent,
         unit_of_work=unit_of_work,
     )
+
+    upsert_component: Factory[UpsertComponent] = Factory(
+        UpsertComponent,
+        uow=unit_of_work,
+        query_service=component_query_service,
+    )
+    

@@ -1,8 +1,9 @@
+
+
 from pydantic import BaseModel
 
 
-class ComponentDTO(BaseModel):
-    id: str
+class UpsertComponentCommand(BaseModel):
     type: str
     name: str
     description: str

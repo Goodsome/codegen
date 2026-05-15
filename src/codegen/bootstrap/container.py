@@ -51,5 +51,6 @@ class AppContainer(containers.DeclarativeContainer):
         generate_package=python_gen_container.generate_package,
         parse_package=python_gen_container.parse_package,
         blueprint_storage=domain_definition_container.yaml_blueprint_storage,
+        upsert_component=code_metadata_container.upsert_component,
     )
 

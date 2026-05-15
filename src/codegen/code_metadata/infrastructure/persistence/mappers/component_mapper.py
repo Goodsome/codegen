@@ -1,6 +1,7 @@
 from typing import Any
 
 # 导入你的领域模型 (Domain Models)
+from codegen.code_metadata.application.dtos.component_dto import ComponentDTO
 from codegen.code_metadata.domain.aggregates.component import Component
 from codegen.code_metadata.domain.entities.behavior import Behavior
 from codegen.code_metadata.domain.entities.attribute import Attribute
@@ -21,6 +22,16 @@ class ComponentMapper:
     """
     负责 Component 聚合根及其所有子实体、值对象在 Domain Model 和 ORM Model 之间的互相转换。
     """
+
+    @classmethod
+    def to_dto(cls, orm_model: ComponentModel) -> ComponentDTO:
+        return ComponentDTO(
+            id=str(orm_model.id),
+            type=orm_model.type,
+            name=orm_model.name,
+            description=orm_model.description,
+            context=orm_model.context,
+        )
 
     # ==========================================
     # ORM -> Domain (用于从数据库读取并重建聚合)
@@ -69,10 +80,10 @@ class ComponentMapper:
     def to_orm(cls, domain_entity: Component) -> ComponentModel:
         # 注意：此处假设 domain_entity.id 能够直接提取为 UUID。
         # 如果你的 ComponentId 是一个复杂的类，请使用 domain_entity.id.value 提取底层 UUID
-        component_id_val = domain_entity.id 
+        component_id_val = domain_entity.id
         
         return ComponentModel(
-            id=component_id_val,
+            id=component_id_val.value,
             type=domain_entity.type.value, # 枚举转字符串
             name=domain_entity.name,
             description=domain_entity.description,
@@ -120,9 +131,9 @@ class ComponentMapper:
         如果作为 Behavior 的输入参数，behavior_id 有值。
         """
         return AttributeModel(
-            id=domain_entity.id,
-            component_id=component_id,
-            behavior_id=behavior_id,
+            id=domain_entity.id.value,
+            component_id=component_id.value if component_id else None,
+            behavior_id=behavior_id.value if behavior_id else None,
             name=domain_entity.name,
             description=domain_entity.description,
             # 递归值对象转为 JSON dict
