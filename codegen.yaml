@@ -15,6 +15,19 @@ contexts:
       attributes:
       - type: Any
         name: model_config
+    - name: Mapper
+      description: ''
+      base_types:
+      - ABC
+      behaviors:
+      - name: dto_to_domain
+        inputs:
+        - type: Self
+          name: self
+        - type: T_DTO
+          name: dto
+        output:
+          type: T_DOMAIN
     - name: AggregateRoot
       description: 聚合根基类 特征： 1. 继承 Entity 的所有特性 2. 管理领域事件的发布和收集 3. 确保聚合边界内的一致性
       base_types:
@@ -350,6 +363,141 @@ contexts:
           name: path
         output:
           type: boolean
+    - name: Repository
+      operations:
+      - name: collect_seens
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: T_AR
+          container: set
+      - name: add
+        inputs:
+        - type: Self
+          name: self
+        - type: T_AR
+          name: aggregate
+        output:
+          type: None
+      - name: get
+        inputs:
+        - type: Self
+          name: self
+        - type: T_ID
+          name: id
+        output:
+          type: T_AR
+      - name: save
+        inputs:
+        - type: Self
+          name: self
+        - type: T_AR
+          name: aggregate
+        output:
+          type: None
+      - name: delete
+        inputs:
+        - type: Self
+          name: self
+        - type: T_ID
+          name: id
+        output:
+          type: None
+      - name: _add
+        inputs:
+        - type: Self
+          name: self
+        - type: T_AR
+          name: aggregate
+        output:
+          type: None
+      - name: _get
+        inputs:
+        - type: Self
+          name: self
+        - type: T_ID
+          name: id
+        output:
+          type: T_AR
+      - name: _save
+        inputs:
+        - type: Self
+          name: self
+        - type: T_AR
+          name: aggregate
+        output:
+          type: None
+      - name: _delete
+        inputs:
+        - type: Self
+          name: self
+        - type: T_ID
+          name: id
+        output:
+          type: None
+  application:
+    ports:
+    - name: EventPublisher
+      description: Abstract port for publishing domain events.
+      operations:
+      - name: publish
+        description: Publish a domain event.
+        inputs:
+        - type: Self
+          name: self
+        - type: DomainEvent
+          name: event
+        output:
+          type: None
+    - name: UnitOfWork
+      operations:
+      - name: repository
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: T_Repo
+      - name: event_publisher
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: EventPublisher
+      - name: __enter__
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: Self
+      - name: __exit__
+        inputs:
+        - type: Self
+          name: self
+        - type: BaseException
+          container: type
+          optional: true
+          name: exc_type
+        - type: BaseException
+          optional: true
+          name: exc_val
+        - type: TracebackType
+          optional: true
+          name: exc_tb
+        output:
+          type: any
+      - name: commit
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: any
+      - name: rollback
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: any
   infrastructure:
     implementations:
     - name: OsFileSystem
@@ -551,9 +699,11 @@ contexts:
       - type: Attribute
         container: list
         name: attributes
+        default: list
       - type: Behavior
         container: list
         name: behaviors
+        default: list
     enums:
     - name: GherkinKeyword
       description: Gherkin 语法关键字，用于 BDD 场景步骤的语义标注。
@@ -657,6 +807,118 @@ contexts:
         name: inputs
       - type: TypeDef
         name: output
+    ports:
+    - name: CodeParser
+      operations:
+      - name: parse_code
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: code
+        output:
+          type: Component
+    - name: ComponentRepository
+      description: Component repository interface.
+    - name: CodeGenerator
+      operations:
+      - name: generate_code
+        inputs:
+        - type: Self
+          name: self
+        - type: Component
+          name: component
+        output:
+          type: string
+  application:
+    dtos:
+    - name: CreateComponentResult
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        name: component_id
+    - name: CreateComponentCommand
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        name: type
+      - type: string
+        name: name
+      - type: string
+        name: description
+      - type: string
+        name: context
+    - name: UpdateComponentCommand
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        name: id
+      - type: string
+        optional: true
+        name: type
+      - type: string
+        optional: true
+        name: name
+      - type: string
+        optional: true
+        name: description
+      - type: string
+        optional: true
+        name: context
+    - name: AttributeDTO
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        name: name
+      - type: string
+        name: description
+      - type: TypeDefDTO
+        name: type
+    - name: BehaviorDTO
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        name: name
+      - type: string
+        name: description
+      - type: Scenario
+        container: list
+        name: scenarios
+      - type: AttributeDTO
+        container: list
+        name: inputs
+      - type: TypeDefDTO
+        name: output
+    - name: TypeDefDTO
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        name: origin
+    - name: ComponentDTO
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        name: type
+      - type: string
+        name: name
+      - type: string
+        name: description
+      - type: string
+        name: context
 - name: PythonGen
   domain:
     enums:

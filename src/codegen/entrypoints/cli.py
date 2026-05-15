@@ -1,6 +1,6 @@
 import typer
 
-from codegen.bootstrap import bootstrap
+from codegen.bootstrap.setup import create_container
 from codegen.orchestration.interfaces.cli.build import scaffold
 from codegen.orchestration.interfaces.cli.reverse import reverse
 from codegen.python_gen.interfaces.cli.schema import schema
@@ -32,11 +32,12 @@ app.command(name="tree")(tree_cmd)
 
 def main():
     """Bootstrap the DI container and run the CLI app."""
-    container = bootstrap()
+    container = create_container()
     container.wire(packages=[
         "codegen.orchestration.interfaces.cli",
         "codegen.domain_definition.interfaces.cli",
         "codegen.python_gen.interfaces.cli",
+        # "codegen.code_metadata.interfaces.cli",
     ])
     app()
 

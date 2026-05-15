@@ -8,11 +8,14 @@ dependencies = [
     "black>=25.12.0",
     "case-converter>=1.2.0",
     "dependency-injector>=4.48.3",
+    "event-hub",
     "mcp>=1.26.0",
     "path>=17.1.1",
     "pydantic>=2.12.5",
     "pydantic-settings>=2.12.0",
     "pyyaml>=6.0.2",
+    "psycopg[binary]>=3.3.3",
+    "sqlalchemy[asyncio]>=2.0.46",
     "typer>=0.20.0",
 ]
 
@@ -40,3 +43,6 @@ include = []
 include = ["src"]
 extraPaths = ["src"]
 reportUnusedCallResult = "none"
+
+[tool.uv.sources]
+event-hub = { path = "../event-hub", editable = true }
