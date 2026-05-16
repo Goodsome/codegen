@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from pathlib import Path
 
 from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
@@ -18,5 +17,4 @@ class SourceCodePort(ABC):
         self,
         source_code: str,
         module_name: str,
-        path: Path | None = None,
     ) -> ModuleSpec: ...

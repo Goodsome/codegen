@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-
 from pathlib import Path
 from typing import Iterator
 
@@ -31,8 +30,25 @@ class OSFileSystem(FileSystemPort):
         _ = full_path.write_text(content, encoding=self.encoding)
         return True
 
-    def list_directory_recursively(self, path: Path) -> Iterator[Path]:
-        return self.root.glob(str(path / "**" / "*"))
+    def list_directory_recursively(
+        self,
+        path: Path,
+        pattern: str = "*",
+        ignore_dirs: set[str] | None = None
+    ) -> Iterator[Path]:
+        if ignore_dirs is None: 
+            ignore_dirs = {"__pycache__", ".git", ".venv", "node_modules"}
+            
+        target_path = self.root / path
+
+        for root_dir, dir_names, file_names in target_path.walk():
+            dir_names[:] = [d for d in dir_names if d not in ignore_dirs]
+            
+            for file_name in file_names:
+                file_path = root_dir / file_name
+                if file_path.match(pattern):
+                    yield file_path
+                    
 
     def list_directory_flat(self, path: Path) -> Iterator[Path]:
         full_path = self.root / path

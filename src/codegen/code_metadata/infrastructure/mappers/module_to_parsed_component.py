@@ -6,10 +6,8 @@ class ModuleToParsedComponent:
 
     @classmethod
     def execute(cls, module: ModuleSpec) -> ParsedComponent:
-        assert module.path is not None
         cls = module.get_class(module.name)
         return ParsedComponent(
-            path=module.path,
             name=cls.name,
             description=cls.description,
         )

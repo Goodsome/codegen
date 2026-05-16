@@ -34,8 +34,6 @@ class ModuleSpec(ValueObject):
         default_factory=list
     )  # 逃生舱，非极端特殊情况，不能使用
 
-    path: Path | None = Field(default=None)
-
     @classmethod
     def create(
         cls,
@@ -46,7 +44,6 @@ class ModuleSpec(ValueObject):
         enums: list[PythonEnumSpec] | None = None,
         assignments: list[ModuleAssignmentSpec] | None = None,
         extra_code: list[RawCodeSpec] | None = None,
-        path: Path | None = None,
     ) -> "ModuleSpec":
         return cls(
             name=SnakeString(name),
@@ -56,7 +53,6 @@ class ModuleSpec(ValueObject):
             enums=enums or [],
             assignments=assignments or [],
             extra_code=extra_code or [],
-            path=path,
         )
 
     @classmethod

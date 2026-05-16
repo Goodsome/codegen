@@ -1,6 +1,5 @@
 
 import ast
-from pathlib import Path
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.infrastructure.adapters.ast_parsers import (
     import_parser,
@@ -14,7 +13,6 @@ from codegen.python_gen.domain.value_objects.raw_code_spec import RawCodeSpec
 def parse_module(
     source_code: str,
     module_name: str,
-    path: Path | None = None,
 ) -> ModuleSpec:
     """Parses source code into a ModuleSpec."""
     
@@ -98,5 +96,4 @@ def parse_module(
         imports=imports,
         assignments=assignments,
         extra_code=extra_code,
-        path=path,
     )

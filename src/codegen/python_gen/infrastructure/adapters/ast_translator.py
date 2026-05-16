@@ -32,9 +32,8 @@ class AstTranslator(SourceCodePort):
         self,
         source_code: str,
         module_name: str,
-        path: Path | None = None,
     ) -> ModuleSpec:
         """
         Parses Python source code string into a ModuleSpec.
         """
-        return module_parser.parse_module(source_code, module_name, path)
+        return module_parser.parse_module(source_code, module_name)

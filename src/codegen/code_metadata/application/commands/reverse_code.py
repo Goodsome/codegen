@@ -30,9 +30,11 @@ class ReverseCode:
     def execute(self, cmd: ReverseCodeCommand) -> ReverseCodeResult:
         component_type = ComponentType(cmd.component_type)
         policy = self.component_policy_factory.get_policy(component_type)
-        target_path = cmd.context / policy.target_path
+        target_path = f"src/codegen/{cmd.context}" / policy.target_path
         component_ids: list[str] = []
-        for file_path in self.file_system_port.list_directory_recursively(target_path):
+        for file_path in self.file_system_port.list_directory_recursively(target_path, pattern="*.py"):
+            if file_path.stem == "__init__":
+                continue
             result = self._reverse_one_component(
                 cmd.context, cmd.component_type, file_path
             )

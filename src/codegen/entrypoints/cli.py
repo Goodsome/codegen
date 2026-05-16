@@ -7,6 +7,7 @@ from codegen.orchestration.interfaces.cli.reverse import reverse
 from codegen.python_gen.interfaces.cli.schema import schema
 from codegen.domain_definition.interfaces.cli.tree import tree as tree_cmd
 from codegen.domain_definition.interfaces.cli.init import init
+from codegen.code_metadata.interfaces.cli.reverse_code import reverse_code
 
 app = typer.Typer(
     name="codegen",
@@ -28,6 +29,7 @@ app.command()(scaffold)
 app.command()(reverse)
 app.command()(schema)
 app.command()(init)
+app.command()(reverse_code)
 app.command(name="tree")(tree_cmd)
 
 
@@ -39,7 +41,7 @@ def main():
         "codegen.orchestration.interfaces.cli",
         "codegen.domain_definition.interfaces.cli",
         "codegen.python_gen.interfaces.cli",
-        # "codegen.code_metadata.interfaces.cli",
+        "codegen.code_metadata.interfaces.cli",
     ])
     app()
 

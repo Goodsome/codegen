@@ -18,10 +18,14 @@ class FileSystemPort(ABC):
         Returns True if written, False if skipped (due to overwrite=False).
         """
         ...
-    
 
     @abstractmethod
-    def list_directory_recursively(self, path: Path) -> Iterator[Path]: ...
+    def list_directory_recursively(
+        self,
+        path: Path,
+        pattern: str = "*",
+        ignore_dirs: set[str] | None = None,
+    ) -> Iterator[Path]: ...
 
     @abstractmethod
     def list_directory_flat(self, path: Path) -> Iterator[Path]: ...
