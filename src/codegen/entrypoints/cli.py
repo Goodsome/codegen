@@ -7,6 +7,7 @@ from codegen.orchestration.interfaces.cli.reverse import reverse
 from codegen.python_gen.interfaces.cli.schema import schema
 from codegen.domain_definition.interfaces.cli.tree import tree as tree_cmd
 from codegen.domain_definition.interfaces.cli.init import init
+from codegen.code_metadata.interfaces.cli.generate_code import generate_code
 from codegen.code_metadata.interfaces.cli.list_components import list_components
 from codegen.code_metadata.interfaces.cli.reverse_code import reverse_code
 
@@ -30,6 +31,7 @@ app.command()(scaffold)
 app.command()(reverse)
 app.command()(schema)
 app.command()(init)
+app.command()(generate_code)
 app.command()(reverse_code)
 app.command()(list_components)
 app.command(name="tree")(tree_cmd)

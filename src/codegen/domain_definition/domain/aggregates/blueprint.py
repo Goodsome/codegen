@@ -1,8 +1,8 @@
 from typing import Self, Union
+from uuid import UUID, uuid4
 
 from pydantic import Field
 
-from codegen.code_metadata.application.dtos.component_dto import ComponentDTO
 from codegen.code_metadata.application.dtos.upsert_component_command import UpsertComponentCommand
 from codegen.domain_definition.domain.entities.bootstrap_spec import BootstrapSpec
 from codegen.domain_definition.domain.entities.bounded_context import BoundedContext
@@ -11,7 +11,7 @@ from codegen.shared.domain.core.aggregate_root import AggregateRoot
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 
 
-class Blueprint(AggregateRoot):
+class Blueprint(AggregateRoot[UUID]):
     """Root of the generation model. Represents the entire project definition."""
 
     name: PascalString
@@ -32,6 +32,7 @@ class Blueprint(AggregateRoot):
         if isinstance(name, str):
             name = PascalString(name)
         return cls(
+            id=uuid4(),
             name=name,
             contexts=contexts,
             bootstrap=bootstrap,

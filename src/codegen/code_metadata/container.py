@@ -3,9 +3,19 @@ from dependency_injector.providers import Configuration, Dependency, Factory, Si
 from event_hub import EventHub
 
 from codegen.code_metadata.application.commands.create_component import CreateComponent
+from codegen.code_metadata.application.commands.generate_code import GenerateCode
 from codegen.code_metadata.application.commands.reverse_code import ReverseCode
 from codegen.code_metadata.application.commands.upsert_component import UpsertComponent
 from codegen.code_metadata.application.queries.list_components import ListComponents
+from codegen.code_metadata.infrastructure.gateways.python_code_generator import (
+    PythonCodeGenerator,
+)
+from codegen.code_metadata.infrastructure.mappers.component_to_ast_class import (
+    ComponentToAstClass,
+)
+from codegen.code_metadata.infrastructure.mappers.component_to_ast_module import (
+    ComponentToAstModule,
+)
 from codegen.code_metadata.domain.factories.component_policy_factory import (
     ComponentPolicyFactory,
 )
@@ -58,7 +68,7 @@ class Container(DeclarativeContainer):
 
     create_component: Factory[CreateComponent] = Factory(
         CreateComponent,
-        unit_of_work=unit_of_work,
+        uow=unit_of_work,
     )
 
     upsert_component: Factory[UpsertComponent] = Factory(
@@ -84,6 +94,24 @@ class Container(DeclarativeContainer):
     list_components: Factory[ListComponents] = Factory(
         ListComponents,
         query_service=component_query_service,
+    )
+
+    component_to_ast_class: Factory[ComponentToAstClass] = Factory(ComponentToAstClass)
+
+    component_to_ast_module: Factory[ComponentToAstModule] = Factory(
+        ComponentToAstModule,
+        component_to_ast_class=component_to_ast_class,
+    )
+
+    python_code_generator: Factory[PythonCodeGenerator] = Factory(
+        PythonCodeGenerator,
+        component_to_ast_module=component_to_ast_module,
+    )
+
+    generate_code: Factory[GenerateCode] = Factory(
+        GenerateCode,
+        uow=unit_of_work,
+        generator=python_code_generator,
     )
 
     reverse_code: Factory[ReverseCode] = Factory(

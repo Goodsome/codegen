@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from typing import Any
 from ..core.aggregate_root import AggregateRoot
 
 
 @dataclass
-class Repository[T_AR: AggregateRoot, T_ID](ABC):
+class Repository[T_AR: AggregateRoot[Any], T_ID](ABC):
     
     _seens: set[T_AR] = field(default_factory=set, init=False)
 

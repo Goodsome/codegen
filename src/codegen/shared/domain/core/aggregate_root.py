@@ -1,14 +1,22 @@
+from typing import override
 from pydantic import BaseModel, PrivateAttr, ConfigDict
 
 from codegen.shared.domain.core.domain_event import DomainEvent
 
 
-class AggregateRoot(BaseModel):
+class AggregateRoot[T_ID](BaseModel):
     """聚合根基类 特征： 1. 继承 Entity 的所有特性 2. 管理领域事件的发布和收集 3. 确保聚合边界内的一致性"""
     
     model_config = ConfigDict(extra="forbid")
+    
+    id: T_ID
 
     _domain_events: list[DomainEvent] = PrivateAttr(default_factory=list)
+    
+    @override
+    def __hash__(self) -> int:
+        return hash(self.id)
+
 
     def add_domain_event(self, event: DomainEvent) -> None:
         """添加领域事件

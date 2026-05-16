@@ -3,7 +3,6 @@ from collections.abc import Iterable
 
 from pydantic import BaseModel, Field
 
-from codegen.code_metadata.application.dtos.component_dto import ComponentDTO
 from codegen.code_metadata.application.dtos.upsert_component_command import UpsertComponentCommand
 from codegen.domain_definition.domain.core.attribute_spec_list import AttributeSpecList
 from codegen.domain_definition.domain.core.method_spec_list import MethodSpecList
