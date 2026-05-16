@@ -1,21 +1,19 @@
-from pathlib import Path
+import ast
+from dataclasses import dataclass
 from typing import override
 
-from dataclasses import dataclass
 from codegen.code_metadata.application.dtos.parsed_component import ParsedComponent
 from codegen.code_metadata.application.ports.code_parser import CodeParser
-from codegen.python_gen.application.services.parse_code import ParseCode
-from codegen.code_metadata.infrastructure.mappers.module_to_parsed_component import ModuleToParsedComponent
+from codegen.code_metadata.infrastructure.mappers.ast_module_to_component import (
+    AstModuleToComponent,
+)
 
 
 @dataclass
 class PythonCodeParser(CodeParser):
-
-    module_parser: ParseCode
-    mapper: ModuleToParsedComponent
+    mapper: AstModuleToComponent
 
     @override
-    def parse(self, code_path: Path) -> ParsedComponent:
-        module = self.module_parser.execute(code_path)
-        parsed_component = self.mapper.execute(module)
-        return parsed_component
+    def parse(self, code: str) -> ParsedComponent:
+        module = ast.parse(code)
+        return self.mapper.map(module)

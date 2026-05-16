@@ -10,7 +10,6 @@ from codegen.code_metadata.container import Container as CodeMetadataContainer
 
 
 class AppContainer(containers.DeclarativeContainer):
-
     config: Configuration = Configuration()
 
     # Shared infrastructure
@@ -42,7 +41,6 @@ class AppContainer(containers.DeclarativeContainer):
         event_publisher_factory=shared_container.event_publisher_factory,
         event_hub=shared_container.event_hub,
         file_system_port=os_file_system,
-        parse_code=python_gen_container.parse_code,
     )
 
     # DomainDefinition sub-container
@@ -54,4 +52,3 @@ class AppContainer(containers.DeclarativeContainer):
         parse_package=python_gen_container.parse_package,
         blueprint_storage=domain_definition_container.yaml_blueprint_storage,
     )
-

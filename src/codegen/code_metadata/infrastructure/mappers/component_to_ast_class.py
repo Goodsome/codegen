@@ -7,6 +7,8 @@ class ComponentToAstClass:
     @staticmethod
     def map(component: Component) -> ast.ClassDef:
         body: list[ast.stmt] = []
+        if component.description:
+            body.append(ast.Expr(value=ast.Constant(value=component.description)))
         class_def = ast.ClassDef(
             name=component.name,
             bases=[],
