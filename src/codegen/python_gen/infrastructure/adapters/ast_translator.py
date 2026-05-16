@@ -1,6 +1,7 @@
 
 import ast
 from dataclasses import dataclass
+from pathlib import Path
 from codegen.python_gen.domain.ports.source_code_port import SourceCodePort
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
@@ -27,8 +28,13 @@ class AstTranslator(SourceCodePort):
         # Unparse to string
         return ast.unparse(module_node)
 
-    def parse_module(self, source_code: str, module_name: str) -> ModuleSpec:
+    def parse_module(
+        self,
+        source_code: str,
+        module_name: str,
+        path: Path | None = None,
+    ) -> ModuleSpec:
         """
         Parses Python source code string into a ModuleSpec.
         """
-        return module_parser.parse_module(source_code, module_name)
+        return module_parser.parse_module(source_code, module_name, path)

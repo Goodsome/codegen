@@ -25,14 +25,6 @@ class AppContainer(containers.DeclarativeContainer):
         config=config.shared,
     )
 
-    code_metadata_container: Container[CodeMetadataContainer] = Container(
-        CodeMetadataContainer,
-        database=shared_container.database,
-        event_publisher_factory=shared_container.event_publisher_factory,
-        event_hub=shared_container.event_hub,
-    )
-
-    # DomainDefinition sub-container
     domain_definition_container: Container[DomainDefinitionContainer] = Container(
         DomainDefinitionContainer,
         config=config,
@@ -44,6 +36,16 @@ class AppContainer(containers.DeclarativeContainer):
         file_system_port=os_file_system,
     )
 
+    code_metadata_container: Container[CodeMetadataContainer] = Container(
+        CodeMetadataContainer,
+        database=shared_container.database,
+        event_publisher_factory=shared_container.event_publisher_factory,
+        event_hub=shared_container.event_hub,
+        file_system_port=os_file_system,
+        parse_code=python_gen_container.parse_code,
+    )
+
+    # DomainDefinition sub-container
     # Orchestration sub-container
     orchestration_container: Container[OrchestrationContainer] = Container(
         OrchestrationContainer,
@@ -51,6 +53,5 @@ class AppContainer(containers.DeclarativeContainer):
         generate_package=python_gen_container.generate_package,
         parse_package=python_gen_container.parse_package,
         blueprint_storage=domain_definition_container.yaml_blueprint_storage,
-        upsert_component=code_metadata_container.upsert_component,
     )
 

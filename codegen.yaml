@@ -628,8 +628,6 @@ contexts:
         name: parser
       - type: BlueprintStorage
         name: storage
-      - type: UpsertComponent
-        name: upsert_component
       behaviors:
       - name: execute
         inputs:
@@ -821,16 +819,6 @@ contexts:
       - type: TypeDef
         name: output
     ports:
-    - name: CodeParser
-      operations:
-      - name: parse_code
-        inputs:
-        - type: Self
-          name: self
-        - type: string
-          name: code
-        output:
-          type: Component
     - name: ComponentRepository
       description: Component repository interface.
     - name: CodeGenerator
@@ -858,6 +846,16 @@ contexts:
         output:
           type: ComponentDTO
           optional: true
+    - name: CodeParser
+      operations:
+      - name: parse
+        inputs:
+        - type: Self
+          name: self
+        - type: Path
+          name: code_path
+        output:
+          type: ParsedComponent
     dtos:
     - name: CreateComponentResult
       description: ''
@@ -879,25 +877,14 @@ contexts:
         name: description
       - type: string
         name: context
-    - name: UpdateComponentCommand
+    - name: ReverseCodeResult
       description: ''
       base_types:
       - BaseModel
       attributes:
       - type: string
-        name: id
-      - type: string
-        optional: true
-        name: type
-      - type: string
-        optional: true
-        name: name
-      - type: string
-        optional: true
-        name: description
-      - type: string
-        optional: true
-        name: context
+        container: list
+        name: component_ids
     - name: AttributeDTO
       description: ''
       base_types:
@@ -968,6 +955,26 @@ contexts:
         name: description
       - type: string
         name: context
+    - name: ReverseCodeCommand
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        name: context
+      - type: string
+        name: component_type
+    - name: ParsedComponent
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        name: name
+      - type: string
+        name: description
+      - type: Path
+        name: path
 - name: PythonGen
   domain:
     enums:
@@ -1461,6 +1468,9 @@ contexts:
         container: list
         name: extra_code
         default: list
+      - type: Path
+        optional: true
+        name: path
       behaviors:
       - name: create
         inputs:
@@ -1493,6 +1503,9 @@ contexts:
           container: list
           optional: true
           name: extra_code
+        - type: Path
+          optional: true
+          name: path
         output:
           type: ModuleSpec
       - name: get_init_module
@@ -1943,6 +1956,9 @@ contexts:
           name: source_code
         - type: string
           name: module_name
+        - type: Path
+          optional: true
+          name: path
         output:
           type: ModuleSpec
     - name: CodeFormatter

@@ -21,5 +21,4 @@ class Container(DeclarativeContainer):
         GenerateBlueprint,
         parser=parse_package,
         storage=blueprint_storage,
-        upsert_component=upsert_component,
     )

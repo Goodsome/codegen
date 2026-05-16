@@ -1,5 +1,6 @@
 
 import ast
+from pathlib import Path
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.infrastructure.adapters.ast_parsers import (
     import_parser,
@@ -10,13 +11,17 @@ from codegen.python_gen.infrastructure.adapters.ast_parsers import (
 from codegen.python_gen.domain.value_objects.module_assignment_spec import ModuleAssignmentSpec
 from codegen.python_gen.domain.value_objects.raw_code_spec import RawCodeSpec
 
-def parse_module(source_code: str, module_name: str) -> ModuleSpec:
+def parse_module(
+    source_code: str,
+    module_name: str,
+    path: Path | None = None,
+) -> ModuleSpec:
     """Parses source code into a ModuleSpec."""
     
     try:
         tree = ast.parse(source_code)
     except SyntaxError as e:
-        raise SyntaxError(f"Failed to parse source code: {e}") from e
+        raise SyntaxError(f"Failed to parse `{module_name}`, source code: {e}") from e
     
     classes = []
     enums = []
@@ -92,5 +97,6 @@ def parse_module(source_code: str, module_name: str) -> ModuleSpec:
         functions=functions,
         imports=imports,
         assignments=assignments,
-        extra_code=extra_code
+        extra_code=extra_code,
+        path=path,
     )

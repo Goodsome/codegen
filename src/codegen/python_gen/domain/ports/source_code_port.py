@@ -1,6 +1,8 @@
-from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
+from pathlib import Path
+
 from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec
+from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 
 
 class SourceCodePort(ABC):
@@ -12,4 +14,9 @@ class SourceCodePort(ABC):
     ) -> str: ...
 
     @abstractmethod
-    def parse_module(self, source_code: str, module_name: str) -> ModuleSpec: ...
+    def parse_module(
+        self,
+        source_code: str,
+        module_name: str,
+        path: Path | None = None,
+    ) -> ModuleSpec: ...
