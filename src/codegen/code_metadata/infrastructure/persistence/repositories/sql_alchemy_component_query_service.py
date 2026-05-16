@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 from typing import override
 
-from sqlalchemy import select
+from sqlalchemy import ColumnElement, select, func
 from sqlalchemy.orm import Session, sessionmaker
 
 from codegen.code_metadata.application.dtos.component_dto import ComponentDTO
+from codegen.code_metadata.application.dtos.component_filter import ComponentFilter
 from codegen.code_metadata.application.ports.component_query_service import (
     ComponentQueryService,
 )
@@ -14,6 +15,8 @@ from codegen.code_metadata.infrastructure.persistence.mappers.component_mapper i
 from codegen.code_metadata.infrastructure.persistence.models.component_model import (
     ComponentModel,
 )
+from codegen.shared.application.dtos.page import Page
+from codegen.shared.application.dtos.page_query import PageQuery
 
 
 @dataclass
@@ -33,3 +36,30 @@ class SQLAlchemyComponentQueryService(ComponentQueryService):
             return None
         dto = ComponentMapper.to_dto(model)
         return dto
+
+    @override
+    def list(self, query: PageQuery[ComponentFilter]) -> Page[ComponentDTO]:
+        conditions: list[ColumnElement[bool]] = []
+        if query.condition.type is not None:
+            conditions.append(ComponentModel.type == query.condition.type)
+        if query.condition.context is not None:
+            conditions.append(ComponentModel.context == query.condition.context)
+        if query.condition.name is not None:
+            conditions.append(ComponentModel.name == query.condition.name)
+
+        stmt = select(ComponentModel).where(*conditions)
+
+        with self.session_factory() as session:
+            total = (
+                session.scalar(
+                    select(func.count()).select_from(ComponentModel).where(*conditions)
+                )
+                or 0
+            )
+            offset = (query.current - 1) * query.size
+            models = (
+                session.execute(stmt.offset(offset).limit(query.size)).scalars().all()
+            )
+
+        items = [ComponentMapper.to_dto(m) for m in models]
+        return Page(items=items, total=total, current=query.current, size=query.size)
