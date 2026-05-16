@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 from typing import override
 
+from sqlalchemy import ColumnElement, func, select
 from sqlalchemy.orm import Session, selectinload
 
+from codegen.code_metadata.application.dtos.component_filter import ComponentFilter
 from codegen.code_metadata.domain.aggregates.component import Component
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.ports.component_repository import ComponentRepository
@@ -15,6 +17,8 @@ from codegen.code_metadata.infrastructure.persistence.models.behavior_model impo
 from codegen.code_metadata.infrastructure.persistence.models.component_model import (
     ComponentModel,
 )
+from codegen.shared.application.dtos.page import Page
+from codegen.shared.application.dtos.page_query import PageQuery
 
 @dataclass
 class SqlAlchemyComponentRepository(ComponentRepository):
@@ -73,3 +77,39 @@ class SqlAlchemyComponentRepository(ComponentRepository):
         if model:
             self.session.delete(model)
             self.session.flush()
+
+    @override
+    def list(self, page_query: PageQuery[ComponentFilter]) -> Page[Component]:
+        conditions: list[ColumnElement[bool]] = []
+        if page_query.condition.type is not None:
+            conditions.append(ComponentModel.type == page_query.condition.type)
+        if page_query.condition.context is not None:
+            conditions.append(ComponentModel.context == page_query.condition.context)
+        if page_query.condition.name is not None:
+            conditions.append(ComponentModel.name == page_query.condition.name)
+
+        stmt = (
+            select(ComponentModel)
+            .where(*conditions)
+            .options(
+                selectinload(ComponentModel.attributes),
+                selectinload(ComponentModel.behaviors).selectinload(
+                    BehaviorModel.inputs
+                ),
+            )
+        )
+
+        total = (
+            self.session.scalar(
+                select(func.count()).select_from(ComponentModel).where(*conditions)
+            )
+            or 0
+        )
+        if page_query.current and page_query.size:
+            offset = (page_query.current - 1) * page_query.size
+            stmt = stmt.offset(offset).limit(page_query.size)
+            
+        models = self.session.execute(stmt).scalars().all()
+
+        items = [ComponentMapper.to_domain(m) for m in models]
+        return Page(items=items, total=total, current=page_query.current, size=page_query.size)

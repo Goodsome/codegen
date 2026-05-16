@@ -1,9 +1,8 @@
-from pathlib import Path
 from pydantic import BaseModel
 
 
 class FileMetrics(BaseModel):
-    file_path: Path
+    file_name: str
     component_type: str
     ast_similarity: float
     original_lines: int
