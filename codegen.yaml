@@ -1,4 +1,5 @@
 # yaml-language-server: $schema=./codegen.schema.json
+id: 6a8479e1-dfb0-4e90-9e71-077259cd1101
 name: Codegen
 contexts:
 - name: Bootstrap
@@ -14,21 +15,9 @@ contexts:
       base_types:
       - BaseModel
       attributes:
-      - type: Any
+      - type: ConfigDict
+        container: class_var
         name: model_config
-    - name: Mapper
-      description: ''
-      base_types:
-      - ABC
-      behaviors:
-      - name: dto_to_domain
-        inputs:
-        - type: Self
-          name: self
-        - type: T_DTO
-          name: dto
-        output:
-          type: T_DOMAIN
     - name: AggregateRoot
       description: 聚合根基类 特征： 1. 继承 Entity 的所有特性 2. 管理领域事件的发布和收集 3. 确保聚合边界内的一致性
       base_types:
@@ -36,10 +25,18 @@ contexts:
       attributes:
       - type: Any
         name: model_config
+      - type: T_ID
+        name: id
       - type: DomainEvent
         container: list
         name: _domain_events
       behaviors:
+      - name: __hash__
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: integer
       - name: add_domain_event
         description: "添加领域事件\nArgs:\n    event: 要添加的领域事件实例\nRaises:\n    TypeError:\
           \ 如果 event 不是 DomainEvent 的实例"
@@ -80,56 +77,6 @@ contexts:
       attributes:
       - type: Any
         name: model_config
-    - name: Identifier
-      description: Unique identifier.
-      attributes:
-      - type: uuid
-        name: value
-      behaviors:
-      - name: create
-        inputs:
-        - type: Self
-          container: type
-          name: cls
-        output:
-          type: any
-      - name: reconstitute
-        inputs:
-        - type: Self
-          container: type
-          name: cls
-        - type: Any
-          custom_type_string: UUID | str
-          name: value
-        output:
-          type: any
-      - name: __str__
-        inputs:
-        - type: Self
-          name: self
-        output:
-          type: any
-      - name: __hash__
-        inputs:
-        - type: Self
-          name: self
-        output:
-          type: integer
-      - name: serialize
-        inputs:
-        - type: Self
-          name: self
-        output:
-          type: string
-      - name: validate_from_primitive
-        inputs:
-        - type: Self
-          container: type
-          name: cls
-        - type: any
-          name: data
-        output:
-          type: any
     - name: DomainEvent
       description: 领域事件基类 所有领域事件必须： 1. 不可变（frozen=True） 2. 包含唯一标识和时间戳 3. 使用 UTC 时区
         4. 携带事件类型标识
@@ -294,6 +241,56 @@ contexts:
           name: value
         output:
           type: any
+    - name: Identifier
+      description: Unique identifier.
+      attributes:
+      - type: uuid
+        name: value
+      behaviors:
+      - name: create
+        inputs:
+        - type: Self
+          container: type
+          name: cls
+        output:
+          type: any
+      - name: reconstitute
+        inputs:
+        - type: Self
+          container: type
+          name: cls
+        - type: Any
+          custom_type_string: UUID | str
+          name: value
+        output:
+          type: any
+      - name: __str__
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: any
+      - name: __hash__
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: integer
+      - name: serialize
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: string
+      - name: validate_from_primitive
+        inputs:
+        - type: Self
+          container: type
+          name: cls
+        - type: any
+          name: data
+        output:
+          type: any
     ports:
     - name: FileSystemPort
       description: Port for interacting with the file system.
@@ -328,6 +325,13 @@ contexts:
           name: self
         - type: Path
           name: path
+        - type: string
+          name: pattern
+          default: '*'
+        - type: string
+          container: set
+          optional: true
+          name: ignore_dirs
         output:
           type: Path
           container: iterable
@@ -499,6 +503,36 @@ contexts:
           name: self
         output:
           type: any
+    dtos:
+    - name: PageQuery
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: integer
+        name: current
+        default: 1
+      - type: integer
+        optional: true
+        name: size
+        default: 10
+      - type: T
+        name: condition
+    - name: Page
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: T
+        container: list
+        name: items
+      - type: integer
+        name: total
+      - type: integer
+        name: current
+      - type: integer
+        optional: true
+        name: size
   infrastructure:
     implementations:
     - name: OsFileSystem
@@ -689,9 +723,9 @@ contexts:
     aggregates:
     - name: Component
       description: ''
+      base_types:
+      - AggregateRoot[ComponentId]
       attributes:
-      - type: ComponentId
-        name: id
       - type: ComponentType
         name: type
       - type: string
@@ -700,6 +734,10 @@ contexts:
         name: description
       - type: string
         name: context
+      - type: TypeDef
+        container: list
+        name: bases
+        default: list
       - type: Attribute
         container: list
         name: attributes
@@ -709,66 +747,18 @@ contexts:
         name: behaviors
         default: list
       behaviors:
-      - name: __hash__
+      - name: file_name
         inputs:
         - type: Self
           name: self
         output:
-          type: integer
-    enums:
-    - name: GherkinKeyword
-      description: Gherkin 语法关键字，用于 BDD 场景步骤的语义标注。
-      members:
-      - name: GIVEN
-        value: auto()
-      - name: WHEN
-        value: auto()
-      - name: THEN
-        value: auto()
-      - name: AND
-        value: auto()
-      - name: BUT
-        value: auto()
-    - name: ComponentType
-      members:
-      - name: AGGREGATE
-        value: auto()
-      - name: ENTITY
-        value: auto()
-      - name: VALUE_OBJECT
-        value: auto()
-      - name: ENUM
-        value: auto()
-      - name: DOMAIN_SERVICE
-        value: auto()
-      - name: DOMAIN_PORT
-        value: auto()
-      - name: DOMAIN_EVENT
-        value: auto()
-      - name: DOMAIN_EXCEPTION
-        value: auto()
-      - name: REPOSITORY
-        value: auto()
-      - name: USE_CASE
-        value: auto()
-      - name: APP_PORT
-        value: auto()
-      - name: APP_SERVICE
-        value: auto()
-      - name: IMPLEMENTATION
-        value: auto()
-      - name: CLI_COMMAND
-        value: auto()
-      - name: MCP_TOOL
-        value: auto()
-      - name: HTTP_ENDPOINT
-        value: auto()
+          type: string
     value_objects:
     - name: TypeDef
       description: ''
       attributes:
       - type: Any
-        custom_type_string: PrimitiveType | ComponentId | ContainerType
+        custom_type_string: PrimitiveType | ContainerType | ComponentId
         name: origin
       - type: Any
         custom_type_string: tuple[Self]
@@ -821,9 +811,20 @@ contexts:
     ports:
     - name: ComponentRepository
       description: Component repository interface.
+      operations:
+      - name: list
+        inputs:
+        - type: Self
+          name: self
+        - type: Any
+          custom_type_string: PageQuery[ComponentFilter]
+          name: page_query
+        output:
+          type: Any
+          custom_type_string: Page[Component]
     - name: CodeGenerator
       operations:
-      - name: generate_code
+      - name: generate
         inputs:
         - type: Self
           name: self
@@ -846,14 +847,26 @@ contexts:
         output:
           type: ComponentDTO
           optional: true
+      - name: list
+        inputs:
+        - type: Self
+          name: self
+        - type: Any
+          custom_type_string: PageQuery[ComponentFilter]
+          name: query
+        output:
+          type: Any
+          custom_type_string: Page[ComponentDTO]
     - name: CodeParser
       operations:
       - name: parse
         inputs:
         - type: Self
           name: self
-        - type: Path
-          name: code_path
+        - type: string
+          name: code
+        - type: string
+          name: module_name
         output:
           type: ParsedComponent
     dtos:
@@ -864,6 +877,46 @@ contexts:
       attributes:
       - type: string
         name: component_id
+    - name: ComponentFilter
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        optional: true
+        name: type
+      - type: string
+        optional: true
+        name: context
+      - type: string
+        optional: true
+        name: name
+    - name: FileMetrics
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        name: file_name
+      - type: string
+        name: component_type
+      - type: float
+        name: ast_similarity
+      - type: integer
+        name: original_lines
+      - type: integer
+        name: generated_lines
+      - type: string
+        name: original_code
+      - type: string
+        name: generated_code
+      behaviors:
+      - name: line_diff
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: integer
     - name: CreateComponentCommand
       description: ''
       base_types:
@@ -877,6 +930,23 @@ contexts:
         name: description
       - type: string
         name: context
+    - name: GenerateCodeCommand
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        name: component_id
+    - name: GetDevProgressQuery
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        name: context
+      - type: string
+        optional: true
+        name: component_type
     - name: ReverseCodeResult
       description: ''
       base_types:
@@ -920,6 +990,70 @@ contexts:
         name: inputs
       - type: TypeDefDTO
         name: output
+    - name: ImportedComponent
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        name: context
+      - type: string
+        name: component
+    - name: DevProgress
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: FileMetrics
+        container: list
+        name: records
+        default: list
+      behaviors:
+      - name: add_record
+        inputs:
+        - type: Self
+          name: self
+        - type: FileMetrics
+          name: record
+        output:
+          type: any
+      - name: filter_by_type
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: component_type
+        output:
+          type: Self
+      - name: filter_by_name
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: component_name
+        output:
+          type: Self
+      - name: ast_progress
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: float
+      - name: order_by_type
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: Self
+      - name: get_record_by_name
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: component_name
+        output:
+          type: FileMetrics
+          optional: true
     - name: UpsertComponentCommand
       description: ''
       base_types:
@@ -955,6 +1089,10 @@ contexts:
         name: description
       - type: string
         name: context
+      - type: Any
+        custom_type_string: list[dict[str, Any]]
+        name: bases
+        default: '[]'
     - name: ReverseCodeCommand
       description: ''
       base_types:
@@ -963,6 +1101,7 @@ contexts:
       - type: string
         name: context
       - type: string
+        optional: true
         name: component_type
     - name: ParsedComponent
       description: ''
@@ -973,8 +1112,21 @@ contexts:
         name: name
       - type: string
         name: description
-      - type: Path
-        name: path
+      - type: string
+        container: list
+        name: bases
+        default: list
+      - type: ImportedComponent
+        container: list
+        name: imported_components
+        default: list
+    - name: GenerateCodeResult
+      description: ''
+      base_types:
+      - BaseModel
+      attributes:
+      - type: string
+        name: code
 - name: PythonGen
   domain:
     enums:
@@ -1468,9 +1620,6 @@ contexts:
         container: list
         name: extra_code
         default: list
-      - type: Path
-        optional: true
-        name: path
       behaviors:
       - name: create
         inputs:
@@ -1503,9 +1652,6 @@ contexts:
           container: list
           optional: true
           name: extra_code
-        - type: Path
-          optional: true
-          name: path
         output:
           type: ModuleSpec
       - name: get_init_module
@@ -1956,9 +2102,6 @@ contexts:
           name: source_code
         - type: string
           name: module_name
-        - type: Path
-          optional: true
-          name: path
         output:
           type: ModuleSpec
     - name: CodeFormatter
@@ -2374,6 +2517,8 @@ contexts:
     aggregates:
     - name: Blueprint
       description: Root of the generation model. Represents the entire project definition.
+      base_types:
+      - AggregateRoot[UUID]
       attributes:
       - type: PascalString
         name: name

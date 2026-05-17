@@ -5,5 +5,5 @@ from codegen.code_metadata.application.dtos.parsed_component import ParsedCompon
 
 class CodeParser(ABC):
     @abstractmethod
-    def parse(self, code: str) -> ParsedComponent:
+    def parse(self, code: str, module_name: str) -> ParsedComponent:
         pass

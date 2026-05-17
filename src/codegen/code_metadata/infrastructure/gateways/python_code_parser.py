@@ -14,6 +14,6 @@ class PythonCodeParser(CodeParser):
     mapper: AstModuleToComponent
 
     @override
-    def parse(self, code: str) -> ParsedComponent:
+    def parse(self, code: str, module_name: str) -> ParsedComponent:
         module = ast.parse(code)
-        return self.mapper.map(module)
+        return self.mapper.map(module, module_name=module_name)
