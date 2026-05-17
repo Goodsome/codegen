@@ -24,3 +24,15 @@ class PrimitiveType(StrEnum):
     UUID = auto()
     ANY = auto()
     NULL = auto()
+
+class PythonBuiltinType(StrEnum):
+    EXCEPTION = "Exception"
+    STR = "str"
+
+    def to_primitive_type(self) -> PrimitiveType | None:
+        match self:
+            case PythonBuiltinType.STR:
+                return PrimitiveType.STRING
+            case _:
+                return None
+    

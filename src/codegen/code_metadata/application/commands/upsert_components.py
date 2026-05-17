@@ -14,7 +14,10 @@ class UpsertComponents:
     component_mapper: ComponentDTOMapper
 
     def execute(self, cmd: list[UpsertComponentCommand]) -> None:
-        context_names = [(c.context, c.name) for c in cmd]
+        context_names: set[tuple[str, str]] = set()
+        for c in cmd:
+            context_names.update(c.get_context_names())
+        
         existing_components = self.query_service.find_by_context_names(context_names)
         
         existing_dict = {

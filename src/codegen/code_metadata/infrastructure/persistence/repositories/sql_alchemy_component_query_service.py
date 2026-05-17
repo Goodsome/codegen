@@ -67,7 +67,7 @@ class SQLAlchemyComponentQueryService(ComponentQueryService):
         return Page(items=items, total=total, current=query.current, size=query.size)
 
     @override
-    def find_by_context_names(self, context_names: list[tuple[str, str]]) -> list[ComponentDTO]:
+    def find_by_context_names(self, context_names: set[tuple[str, str]]) -> list[ComponentDTO]:
         if not context_names:
             return []
 

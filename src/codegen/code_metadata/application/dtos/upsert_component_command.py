@@ -24,3 +24,9 @@ class UpsertComponentCommand(BaseModel):
             )
             for ic in self.imported_components
         ]
+
+    def get_context_names(self) -> set[tuple[str, str]]:
+        result: set[tuple[str, str]] = {(self.context, self.name)}
+        for ic in self.imported_components:
+            result.add((ic.context, ic.name))
+        return result

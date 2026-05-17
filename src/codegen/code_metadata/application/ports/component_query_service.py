@@ -16,5 +16,5 @@ class ComponentQueryService(ABC):
         pass
 
     @abstractmethod
-    def find_by_context_names(self, context_names: list[tuple[str, str]]) -> list[ComponentDTO]:
+    def find_by_context_names(self, context_names: set[tuple[str, str]]) -> list[ComponentDTO]:
         pass
