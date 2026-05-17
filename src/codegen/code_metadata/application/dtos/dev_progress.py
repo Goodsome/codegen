@@ -14,6 +14,10 @@ class DevProgress(BaseModel):
         self.records = [record for record in self.records if record.component_type == component_type]
         return self
 
+    def filter_by_name(self, component_name: str) -> Self:
+        self.records = [record for record in self.records if record.file_name == component_name]
+        return self
+
     @property
     def ast_progress(self) -> float:
         if not self.records:
@@ -24,3 +28,6 @@ class DevProgress(BaseModel):
     def order_by_type(self) -> Self:
         self.records.sort(key=lambda r: r.component_type)
         return self
+
+    def get_record_by_name(self, component_name: str) -> FileMetrics | None:
+        return next((record for record in self.records if record.file_name == component_name), None)

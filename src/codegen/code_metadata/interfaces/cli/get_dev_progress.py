@@ -21,6 +21,7 @@ def _get_dev_progress(
 def get_dev_progress(
     context: Annotated[str, Argument()],
     component_type: Annotated[str | None, Option( "--type", "-t" )] = None,
+    component_name: Annotated[str | None, Option( "--name", "-n" )] = None,
 ) -> None:
     """Show development progress: AST similarity and line diffs per file."""
     query = GetDevProgressQuery(
@@ -32,6 +33,8 @@ def get_dev_progress(
     result.order_by_type()
     if component_type:
         result = result.filter_by_type(component_type)
+    if component_name:
+        result = result.filter_by_name(component_name)
 
     if not result.records:
         console.print("[yellow]No component records found.[/yellow]")
@@ -55,3 +58,15 @@ def get_dev_progress(
         + f"Files: {len(result.records)}  |  "
         + f"AST Similarity: {result.ast_progress:.1%}\n"
     )
+
+    if component_name:
+        record = result.get_record_by_name(component_name)
+        if record:
+            console.print(f"  {record.file_name:<40} {record.component_type:<20} " )
+            console.print("-" * 76)
+            console.print(f"{record.original_code}")
+            console.print("-" * 76)
+            console.print(f"{record.generated_code}")
+            console.print("-" * 76)
+        else:
+            console.print(f"[yellow]No record found for component name: {component_name}[/yellow]")

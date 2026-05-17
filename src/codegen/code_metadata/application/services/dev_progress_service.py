@@ -45,6 +45,7 @@ class DevProgressService:
             generated_lines = len(component_code.splitlines())
             ast_similarity = self.calculate_ast_similarity(origin_code, component_code)
         else:
+            component_code = ""
             component_type = "unknown"
             ast_similarity = 0
             generated_lines = 0
@@ -54,6 +55,8 @@ class DevProgressService:
             ast_similarity=ast_similarity,
             original_lines=original_lines,
             generated_lines=generated_lines,
+            original_code=origin_code,
+            generated_code=component_code,
         )
 
     def calculate_ast_similarity(self, original_code: str, generated_code: str) -> float:
