@@ -14,7 +14,7 @@ class AstModuleToComponent:
     ast_class_to_component: AstClassToComponent
 
     def map(self, module: ast.Module, module_name: str) -> ParsedComponent:
-        ics = self._parse_imports(module)
+        ics = self.parse_imports(module)
         for node in module.body:
             if isinstance(node, ast.ClassDef) and SnakeString(node.name) == module_name:
                 component = self.ast_class_to_component.map(node)
@@ -22,6 +22,6 @@ class AstModuleToComponent:
                 return component
         raise ValueError(f"No class definition found in module {module_name}")
 
-    def _parse_imports(self, module: ast.Module) -> list[ImportedComponent]:
+    def parse_imports(self, module: ast.Module) -> list[ImportedComponent]:
         return []
         

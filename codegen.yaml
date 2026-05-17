@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=./codegen.schema.json
-id: 6a8479e1-dfb0-4e90-9e71-077259cd1101
+id: codegen
 name: Codegen
 contexts:
 - name: Bootstrap
@@ -1127,6 +1127,70 @@ contexts:
       attributes:
       - type: string
         name: code
+  infrastructure:
+    mappers:
+    - name: AstModuleToComponent
+      description: ''
+      attributes:
+      - type: AstClassToComponent
+        name: ast_class_to_component
+      behaviors:
+      - name: map
+        inputs:
+        - type: Self
+          name: self
+        - type: ast.Module
+          name: module
+        - type: string
+          name: module_name
+        output:
+          type: ParsedComponent
+      - name: parse_imports
+        inputs:
+        - type: Self
+          name: self
+        - type: ast.Module
+          name: module
+        output:
+          type: ImportedComponent
+          container: list
+    - name: ComponentToAstModule
+      description: ''
+      attributes:
+      - type: ComponentToAstClass
+        name: component_to_ast_class
+      behaviors:
+      - name: map
+        inputs:
+        - type: Self
+          name: self
+        - type: Component
+          name: component
+        output:
+          type: ast.Module
+    - name: AstClassToComponent
+      description: ''
+      behaviors:
+      - name: map
+        inputs:
+        - type: ast.ClassDef
+          name: node
+        output:
+          type: ParsedComponent
+    - name: ComponentToAstClass
+      description: ''
+      attributes:
+      - type: ComponentPolicyFactory
+        name: component_policy_factory
+      behaviors:
+      - name: map
+        inputs:
+        - type: Self
+          name: self
+        - type: Component
+          name: component
+        output:
+          type: ast.ClassDef
 - name: PythonGen
   domain:
     enums:
@@ -2518,7 +2582,7 @@ contexts:
     - name: Blueprint
       description: Root of the generation model. Represents the entire project definition.
       base_types:
-      - AggregateRoot[UUID]
+      - AggregateRoot[str]
       attributes:
       - type: PascalString
         name: name
@@ -3714,6 +3778,10 @@ contexts:
         container: list
         name: implementations
         default: list
+      - type: InfraMapperSpec
+        container: list
+        name: mappers
+        default: list
       behaviors:
       - name: to_package_spec
         description: 将 InfrastructureSpec 转换为 PackageSpec
@@ -3784,6 +3852,12 @@ contexts:
           name: port_finder
         output:
           type: PackageSpec
+      - name: to_unit_test_package_spec
+        inputs:
+        - type: Self
+          name: self
+        output:
+          type: PackageSpec
       - name: load_test_package
         description: Load test package into the infrastructure spec. Returns self
           for chaining.
@@ -3797,6 +3871,14 @@ contexts:
           name: port_finder
         output:
           type: Self
+      - name: get_mapper
+        inputs:
+        - type: Self
+          name: self
+        - type: string
+          name: name
+        output:
+          type: InfraMapperSpec
     - name: ContainerSpec
       description: Specification for a container (dependency injection).
       attributes:
@@ -3899,6 +3981,17 @@ contexts:
           name: class_spec
         output:
           type: AttributeSpecList
+    - name: InfraMapperSpec
+      description: Specification of a infrastructure mapper to be generated.
+      base_types:
+      - DomainConcept
+      attributes:
+      - type: Any
+        name: __concept_name__
+        default: mapper
+      - type: Any
+        name: __pkg_name__
+        default: mappers
     - name: ImplementationSpec
       description: Specification of an implementation to be generated.
       attributes:

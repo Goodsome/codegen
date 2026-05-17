@@ -5,6 +5,7 @@ from pydantic import Field
 from codegen.domain_definition.domain.entities.implementation_spec import (
     ImplementationSpec,
 )
+from codegen.domain_definition.domain.entities.infra_mapper_spec import InfraMapperSpec
 from codegen.domain_definition.domain.entities.port_spec import PortSpec
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
 from codegen.shared.domain.core import Entity
@@ -15,6 +16,7 @@ class InfrastructureSpec(Entity):
     """Specification of an infrastructure to be generated."""
 
     implementations: list[ImplementationSpec] = Field(default_factory=list)
+    mappers: list[InfraMapperSpec] = Field(default_factory=list)
 
     def to_package_spec(
         self,
@@ -33,13 +35,15 @@ class InfrastructureSpec(Entity):
     def from_package_spec(cls, package_spec: PackageSpec) -> "InfrastructureSpec":
         """将 PackageSpec 逆向解析为 InfrastructureSpec"""
         implementations: list[ImplementationSpec] = []
+        mappers: list[InfraMapperSpec] = []
         for kind_pkg in package_spec.sub_packages:
             if kind_pkg.name == "adapters":
                 implementations += ImplementationSpec.from_package_spec(kind_pkg)
-            if kind_pkg.name == "repositories":
+            elif kind_pkg.name == "repositories":
                 implementations += ImplementationSpec.from_package_spec(kind_pkg)
-                
-        return cls(implementations=implementations)
+            elif kind_pkg.name == InfraMapperSpec.__pkg_name__:
+                mappers += InfraMapperSpec.from_package_spec(kind_pkg)
+        return cls(implementations=implementations, mappers=mappers)
 
     def add_implementation(self, implementation: ImplementationSpec) -> Self:
         """Add an ImplementationSpec. Raises ValueError if implementation with same name exists."""
@@ -80,15 +84,23 @@ class InfrastructureSpec(Entity):
         port_finder: Callable[[str], PortSpec],
     ) -> PackageSpec:
         """Create test package for infrastructure with implementations that have rules."""
-        implementation_packages: list[PackageSpec] = []
+        pkgs: list[PackageSpec] = []
         for impl in self.implementations:
             port = port_finder(impl.implements)
             impl_pkg = impl.to_test_package_spec(port)
-            implementation_packages.append(impl_pkg)
+            pkgs.append(impl_pkg)
 
         return PackageSpec.create(
             name="infrastructure",
-            sub_packages=implementation_packages
+            sub_packages=pkgs
+        )
+
+    def to_unit_test_package_spec(self) -> PackageSpec:
+        pkgs: list[PackageSpec] = []
+        pkgs += [m.to_test_package_spec() for m in self.mappers]
+        return PackageSpec.create(
+            name="infrastructure",
+            sub_packages=pkgs
         )
 
     def load_test_package(self: Self, test_pkg: PackageSpec, port_finder: Callable[[str], PortSpec]) -> Self:
@@ -99,4 +111,14 @@ class InfrastructureSpec(Entity):
                     impl = self.get_implementation(impl_pkg.name)
                     port = port_finder(impl.implements)
                     impl.load_test_package(impl_pkg, port)
+            elif pkg.name == InfraMapperSpec.__pkg_name__:
+                for mapper_pkg in pkg.sub_packages:
+                    mapper = self.get_mapper(mapper_pkg.name)
+                    mapper.load_test_package(mapper_pkg)
         return self
+
+    def get_mapper(self, name: str) -> InfraMapperSpec:
+        for mapper in self.mappers:
+            if mapper.name == PascalString(name):
+                return mapper
+        raise ValueError(f"Mapper {name} not found")

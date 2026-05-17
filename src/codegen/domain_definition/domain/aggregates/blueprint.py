@@ -1,5 +1,4 @@
 from typing import Self, Union
-from uuid import UUID, uuid4
 
 from pydantic import Field
 
@@ -11,7 +10,7 @@ from codegen.shared.domain.core.aggregate_root import AggregateRoot
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 
 
-class Blueprint(AggregateRoot[UUID]):
+class Blueprint(AggregateRoot[str]):
     """Root of the generation model. Represents the entire project definition."""
 
     name: PascalString
@@ -32,7 +31,7 @@ class Blueprint(AggregateRoot[UUID]):
         if isinstance(name, str):
             name = PascalString(name)
         return cls(
-            id=uuid4(),
+            id="codegen",
             name=name,
             contexts=contexts,
             bootstrap=bootstrap,

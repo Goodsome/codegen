@@ -68,7 +68,8 @@ class ReverseCode:
         code_path: Path,
     ) -> UpsertComponentResult:
         code = self.file_system_port.read_file(code_path)
-        pc = self.parser.parse(code)
+        file_name = code_path.stem
+        pc = self.parser.parse(code, module_name=file_name)
         ucc = UpsertComponentCommand(
             type=component_type,
             context=context,

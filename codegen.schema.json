@@ -730,6 +730,39 @@
       "title":"ImplementationSpec",
       "type":"object"
     },
+    "InfraMapperSpec":{
+      "additionalProperties":false,
+      "description":"Specification of a infrastructure mapper to be generated.",
+      "properties":{
+        "attributes":{
+          "$ref":"#/$defs/AttributeSpecList"
+        },
+        "base_types":{
+          "items":{
+            "type":"string"
+          },
+          "title":"Base Types",
+          "type":"array"
+        },
+        "behaviors":{
+          "$ref":"#/$defs/MethodSpecList"
+        },
+        "description":{
+          "title":"Description",
+          "type":"string"
+        },
+        "name":{
+          "title":"Name",
+          "type":"string"
+        }
+      },
+      "required":[
+        "name",
+        "description"
+      ],
+      "title":"InfraMapperSpec",
+      "type":"object"
+    },
     "InfrastructureSpec":{
       "additionalProperties":false,
       "description":"Specification of an infrastructure to be generated.",
@@ -739,6 +772,13 @@
             "$ref":"#/$defs/ImplementationSpec"
           },
           "title":"Implementations",
+          "type":"array"
+        },
+        "mappers":{
+          "items":{
+            "$ref":"#/$defs/InfraMapperSpec"
+          },
+          "title":"Mappers",
           "type":"array"
         }
       },
@@ -855,6 +895,11 @@
           },
           "title":"Inputs",
           "type":"array"
+        },
+        "is_async":{
+          "default":false,
+          "title":"Is Async",
+          "type":"boolean"
         },
         "name":{
           "title":"Name",
@@ -1088,12 +1133,18 @@
       "title":"Contexts",
       "type":"array"
     },
+    "id":{
+      "format":"uuid",
+      "title":"Id",
+      "type":"string"
+    },
     "name":{
       "title":"Name",
       "type":"string"
     }
   },
   "required":[
+    "id",
     "name"
   ],
   "title":"Blueprint",

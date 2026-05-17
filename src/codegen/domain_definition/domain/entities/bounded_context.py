@@ -3,7 +3,6 @@ from typing import Self
 
 from pydantic import Field
 
-from codegen.code_metadata.application.dtos.component_dto import ComponentDTO
 from codegen.code_metadata.application.dtos.upsert_component_command import UpsertComponentCommand
 from codegen.domain_definition.domain.entities.application_spec import ApplicationSpec
 from codegen.domain_definition.domain.entities.config_spec import ConfigSpec
@@ -164,7 +163,8 @@ class BoundedContext(Entity):
     def to_test_package_spec(self: Self) -> PackageSpec:
         """Create test package for bounded context."""
         domain_pkg = self.domain.to_test_package_spec()
-        return PackageSpec.create(name=str(self.name), sub_packages=[domain_pkg])
+        infra_pkg = self.infrastructure.to_unit_test_package_spec()
+        return PackageSpec.create(name=str(self.name), sub_packages=[domain_pkg, infra_pkg])
 
     def to_integration_test_package_spec(self: Self) -> PackageSpec:
         """Create test package for bounded context."""
@@ -183,10 +183,9 @@ class BoundedContext(Entity):
             if pkg.name == "domain":
                 self.domain.load_test_package(pkg)
             elif pkg.name == "infrastructure":
-                self.infrastructure.load_test_package(
-                    pkg, port_finder=self.get_port_spec
-                )
                 self.infrastructure.load_test_package(pkg, port_finder=self.get_port_spec)
+            elif pkg.name == "application":
+                self.application.load_test_package(pkg)
         return self
 
     def collect_components(self: Self) -> list[UpsertComponentCommand]:
