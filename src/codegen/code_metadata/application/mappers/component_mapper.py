@@ -1,7 +1,4 @@
 from codegen.code_metadata.application.dtos.component_dto import ComponentDTO
-from codegen.code_metadata.application.dtos.create_component_command import (
-    CreateComponentCommand,
-)
 from codegen.code_metadata.application.dtos.upsert_component_command import UpsertComponentCommand
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 
@@ -13,7 +10,7 @@ class ComponentMapper:
     @classmethod
     def to_domain(
         cls,
-        dto: CreateComponentCommand | UpsertComponentCommand,
+        dto: UpsertComponentCommand,
         existing_component: ComponentDTO | None = None,
     ) -> Component:
 

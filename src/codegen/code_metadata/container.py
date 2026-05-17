@@ -2,7 +2,6 @@ from dependency_injector.containers import DeclarativeContainer
 from dependency_injector.providers import Configuration, Dependency, Factory, Singleton
 from event_hub import EventHub
 
-from codegen.code_metadata.application.commands.create_component import CreateComponent
 from codegen.code_metadata.application.commands.generate_code import GenerateCode
 from codegen.code_metadata.application.commands.reverse_code import ReverseCode
 from codegen.code_metadata.application.commands.upsert_component import UpsertComponent
@@ -67,11 +66,6 @@ class Container(DeclarativeContainer):
         session_factory=database.provided.session_factory,
         repository_factory=component_repository_factory.provider,
         event_publisher_factory=event_publisher_factory,
-    )
-
-    create_component: Factory[CreateComponent] = Factory(
-        CreateComponent,
-        uow=unit_of_work,
     )
 
     upsert_component: Factory[UpsertComponent] = Factory(

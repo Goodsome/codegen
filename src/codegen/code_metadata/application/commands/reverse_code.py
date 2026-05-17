@@ -75,6 +75,8 @@ class ReverseCode:
             context=context,
             name=pc.name,
             description=pc.description,
+            bases=pc.bases,
+            imported_components=pc.imported_components,
         )
         result = self.upsert_component.execute(cmd=ucc)
         return result

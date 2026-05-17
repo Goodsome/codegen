@@ -42,5 +42,5 @@ class AstModuleToComponent:
         """Strip the ``codegen.`` prefix for internal imports; keep the full path for external ones."""
         _CODEGEN_PREFIX = "codegen."
         if module_path.startswith(_CODEGEN_PREFIX):
-            return module_path.removeprefix(_CODEGEN_PREFIX)
+            return module_path.removeprefix(_CODEGEN_PREFIX).split(".")[0]
         return module_path

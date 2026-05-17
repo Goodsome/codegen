@@ -8,9 +8,9 @@ _ = parse_import_bindings
 
 def test_internal_import_extraction(parse_import_bindings: ParseImportBindings) -> None:
     parse_import_bindings.given(
-        "ast.ImportFrom 节点的 module 路径以 codegen 开头（如 codegen.shared.domain...）"
+        "ast.ImportFrom 节点的 module 路径以 codegen 开头（如 codegen.shared.domain.value_objects.snake_string）"
     ).arrange_done().when("调用 parse_import 解析该节点").then(
-        "context 取 codegen 之后的完整模块路径（如 shared.domain.value_objects.snake_string），component 取 names 列表中的导入名"
+        "context 取 codegen 之后的第一个目录名（如 shared），而非完整路径，component 取 names 列表中的导入名"
     )
 
 

@@ -64,7 +64,7 @@ class ParseImportBindings:
                 assert self._result is not None, "必须先调用 when"
                 assert self._result == [
                     ImportedComponent(
-                        context="shared.domain.value_objects.snake_string",
+                        context="shared",
                         component="SnakeString",
                     )
                 ]
