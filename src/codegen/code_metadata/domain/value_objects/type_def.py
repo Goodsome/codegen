@@ -7,5 +7,5 @@ from codegen.shared.domain.enums import ContainerType, PrimitiveType
 
 class TypeDef(ValueObject):
     
-    origin: PrimitiveType | ComponentId | ContainerType
+    origin: PrimitiveType | ContainerType | ComponentId
     args: tuple[Self]

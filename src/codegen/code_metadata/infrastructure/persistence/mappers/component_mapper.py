@@ -31,6 +31,7 @@ class ComponentMapper:
             name=orm_model.name,
             description=orm_model.description,
             context=orm_model.context,
+            bases=orm_model.bases
         )
 
     # ==========================================
@@ -45,6 +46,7 @@ class ComponentMapper:
             name=orm_model.name,
             description=orm_model.description,
             context=orm_model.context,
+            bases=[TypeDef.model_validate(t) for t in orm_model.bases],
             # 级联映射子实体
             attributes=[cls._attr_to_domain(attr) for attr in orm_model.attributes],
             behaviors=[cls._behavior_to_domain(beh) for beh in orm_model.behaviors]
@@ -88,6 +90,7 @@ class ComponentMapper:
             name=domain_entity.name,
             description=domain_entity.description,
             context=domain_entity.context,
+            bases=[t.model_dump(mode="json") for t in domain_entity.bases],
             # 级联映射子实体，需要注入外键 component_id
             attributes=[
                 cls._attr_to_orm(attr, component_id=component_id_val) 

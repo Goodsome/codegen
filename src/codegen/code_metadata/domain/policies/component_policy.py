@@ -11,3 +11,7 @@ class ComponentPolicy(ABC):
     @property
     def target_path(self) -> Path:
         return Path(self.component_type.layer) / Path(self.component_type.dir_name)
+
+    @property
+    def base_model(self) -> str:
+        ...

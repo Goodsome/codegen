@@ -1,11 +1,15 @@
 import ast
+from dataclasses import dataclass
 from codegen.code_metadata.domain.aggregates.component import Component
+from codegen.code_metadata.domain.factories.component_policy_factory import ComponentPolicyFactory
 
 
+@dataclass
 class ComponentToAstClass:
 
-    @staticmethod
-    def map(component: Component) -> ast.ClassDef:
+    component_policy_factory: ComponentPolicyFactory
+
+    def map(self, component: Component) -> ast.ClassDef:
         body: list[ast.stmt] = []
         body.append(ast.Expr(value=ast.Constant(value=component.description)))
         class_def = ast.ClassDef(

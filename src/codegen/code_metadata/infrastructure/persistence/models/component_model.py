@@ -1,6 +1,8 @@
 from uuid import UUID
 from sqlalchemy import String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.dialects.postgresql import JSONB
+from typing import Any
 
 from codegen.shared.infrastructure.orm import BaseORM
 
@@ -22,6 +24,8 @@ class ComponentModel(BaseORM):
     context: Mapped[str] = mapped_column(String(255), index=True)
     name: Mapped[str] = mapped_column(String(255))
     description: Mapped[str] = mapped_column(Text)
+    
+    bases: Mapped[list[dict[str, Any]]] = mapped_column(JSONB)
 
     # 关联：一个组件拥有多个属性
     attributes: Mapped[list["AttributeModel"]] = relationship(

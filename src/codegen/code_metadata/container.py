@@ -1,5 +1,5 @@
 from dependency_injector.containers import DeclarativeContainer
-from dependency_injector.providers import Configuration, Dependency, Factory
+from dependency_injector.providers import Configuration, Dependency, Factory, Singleton
 from event_hub import EventHub
 
 from codegen.code_metadata.application.commands.create_component import CreateComponent
@@ -80,13 +80,15 @@ class Container(DeclarativeContainer):
         query_service=component_query_service,
     )
 
-    component_policy_factory: Factory[ComponentPolicyFactory] = Factory(
+    component_policy_factory: Singleton[ComponentPolicyFactory] = Singleton(
         ComponentPolicyFactory,
     )
 
-    ast_class_to_component: Factory[AstClassToComponent] = Factory(AstClassToComponent)
+    ast_class_to_component: Singleton[AstClassToComponent] = Singleton(
+        AstClassToComponent,
+    )
 
-    ast_module_to_component: Factory[AstModuleToComponent] = Factory(
+    ast_module_to_component: Singleton[AstModuleToComponent] = Singleton(
         AstModuleToComponent,
         ast_class_to_component=ast_class_to_component,
     )
@@ -101,9 +103,12 @@ class Container(DeclarativeContainer):
         query_service=component_query_service,
     )
 
-    component_to_ast_class: Factory[ComponentToAstClass] = Factory(ComponentToAstClass)
+    component_to_ast_class: Singleton[ComponentToAstClass] = Singleton(
+        ComponentToAstClass,
+        component_policy_factory=component_policy_factory,
+    )
 
-    component_to_ast_module: Factory[ComponentToAstModule] = Factory(
+    component_to_ast_module: Singleton[ComponentToAstModule] = Singleton(
         ComponentToAstModule,
         component_to_ast_class=component_to_ast_class,
     )

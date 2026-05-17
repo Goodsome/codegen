@@ -56,9 +56,11 @@ class SQLAlchemyComponentQueryService(ComponentQueryService):
                 )
                 or 0
             )
-            offset = (query.current - 1) * query.size
+            if query.current and query.size:
+                offset = (query.current - 1) * query.size
+                stmt = stmt.offset(offset=offset).limit(query.size)
             models = (
-                session.execute(stmt.offset(offset).limit(query.size)).scalars().all()
+                session.execute(stmt).scalars().all()
             )
 
         items = [ComponentMapper.to_dto(m) for m in models]
