@@ -13,6 +13,7 @@ class ComponentType(Enum):
     DOMAIN_EVENT = ("domain_event", "events", ArchitectureLayer.DOMAIN)
     DOMAIN_EXCEPTION = ("domain_exception", "exceptions", ArchitectureLayer.DOMAIN)
     REPOSITORY = ("repository", "repositories", ArchitectureLayer.DOMAIN)
+    IDENTIFIER = ("identifier", "identifiers", ArchitectureLayer.DOMAIN)
 
     USE_CASE = ("use_case", "use_cases", ArchitectureLayer.APPLICATION)
     APP_PORT = ("app_port", "ports", ArchitectureLayer.APPLICATION)
@@ -23,6 +24,8 @@ class ComponentType(Enum):
     CLI_COMMAND = ("cli_command", "cli", ArchitectureLayer.INTERFACES)
     MCP_TOOL = ("mcp_tool", "mcp", ArchitectureLayer.INTERFACES)
     HTTP_ENDPOINT = ("http_endpoint", "http", ArchitectureLayer.INTERFACES)
+
+    EXTERNAL = ("external", "external", ArchitectureLayer.INTERFACES)
 
     def __new__(cls, value: str, dir_name: str, layer: ArchitectureLayer):
         obj = object.__new__(cls)
@@ -36,3 +39,4 @@ class ComponentType(Enum):
     @override
     def __str__(self) -> str:
         return self._value_
+        

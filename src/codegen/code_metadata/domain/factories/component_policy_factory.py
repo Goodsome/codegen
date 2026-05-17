@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 
 from codegen.code_metadata.domain.enums import ComponentType
 from codegen.code_metadata.domain.policies.component_policy import ComponentPolicy
-from codegen.code_metadata.domain.policies import AggregatePolicy, CorePolicy, EntityPolicy, EnumPolicy, ValueObjectPolicy
+from codegen.code_metadata.domain.policies import AggregatePolicy, CorePolicy, EntityPolicy, EnumPolicy, ValueObjectPolicy, IdentifierPolicy
 
 
 
@@ -19,6 +19,7 @@ class ComponentPolicyFactory:
             EntityPolicy(),
             EnumPolicy(),
             ValueObjectPolicy(),
+            IdentifierPolicy(),
         ]
         self._registry = {}
         for p in self._policies:

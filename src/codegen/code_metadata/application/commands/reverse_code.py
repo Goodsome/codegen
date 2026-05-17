@@ -1,6 +1,8 @@
 from dataclasses import dataclass
+from itertools import chain
 from pathlib import Path
 
+from codegen.code_metadata.application.commands import upsert_component
 from codegen.code_metadata.application.commands.upsert_components import UpsertComponents
 from codegen.code_metadata.application.dtos.reverse_code_command import (
     ReverseCodeCommand,
@@ -32,17 +34,22 @@ class ReverseCode:
         else:
             policies = self.component_policy_factory.get_policies()
 
-        uccs: list[UpsertComponentCommand] = []
+        upsert_components: list[UpsertComponentCommand] = []
         for policy in policies:
             result = self._reverse_component(
                 cmd.context,
                 component_type=str(policy.component_type),
                 policy=policy,
             )
-            uccs.extend(result)
+            upsert_components.extend(result)
             
-        self.upsert_components.execute(uccs)
-
+        unique_upsert_imported_components: dict[tuple[str, str], UpsertComponentCommand] = {
+            (u.context, u.name): u
+            for u in chain.from_iterable(u.get_upsert_imported_components() for u in upsert_components)
+        }
+        upsert_imported_components = list(unique_upsert_imported_components.values())
+        self.upsert_components.execute(upsert_imported_components)
+        self.upsert_components.execute(upsert_components)
 
     def _reverse_component(
         self, context: str, component_type: str, policy: ComponentPolicy

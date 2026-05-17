@@ -4,6 +4,7 @@ from .enum_policy import EnumPolicy
 from .component_policy import ComponentPolicy
 from .value_object_policy import ValueObjectPolicy
 from .core_policy import CorePolicy
+from .identifier_policy import IdentifierPolicy
 
 __all__ = [
     "AggregatePolicy",
@@ -12,4 +13,5 @@ __all__ = [
     "ComponentPolicy",
     "ValueObjectPolicy",
     "CorePolicy",
+    "IdentifierPolicy",
 ]
