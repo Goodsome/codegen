@@ -17,9 +17,10 @@ class DevProgressService:
     file_system_port: FileSystemPort
     generator: CodeGenerator
 
-    def get_dev_progress(self, components: dict[str, Component]) -> DevProgress:
+    def get_dev_progress(self, context: str, components: dict[str, Component]) -> DevProgress:
+        context_path = Path("src/codegen") / context
         current_files = self.file_system_port.list_directory_recursively(
-            Path("src/codegen/code_metadata"),
+            path=context_path,
             pattern="*.py"
         )
         file_metrics: list[FileMetrics] = []
@@ -28,6 +29,8 @@ class DevProgressService:
             if file_name == "__init__":
                 continue
             component = components.get(file_name)
+            if component and component.context != context:
+                continue
             file_metrics.append(self.get_file_metrics(file_path, component))
         
         return DevProgress(records=file_metrics)

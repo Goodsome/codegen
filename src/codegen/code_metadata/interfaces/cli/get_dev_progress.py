@@ -1,7 +1,10 @@
+from typing import Annotated
 from rich.console import Console
 from dependency_injector.wiring import Provide, inject
+from typer import Argument, Option
 
 from codegen.code_metadata.application.dtos.dev_progress import DevProgress
+from codegen.code_metadata.application.dtos.get_dev_progress_query import GetDevProgressQuery
 from codegen.code_metadata.application.queries.get_dev_progress import GetDevProgress
 
 console = Console()
@@ -9,16 +12,26 @@ console = Console()
 
 @inject
 def _get_dev_progress(
+    query: GetDevProgressQuery,
     use_case: GetDevProgress = Provide["code_metadata_container.get_dev_progress"],
 ) -> DevProgress:
-    return use_case.execute()
+    return use_case.execute(query=query)
 
 
-def get_dev_progress() -> None:
+def get_dev_progress(
+    context: Annotated[str, Argument()],
+    component_type: Annotated[str | None, Option( "--type", "-t" )] = None,
+) -> None:
     """Show development progress: AST similarity and line diffs per file."""
-    result = _get_dev_progress()
+    query = GetDevProgressQuery(
+        context=context,
+        component_type=component_type,
+    )
+    result = _get_dev_progress(query=query)
 
     result.order_by_type()
+    if component_type:
+        result = result.filter_by_type(component_type)
 
     if not result.records:
         console.print("[yellow]No component records found.[/yellow]")

@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import override
 from .architecture_layer import ArchitectureLayer
 
 class ComponentType(Enum):
@@ -31,3 +32,7 @@ class ComponentType(Enum):
     def __init__(self, value: str, dir_name: str, layer: ArchitectureLayer):
         self.dir_name = dir_name
         self.layer = layer
+
+    @override
+    def __str__(self) -> str:
+        return self._value_

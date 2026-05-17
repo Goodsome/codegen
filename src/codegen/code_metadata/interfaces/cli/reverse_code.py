@@ -20,7 +20,7 @@ def _reverse_code(
 
 def reverse_code(
     context: Annotated[str, typer.Argument()],
-    component_type: Annotated[str, typer.Argument()],
+    component_type: Annotated[str | None, typer.Option("--type", "-t")] = None,
 ) -> None:
     """Reverse code."""
     cmd = ReverseCodeCommand(context=context, component_type=component_type)

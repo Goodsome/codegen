@@ -10,4 +10,4 @@ class ComponentPolicy(ABC):
 
     @property
     def target_path(self) -> Path:
-        return Path(self.component_type.layer) / Path(self.component_type.name)
+        return Path(self.component_type.layer) / Path(self.component_type.dir_name)

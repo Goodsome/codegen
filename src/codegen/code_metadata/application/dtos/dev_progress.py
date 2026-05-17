@@ -10,10 +10,9 @@ class DevProgress(BaseModel):
     def add_record(self, record: FileMetrics):
         self.records.append(record)
 
-    def filter_by_type(self, component_type: str) -> list[FileMetrics]:
-        return [
-            record for record in self.records if record.component_type == component_type
-        ]
+    def filter_by_type(self, component_type: str) -> Self:
+        self.records = [record for record in self.records if record.component_type == component_type]
+        return self
 
     @property
     def ast_progress(self) -> float:

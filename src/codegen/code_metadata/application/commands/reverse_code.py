@@ -17,6 +17,7 @@ from codegen.code_metadata.domain.enums import ComponentType
 from codegen.code_metadata.domain.factories.component_policy_factory import (
     ComponentPolicyFactory,
 )
+from codegen.code_metadata.domain.policies import ComponentPolicy
 from codegen.shared.domain.ports.file_system_port import FileSystemPort
 
 
@@ -28,20 +29,37 @@ class ReverseCode:
     component_policy_factory: ComponentPolicyFactory
 
     def execute(self, cmd: ReverseCodeCommand) -> ReverseCodeResult:
-        component_type = ComponentType(cmd.component_type)
-        policy = self.component_policy_factory.get_policy(component_type)
-        target_path = f"src/codegen/{cmd.context}" / policy.target_path
+        policies: list[ComponentPolicy] = []
+        if cmd.component_type:
+            component_type = ComponentType(cmd.component_type)
+            policies.append(self.component_policy_factory.get_policy(component_type))
+        else:
+            policies = self.component_policy_factory.get_policies()
+
+        component_ids: list[str] = []
+        for policy in policies:
+            result = self._reverse_component(
+                cmd.context,
+                component_type=str(policy.component_type),
+                policy=policy,
+            )
+            component_ids.extend(result)
+
+        return ReverseCodeResult(component_ids=component_ids)
+
+    def _reverse_component(
+        self, context: str, component_type: str, policy: ComponentPolicy
+    ) -> list[str]:
+        target_path = f"src/codegen/{context}" / policy.target_path
         component_ids: list[str] = []
         for file_path in self.file_system_port.list_directory_recursively(
             target_path, pattern="*.py"
         ):
             if file_path.stem == "__init__":
                 continue
-            result = self._reverse_one_component(
-                cmd.context, cmd.component_type, file_path
-            )
+            result = self._reverse_one_component(context, component_type, file_path)
             component_ids.append(result.component_id)
-        return ReverseCodeResult(component_ids=component_ids)
+        return component_ids
 
     def _reverse_one_component(
         self,
