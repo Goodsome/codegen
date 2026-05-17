@@ -127,6 +127,7 @@ class Container(DeclarativeContainer):
 
     generate_code: Factory[GenerateCode] = Factory(
         GenerateCode,
+        query_service=component_query_service,
         uow=unit_of_work,
         generator=python_code_generator,
     )
@@ -147,6 +148,7 @@ class Container(DeclarativeContainer):
 
     get_dev_progress: Factory[GetDevProgress] = Factory(
         GetDevProgress,
+        query_service=component_query_service,
         uow=unit_of_work,
         dev_progress_service=dev_progress_service,
     )

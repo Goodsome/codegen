@@ -25,3 +25,9 @@ class Component(AggregateRoot[ComponentId]):
     @property
     def file_name(self) -> str:
         return SnakeString(self.name)
+
+    def get_dependencies(self) -> set[ComponentId]:
+        result: set[ComponentId] = set()
+        for base in self.bases:
+            result.update(base.get_component_ids())
+        return result

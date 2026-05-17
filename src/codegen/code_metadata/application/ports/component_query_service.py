@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
+from collections.abc import Collection, Sequence
 from codegen.code_metadata.application.dtos.component_dto import ComponentDTO
 from codegen.code_metadata.application.dtos.component_filter import ComponentFilter
+from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.shared.application.dtos.page import Page
 from codegen.shared.application.dtos.page_query import PageQuery
 
@@ -18,3 +20,8 @@ class ComponentQueryService(ABC):
     @abstractmethod
     def find_by_context_names(self, context_names: set[tuple[str, str]]) -> list[ComponentDTO]:
         pass
+
+    @abstractmethod
+    def find_by_ids(self, ids: Collection[ComponentId]) -> dict[ComponentId, ComponentDTO]:
+        pass
+        

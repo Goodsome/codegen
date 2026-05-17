@@ -1,3 +1,4 @@
+from __future__ import annotations
 from enum import StrEnum, auto
 
 
@@ -24,6 +25,13 @@ class PrimitiveType(StrEnum):
     UUID = auto()
     ANY = auto()
     NULL = auto()
+
+    def to_python_builtin(self) -> PythonBuiltinType | None:
+        match self:
+            case PrimitiveType.STRING:
+                return PythonBuiltinType.STR
+            case _:
+                return None
 
 class PythonBuiltinType(StrEnum):
     EXCEPTION = "Exception"

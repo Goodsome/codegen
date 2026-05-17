@@ -1,7 +1,8 @@
+from collections.abc import Collection, Sequence
 from dataclasses import dataclass
 from typing import override
 
-from sqlalchemy import ColumnElement, select, func, tuple_
+from sqlalchemy import ColumnElement, func, select, tuple_
 from sqlalchemy.orm import Session, sessionmaker
 
 from codegen.code_metadata.application.dtos.component_dto import ComponentDTO
@@ -9,6 +10,7 @@ from codegen.code_metadata.application.dtos.component_filter import ComponentFil
 from codegen.code_metadata.application.ports.component_query_service import (
     ComponentQueryService,
 )
+from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.infrastructure.persistence.mappers.component_mapper import (
     ComponentMapper,
 )
@@ -59,25 +61,40 @@ class SQLAlchemyComponentQueryService(ComponentQueryService):
             if query.current and query.size:
                 offset = (query.current - 1) * query.size
                 stmt = stmt.offset(offset=offset).limit(query.size)
-            models = (
-                session.execute(stmt).scalars().all()
-            )
+            models = session.execute(stmt).scalars().all()
 
         items = [ComponentMapper.to_dto(m) for m in models]
         return Page(items=items, total=total, current=query.current, size=query.size)
 
     @override
-    def find_by_context_names(self, context_names: set[tuple[str, str]]) -> list[ComponentDTO]:
+    def find_by_context_names(
+        self, context_names: set[tuple[str, str]]
+    ) -> list[ComponentDTO]:
         if not context_names:
             return []
 
         stmt = select(ComponentModel).where(
             tuple_(ComponentModel.context, ComponentModel.name).in_(context_names)
         )
-        
+
         with self.session_factory() as session:
-            models = (
-                session.execute(stmt).scalars().all()
-            )
+            models = session.execute(stmt).scalars().all()
             items = [ComponentMapper.to_dto(m) for m in models]
             return items
+
+    @override
+    def find_by_ids(
+        self, ids: Collection[ComponentId]
+    ) -> dict[ComponentId, ComponentDTO]:
+        if not ids:
+            return {}
+
+        unique_ids: set[str] = {str(i) for i in ids}
+        stmt = select(ComponentModel).where(ComponentModel.id.in_(unique_ids))
+
+        with self.session_factory() as session:
+            models = session.execute(stmt).scalars().all()
+            return {
+                ComponentId.reconstitute(m.id): ComponentMapper.to_dto(m)
+                for m in models
+            }
