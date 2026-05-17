@@ -4,5 +4,5 @@ from codegen.code_metadata.domain.enums import ComponentType
 from codegen.code_metadata.domain.policies.component_policy import ComponentPolicy
 
 
-class EnumPolicy(ComponentPolicy):
-    component_type: ClassVar[ComponentType] = ComponentType.ENUM
+class CorePolicy(ComponentPolicy):
+    component_type: ClassVar[ComponentType] = ComponentType.CORE

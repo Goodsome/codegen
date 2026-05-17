@@ -2,8 +2,9 @@ from typing import Any, override
 
 from pydantic import model_serializer, model_validator
 
-from .value_object import ValueObject
 from uuid import UUID, uuid4
+
+from codegen.shared.domain.core.value_object import ValueObject
 
 
 class Identifier(ValueObject):

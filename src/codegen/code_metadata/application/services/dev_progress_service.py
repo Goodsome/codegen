@@ -37,7 +37,7 @@ class DevProgressService:
         origin_code = self.file_system_port.read_file(file_path)
         original_lines = len(origin_code.splitlines())
         if component:
-            component_type = component.type
+            component_type = str(component.type)
             component_code = self.generator.generate(component=component)
             generated_lines = len(component_code.splitlines())
             ast_similarity = self.calculate_ast_similarity(origin_code, component_code)
