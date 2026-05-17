@@ -7,13 +7,11 @@ from codegen.code_metadata.domain.aggregates.component import Component
 from codegen.code_metadata.domain.ports.component_repository import ComponentRepository
 from codegen.shared.application.dtos.page_query import PageQuery
 from codegen.shared.application.ports.unit_of_work import UnitOfWork
-from codegen.shared.domain.ports.file_system_port import FileSystemPort
 
 
 @dataclass
 class GetDevProgress:
     uow: UnitOfWork[ComponentRepository]
-    file_system_port: FileSystemPort
     dev_progress_service: DevProgressService
 
     def execute(self) -> DevProgress:

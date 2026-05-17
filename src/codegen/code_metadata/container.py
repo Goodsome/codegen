@@ -6,7 +6,9 @@ from codegen.code_metadata.application.commands.create_component import CreateCo
 from codegen.code_metadata.application.commands.generate_code import GenerateCode
 from codegen.code_metadata.application.commands.reverse_code import ReverseCode
 from codegen.code_metadata.application.commands.upsert_component import UpsertComponent
+from codegen.code_metadata.application.queries.get_dev_progress import GetDevProgress
 from codegen.code_metadata.application.queries.list_components import ListComponents
+from codegen.code_metadata.application.services.dev_progress_service import DevProgressService
 from codegen.code_metadata.domain.factories.component_policy_factory import (
     ComponentPolicyFactory,
 )
@@ -123,4 +125,16 @@ class Container(DeclarativeContainer):
         upsert_component=upsert_component,
         file_system_port=file_system_port,
         component_policy_factory=component_policy_factory,
+    )
+
+    dev_progress_service: Factory[DevProgressService] = Factory(
+        DevProgressService,
+        file_system_port=file_system_port,
+        generator=python_code_generator,
+    )
+
+    get_dev_progress: Factory[GetDevProgress] = Factory(
+        GetDevProgress,
+        uow=unit_of_work,
+        dev_progress_service=dev_progress_service,
     )

@@ -19,7 +19,7 @@ class DevProgressService:
 
     def get_dev_progress(self, components: dict[str, Component]) -> DevProgress:
         current_files = self.file_system_port.list_directory_recursively(
-            Path("src/codegen/code_metdata"),
+            Path("src/codegen/code_metadata"),
             pattern="*.py"
         )
         file_metrics: list[FileMetrics] = []

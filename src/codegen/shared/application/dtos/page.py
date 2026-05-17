@@ -5,4 +5,4 @@ class Page[T](BaseModel):
     items: list[T]
     total: int
     current: int
-    size: int
+    size: int | None
