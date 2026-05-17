@@ -10,6 +10,7 @@ from codegen.shared.domain.value_objects.snake_string import SnakeString
 
 
 class Component(AggregateRoot[ComponentId]):
+    """component"""
     
     type: ComponentType
     name: str

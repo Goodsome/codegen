@@ -37,6 +37,7 @@ class SqlAlchemyComponentRepository(ComponentRepository):
         # 通过 Mapper 将领域模型转换为 ORM 模型
         orm_model = ComponentMapper.to_orm(aggregate)
         self.session.add(orm_model)
+        self.session.flush()
 
     @override
     def _get(self, id: ComponentId) -> Component:
@@ -67,6 +68,17 @@ class SqlAlchemyComponentRepository(ComponentRepository):
         orm_model = ComponentMapper.to_orm(aggregate)
 
         self.session.merge(orm_model)
+        self.session.flush()
+
+    @override
+    def _save_all(self, aggregates: list[Component]) -> None:
+        if not aggregates:
+            return
+        orm_models = [ComponentMapper.to_orm(aggregate) for aggregate in aggregates]
+        for orm_model in orm_models:
+            self.session.merge(orm_model)
+            
+        self.session.flush()
 
     @override
     def _delete(self, id: ComponentId) -> None:
@@ -79,7 +91,7 @@ class SqlAlchemyComponentRepository(ComponentRepository):
             self.session.flush()
 
     @override
-    def list(self, page_query: PageQuery[ComponentFilter]) -> Page[Component]:
+    def find_page(self, page_query: PageQuery[ComponentFilter]) -> Page[Component]:
         conditions: list[ColumnElement[bool]] = []
         if page_query.condition.type is not None:
             conditions.append(ComponentModel.type == page_query.condition.type)

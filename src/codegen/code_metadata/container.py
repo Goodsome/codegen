@@ -5,6 +5,8 @@ from event_hub import EventHub
 from codegen.code_metadata.application.commands.generate_code import GenerateCode
 from codegen.code_metadata.application.commands.reverse_code import ReverseCode
 from codegen.code_metadata.application.commands.upsert_component import UpsertComponent
+from codegen.code_metadata.application.commands.upsert_components import UpsertComponents
+from codegen.code_metadata.application.mappers.component_mapper import ComponentDTOMapper
 from codegen.code_metadata.application.queries.get_dev_progress import GetDevProgress
 from codegen.code_metadata.application.queries.list_components import ListComponents
 from codegen.code_metadata.application.services.dev_progress_service import DevProgressService
@@ -74,6 +76,17 @@ class Container(DeclarativeContainer):
         query_service=component_query_service,
     )
 
+    component_dto_mapper: Singleton[ComponentDTOMapper] = Singleton(
+        ComponentDTOMapper,
+    )
+    
+    upsert_components: Factory[UpsertComponents] = Factory(
+        UpsertComponents,
+        uow=unit_of_work,
+        query_service=component_query_service,
+        component_mapper=component_dto_mapper,
+    )
+
     component_policy_factory: Singleton[ComponentPolicyFactory] = Singleton(
         ComponentPolicyFactory,
     )
@@ -121,7 +134,7 @@ class Container(DeclarativeContainer):
     reverse_code: Factory[ReverseCode] = Factory(
         ReverseCode,
         parser=python_code_parser,
-        upsert_component=upsert_component,
+        upsert_components=upsert_components,
         file_system_port=file_system_port,
         component_policy_factory=component_policy_factory,
     )

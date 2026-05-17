@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import override
 
-from sqlalchemy import ColumnElement, select, func
+from sqlalchemy import ColumnElement, select, func, tuple_
 from sqlalchemy.orm import Session, sessionmaker
 
 from codegen.code_metadata.application.dtos.component_dto import ComponentDTO
@@ -38,7 +38,7 @@ class SQLAlchemyComponentQueryService(ComponentQueryService):
         return dto
 
     @override
-    def list(self, query: PageQuery[ComponentFilter]) -> Page[ComponentDTO]:
+    def find_page(self, query: PageQuery[ComponentFilter]) -> Page[ComponentDTO]:
         conditions: list[ColumnElement[bool]] = []
         if query.condition.type is not None:
             conditions.append(ComponentModel.type == query.condition.type)
@@ -65,3 +65,19 @@ class SQLAlchemyComponentQueryService(ComponentQueryService):
 
         items = [ComponentMapper.to_dto(m) for m in models]
         return Page(items=items, total=total, current=query.current, size=query.size)
+
+    @override
+    def find_by_context_names(self, context_names: list[tuple[str, str]]) -> list[ComponentDTO]:
+        if not context_names:
+            return []
+
+        stmt = select(ComponentModel).where(
+            tuple_(ComponentModel.context, ComponentModel.name).in_(context_names)
+        )
+        
+        with self.session_factory() as session:
+            models = (
+                session.execute(stmt).scalars().all()
+            )
+            items = [ComponentMapper.to_dto(m) for m in models]
+            return items

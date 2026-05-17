@@ -6,7 +6,8 @@ from codegen.code_metadata.domain.aggregates.component import Component
 from codegen.code_metadata.domain.enums import ComponentType
 
 
-class ComponentMapper:
+class ComponentDTOMapper:
+    
     @classmethod
     def to_domain(
         cls,
@@ -26,3 +27,15 @@ class ComponentMapper:
             description=dto.description,
             context=dto.context,
         )
+
+    @classmethod
+    def to_domain_entities(
+        cls,
+        dtos: list[UpsertComponentCommand],
+        existing_components: dict[tuple[str, str], ComponentDTO],
+    ) -> list[Component]:
+        entities: list[Component] = []
+        for dto in dtos:
+            existing_component = existing_components.get((dto.context, dto.name))
+            entities.append(cls.to_domain(dto, existing_component))
+        return entities

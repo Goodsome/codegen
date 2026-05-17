@@ -13,5 +13,5 @@ class ListComponents:
     query_service: ComponentQueryService
 
     def execute(self, query: PageQuery[ComponentFilter]) -> Page[ComponentDTO]:
-        return self.query_service.list(query)
+        return self.query_service.find_page(query)
         

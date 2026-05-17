@@ -7,7 +7,7 @@ from codegen.code_metadata.application.dtos.upsert_component_result import Upser
 from codegen.code_metadata.application.ports.component_query_service import ComponentQueryService
 from codegen.code_metadata.domain.ports.component_repository import ComponentRepository
 from codegen.shared.application.ports.unit_of_work import UnitOfWork
-from codegen.code_metadata.application.mappers.component_mapper import ComponentMapper
+from codegen.code_metadata.application.mappers.component_mapper import ComponentDTOMapper
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ class UpsertComponent:
             name=cmd.name,
             context=cmd.context
         )
-        component = ComponentMapper.to_domain(
+        component = ComponentDTOMapper.to_domain(
             dto=cmd, 
             existing_component=dto
         )

@@ -14,7 +14,7 @@ console = Console()
 def _reverse_code(
     cmd: ReverseCodeCommand,
     use_case: ReverseCode= Provide["code_metadata_container.reverse_code"],
-) -> ReverseCodeResult:
+) -> None:
     return use_case.execute(cmd)
 
 

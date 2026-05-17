@@ -12,5 +12,5 @@ class ComponentRepository(Repository[Component, ComponentId], ABC):
     """Component repository interface."""
 
     @abstractmethod
-    def list(self, page_query: PageQuery[ComponentFilter]) -> Page[Component]: ...
+    def find_page(self, page_query: PageQuery[ComponentFilter]) -> Page[Component]: ...
         

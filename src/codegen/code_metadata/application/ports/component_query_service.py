@@ -12,5 +12,9 @@ class ComponentQueryService(ABC):
         pass
 
     @abstractmethod
-    def list(self, query: PageQuery[ComponentFilter]) -> Page[ComponentDTO]:
+    def find_page(self, query: PageQuery[ComponentFilter]) -> Page[ComponentDTO]:
+        pass
+
+    @abstractmethod
+    def find_by_context_names(self, context_names: list[tuple[str, str]]) -> list[ComponentDTO]:
         pass

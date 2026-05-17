@@ -29,7 +29,7 @@ class GetDevProgress:
                     type=query.component_type,
                 ),
             )
-            page = self.uow.repository.list(page_query=page_query)
+            page = self.uow.repository.find_page(page_query=page_query)
 
         components: dict[str, Component] = {}
         for component in page.items:

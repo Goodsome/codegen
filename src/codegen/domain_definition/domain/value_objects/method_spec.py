@@ -208,8 +208,6 @@ if self._last_step_type == "then":
 raise RuntimeError(f"Unexpected last step type: {self._last_step_type}")
 """
 
-        logger.info(f"生成 {name} 分派函数")
-        
         return FunctionSpec.create(
             name=name,
             return_annotation=TypeAnnotationSpec(name="Self"),
