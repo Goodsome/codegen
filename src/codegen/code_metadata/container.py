@@ -3,13 +3,14 @@ from dependency_injector.providers import Configuration, Dependency, Factory, Si
 from event_hub import EventHub
 
 from codegen.code_metadata.application.commands.generate_code import GenerateCode
-from codegen.code_metadata.application.commands.reverse_code import ReverseCode
-from codegen.code_metadata.application.commands.upsert_component import UpsertComponent
-from codegen.code_metadata.application.commands.upsert_components import UpsertComponents
-from codegen.code_metadata.application.mappers.component_mapper import ComponentDTOMapper
+from codegen.code_metadata.application.mappers.component_mapper import ComponentDtoMapper
+from codegen.code_metadata.application.mappers.parsed_attribute_mapper import ParsedAttributeMapper
+from codegen.code_metadata.application.mappers.parsed_component_to_sync_data import ParsedComponentToSyncData
+from codegen.code_metadata.application.mappers.parsed_type_to_type_def import ParsedTypeToTypeDef
 from codegen.code_metadata.application.queries.get_dev_progress import GetDevProgress
 from codegen.code_metadata.application.queries.list_components import ListComponents
 from codegen.code_metadata.application.services.dev_progress_service import DevProgressService
+from codegen.code_metadata.application.services.project_sync_service import ProjectSyncService
 from codegen.code_metadata.domain.factories.component_policy_factory import (
     ComponentPolicyFactory,
 )
@@ -26,6 +27,9 @@ from codegen.code_metadata.infrastructure.mappers.ast_class_to_component import 
 from codegen.code_metadata.infrastructure.mappers.ast_module_to_component import (
     AstModuleToComponent,
 )
+from codegen.code_metadata.infrastructure.mappers.ast_node_to_attribute import AstNodeToParsedAttribute
+from codegen.code_metadata.infrastructure.mappers.ast_node_to_parsed_type import AstNodeToParsedType
+from codegen.code_metadata.infrastructure.mappers.attribute_to_ast_assign import AttributeToAstAssign
 from codegen.code_metadata.infrastructure.mappers.component_to_ast_class import (
     ComponentToAstClass,
 )
@@ -70,29 +74,27 @@ class Container(DeclarativeContainer):
         event_publisher_factory=event_publisher_factory,
     )
 
-    upsert_component: Factory[UpsertComponent] = Factory(
-        UpsertComponent,
-        uow=unit_of_work,
-        query_service=component_query_service,
-    )
-
-    component_dto_mapper: Singleton[ComponentDTOMapper] = Singleton(
-        ComponentDTOMapper,
+    component_dto_mapper: Singleton[ComponentDtoMapper] = Singleton(
+        ComponentDtoMapper,
     )
     
-    upsert_components: Factory[UpsertComponents] = Factory(
-        UpsertComponents,
-        uow=unit_of_work,
-        query_service=component_query_service,
-        component_mapper=component_dto_mapper,
-    )
-
     component_policy_factory: Singleton[ComponentPolicyFactory] = Singleton(
         ComponentPolicyFactory,
+    )
+    
+    ast_node_to_parsed_type: Singleton[AstNodeToParsedType] = Singleton(
+        AstNodeToParsedType,
+    )
+    
+    ast_node_to_attribute: Singleton[AstNodeToParsedAttribute] = Singleton(
+        AstNodeToParsedAttribute,
+        ast_node_to_parsed_type=ast_node_to_parsed_type,
     )
 
     ast_class_to_component: Singleton[AstClassToComponent] = Singleton(
         AstClassToComponent,
+        ast_node_to_attribute=ast_node_to_attribute,
+        ast_node_to_parsed_type=ast_node_to_parsed_type,
     )
 
     ast_module_to_component: Singleton[AstModuleToComponent] = Singleton(
@@ -109,10 +111,15 @@ class Container(DeclarativeContainer):
         ListComponents,
         query_service=component_query_service,
     )
+    
+    attribute_to_ast_assign: Singleton[AttributeToAstAssign] = Singleton(
+        AttributeToAstAssign,
+    )
 
     component_to_ast_class: Singleton[ComponentToAstClass] = Singleton(
         ComponentToAstClass,
         component_policy_factory=component_policy_factory,
+        attribute_to_ast_assign=attribute_to_ast_assign,
     )
 
     component_to_ast_module: Singleton[ComponentToAstModule] = Singleton(
@@ -133,14 +140,6 @@ class Container(DeclarativeContainer):
         generator=python_code_generator,
     )
 
-    reverse_code: Factory[ReverseCode] = Factory(
-        ReverseCode,
-        parser=python_code_parser,
-        upsert_components=upsert_components,
-        file_system_port=file_system_port,
-        component_policy_factory=component_policy_factory,
-    )
-
     dev_progress_service: Factory[DevProgressService] = Factory(
         DevProgressService,
         file_system_port=file_system_port,
@@ -152,4 +151,28 @@ class Container(DeclarativeContainer):
         query_service=component_query_service,
         uow=unit_of_work,
         dev_progress_service=dev_progress_service,
+    )
+    
+    parsed_type_to_type_def: Factory[ParsedTypeToTypeDef] = Factory(
+        ParsedTypeToTypeDef,
+    )
+    
+    parsed_attribute_mapper: Factory[ParsedAttributeMapper] = Factory(
+        ParsedAttributeMapper,
+        parsed_type_to_type_def=parsed_type_to_type_def,
+    )
+    
+    parsed_component_to_sync_data: Factory[ParsedComponentToSyncData] = Factory(
+        ParsedComponentToSyncData,
+        parsed_type_to_type_def=parsed_type_to_type_def,
+        parsed_attribute_mapper=parsed_attribute_mapper,
+    )
+
+    project_sync_service: Factory[ProjectSyncService] = Factory(
+        ProjectSyncService,
+        parser=python_code_parser,
+        file_system_port=file_system_port,
+        component_policy_factory=component_policy_factory,
+        uow=unit_of_work,
+        parsed_component_to_sync_data=parsed_component_to_sync_data,
     )

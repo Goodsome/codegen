@@ -1,5 +1,5 @@
+from codegen.code_metadata.domain.enums.gherkin_keyword import GherkinKeyword
 from codegen.shared.domain.core.value_object import ValueObject
-from codegen.code_metadata.domain.enums import GherkinKeyword
 
 
 class GherkinStep(ValueObject):

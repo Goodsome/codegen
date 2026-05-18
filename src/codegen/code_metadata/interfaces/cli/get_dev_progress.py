@@ -34,6 +34,8 @@ def get_dev_progress(
     result.order_by_type()
     if component_type:
         result = result.filter_by_type(component_type)
+    if component_name:
+        result = result.filter_by_name(component_name)
 
     if not result.records:
         console.print("[yellow]No component records found.[/yellow]")

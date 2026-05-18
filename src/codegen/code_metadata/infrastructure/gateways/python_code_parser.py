@@ -2,6 +2,7 @@ import ast
 from dataclasses import dataclass
 from typing import override
 
+from codegen.code_metadata.application.dtos.imported_component import ImportedComponent
 from codegen.code_metadata.application.dtos.parsed_component import ParsedComponent
 from codegen.code_metadata.application.ports.code_parser import CodeParser
 from codegen.code_metadata.infrastructure.mappers.ast_module_to_component import (
@@ -14,6 +15,12 @@ class PythonCodeParser(CodeParser):
     mapper: AstModuleToComponent
 
     @override
-    def parse(self, code: str, module_name: str) -> ParsedComponent:
+    def parse(self, code: str, component_name: str) -> ParsedComponent:
         module = ast.parse(code)
-        return self.mapper.map(module, module_name=module_name)
+        return self.mapper.map(module, component_name=component_name)
+
+    @override
+    def parse_dependencies(self, code: str) -> set[ImportedComponent]:
+        module = ast.parse(code)
+        return self.mapper.parse_imports(module=module)
+        

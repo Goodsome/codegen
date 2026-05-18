@@ -14,3 +14,6 @@ class ComponentRepository(Repository[Component, ComponentId], ABC):
     @abstractmethod
     def find_page(self, page_query: PageQuery[ComponentFilter]) -> Page[Component]: ...
         
+    @abstractmethod
+    def find_by_context_names(self, context_names: set[tuple[str, str]]) -> dict[tuple[str, str], Component]:
+        pass

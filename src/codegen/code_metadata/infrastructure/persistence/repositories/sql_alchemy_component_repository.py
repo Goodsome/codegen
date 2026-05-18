@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import override
 
-from sqlalchemy import ColumnElement, func, select
+from sqlalchemy import ColumnElement, func, select, tuple_
 from sqlalchemy.orm import Session, selectinload
 
 from codegen.code_metadata.application.dtos.component_filter import ComponentFilter
@@ -34,10 +34,16 @@ class SqlAlchemyComponentRepository(ComponentRepository):
         """
         新增一个 Component 聚合根到数据库。
         """
-        # 通过 Mapper 将领域模型转换为 ORM 模型
         orm_model = ComponentMapper.to_orm(aggregate)
         self.session.add(orm_model)
-        self.session.flush()
+
+    @override
+    def _add_all(self, aggregates: list[Component]) -> None:
+        """
+        批量新增 Component 聚合根到数据库。
+        """
+        orm_models = [ComponentMapper.to_orm(aggregate) for aggregate in aggregates]
+        self.session.add_all(orm_models)
 
     @override
     def _get(self, id: ComponentId) -> Component:
@@ -66,9 +72,7 @@ class SqlAlchemyComponentRepository(ComponentRepository):
         更新现有的 Component 聚合根。
         """
         orm_model = ComponentMapper.to_orm(aggregate)
-
         self.session.merge(orm_model)
-        self.session.flush()
 
     @override
     def _save_all(self, aggregates: list[Component]) -> None:
@@ -78,8 +82,6 @@ class SqlAlchemyComponentRepository(ComponentRepository):
         for orm_model in orm_models:
             self.session.merge(orm_model)
             
-        self.session.flush()
-
     @override
     def _delete(self, id: ComponentId) -> None:
         """
@@ -88,7 +90,6 @@ class SqlAlchemyComponentRepository(ComponentRepository):
         model = self.session.get(ComponentModel, id.value)
         if model:
             self.session.delete(model)
-            self.session.flush()
 
     @override
     def find_page(self, page_query: PageQuery[ComponentFilter]) -> Page[Component]:
@@ -125,3 +126,25 @@ class SqlAlchemyComponentRepository(ComponentRepository):
 
         items = [ComponentMapper.to_domain(m) for m in models]
         return Page(items=items, total=total, current=page_query.current, size=page_query.size)
+
+    @override
+    def find_by_context_names(self, context_names: set[tuple[str, str]]) -> dict[tuple[str, str], Component]:
+        if not context_names:
+            return {}
+        stmt = (
+            select(ComponentModel)
+            .where(
+                tuple_(ComponentModel.context, ComponentModel.name).in_(context_names)
+            )
+            .options(
+                selectinload(ComponentModel.attributes),
+                selectinload(ComponentModel.behaviors).selectinload(
+                    BehaviorModel.inputs
+                ),
+            )
+        )
+        models = self.session.execute(stmt).scalars().all()
+        return {
+            (m.context, m.name): ComponentMapper.to_domain(m)
+            for m in models
+        }

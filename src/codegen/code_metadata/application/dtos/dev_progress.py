@@ -16,7 +16,7 @@ class DevProgress(BaseModel):
         return self
 
     def filter_by_name(self, component_name: str) -> Self:
-        self.records = [record for record in self.records if record.file_name == component_name]
+        self.records = [record for record in self.records if record.file_name == SnakeString(component_name)]
         return self
 
     @property

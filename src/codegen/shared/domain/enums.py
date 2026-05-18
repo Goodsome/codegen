@@ -12,6 +12,7 @@ class ContainerType(StrEnum):
     CALLABLE = auto()
     TYPE = auto()
     CLASS_VAR = auto()
+    UNION = auto()
 
 
 class PrimitiveType(StrEnum):
@@ -30,17 +31,27 @@ class PrimitiveType(StrEnum):
         match self:
             case PrimitiveType.STRING:
                 return PythonBuiltinType.STR
+            case PrimitiveType.NULL:
+                return PythonBuiltinType.NONE
             case _:
                 return None
 
 class PythonBuiltinType(StrEnum):
     EXCEPTION = "Exception"
+    ELLIPSIS = "Ellipsis"
+    NONE = "None"
+    TUPLE = "tuple"
     STR = "str"
+    LIST = "list"
+    SET = "set"
+    DICT = "dict"
 
     def to_primitive_type(self) -> PrimitiveType | None:
         match self:
             case PythonBuiltinType.STR:
                 return PrimitiveType.STRING
+            case PythonBuiltinType.NONE:
+                return PrimitiveType.NULL
             case _:
                 return None
     

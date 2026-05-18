@@ -1,5 +1,3 @@
-from calendar import c
-
 from codegen.code_metadata.application.dtos.component_dto import ComponentDTO
 from codegen.code_metadata.application.dtos.upsert_component_command import (
     UpsertComponentCommand,
@@ -10,19 +8,19 @@ from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.value_objects.type_def import TypeDef
 
 
-class ComponentDTOMapper:
+class ComponentDtoMapper:
     @classmethod
     def to_domain(
         cls,
         dto: UpsertComponentCommand,
-        existing_component: ComponentDTO | None = None,
+        existing_component: Component | None = None,
         components_map: dict[str, ComponentId] | None = None,
     ) -> Component:
         if components_map is None:
             components_map = {}
         
         if existing_component:
-            component_id = ComponentId.reconstitute(existing_component.id)
+            component_id = existing_component.id
         else:
             component_id = ComponentId.create()
 
@@ -41,14 +39,13 @@ class ComponentDTOMapper:
     def to_domain_entities(
         cls,
         dtos: list[UpsertComponentCommand],
-        existing_components: dict[tuple[str, str], ComponentDTO],
+        existing_components: dict[tuple[str, str], Component],
     ) -> list[Component]:
         entities: list[Component] = []
         for dto in dtos:
             existing_component = existing_components.get((dto.context, dto.name))
-            components_map = {
-                ec.name: ComponentId.reconstitute(ec.id)
-                for ec in existing_components.values()
-            }
+            components_map: dict[str, ComponentId] = {}
+            for ic in dto.imported_components:
+                components_map[ic.name] = existing_components[(ic.context, ic.name)].id
             entities.append(cls.to_domain(dto, existing_component, components_map))
         return entities

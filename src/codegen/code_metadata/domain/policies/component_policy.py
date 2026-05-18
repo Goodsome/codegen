@@ -16,3 +16,6 @@ class ComponentPolicy(ABC):
     def get_import_module(self, context: str, component_name: str) -> str:
         return f"codegen.{context}.{self.component_type.layer}.{self.component_type.dir_name}.{SnakeString(component_name)}"
         
+    def get_target_path(self, context: str) -> Path:
+        p = Path(f"src/codegen/{context}") / Path(self.component_type.layer) / Path(self.component_type.dir_name)
+        return p

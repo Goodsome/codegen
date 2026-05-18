@@ -15,7 +15,11 @@ class Repository[T_AR: AggregateRoot[Any], T_ID](ABC):
     def add(self, aggregate: T_AR) -> None:
         self._add(aggregate=aggregate)
         self._seens.add(aggregate)
-        
+
+    def add_all(self, aggregates: list[T_AR]) -> None:
+        self._add_all(aggregates=aggregates)
+        self._seens.update(aggregates)
+
     def get(self, id: T_ID) -> T_AR:
         a = self._get(id)
         self._seens.add(a)
@@ -34,6 +38,9 @@ class Repository[T_AR: AggregateRoot[Any], T_ID](ABC):
 
     @abstractmethod
     def _add(self, aggregate: T_AR) -> None: ...
+
+    @abstractmethod
+    def _add_all(self, aggregates: list[T_AR]) -> None: ...
 
     @abstractmethod
     def _get(self, id: T_ID) -> T_AR: ...
