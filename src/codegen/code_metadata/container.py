@@ -118,6 +118,7 @@ class Container(DeclarativeContainer):
     component_to_ast_module: Singleton[ComponentToAstModule] = Singleton(
         ComponentToAstModule,
         component_to_ast_class=component_to_ast_class,
+        component_policy_factory=component_policy_factory,
     )
 
     python_code_generator: Factory[PythonCodeGenerator] = Factory(

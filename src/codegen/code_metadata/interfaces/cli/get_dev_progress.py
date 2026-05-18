@@ -27,14 +27,13 @@ def get_dev_progress(
     query = GetDevProgressQuery(
         context=context,
         component_type=component_type,
+        component_name=component_name,
     )
     result = _get_dev_progress(query=query)
 
     result.order_by_type()
     if component_type:
         result = result.filter_by_type(component_type)
-    if component_name:
-        result = result.filter_by_name(component_name)
 
     if not result.records:
         console.print("[yellow]No component records found.[/yellow]")

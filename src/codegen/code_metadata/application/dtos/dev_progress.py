@@ -2,6 +2,7 @@ from typing import Self
 from pydantic import BaseModel, Field
 
 from codegen.code_metadata.application.dtos.file_metrics import FileMetrics
+from codegen.shared.domain.value_objects.snake_string import SnakeString
 
 
 class DevProgress(BaseModel):
@@ -30,4 +31,4 @@ class DevProgress(BaseModel):
         return self
 
     def get_record_by_name(self, component_name: str) -> FileMetrics | None:
-        return next((record for record in self.records if record.file_name == component_name), None)
+        return next((record for record in self.records if record.file_name == SnakeString(component_name)), None)

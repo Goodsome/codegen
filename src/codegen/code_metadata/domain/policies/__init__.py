@@ -5,6 +5,7 @@ from .component_policy import ComponentPolicy
 from .value_object_policy import ValueObjectPolicy
 from .core_policy import CorePolicy
 from .identifier_policy import IdentifierPolicy
+from .external_policy import ExternalPolicy
 
 __all__ = [
     "AggregatePolicy",
@@ -14,4 +15,5 @@ __all__ = [
     "ValueObjectPolicy",
     "CorePolicy",
     "IdentifierPolicy",
+    "ExternalPolicy",
 ]

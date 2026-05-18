@@ -31,6 +31,7 @@ class GetDevProgress:
                 condition=ComponentFilter(
                     context=query.context,
                     type=query.component_type,
+                    name=query.component_name,
                 ),
             )
             page = self.uow.repository.find_page(page_query=page_query)
