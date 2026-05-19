@@ -47,9 +47,13 @@ def get_dev_progress(
     console.print("  " + "-" * 76)
 
     match_count = 0
+    unknown_count = 0
     for r in result.records:
         if r.ast_similarity == 1:
             match_count += 1
+            continue
+        if r.component_type == "unknown":
+            unknown_count += 1
             continue
         diff_sign = "+" if r.line_diff > 0 else ""
         console.print(
@@ -61,7 +65,8 @@ def get_dev_progress(
     console.print(
         "\n[bold]Dev Progress[/bold]  |  "
         + f"Matched Files: {match_count}/{len(result.records)}  |  "
-        + f"AST Similarity: {result.ast_progress:.1%}\n"
+        + f"AST Similarity: {result.ast_progress:.1%}  |  "
+        + f"Unknown Files: {unknown_count}/{len(result.records)}"
     )
 
     if component_name:

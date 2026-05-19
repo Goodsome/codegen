@@ -15,9 +15,12 @@ class ComponentToAstClass:
 
     def map(self, component: Component, dep_components: dict[ComponentId, ComponentDTO]) -> ast.ClassDef:
         body: list[ast.stmt] = []
-        body.append(ast.Expr(value=ast.Constant(value=component.description)))
+        if component.description:
+            body.append(ast.Expr(value=ast.Constant(value=component.description)))
         for attribute in component.attributes:
             body.append(self.attribute_to_ast_assign.map(attribute, dep_components))
+        if not body:
+            body.append(ast.Expr(ast.Constant(value=...)))
         bases = [t.to_ast_node(components=dep_components) for t in component.bases]
         class_def = ast.ClassDef(
             name=component.name,
