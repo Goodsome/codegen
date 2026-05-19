@@ -20,6 +20,7 @@ from codegen.code_metadata.infrastructure.mappers.component_to_ast_class import 
 
 @dataclass
 class ComponentToAstModule:
+    resolver: ReferenceResolver
     component_to_ast_class: ComponentToAstClass
     component_policy_factory: ComponentPolicyFactory
 
@@ -34,16 +35,17 @@ class ComponentToAstModule:
             resolver=resolver,
         )
         return cls(
+            resolver=resolver,
             component_to_ast_class=component_to_ast_class,
             component_policy_factory=component_policy_factory,
         )
 
     def map(
-        self, component: Component, dep_components: dict[ComponentId, ComponentDTO]
+        self, component: Component
     ) -> ast.Module:
-        import_froms = self._get_import_froms(component, dep_components)
+        import_froms = self._get_import_froms(component)
         class_def = self.component_to_ast_class.map(
-            component, dep_components=dep_components
+            component
         )
         body: list[ast.stmt] = [
             *import_froms,
@@ -55,21 +57,19 @@ class ComponentToAstModule:
         return module
 
     def _get_import_froms(
-        self, component: Component, dep_components: dict[ComponentId, ComponentDTO]
+        self, component: Component
     ) -> list[ast.ImportFrom]:
         collect_module_names: dict[str, set[str]] = defaultdict(set)
         for dep_id in component.get_dependencies():
-            if dep_id not in dep_components:
-                raise DependencyComponentNotFound(component_id=dep_id)
-            dep_component = dep_components[dep_id]
+            dc = self.resolver.get_component(dep_id)
             policy = self.component_policy_factory.get_policy(
-                component_type=ComponentType(dep_component.type)
+                component_type=ComponentType(dc.type)
             )
             module = policy.get_import_module(
-                context=dep_component.context,
-                component_name=dep_component.name,
+                context=dc.context,
+                component_name=dc.name,
             )
-            collect_module_names[module].add(dep_component.name)
+            collect_module_names[module].add(dc.name)
 
         result: list[ast.ImportFrom] = []
         for module, names in sorted(collect_module_names.items()):

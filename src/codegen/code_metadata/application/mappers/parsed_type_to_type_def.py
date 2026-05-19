@@ -23,12 +23,7 @@ class ParsedTypeToTypeDef:
         return self.map_type(parsed_type, dependencies)
         
     def map_type(self, parsed_type: ParsedType, dependencies: dict[str, ComponentId]) -> TypeDef:
-        origin = parsed_type.origin
-        if origin is None:
-            assert parsed_type.component_name is not None, parsed_type
-            if parsed_type.component_name not in dependencies:
-                raise ValueError(f"Component `{parsed_type.component_name}` not found in dependencies, maybe is PythonBuiltinType")
-            origin = dependencies[parsed_type.component_name]
+        origin = self.resolver.resolve_target(parsed_type.origin)
         args = tuple(self.map_type(arg, dependencies) for arg in parsed_type.args)
         return TypeDef(
             origin=origin,

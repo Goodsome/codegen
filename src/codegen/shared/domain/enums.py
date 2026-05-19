@@ -45,6 +45,7 @@ class PythonBuiltinType(StrEnum):
     LIST = "list"
     SET = "set"
     DICT = "dict"
+    UNION = "Union"
 
     def to_primitive_type(self) -> PrimitiveType | None:
         match self:

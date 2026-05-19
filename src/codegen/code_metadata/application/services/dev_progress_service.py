@@ -22,7 +22,6 @@ class DevProgressService:
         self,
         context: str,
         components: dict[str, Component],
-        dep_components: dict[ComponentId, ComponentDTO],
         resolver: ReferenceResolver,
     ) -> DevProgress:
         context_path = Path("src/codegen") / context
@@ -41,7 +40,6 @@ class DevProgressService:
                 self.get_file_metrics(
                     file_path,
                     component,
-                    dep_components=dep_components,
                     resolver=resolver,
                 )
             )
@@ -52,7 +50,6 @@ class DevProgressService:
         self,
         file_path: Path,
         component: Component | None,
-        dep_components: dict[ComponentId, ComponentDTO],
         resolver: ReferenceResolver,
     ) -> FileMetrics:
         file_name = file_path.stem
@@ -62,7 +59,6 @@ class DevProgressService:
             component_type = str(component.type)
             component_code = self.generator.generate(
                 component=component,
-                dep_components=dep_components,
                 resolver=resolver,
             )
             generated_lines = len(component_code.splitlines())

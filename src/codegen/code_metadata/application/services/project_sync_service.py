@@ -3,6 +3,7 @@ from codegen.code_metadata.application.mappers.parsed_component_to_sync_data imp
 from codegen.code_metadata.application.ports.code_parser import CodeParser
 from codegen.code_metadata.domain.aggregates.component import Component
 from codegen.code_metadata.domain.enums import ComponentType
+from codegen.code_metadata.domain.execptions.attribute_not_found import AttributeNotFound
 from codegen.code_metadata.domain.factories.component_policy_factory import (
     ComponentPolicyFactory,
 )
@@ -161,6 +162,8 @@ class ProjectSyncService:
                 context_names=context_names
             )
             for f in file_collections:
+                if f.name in ["ExprDef"]:
+                    continue
                 component = existing_components.get((f.context, f.name))
                 if not component:
                     component = f.new_component()
@@ -174,12 +177,16 @@ class ProjectSyncService:
                     id_map=f.id_dependencies,
                 )
                 mapper = ParsedComponentToSyncData.create(resolver=resolver)
-                component_sync_data = mapper.map(
-                    context=f.context,
-                    parsed_component=parsed_component, 
-                    component_type=f.type,
-                    dependencies=f.id_map
-                )
+                try:
+                    component_sync_data = mapper.map(
+                        context=f.context,
+                        parsed_component=parsed_component, 
+                        component_type=f.type,
+                        dependencies=f.id_map
+                    )
+                except AttributeNotFound as e:
+                    print(e)
+                    continue
                 component.update(component_sync_data=component_sync_data)
 
                 self.uow.repository.save(component)

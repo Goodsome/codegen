@@ -11,6 +11,5 @@ class CodeGenerator(ABC):
     def generate(
         self,
         component: Component,
-        dep_components: dict[ComponentId, ComponentDTO],
         resolver: ReferenceResolver,
     ) -> str: ...

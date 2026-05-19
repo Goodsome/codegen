@@ -1,7 +1,7 @@
 import ast
 from dataclasses import dataclass
 from codegen.code_metadata.application.dtos.parsed_type import ParsedType
-from codegen.shared.domain.enums import ContainerType, PrimitiveType, PythonBuiltinType
+from codegen.shared.domain.enums import PythonBuiltinType
 
 
 @dataclass
@@ -38,15 +38,7 @@ class AstNodeToParsedType:
 
     def parse_ast_name(self, expr: ast.Name) -> ParsedType:
         name = expr.id
-        if name in PrimitiveType._value2member_map_:
-            return ParsedType(origin=PrimitiveType(name))
-        elif name in ContainerType._value2member_map_:
-            return ParsedType(origin=ContainerType(name))
-        elif name in PythonBuiltinType._value2member_map_:
-            _t = PythonBuiltinType(name)
-            return ParsedType(origin=_t.to_primitive_type() or _t)
-
-        return ParsedType(origin=None, component_name=name)
+        return ParsedType(origin=name)
 
     def parse_ast_binop(self, expr: ast.BinOp) -> ParsedType:
         match expr.op:
@@ -55,7 +47,7 @@ class AstNodeToParsedType:
                 right_type = self.parse_ast_node(expr.right)
 
                 return ParsedType(
-                    origin=ContainerType.UNION, args=(left_type, right_type)
+                    origin=PythonBuiltinType.UNION, args=(left_type, right_type)
                 )
             case _:
                 raise NotImplementedError(
@@ -74,12 +66,11 @@ class AstNodeToParsedType:
                 
             case str(forward_ref_name):
                 return ParsedType(
-                    origin=None,
-                    component_name=forward_ref_name
+                    origin=forward_ref_name
                 )
                 
             case None:
-                return ParsedType(origin=PrimitiveType.NULL)
+                return ParsedType(origin=PythonBuiltinType.NONE)
                 
             case _:
                 raise NotImplementedError(
@@ -89,7 +80,6 @@ class AstNodeToParsedType:
     def parse_ast_attribute(self, expr: ast.Attribute) -> ParsedType:
         origin = ast.unparse(expr)
         return ParsedType(
-            origin=None,
-            component_name=origin,
+            origin=origin,
         )
         

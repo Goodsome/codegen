@@ -21,17 +21,43 @@ class AstModuleToComponent:
     def map(self, module: ast.Module, component_name: str) -> ParsedComponent:
         component: ParsedComponent | None = None
         for node in module.body:
-            if isinstance(node, ast.ClassDef) and node.name == component_name:
-                component = self.ast_class_to_component.map(node)
+            component = self.try_get_component(node, component_name)
         if component is None:
             raise ValueError(f"No class definition found in module {component_name}")
         return component
+
+    def try_get_component(self, node: ast.AST, component_name: str) -> ParsedComponent | None:
+        if isinstance(node, ast.ClassDef) and node.name == component_name:
+            return self.ast_class_to_component.map(node)
+        elif isinstance(node, ast.Assign):
+            return self.parse_assign(node, component_name)
+        return None
+        
+    def parse_assign(self, node: ast.Assign, component_name: str) -> ParsedComponent | None:
+        if len(node.targets) != 1:
+            return None
+        if not isinstance(node.targets[0], ast.Name):
+            return None
+        if node.targets[0].id != component_name:
+            return None
+        parsed_attribute = self.ast_class_to_component.ast_node_to_attribute.map(node)
+        if parsed_attribute is None:
+            return None
+        return ParsedComponent(
+            name=component_name,
+            description="",
+            attributes=[parsed_attribute]
+        )
 
     def parse_imports(self, module: ast.Module, component_path: Path) -> set[ImportedComponent]:
         ics: set[ImportedComponent] = set()
         for node in module.body:
             if isinstance(node, ast.ImportFrom):
                 ics.update(self.parse_import(node, component_path))
+            elif isinstance(node, ast.If):
+                for subnode in node.body:
+                    if isinstance(subnode, ast.ImportFrom):
+                        ics.update(self.parse_import(subnode, component_path))
         return ics
 
     def parse_import(self, node: ast.ImportFrom, component_path: Path) -> list[ImportedComponent]:

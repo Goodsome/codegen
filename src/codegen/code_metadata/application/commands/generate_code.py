@@ -6,6 +6,7 @@ from codegen.code_metadata.application.ports.component_query_service import Comp
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.ports.code_generator import CodeGenerator
 from codegen.code_metadata.domain.ports.component_repository import ComponentRepository
+from codegen.code_metadata.domain.services.reference_resolver import ReferenceResolver
 from codegen.shared.application.ports.unit_of_work import UnitOfWork
 
 
@@ -20,8 +21,8 @@ class GenerateCode:
         c_id = ComponentId.reconstitute(cmd.component_id)
         with self.uow:
             component = self.uow.repository.get(c_id)
-        dep_components = self.query_service.find_by_ids(
-            ids=component.get_dependencies()
-        )
-        code = self.generator.generate(component, dep_components=dep_components)
+            dep_components = self.uow.repository.find_by_ids(
+                ids=component.get_dependencies()
+            )
+        code = self.generator.generate(component, resolver=ReferenceResolver(dependencies=dep_components))
         return GenerateCodeResult(code=code)

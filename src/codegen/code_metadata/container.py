@@ -123,7 +123,6 @@ class Container(DeclarativeContainer):
 
     get_dev_progress: Factory[GetDevProgress] = Factory(
         GetDevProgress,
-        query_service=component_query_service,
         uow=unit_of_work,
         dev_progress_service=dev_progress_service,
     )

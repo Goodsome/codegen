@@ -9,7 +9,6 @@ from codegen.code_metadata.domain.value_objects.dict_expr import DictExpr
 from codegen.code_metadata.domain.value_objects.reference_expr import ReferenceExpr
 from codegen.code_metadata.domain.value_objects.sequence_expr import SequenceExpr
 
-
 ExprDef = Annotated[
     CallExpr | ConstantExpr | DictExpr | ReferenceExpr | SequenceExpr,
     Field(discriminator="kind")

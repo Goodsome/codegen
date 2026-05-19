@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from codegen.shared.domain.core import ValueObject
@@ -8,8 +9,8 @@ if TYPE_CHECKING:
 
 
 class DictItem(ValueObject):
-    key: "ExprDef | None"
-    value: "ExprDef"
+    key: ExprDef | None
+    value: ExprDef
 
     def get_component_ids(self) -> set[ComponentId]:
         result: set[ComponentId] = set()

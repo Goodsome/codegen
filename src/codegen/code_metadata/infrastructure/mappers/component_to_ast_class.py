@@ -12,12 +12,14 @@ from codegen.code_metadata.domain.services.reference_resolver import ReferenceRe
 from codegen.code_metadata.infrastructure.mappers.attribute_to_ast_assign import (
     AttributeToAstAssign,
 )
+from codegen.code_metadata.infrastructure.mappers.type_to_ast import TypeToAst
 
 
 @dataclass
 class ComponentToAstClass:
     component_policy_factory: ComponentPolicyFactory
     attribute_to_ast_assign: AttributeToAstAssign
+    type_to_ast: TypeToAst
 
     @classmethod
     def create(
@@ -28,21 +30,21 @@ class ComponentToAstClass:
         return cls(
             component_policy_factory=component_policy_factory,
             attribute_to_ast_assign=AttributeToAstAssign.create(resolver),
+            type_to_ast=TypeToAst.create(resolver),
         )
 
     def map(
         self,
         component: Component,
-        dep_components: dict[ComponentId, ComponentDTO],
     ) -> ast.ClassDef:
         body: list[ast.stmt] = []
         if component.description:
             body.append(ast.Expr(value=ast.Constant(value=component.description)))
         for attribute in component.attributes:
-            body.append(self.attribute_to_ast_assign.map(attribute, dep_components))
+            body.append(self.attribute_to_ast_assign.map(attribute))
         if not body:
             body.append(ast.Expr(ast.Constant(value=...)))
-        bases = [t.to_ast_node(components=dep_components) for t in component.bases]
+        bases = [self.type_to_ast.map_type(t) for t in component.bases]
         class_def = ast.ClassDef(
             name=component.name,
             bases=bases,
