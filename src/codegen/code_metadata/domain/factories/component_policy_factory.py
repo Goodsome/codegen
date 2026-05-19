@@ -28,9 +28,7 @@ class ComponentPolicyFactory:
             ValueObjectPolicy(),
             IdentifierPolicy(),
         ]
-        self._registry = {}
-        for p in self._policies:
-            self._registry[p.component_type] = p
+        self._registry = {p.component_type: p for p in self._policies}
 
     def get_policy(self, component_type: ComponentType) -> ComponentPolicy:
         cp = self._registry.get(component_type)

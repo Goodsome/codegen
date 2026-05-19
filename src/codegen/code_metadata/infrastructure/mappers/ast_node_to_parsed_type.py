@@ -1,11 +1,12 @@
 import ast
-from calendar import c
-
+from dataclasses import dataclass
 from codegen.code_metadata.application.dtos.parsed_type import ParsedType
 from codegen.shared.domain.enums import ContainerType, PrimitiveType, PythonBuiltinType
 
 
+@dataclass
 class AstNodeToParsedType:
+    
     def parse_ast_node(self, node: ast.AST) -> ParsedType:
         if isinstance(node, ast.Expr):
             return self.parse_ast_expr(node)
@@ -17,6 +18,8 @@ class AstNodeToParsedType:
             return self.parse_ast_binop(node)
         elif isinstance(node, ast.Constant):
             return self.parse_ast_constant(node)
+        elif isinstance(node, ast.Attribute):
+            return self.parse_ast_attribute(node)
         raise NotImplementedError(f"Unsupported AST node: {node}, {ast.dump(node)}, {ast.unparse(node)}")
 
     def parse_ast_expr(self, expr: ast.Expr) -> ParsedType:
@@ -82,3 +85,11 @@ class AstNodeToParsedType:
                 raise NotImplementedError(
                     f"不支持的类型注解常量值: {expr.value} (节点: {ast.dump(expr)})"
                 )
+
+    def parse_ast_attribute(self, expr: ast.Attribute) -> ParsedType:
+        origin = ast.unparse(expr)
+        return ParsedType(
+            origin=None,
+            component_name=origin,
+        )
+        

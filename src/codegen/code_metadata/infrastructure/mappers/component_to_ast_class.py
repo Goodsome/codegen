@@ -1,19 +1,40 @@
 import ast
 from dataclasses import dataclass
+from typing import Self
+
 from codegen.code_metadata.application.dtos.component_dto import ComponentDTO
 from codegen.code_metadata.domain.aggregates.component import Component
-from codegen.code_metadata.domain.factories.component_policy_factory import ComponentPolicyFactory
+from codegen.code_metadata.domain.factories.component_policy_factory import (
+    ComponentPolicyFactory,
+)
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
-from codegen.code_metadata.infrastructure.mappers.attribute_to_ast_assign import AttributeToAstAssign
+from codegen.code_metadata.domain.services.reference_resolver import ReferenceResolver
+from codegen.code_metadata.infrastructure.mappers.attribute_to_ast_assign import (
+    AttributeToAstAssign,
+)
 
 
 @dataclass
 class ComponentToAstClass:
-
     component_policy_factory: ComponentPolicyFactory
     attribute_to_ast_assign: AttributeToAstAssign
 
-    def map(self, component: Component, dep_components: dict[ComponentId, ComponentDTO]) -> ast.ClassDef:
+    @classmethod
+    def create(
+        cls,
+        component_policy_factory: ComponentPolicyFactory,
+        resolver: ReferenceResolver,
+    ) -> Self:
+        return cls(
+            component_policy_factory=component_policy_factory,
+            attribute_to_ast_assign=AttributeToAstAssign.create(resolver),
+        )
+
+    def map(
+        self,
+        component: Component,
+        dep_components: dict[ComponentId, ComponentDTO],
+    ) -> ast.ClassDef:
         body: list[ast.stmt] = []
         if component.description:
             body.append(ast.Expr(value=ast.Constant(value=component.description)))

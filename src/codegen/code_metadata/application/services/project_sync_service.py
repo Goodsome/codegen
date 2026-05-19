@@ -8,11 +8,13 @@ from codegen.code_metadata.domain.factories.component_policy_factory import (
 )
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.ports.component_repository import ComponentRepository
+from codegen.code_metadata.domain.services.reference_resolver import ReferenceResolver
 from codegen.shared.application.ports.unit_of_work import UnitOfWork
 from codegen.shared.domain.ports.file_system_port import FileSystemPort
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.value_objects.snake_string import SnakeString
 from dataclasses import dataclass, field
+from pathlib import Path
 
 
 @dataclass
@@ -21,8 +23,10 @@ class FileCollection:
     type: ComponentType
     code: str
     name: PascalString
+    path: Path
     import_components: set[ImportedComponent] = field(default_factory=set)
     dependencies: dict[str, Component] = field(default_factory=dict)
+    id_dependencies: dict[ComponentId, Component] = field(default_factory=dict)
     id_map: dict[str, ComponentId] = field(default_factory=dict)
 
     def new_component(self) -> Component:
@@ -41,7 +45,16 @@ class ProjectSyncService:
     file_system_port: FileSystemPort
     component_policy_factory: ComponentPolicyFactory
     uow: UnitOfWork[ComponentRepository]
-    parsed_component_to_sync_data: ParsedComponentToSyncData
+
+    def get_component(
+        self,
+        context: str,
+        component_name: str,
+    ) -> Component | None:
+        with self.uow:
+            components = self.uow.repository.find_by_context_names({(context, component_name)})
+            return components.get((context, component_name))
+        
 
     def reverse_code(
         self,
@@ -89,6 +102,7 @@ class ProjectSyncService:
                         code=code,
                         type=policy.component_type,
                         name=PascalString(file_name),
+                        path=file_path,
                     )
                 )
         return result
@@ -101,6 +115,7 @@ class ProjectSyncService:
         for fc in file_collections:
             import_components = self.parser.parse_dependencies(
                 code=fc.code,
+                component_path=fc.path
             )
             fc.import_components = import_components
             dependencies.update(import_components)
@@ -127,14 +142,11 @@ class ProjectSyncService:
             self.uow.commit()
 
         for fc in file_collections:
-            fc.dependencies = {
-                ic.name: existing_dependencies[(ic.context, ic.name)]
-                for ic in fc.import_components
-            }
-            fc.id_map = {
-                ic.name: existing_dependencies[(ic.context, ic.name)].id
-                for ic in fc.import_components
-            }
+            for ic in fc.import_components:
+                component = existing_dependencies[(ic.context, ic.name)]
+                fc.id_dependencies[component.id] = component
+                fc.dependencies[component.name] = component
+                fc.id_map[component.name] = component.id
 
     def _sync_components(
         self,
@@ -157,7 +169,12 @@ class ProjectSyncService:
                     code=f.code, 
                     component_name=f.name
                 )
-                component_sync_data = self.parsed_component_to_sync_data.map(
+                resolver = ReferenceResolver(
+                    dependencies=f.dependencies,
+                    id_map=f.id_dependencies,
+                )
+                mapper = ParsedComponentToSyncData.create(resolver=resolver)
+                component_sync_data = mapper.map(
                     context=f.context,
                     parsed_component=parsed_component, 
                     component_type=f.type,

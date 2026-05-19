@@ -4,6 +4,7 @@ from typing import Self
 from pydantic import Field
 
 from codegen.code_metadata.application.dtos.component_dto import ComponentDTO
+from codegen.code_metadata.domain.identifiers.attribute_id import AttributeId
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.shared.domain.core.value_object import ValueObject
 from codegen.shared.domain.enums import ContainerType, PrimitiveType, PythonBuiltinType
@@ -12,6 +13,7 @@ from codegen.shared.domain.enums import ContainerType, PrimitiveType, PythonBuil
 class TypeDef(ValueObject):
     origin: PrimitiveType | ContainerType | PythonBuiltinType | ComponentId
     args: tuple[Self, ...] = Field(default_factory=tuple)
+    attr_id: AttributeId | None = None
 
     @classmethod
     def parse_code(cls, code: str, components: dict[str, ComponentId]) -> Self:

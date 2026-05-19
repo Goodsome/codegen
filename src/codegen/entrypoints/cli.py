@@ -11,6 +11,7 @@ from codegen.code_metadata.interfaces.cli.generate_code import generate_code
 from codegen.code_metadata.interfaces.cli.get_dev_progress import get_dev_progress
 from codegen.code_metadata.interfaces.cli.list_components import list_components
 from codegen.code_metadata.interfaces.cli.reverse_code import reverse_code
+from codegen.code_metadata.interfaces.cli.get_component import get_component
 
 app = typer.Typer(
     name="codegen",
@@ -37,6 +38,8 @@ app.command()(generate_code)
 app.command()(get_dev_progress)
 app.command()(reverse_code)
 app.command()(list_components)
+app.command()(get_component)
+
 app.command(name="tree")(tree_cmd)
 
 

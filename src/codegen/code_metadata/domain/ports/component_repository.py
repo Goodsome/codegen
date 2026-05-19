@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections.abc import Collection
 
 from codegen.code_metadata.domain.aggregates.component import Component
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
@@ -15,5 +16,7 @@ class ComponentRepository(Repository[Component, ComponentId], ABC):
     def find_page(self, page_query: PageQuery[ComponentFilter]) -> Page[Component]: ...
         
     @abstractmethod
-    def find_by_context_names(self, context_names: set[tuple[str, str]]) -> dict[tuple[str, str], Component]:
-        pass
+    def find_by_context_names(self, context_names: set[tuple[str, str]]) -> dict[tuple[str, str], Component]: ...
+
+    @abstractmethod
+    def find_by_ids(self, ids: Collection[ComponentId]) -> dict[ComponentId, Component]: ...

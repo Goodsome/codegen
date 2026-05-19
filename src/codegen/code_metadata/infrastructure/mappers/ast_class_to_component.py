@@ -21,9 +21,10 @@ class AstClassToComponent:
 
         attributes: list[ParsedAttribute] = []
         for item in node.body:
-            if isinstance(item, ast.AnnAssign):
-                pa = self.ast_node_to_attribute.ann_assign_to_attribute(item)
-                attributes.append(pa)
+            pa = self.ast_node_to_attribute.map(item)
+            if pa is None:
+                continue
+            attributes.append(pa)
 
         return ParsedComponent(
             name=node.name,

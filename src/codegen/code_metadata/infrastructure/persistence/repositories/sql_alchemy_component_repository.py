@@ -1,3 +1,4 @@
+from collections.abc import Collection
 from dataclasses import dataclass
 from typing import override
 
@@ -146,5 +147,28 @@ class SqlAlchemyComponentRepository(ComponentRepository):
         models = self.session.execute(stmt).scalars().all()
         return {
             (m.context, m.name): ComponentMapper.to_domain(m)
+            for m in models
+        }
+
+    @override
+    def find_by_ids(self, ids: Collection[ComponentId]) -> dict[ComponentId, Component]:
+        if not ids:
+            return {}
+        unique_ids: set[str] = {str(i) for i in ids}
+        stmt = (
+            select(ComponentModel)
+            .where(
+                ComponentModel.id.in_(unique_ids)
+            )
+            .options(
+                selectinload(ComponentModel.attributes),
+                selectinload(ComponentModel.behaviors).selectinload(
+                    BehaviorModel.inputs
+                ),
+            )
+        )
+        models = self.session.execute(stmt).scalars().all()
+        return {
+            ComponentId.reconstitute(m.id): ComponentMapper.to_domain(m)
             for m in models
         }

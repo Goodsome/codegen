@@ -5,6 +5,7 @@ from pydantic import Field
 from codegen.code_metadata.domain.entities.attribute import Attribute
 from codegen.code_metadata.domain.entities.behavior import Behavior
 from codegen.code_metadata.domain.enums import ComponentType
+from codegen.code_metadata.domain.identifiers.attribute_id import AttributeId
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.value_objects.attribute_sync_data import (
     AttributeSyncData,
@@ -60,6 +61,12 @@ class Component(AggregateRoot[ComponentId]):
                 attr.update(attr_sync_data)
             else:
                 attr = Attribute.create(attr_sync_data)
-                
+
             synced_attrs.append(attr)
         self.attributes = synced_attrs
+
+    def find_attribute(self, name: str, ) -> Attribute | None:
+        return next((attr for attr in self.attributes if attr.name == name), None)
+        
+    def find_attribute_by_id(self, attribute_id: AttributeId) -> Attribute | None:
+        return next((attr for attr in self.attributes if attr.id == attribute_id), None)

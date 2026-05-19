@@ -1,21 +1,23 @@
-from typing import Any
-
-# 导入你的领域模型 (Domain Models)
 from codegen.code_metadata.application.dtos.component_dto import ComponentDTO
 from codegen.code_metadata.domain.aggregates.component import Component
-from codegen.code_metadata.domain.entities.behavior import Behavior
 from codegen.code_metadata.domain.entities.attribute import Attribute
+from codegen.code_metadata.domain.entities.behavior import Behavior
 from codegen.code_metadata.domain.enums import ComponentType
-from codegen.code_metadata.domain.identifiers.component_id import ComponentId
-from codegen.code_metadata.domain.identifiers.behavior_id import BehaviorId
 from codegen.code_metadata.domain.identifiers.attribute_id import AttributeId
-from codegen.code_metadata.domain.value_objects.type_def import TypeDef
+from codegen.code_metadata.domain.identifiers.behavior_id import BehaviorId
+from codegen.code_metadata.domain.identifiers.component_id import ComponentId
+from codegen.code_metadata.domain.value_objects.expr_def import expr_def_adapter
 from codegen.code_metadata.domain.value_objects.scenario import Scenario
-
-# 导入上一步生成的 ORM 模型 (ORM Models)
-from codegen.code_metadata.infrastructure.persistence.models.component_model import ComponentModel
-from codegen.code_metadata.infrastructure.persistence.models.behavior_model import BehaviorModel
-from codegen.code_metadata.infrastructure.persistence.models.attribute_model import AttributeModel
+from codegen.code_metadata.domain.value_objects.type_def import TypeDef
+from codegen.code_metadata.infrastructure.persistence.models.attribute_model import (
+    AttributeModel,
+)
+from codegen.code_metadata.infrastructure.persistence.models.behavior_model import (
+    BehaviorModel,
+)
+from codegen.code_metadata.infrastructure.persistence.models.component_model import (
+    ComponentModel,
+)
 
 
 class ComponentMapper:
@@ -31,17 +33,17 @@ class ComponentMapper:
             name=orm_model.name,
             description=orm_model.description,
             context=orm_model.context,
-            bases=orm_model.bases
+            bases=orm_model.bases,
         )
 
     # ==========================================
     # ORM -> Domain (用于从数据库读取并重建聚合)
     # ==========================================
-    
+
     @classmethod
     def to_domain(cls, orm_model: ComponentModel) -> Component:
         return Component(
-            id=ComponentId.reconstitute(orm_model.id),  
+            id=ComponentId.reconstitute(orm_model.id),
             type=ComponentType(orm_model.type),
             name=orm_model.name,
             description=orm_model.description,
@@ -49,7 +51,7 @@ class ComponentMapper:
             bases=[TypeDef.model_validate(t) for t in orm_model.bases],
             # 级联映射子实体
             attributes=[cls._attr_to_domain(attr) for attr in orm_model.attributes],
-            behaviors=[cls._behavior_to_domain(beh) for beh in orm_model.behaviors]
+            behaviors=[cls._behavior_to_domain(beh) for beh in orm_model.behaviors],
         )
 
     @classmethod
@@ -61,17 +63,27 @@ class ComponentMapper:
             # 利用 Pydantic V2 的 model_validate 从 JSON dict 快速恢复嵌套值对象
             scenarios=[Scenario.model_validate(s) for s in orm_model.scenarios],
             inputs=[cls._attr_to_domain(attr) for attr in orm_model.inputs],
-            output=TypeDef.model_validate(orm_model.output)
+            output=TypeDef.model_validate(orm_model.output),
         )
 
     @classmethod
     def _attr_to_domain(cls, orm_model: AttributeModel) -> Attribute:
+        value = (
+            expr_def_adapter.validate_python(orm_model.value)
+            if orm_model.value
+            else None
+        )
+        _type = (
+            TypeDef.model_validate(orm_model.type_def)
+            if orm_model.type_def
+            else None
+        )
         return Attribute(
             id=AttributeId.reconstitute(orm_model.id),
             name=orm_model.name,
             description=orm_model.description,
-            # 利用 Pydantic 将 JSON dict 转换为递归类型的 TypeDef
-            type=TypeDef.model_validate(orm_model.type_def)
+            type=_type,
+            value=value,
         )
 
     # ==========================================
@@ -83,29 +95,31 @@ class ComponentMapper:
         # 注意：此处假设 domain_entity.id 能够直接提取为 UUID。
         # 如果你的 ComponentId 是一个复杂的类，请使用 domain_entity.id.value 提取底层 UUID
         component_id_val = domain_entity.id
-        
+
         return ComponentModel(
             id=component_id_val.value,
-            type=domain_entity.type.value, # 枚举转字符串
+            type=domain_entity.type.value,  # 枚举转字符串
             name=domain_entity.name,
             description=domain_entity.description,
             context=domain_entity.context,
             bases=[t.model_dump(mode="json") for t in domain_entity.bases],
             # 级联映射子实体，需要注入外键 component_id
             attributes=[
-                cls._attr_to_orm(attr, component_id=component_id_val) 
+                cls._attr_to_orm(attr, component_id=component_id_val)
                 for attr in domain_entity.attributes
             ],
             behaviors=[
-                cls._behavior_to_orm(beh, component_id=component_id_val) 
+                cls._behavior_to_orm(beh, component_id=component_id_val)
                 for beh in domain_entity.behaviors
-            ]
+            ],
         )
 
     @classmethod
-    def _behavior_to_orm(cls, domain_entity: Behavior, component_id: ComponentId) -> BehaviorModel:
+    def _behavior_to_orm(
+        cls, domain_entity: Behavior, component_id: ComponentId
+    ) -> BehaviorModel:
         behavior_id_val = domain_entity.id
-        
+
         return BehaviorModel(
             id=behavior_id_val,
             component_id=component_id,
@@ -116,23 +130,33 @@ class ComponentMapper:
             output=domain_entity.output.model_dump(mode="json"),
             # Behavior 拥有的 inputs，注入外键 behavior_id
             inputs=[
-                cls._attr_to_orm(attr, behavior_id=behavior_id_val) 
+                cls._attr_to_orm(attr, behavior_id=behavior_id_val)
                 for attr in domain_entity.inputs
-            ]
+            ],
         )
 
     @classmethod
     def _attr_to_orm(
-        cls, 
-        domain_entity: Attribute, 
-        component_id: ComponentId | None = None, 
-        behavior_id: BehaviorId | None = None
+        cls,
+        domain_entity: Attribute,
+        component_id: ComponentId | None = None,
+        behavior_id: BehaviorId | None = None,
     ) -> AttributeModel:
         """
         动态处理双重归属权：
         如果作为 Component 的属性，component_id 有值；
         如果作为 Behavior 的输入参数，behavior_id 有值。
         """
+        value_dict = (
+            expr_def_adapter.dump_python(domain_entity.value, mode="json")
+            if domain_entity.value
+            else None
+        )
+        type_def = (
+            domain_entity.type.model_dump(mode="json")
+            if domain_entity.type
+            else None
+        )
         return AttributeModel(
             id=domain_entity.id.value,
             component_id=component_id.value if component_id else None,
@@ -140,5 +164,6 @@ class ComponentMapper:
             name=domain_entity.name,
             description=domain_entity.description,
             # 递归值对象转为 JSON dict
-            type_def=domain_entity.type.model_dump(mode="json") 
+            type_def=type_def,
+            value=value_dict,
         )

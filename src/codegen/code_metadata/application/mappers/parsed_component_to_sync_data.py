@@ -1,3 +1,4 @@
+from typing import Self
 from dataclasses import dataclass
 
 from codegen.code_metadata.application.dtos.parsed_component import ParsedComponent
@@ -7,6 +8,7 @@ from codegen.code_metadata.application.mappers.parsed_type_to_type_def import (
 )
 from codegen.code_metadata.domain.enums import ComponentType
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
+from codegen.code_metadata.domain.services.reference_resolver import ReferenceResolver
 from codegen.code_metadata.domain.value_objects.component_sync_data import (
     ComponentSyncData,
 )
@@ -17,6 +19,13 @@ class ParsedComponentToSyncData:
     parsed_type_to_type_def: ParsedTypeToTypeDef
     parsed_attribute_mapper: ParsedAttributeMapper
 
+    @classmethod
+    def create(cls, resolver: ReferenceResolver) -> Self:
+        return cls(
+            parsed_type_to_type_def=ParsedTypeToTypeDef.create(resolver),
+            parsed_attribute_mapper=ParsedAttributeMapper.create(resolver),
+        )
+
     def map(
         self,
         context: str,
@@ -25,7 +34,7 @@ class ParsedComponentToSyncData:
         dependencies: dict[str, ComponentId],
     ) -> ComponentSyncData:
         bases = [
-            self.parsed_type_to_type_def.map(base, dependencies)
+            self.parsed_type_to_type_def.map_type(base, dependencies)
             for base in parsed_component.bases
         ]
         attributes = [

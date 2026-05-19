@@ -12,4 +12,3 @@ class ParsedComponent(BaseModel):
     attributes: list[ParsedAttribute] = Field(default_factory=list)
     
     bases: list[ParsedType] = Field(default_factory=list)
-    imported_components: list[ImportedComponent] = Field(default_factory=list)

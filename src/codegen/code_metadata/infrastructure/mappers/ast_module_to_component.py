@@ -1,5 +1,6 @@
 import ast
 from dataclasses import dataclass
+from pathlib import Path
 from typing import ClassVar
 
 from codegen.code_metadata.application.dtos.imported_component import ImportedComponent
@@ -18,30 +19,31 @@ class AstModuleToComponent:
     ast_class_to_component: AstClassToComponent
 
     def map(self, module: ast.Module, component_name: str) -> ParsedComponent:
-        ics: list[ImportedComponent] = []
         component: ParsedComponent | None = None
         for node in module.body:
             if isinstance(node, ast.ClassDef) and node.name == component_name:
                 component = self.ast_class_to_component.map(node)
-            elif isinstance(node, ast.ImportFrom):
-                ics.extend(self.parse_import(node))
         if component is None:
             raise ValueError(f"No class definition found in module {component_name}")
-        component.imported_components = ics
         return component
 
-    def parse_imports(self, module: ast.Module) -> set[ImportedComponent]:
+    def parse_imports(self, module: ast.Module, component_path: Path) -> set[ImportedComponent]:
         ics: set[ImportedComponent] = set()
         for node in module.body:
             if isinstance(node, ast.ImportFrom):
-                ics.update(self.parse_import(node))
+                ics.update(self.parse_import(node, component_path))
         return ics
 
-    def parse_import(self, node: ast.ImportFrom) -> list[ImportedComponent]:
+    def parse_import(self, node: ast.ImportFrom, component_path: Path) -> list[ImportedComponent]:
         module_path = node.module
         if module_path is None:
             return []
 
+        if node.level > 0:
+            module_path = str(component_path.parent).replace("/", ".")
+            if module_path.startswith("src."):
+                module_path = module_path.removeprefix("src.")
+            
         context = self._resolve_context(module_path)
         component_type = self._resolve_component_type(module_path)
         return [

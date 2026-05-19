@@ -12,6 +12,8 @@ from codegen.code_metadata.application.services.dev_progress_service import (
 from codegen.code_metadata.domain.aggregates.component import Component
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.ports.component_repository import ComponentRepository
+from codegen.code_metadata.domain.services.reference_resolver import ReferenceResolver
+from codegen.python_gen.domain.services.dependency_resolver import DependencyResolver
 from codegen.shared.application.dtos.page_query import PageQuery
 from codegen.shared.application.ports.unit_of_work import UnitOfWork
 
@@ -36,19 +38,28 @@ class GetDevProgress:
             )
             page = self.uow.repository.find_page(page_query=page_query)
 
-        components: dict[str, Component] = {}
-        dependencies: set[ComponentId] = set()
-        for component in page.items:
-            components[component.file_name] = component
-            dependencies.update(component.get_dependencies())
+
+            components: dict[str, Component] = {}
+            dependencies: set[ComponentId] = set()
+            for component in page.items:
+                components[component.file_name] = component
+                dependencies.update(component.get_dependencies())
+            
+            deps = self.uow.repository.find_by_ids(dependencies)
 
         dep_components = self.query_service.find_by_ids(
             ids=dependencies,
+        )
+
+        resolver = ReferenceResolver(
+            dependencies=components,
+            id_map=deps,
         )
 
         dp = self.dev_progress_service.get_dev_progress(
             context=query.context,
             components=components,
             dep_components=dep_components,
+            resolver=resolver,
         )
         return dp

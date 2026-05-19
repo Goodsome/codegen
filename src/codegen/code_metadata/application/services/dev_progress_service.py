@@ -9,6 +9,7 @@ from codegen.code_metadata.application.dtos.file_metrics import FileMetrics
 from codegen.code_metadata.domain.aggregates.component import Component
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.ports.code_generator import CodeGenerator
+from codegen.code_metadata.domain.services.reference_resolver import ReferenceResolver
 from codegen.shared.domain.ports.file_system_port import FileSystemPort
 
 
@@ -22,6 +23,7 @@ class DevProgressService:
         context: str,
         components: dict[str, Component],
         dep_components: dict[ComponentId, ComponentDTO],
+        resolver: ReferenceResolver,
     ) -> DevProgress:
         context_path = Path("src/codegen") / context
         current_files = self.file_system_port.list_directory_recursively(
@@ -40,6 +42,7 @@ class DevProgressService:
                     file_path,
                     component,
                     dep_components=dep_components,
+                    resolver=resolver,
                 )
             )
 
@@ -50,6 +53,7 @@ class DevProgressService:
         file_path: Path,
         component: Component | None,
         dep_components: dict[ComponentId, ComponentDTO],
+        resolver: ReferenceResolver,
     ) -> FileMetrics:
         file_name = file_path.stem
         origin_code = self.file_system_port.read_file(file_path)
@@ -57,7 +61,9 @@ class DevProgressService:
         if component:
             component_type = str(component.type)
             component_code = self.generator.generate(
-                component=component, dep_components=dep_components
+                component=component,
+                dep_components=dep_components,
+                resolver=resolver,
             )
             generated_lines = len(component_code.splitlines())
             ast_similarity = self.calculate_ast_similarity(origin_code, component_code)
@@ -82,7 +88,9 @@ class DevProgressService:
         tree_orig = ast.parse(original_code)
         tree_gen = ast.parse(generated_code)
 
-        tree_orig.body = [i for i in tree_orig.body if not isinstance(i, ast.ImportFrom)]
+        tree_orig.body = [
+            i for i in tree_orig.body if not isinstance(i, ast.ImportFrom)
+        ]
         tree_gen.body = [i for i in tree_gen.body if not isinstance(i, ast.ImportFrom)]
 
         dump_orig = ast.dump(tree_orig, annotate_fields=True, include_attributes=False)

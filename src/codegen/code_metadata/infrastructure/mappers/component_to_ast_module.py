@@ -12,6 +12,7 @@ from codegen.code_metadata.domain.factories.component_policy_factory import (
     ComponentPolicyFactory,
 )
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
+from codegen.code_metadata.domain.services.reference_resolver import ReferenceResolver
 from codegen.code_metadata.infrastructure.mappers.component_to_ast_class import (
     ComponentToAstClass,
 )
@@ -21,6 +22,21 @@ from codegen.code_metadata.infrastructure.mappers.component_to_ast_class import 
 class ComponentToAstModule:
     component_to_ast_class: ComponentToAstClass
     component_policy_factory: ComponentPolicyFactory
+
+    @classmethod
+    def create(
+        cls,
+        component_policy_factory: ComponentPolicyFactory,
+        resolver: ReferenceResolver,
+    ) -> "ComponentToAstModule":
+        component_to_ast_class = ComponentToAstClass.create(
+            component_policy_factory=component_policy_factory,
+            resolver=resolver,
+        )
+        return cls(
+            component_to_ast_class=component_to_ast_class,
+            component_policy_factory=component_policy_factory,
+        )
 
     def map(
         self, component: Component, dep_components: dict[ComponentId, ComponentDTO]

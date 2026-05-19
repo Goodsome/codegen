@@ -32,7 +32,9 @@ class AttributeModel(BaseORM):
     description: Mapped[str] = mapped_column(Text)
     
     # 值对象映射：TypeDef 存为递归嵌套的 JSONB
-    type_def: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    type_def: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    
+    value: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
 
     # 关联定义
     component: Mapped["ComponentModel | None"] = relationship(

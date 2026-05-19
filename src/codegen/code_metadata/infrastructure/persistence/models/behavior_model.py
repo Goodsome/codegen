@@ -7,6 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from codegen.shared.infrastructure.orm import BaseORM
 
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from .attribute_model import AttributeModel
     from .component_model import ComponentModel
