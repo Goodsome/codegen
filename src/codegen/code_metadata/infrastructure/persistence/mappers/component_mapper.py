@@ -118,11 +118,11 @@ class ComponentMapper:
     def _behavior_to_orm(
         cls, domain_entity: Behavior, component_id: ComponentId
     ) -> BehaviorModel:
-        behavior_id_val = domain_entity.id
+        behavior_id_val = domain_entity.id.value
 
         return BehaviorModel(
             id=behavior_id_val,
-            component_id=component_id,
+            component_id=component_id.value,
             name=domain_entity.name,
             description=domain_entity.description,
             # Pydantic V2: model_dump(mode='json') 会自动将里面的所有类型(包括UUID, 枚举等)转为JSON兼容的基本类型
@@ -130,7 +130,7 @@ class ComponentMapper:
             output=domain_entity.output.model_dump(mode="json"),
             # Behavior 拥有的 inputs，注入外键 behavior_id
             inputs=[
-                cls._attr_to_orm(attr, behavior_id=behavior_id_val)
+                cls._attr_to_orm(attr, behavior_id=domain_entity.id)
                 for attr in domain_entity.inputs
             ],
         )

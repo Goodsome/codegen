@@ -10,6 +10,7 @@ from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.value_objects.attribute_sync_data import (
     AttributeSyncData,
 )
+from codegen.code_metadata.domain.value_objects.behavior_sync_data import BehaviorSyncData
 from codegen.code_metadata.domain.value_objects.component_sync_data import (
     ComponentSyncData,
 )
@@ -51,6 +52,7 @@ class Component(AggregateRoot[ComponentId]):
         self.bases = component_sync_data.bases
 
         self.sync_attributes(component_sync_data.attributes)
+        self.sync_behaviors(component_sync_data.behaviors)
 
     def sync_attributes(self, attributes: list[AttributeSyncData]) -> None:
         existing_attributes = {attr.name: attr for attr in self.attributes}
@@ -63,7 +65,23 @@ class Component(AggregateRoot[ComponentId]):
                 attr = Attribute.create(attr_sync_data)
 
             synced_attrs.append(attr)
+            
         self.attributes = synced_attrs
+
+    def sync_behaviors(self, behaviors: list[BehaviorSyncData]) -> None:
+        existing_behaviors = {b.name: b for b in self.behaviors}
+        synced_behaviors: list[Behavior] = []
+        for sync_data in behaviors:
+            if sync_data.name in existing_behaviors:
+                behavior = existing_behaviors[sync_data.name]
+                behavior.update(sync_data)
+            else:
+                behavior = Behavior.create(sync_data)
+
+            synced_behaviors.append(behavior)
+
+        self.behaviors = synced_behaviors
+                
 
     def find_attribute(self, name: str, ) -> Attribute | None:
         return next((attr for attr in self.attributes if attr.name == name), None)

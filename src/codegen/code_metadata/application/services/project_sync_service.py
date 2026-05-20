@@ -151,7 +151,7 @@ class ProjectSyncService:
                     component_name=f.name
                 )
                 resolver = ReferenceResolver(
-                    dependencies=f.dependencies,
+                    component=component,
                     id_map=f.id_dependencies,
                 )
                 mapper = ParsedComponentToSyncData.create(resolver=resolver)
@@ -160,7 +160,6 @@ class ProjectSyncService:
                         context=f.context,
                         parsed_component=parsed_component, 
                         component_type=f.type,
-                        dependencies=f.id_map
                     )
                 except AttributeNotFound as e:
                     print(e)

@@ -11,7 +11,6 @@ from codegen.code_metadata.application.services.dev_progress_service import (
 from codegen.code_metadata.domain.aggregates.component import Component
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.ports.component_repository import ComponentRepository
-from codegen.code_metadata.domain.services.reference_resolver import ReferenceResolver
 from codegen.shared.application.dtos.page_query import PageQuery
 from codegen.shared.application.ports.unit_of_work import UnitOfWork
 
@@ -44,14 +43,9 @@ class GetDevProgress:
             
             deps = self.uow.repository.find_by_ids(dependencies)
 
-        resolver = ReferenceResolver(
-            dependencies=components,
-            id_map=deps,
-        )
-
         dp = self.dev_progress_service.get_dev_progress(
             context=query.context,
             components=components,
-            resolver=resolver,
+            components_depdencies=deps
         )
         return dp

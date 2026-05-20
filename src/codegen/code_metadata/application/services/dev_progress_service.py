@@ -6,6 +6,7 @@ from pathlib import Path
 from codegen.code_metadata.application.dtos.dev_progress import DevProgress
 from codegen.code_metadata.application.dtos.file_metrics import FileMetrics
 from codegen.code_metadata.domain.aggregates.component import Component
+from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.ports.code_generator import CodeGenerator
 from codegen.code_metadata.domain.services.reference_resolver import ReferenceResolver
 from codegen.shared.domain.ports.file_system_port import FileSystemPort
@@ -20,7 +21,7 @@ class DevProgressService:
         self,
         context: str,
         components: dict[str, Component],
-        resolver: ReferenceResolver,
+        components_depdencies: dict[ComponentId, Component],
     ) -> DevProgress:
         context_path = Path("src/codegen") / context
         current_files = self.file_system_port.list_directory_recursively(
@@ -38,7 +39,7 @@ class DevProgressService:
                 self.get_file_metrics(
                     file_path,
                     component,
-                    resolver=resolver,
+                    components_depdencies,
                 )
             )
 
@@ -48,13 +49,21 @@ class DevProgressService:
         self,
         file_path: Path,
         component: Component | None,
-        resolver: ReferenceResolver,
+        components_depdencies: dict[ComponentId, Component],
     ) -> FileMetrics:
         file_name = file_path.stem
         origin_code = self.file_system_port.read_file(file_path)
         original_lines = len(origin_code.splitlines())
         if component:
             component_type = str(component.type)
+            id_map: dict[ComponentId, Component] = {}
+            for dep_id in component.get_dependencies():
+                id_map[dep_id] = components_depdencies[dep_id]
+                
+            resolver = ReferenceResolver(
+                component=component,
+                id_map=id_map,
+            )
             component_code = self.generator.generate(
                 component=component,
                 resolver=resolver,

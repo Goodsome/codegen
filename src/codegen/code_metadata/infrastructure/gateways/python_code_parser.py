@@ -17,7 +17,6 @@ class PythonCodeParser(CodeParser):
     def parse(self, code: str, component_name: str) -> ParsedComponent:
         mapper = AstModuleToComponent()
         module = ast.parse(code)
-        print(f"{module=}")
         return mapper.map(module, component_name=component_name)
 
     @override

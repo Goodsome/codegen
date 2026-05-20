@@ -24,5 +24,5 @@ class GenerateCode:
             dep_components = self.uow.repository.find_by_ids(
                 ids=component.get_dependencies()
             )
-        code = self.generator.generate(component, resolver=ReferenceResolver(dependencies=dep_components))
+        code = self.generator.generate(component, resolver=ReferenceResolver(name_map=dep_components))
         return GenerateCodeResult(code=code)

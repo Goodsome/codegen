@@ -31,9 +31,8 @@ class ParsedAttributeMapper:
     def to_attribute_sync_data(
         self,
         parsed_attribute: ParsedAttribute,
-        dependencies: dict[str, ComponentId],
     ) -> AttributeSyncData:
-        type_def = self.parsed_type_to_type_def.map(parsed_attribute.type, dependencies)
+        type_def = self.parsed_type_to_type_def.map_type(parsed_attribute.type)
         expr_def = self.parsed_expr_to_def.map(parsed_attribute.value)
         return AttributeSyncData(
             name=parsed_attribute.name,

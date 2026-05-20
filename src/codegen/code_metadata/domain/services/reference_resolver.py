@@ -12,13 +12,16 @@ from codegen.shared.domain.enums import PythonBuiltinType
 @dataclass
 class ReferenceResolver:
     
-    dependencies: dict[str, Component]
+    component: Component
     id_map: dict[ComponentId, Component]
     attribute_id_map: dict[AttributeId, Attribute] = field(init=False)
+    name_map: dict[str, Component] = field(init=False)
 
     def __post_init__(self):
         self.attribute_id_map = {}
+        self.name_map = {}
         for component in self.id_map.values():
+            self.name_map[component.name] = component
             for attribute in component.attributes:
                 self.attribute_id_map[attribute.id] = attribute
 
@@ -33,13 +36,15 @@ class ReferenceResolver:
     def resolve_target_to_component_id(self, target: str) -> ReferenceTarget:
         if target in PythonBuiltinType._value2member_map_:
             return ReferenceTarget(builtin_type=PythonBuiltinType(target))
-        elif target in self.dependencies:
-            return ReferenceTarget(component_id=self.dependencies[target].id)
+        elif target in self.name_map:
+            return ReferenceTarget(component_id=self.name_map[target].id)
         elif "." in target:
             first, remainder = target.split(".", 1)
             first_rt = self.resolve_target(first)
             return self.resolve_target(remainder, source_target=first_rt)
-        raise ValueError(f"Unknown target: {target}")
+        elif target == self.component.name:
+            return ReferenceTarget(component_id=self.component.id)
+        raise ValueError(f"Unknown target: {target}, {self.component=}")
 
     def resolve_target_to_attribute_id(self, target: str, component_id: ComponentId) -> ReferenceTarget:
         component = self.id_map[component_id]
