@@ -54,7 +54,7 @@ class ExprToAst:
         expr: ReferenceExpr,
     ) -> ast.Name | ast.Attribute:
         if expr.source is None:
-            name = self.resolver.resolve_reference_target(expr.target, None)
+            name = self.resolver.resolve_reference_target(expr.target)
             return ast.Name(id=name)
         else:
             source_expr = self.map_expr(expr.source)
@@ -62,7 +62,6 @@ class ExprToAst:
                 raise ValueError("Expected source expression to be an attribute")
             name = self.resolver.resolve_reference_target(
                 target=expr.target,
-                source_target=expr.source.target,
             )
             return ast.Attribute(value=source_expr, attr=name)
 

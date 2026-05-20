@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Literal
 from pydantic import Field
 from typing_extensions import TYPE_CHECKING
@@ -17,7 +18,7 @@ class ReferenceExpr(ValueObject):
     """
     kind: Literal[ExprKind.REFERENCE] = ExprKind.REFERENCE
     target: ReferenceTarget
-    source: "ExprDef | None" = Field(default=None)
+    source: ExprDef | None = Field(default=None)
     
 
     def get_component_ids(self) -> set[ComponentId]:
