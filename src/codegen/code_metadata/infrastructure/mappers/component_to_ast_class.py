@@ -10,6 +10,7 @@ from codegen.code_metadata.domain.services.reference_resolver import ReferenceRe
 from codegen.code_metadata.infrastructure.mappers.attribute_to_ast_assign import (
     AttributeToAstAssign,
 )
+from codegen.code_metadata.infrastructure.mappers.behavior_to_ast import BehaviorToAst
 from codegen.code_metadata.infrastructure.mappers.type_to_ast import TypeToAst
 
 
@@ -18,6 +19,7 @@ class ComponentToAstClass:
     component_policy_factory: ComponentPolicyFactory
     attribute_to_ast_assign: AttributeToAstAssign
     type_to_ast: TypeToAst
+    behavior_to_ast: BehaviorToAst
 
     @classmethod
     def create(
@@ -29,6 +31,7 @@ class ComponentToAstClass:
             component_policy_factory=component_policy_factory,
             attribute_to_ast_assign=AttributeToAstAssign.create(resolver),
             type_to_ast=TypeToAst.create(resolver),
+            behavior_to_ast=BehaviorToAst.create(resolver)
         )
 
     def map(
@@ -40,6 +43,8 @@ class ComponentToAstClass:
             body.append(ast.Expr(value=ast.Constant(value=component.description)))
         for attribute in component.attributes:
             body.append(self.attribute_to_ast_assign.map(attribute))
+        for behavior in component.behaviors:
+            body.append(self.behavior_to_ast.to_ast(behavior))
         if not body:
             body.append(ast.Expr(ast.Constant(value=...)))
         bases = [self.type_to_ast.map_type(t) for t in component.bases]

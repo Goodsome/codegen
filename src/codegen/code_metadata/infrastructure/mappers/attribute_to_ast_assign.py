@@ -20,9 +20,7 @@ class AttributeToAstAssign:
             type_to_ast=TypeToAst.create(resolver),
         )
 
-    def map(
-        self, attribute: Attribute
-    ) -> ast.AnnAssign | ast.Assign | ast.Expr:
+    def map(self, attribute: Attribute) -> ast.AnnAssign | ast.Assign | ast.Expr:
         target = ast.Name(id=attribute.name, ctx=ast.Store())
         annotation = self.type_to_ast.map(attribute.type)
         value = self.expr_to_ast.map(attribute.value)
@@ -43,3 +41,23 @@ class AttributeToAstAssign:
             return ast.Expr(
                 value=ast.Name(id=attribute.name, ctx=ast.Load()),
             )
+
+    def attributes_to_arguments(self, attributes: list[Attribute]) -> ast.arguments:
+        args: list[ast.arg] = []
+        defaults: list[ast.expr] = []
+
+        for attribute in attributes:
+            args.append(
+                ast.arg(
+                    arg=attribute.name,
+                    annotation=self.type_to_ast.map(attribute.type),
+                )
+            )
+            value = self.expr_to_ast.map(attribute.value)
+            if value:
+                defaults.append(value)
+
+        return ast.arguments(
+            args=args,
+            defaults=defaults
+        )

@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import override
+from typing import Self, override
 from .architecture_layer import ArchitectureLayer
 
 class ComponentType(Enum):
@@ -27,12 +27,12 @@ class ComponentType(Enum):
 
     EXTERNAL = ("external", "external", ArchitectureLayer.INTERFACES)
 
-    def __new__(cls, value: str, dir_name: str, layer: ArchitectureLayer):
+    def __new__(cls, value: str, dir_name: str, layer: ArchitectureLayer) -> Self:
         obj = object.__new__(cls)
         obj._value_ = value
         return obj
 
-    def __init__(self, value: str, dir_name: str, layer: ArchitectureLayer):
+    def __init__(self, value: str, dir_name: str, layer: ArchitectureLayer) -> None:
         self.dir_name = dir_name
         self.layer = layer
 

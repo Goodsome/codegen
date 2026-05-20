@@ -42,6 +42,8 @@ class Component(AggregateRoot[ComponentId]):
             result.update(base.get_component_ids())
         for attr in self.attributes:
             result.update(attr.get_component_ids())
+        for behavior in self.behaviors:
+            result.update(behavior.get_component_ids())
         return result
 
     def update(self, component_sync_data: ComponentSyncData) -> None:
