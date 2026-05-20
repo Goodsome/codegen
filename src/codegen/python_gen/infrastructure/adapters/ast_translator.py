@@ -1,7 +1,6 @@
 
 import ast
 from dataclasses import dataclass
-from pathlib import Path
 from codegen.python_gen.domain.ports.source_code_port import SourceCodePort
 from codegen.python_gen.domain.value_objects.module_spec import ModuleSpec
 from codegen.python_gen.domain.value_objects.import_from_spec import ImportFromSpec

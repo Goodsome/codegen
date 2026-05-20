@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from collections.abc import Collection, Sequence
+from collections.abc import Collection
 from codegen.code_metadata.application.dtos.component_dto import ComponentDTO
 from codegen.code_metadata.application.dtos.component_filter import ComponentFilter
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId

@@ -3,11 +3,9 @@ import difflib
 from dataclasses import dataclass
 from pathlib import Path
 
-from codegen.code_metadata.application.dtos.component_dto import ComponentDTO
 from codegen.code_metadata.application.dtos.dev_progress import DevProgress
 from codegen.code_metadata.application.dtos.file_metrics import FileMetrics
 from codegen.code_metadata.domain.aggregates.component import Component
-from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.ports.code_generator import CodeGenerator
 from codegen.code_metadata.domain.services.reference_resolver import ReferenceResolver
 from codegen.shared.domain.ports.file_system_port import FileSystemPort

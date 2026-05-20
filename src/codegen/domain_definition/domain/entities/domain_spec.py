@@ -2,7 +2,6 @@ from typing import Self
 
 from pydantic import Field
 
-from codegen.code_metadata.application.dtos.component_dto import ComponentDTO
 from codegen.code_metadata.application.dtos.upsert_component_command import UpsertComponentCommand
 from codegen.domain_definition.domain.entities.aggregate_spec import AggregateSpec
 from codegen.domain_definition.domain.entities.core_spec import CoreSpec

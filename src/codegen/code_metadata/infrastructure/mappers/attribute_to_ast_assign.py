@@ -2,9 +2,7 @@ import ast
 from dataclasses import dataclass
 from typing import Self
 
-from codegen.code_metadata.application.dtos.component_dto import ComponentDTO
 from codegen.code_metadata.domain.entities.attribute import Attribute
-from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.services.reference_resolver import ReferenceResolver
 from codegen.code_metadata.infrastructure.mappers.expr_to_ast import ExprToAst
 from codegen.code_metadata.infrastructure.mappers.type_to_ast import TypeToAst

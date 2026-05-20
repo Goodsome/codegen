@@ -9,7 +9,6 @@ from codegen.code_metadata.domain.enums import ComponentType
 from codegen.code_metadata.infrastructure.mappers.ast_class_to_component import (
     AstClassToComponent,
 )
-from codegen.shared.domain.value_objects.snake_string import SnakeString
 
 
 @dataclass
