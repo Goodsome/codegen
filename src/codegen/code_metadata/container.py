@@ -17,15 +17,6 @@ from codegen.code_metadata.infrastructure.gateways.python_code_generator import 
 from codegen.code_metadata.infrastructure.gateways.python_code_parser import (
     PythonCodeParser,
 )
-from codegen.code_metadata.infrastructure.mappers.ast_class_to_component import (
-    AstClassToComponent,
-)
-from codegen.code_metadata.infrastructure.mappers.ast_module_to_component import (
-    AstModuleToComponent,
-)
-from codegen.code_metadata.infrastructure.mappers.ast_node_to_attribute import AstNodeToParsedAttribute
-from codegen.code_metadata.infrastructure.mappers.ast_node_to_expr import AstNodeToExpr
-from codegen.code_metadata.infrastructure.mappers.ast_node_to_parsed_type import AstNodeToParsedType
 from codegen.code_metadata.infrastructure.persistence.repositories.sql_alchemy_component_query_service import (
     SQLAlchemyComponentQueryService,
 )
@@ -68,34 +59,8 @@ class Container(DeclarativeContainer):
         ComponentPolicyFactory,
     )
     
-    ast_node_to_parsed_type: Singleton[AstNodeToParsedType] = Singleton(
-        AstNodeToParsedType,
-    )
-
-    ast_node_to_expr: Singleton[AstNodeToExpr] = Singleton(
-        AstNodeToExpr,
-    )
-    
-    ast_node_to_attribute: Singleton[AstNodeToParsedAttribute] = Singleton(
-        AstNodeToParsedAttribute,
-        ast_node_to_parsed_type=ast_node_to_parsed_type,
-        ast_node_to_expr=ast_node_to_expr,
-    )
-
-    ast_class_to_component: Singleton[AstClassToComponent] = Singleton(
-        AstClassToComponent,
-        ast_node_to_attribute=ast_node_to_attribute,
-        ast_node_to_parsed_type=ast_node_to_parsed_type,
-    )
-
-    ast_module_to_component: Singleton[AstModuleToComponent] = Singleton(
-        AstModuleToComponent,
-        ast_class_to_component=ast_class_to_component,
-    )
-
     python_code_parser: Factory[PythonCodeParser] = Factory(
         PythonCodeParser,
-        mapper=ast_module_to_component,
     )
 
     list_components: Factory[ListComponents] = Factory(

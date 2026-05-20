@@ -7,44 +7,44 @@ from codegen.shared.domain.enums import PythonBuiltinType
 @dataclass
 class AstNodeToParsedType:
     
-    def parse_ast_node(self, node: ast.AST) -> ParsedType:
+    def _node_to_type(self, node: ast.AST) -> ParsedType:
         if isinstance(node, ast.Expr):
-            return self.parse_ast_expr(node)
+            return self.expr_to_type(node)
         elif isinstance(node, ast.Name):
-            return self.parse_ast_name(node)
+            return self.name_to_type(node)
         elif isinstance(node, ast.Subscript):
-            return self.parse_ast_subscript(node)
+            return self.subscript_to_type(node)
         elif isinstance(node, ast.BinOp):
-            return self.parse_ast_binop(node)
+            return self.binop_to_type(node)
         elif isinstance(node, ast.Constant):
-            return self.parse_ast_constant(node)
+            return self.constant_to_type(node)
         elif isinstance(node, ast.Attribute):
-            return self.parse_ast_attribute(node)
+            return self.attribute_to_type(node)
         raise NotImplementedError(f"Unsupported AST node: {node}, {ast.dump(node)}, {ast.unparse(node)}")
 
-    def parse_ast_expr(self, expr: ast.Expr) -> ParsedType:
-        return self.parse_ast_node(expr.value)
+    def expr_to_type(self, expr: ast.Expr) -> ParsedType:
+        return self._node_to_type(expr.value)
 
-    def parse_ast_subscript(self, expr: ast.Subscript) -> ParsedType:
-        container = self.parse_ast_node(expr.value)
+    def subscript_to_type(self, expr: ast.Subscript) -> ParsedType:
+        container = self._node_to_type(expr.value)
         args: tuple[ParsedType, ...]
         if isinstance(expr.slice, ast.Tuple):
-            args = tuple(self.parse_ast_node(slice) for slice in expr.slice.elts)
+            args = tuple(self._node_to_type(slice) for slice in expr.slice.elts)
         else:
-            args = (self.parse_ast_node(expr.slice),)
+            args = (self._node_to_type(expr.slice),)
 
         container.args = args
         return container
 
-    def parse_ast_name(self, expr: ast.Name) -> ParsedType:
+    def name_to_type(self, expr: ast.Name) -> ParsedType:
         name = expr.id
         return ParsedType(origin=name)
 
-    def parse_ast_binop(self, expr: ast.BinOp) -> ParsedType:
+    def binop_to_type(self, expr: ast.BinOp) -> ParsedType:
         match expr.op:
             case ast.BitOr():
-                left_type = self.parse_ast_node(expr.left)
-                right_type = self.parse_ast_node(expr.right)
+                left_type = self._node_to_type(expr.left)
+                right_type = self._node_to_type(expr.right)
 
                 return ParsedType(
                     origin=PythonBuiltinType.UNION, args=(left_type, right_type)
@@ -54,7 +54,7 @@ class AstNodeToParsedType:
                     f"不支持的类型注解二元操作符: {type(expr.op).__name__} (节点: {ast.dump(expr)})"
                 )
 
-    def parse_ast_constant(self, expr: ast.Constant) -> ParsedType:
+    def constant_to_type(self, expr: ast.Constant) -> ParsedType:
         """
         处理常量节点。在类型注解中，主要用于处理省略号 (...) 和 前向引用 (字符串)。
         """
@@ -77,7 +77,7 @@ class AstNodeToParsedType:
                     f"不支持的类型注解常量值: {expr.value} (节点: {ast.dump(expr)})"
                 )
 
-    def parse_ast_attribute(self, expr: ast.Attribute) -> ParsedType:
+    def attribute_to_type(self, expr: ast.Attribute) -> ParsedType:
         origin = ast.unparse(expr)
         return ParsedType(
             origin=origin,

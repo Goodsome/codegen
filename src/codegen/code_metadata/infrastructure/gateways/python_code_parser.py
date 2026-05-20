@@ -13,15 +13,17 @@ from codegen.code_metadata.infrastructure.mappers.ast_module_to_component import
 
 @dataclass
 class PythonCodeParser(CodeParser):
-    mapper: AstModuleToComponent
-
     @override
     def parse(self, code: str, component_name: str) -> ParsedComponent:
+        mapper = AstModuleToComponent()
         module = ast.parse(code)
-        return self.mapper.map(module, component_name=component_name)
+        print(f"{module=}")
+        return mapper.map(module, component_name=component_name)
 
     @override
-    def parse_dependencies(self, code: str, component_path: Path) -> set[ImportedComponent]:
+    def parse_dependencies(
+        self, code: str, component_path: Path
+    ) -> set[ImportedComponent]:
+        mapper = AstModuleToComponent()
         module = ast.parse(code)
-        return self.mapper.parse_imports(module=module, component_path=component_path)
-        
+        return mapper.parse_imports(module=module, component_path=component_path)

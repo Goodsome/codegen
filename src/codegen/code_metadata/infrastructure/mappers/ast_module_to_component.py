@@ -1,21 +1,66 @@
 import ast
 from dataclasses import dataclass
 from pathlib import Path
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from codegen.code_metadata.application.dtos.imported_component import ImportedComponent
+from codegen.code_metadata.application.dtos.parsed_attribute import ParsedAttribute
+from codegen.code_metadata.application.dtos.parsed_behavior import ParsedBehavior
 from codegen.code_metadata.application.dtos.parsed_component import ParsedComponent
+from codegen.code_metadata.application.dtos.parsed_expr import ParsedExpr
+from codegen.code_metadata.application.dtos.parsed_type import ParsedType
 from codegen.code_metadata.domain.enums import ComponentType
 from codegen.code_metadata.infrastructure.mappers.ast_class_to_component import (
-    AstClassToComponent,
+    AstToComponent,
+)
+from codegen.code_metadata.infrastructure.mappers.ast_node_to_attribute import (
+    AstNodeToAttribute,
+)
+from codegen.code_metadata.infrastructure.mappers.ast_node_to_expr import AstNodeToExpr
+from codegen.code_metadata.infrastructure.mappers.ast_node_to_parsed_type import (
+    AstNodeToParsedType,
+)
+from codegen.code_metadata.infrastructure.mappers.ast_to_behavior_mixin import (
+    AstToBehaviorMixin,
 )
 
 
 @dataclass
-class AstModuleToComponent:
+class AstModuleToComponent(
+    AstToBehaviorMixin,
+    AstToComponent,
+    AstNodeToParsedType,
+    AstNodeToExpr,
+    AstNodeToAttribute,
+):
     _CODEGEN_PREFIX: ClassVar[str] = "codegen."
 
-    ast_class_to_component: AstClassToComponent
+    def parse_node_to_behavior(self, node: ast.AST) -> ParsedBehavior:
+        match node:
+            case ast.FunctionDef():
+                return self.function_def_to_behavior(node)
+            case _:
+                raise ValueError(f"not support {node=}")
+
+    def parse_node_to_attribute(self, node: ast.AST) -> ParsedAttribute:
+        match node:
+            case ast.AnnAssign():
+                return self.ann_assign_to_attribute(node)
+            case ast.Assign():
+                return self.assign_to_attribute(node)
+            case ast.arg():
+                return self.arg_to_attribute(node)
+            case _:
+                raise ValueError(f"not support {node=}")
+
+    def parse_node_to_attributes(self, node: ast.arguments) -> list[ParsedAttribute]:
+        return self._parse_node_to_attributes(node)
+
+    def parse_node_to_type(self, node: ast.AST) -> ParsedType:
+        return self._node_to_type(node)
+
+    def parse_node_to_expr(self, node: ast.expr) -> ParsedExpr:
+        return self._node_to_expr(node)
 
     def map(self, module: ast.Module, component_name: str) -> ParsedComponent:
         component: ParsedComponent | None = None
@@ -25,30 +70,36 @@ class AstModuleToComponent:
             raise ValueError(f"No class definition found in module {component_name}")
         return component
 
-    def try_get_component(self, node: ast.AST, component_name: str) -> ParsedComponent | None:
+    def try_get_component(
+        self, node: ast.AST, component_name: str
+    ) -> ParsedComponent | None:
         if isinstance(node, ast.ClassDef) and node.name == component_name:
-            return self.ast_class_to_component.map(node)
+            return self.class_def_to_component(node)
         elif isinstance(node, ast.Assign):
             return self.parse_assign(node, component_name)
         return None
-        
-    def parse_assign(self, node: ast.Assign, component_name: str) -> ParsedComponent | None:
+
+    def parse_assign(
+        self, node: ast.Assign, component_name: str
+    ) -> ParsedComponent | None:
         if len(node.targets) != 1:
             return None
         if not isinstance(node.targets[0], ast.Name):
             return None
         if node.targets[0].id != component_name:
             return None
-        parsed_attribute = self.ast_class_to_component.ast_node_to_attribute.map(node)
-        if parsed_attribute is None:
-            return None
+        parsed_attribute = self.parse_node_to_attribute(node)
         return ParsedComponent(
             name=component_name,
             description="",
-            attributes=[parsed_attribute]
+            attributes=[parsed_attribute],
+            behaviors=[],
+            bases=[],
         )
 
-    def parse_imports(self, module: ast.Module, component_path: Path) -> set[ImportedComponent]:
+    def parse_imports(
+        self, module: ast.Module, component_path: Path
+    ) -> set[ImportedComponent]:
         ics: set[ImportedComponent] = set()
         for node in module.body:
             if isinstance(node, ast.ImportFrom):
@@ -59,7 +110,9 @@ class AstModuleToComponent:
                         ics.update(self.parse_import(subnode, component_path))
         return ics
 
-    def parse_import(self, node: ast.ImportFrom, component_path: Path) -> list[ImportedComponent]:
+    def parse_import(
+        self, node: ast.ImportFrom, component_path: Path
+    ) -> list[ImportedComponent]:
         module_path = node.module
         if module_path is None:
             return []
@@ -68,7 +121,7 @@ class AstModuleToComponent:
             module_path = str(component_path.parent).replace("/", ".")
             if module_path.startswith("src."):
                 module_path = module_path.removeprefix("src.")
-            
+
         context = self._resolve_context(module_path)
         component_type = self._resolve_component_type(module_path)
         return [

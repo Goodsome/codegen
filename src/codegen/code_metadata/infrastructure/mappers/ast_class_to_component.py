@@ -1,34 +1,33 @@
 import ast
-from dataclasses import dataclass
 
 from codegen.code_metadata.application.dtos.parsed_attribute import ParsedAttribute
+from codegen.code_metadata.application.dtos.parsed_behavior import ParsedBehavior
 from codegen.code_metadata.application.dtos.parsed_component import ParsedComponent
-from codegen.code_metadata.infrastructure.mappers.ast_node_to_attribute import (
-    AstNodeToParsedAttribute,
-)
-from codegen.code_metadata.infrastructure.mappers.ast_node_to_parsed_type import (
-    AstNodeToParsedType,
+from codegen.code_metadata.infrastructure.mappers.ast_mapper_protocol import (
+    AstMapperProtocol,
 )
 
 
-@dataclass
-class AstClassToComponent:
-    ast_node_to_parsed_type: AstNodeToParsedType
-    ast_node_to_attribute: AstNodeToParsedAttribute
-
-    def map(self, node: ast.ClassDef) -> ParsedComponent:
-        bases = [self.ast_node_to_parsed_type.parse_ast_node(b) for b in node.bases]
+class AstToComponent:
+    def class_def_to_component(
+        self: AstMapperProtocol, node: ast.ClassDef
+    ) -> ParsedComponent:
+        bases = [self.parse_node_to_type(b) for b in node.bases]
 
         attributes: list[ParsedAttribute] = []
+        behaviors: list[ParsedBehavior] = []
         for item in node.body:
-            pa = self.ast_node_to_attribute.map(item)
-            if pa is None:
-                continue
-            attributes.append(pa)
+            if isinstance(item, (ast.AnnAssign, ast.Assign)):
+                pa = self.parse_node_to_attribute(item)
+                attributes.append(pa)
+            elif isinstance(item, (ast.FunctionDef)):
+                b = self.parse_node_to_behavior(item)
+                behaviors.append(b)
 
         return ParsedComponent(
             name=node.name,
             description=ast.get_docstring(node) or "",
             bases=bases,
             attributes=attributes,
+            behaviors=behaviors,
         )

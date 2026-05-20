@@ -1,0 +1,21 @@
+import ast
+from typing import Protocol, Any
+
+from codegen.code_metadata.application.dtos.parsed_attribute import ParsedAttribute
+from codegen.code_metadata.application.dtos.parsed_behavior import ParsedBehavior
+from codegen.code_metadata.application.dtos.parsed_expr import ParsedExpr
+from codegen.code_metadata.application.dtos.parsed_type import ParsedType
+
+
+class AstMapperProtocol(Protocol):
+    
+    def parse_node_to_behavior(self, node: ast.AST) -> ParsedBehavior: ...
+
+    def parse_node_to_attribute(self, node: ast.AST) -> ParsedAttribute: ...
+
+    def parse_node_to_type(self, node: ast.AST) -> ParsedType: ...
+    
+    def parse_node_to_expr(self, node: ast.expr) -> ParsedExpr: ...
+    
+    def parse_node_to_attributes(self, node: ast.arguments) -> list[ParsedAttribute]: ...
+    

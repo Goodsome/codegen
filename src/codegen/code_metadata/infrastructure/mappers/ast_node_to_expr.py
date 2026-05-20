@@ -11,33 +11,28 @@ from codegen.code_metadata.domain.value_objects.constant_expr import ConstantExp
 
 class AstNodeToExpr:
     
-    def map(self, node: ast.expr | None) -> ParsedExpr | None:
-        if node is None:
-            return None
-        return self.parse_ast_node(node)
-
-    def parse_ast_node(self, node: ast.expr) -> ParsedExpr:
+    def _node_to_expr(self, node: ast.expr) -> ParsedExpr:
         match node:
             case ast.Constant(value=value):
                 return ConstantExpr(value=value)
             case ast.Name():
-                return self.parse_ast_name(node)
+                return self.name_to_expr(node)
             case ast.Attribute():
-                return self.parse_ast_attribute(node)
+                return self.attribute_to_expr(node)
             case ast.Call():
-                return self.parse_ast_call(node)
+                return self.call_to_expr(node)
             case ast.List():
-                return self.parse_ast_list(node)
+                return self.list_to_expr(node)
             case ast.Tuple():
-                return self.parse_ast_tuple(node)
+                return self.tuple_to_expr(node)
             case ast.Set():
-                return self.parse_ast_set(node)
+                return self.set_to_expr(node)
             case ast.Dict():
-                return self.parse_ast_dict(node)
+                return self.dict_to_expr(node)
             case _:
                 raise ValueError(f"Unsupported AST node: {node}")
 
-    def parse_ast_name(self, node: ast.Name) -> ReferenceExprDto:
+    def name_to_expr(self, node: ast.Name) -> ReferenceExprDto:
         target = node.id
         source = None
         return ReferenceExprDto(
@@ -45,54 +40,54 @@ class AstNodeToExpr:
             source=source,
         )
 
-    def parse_ast_attribute(self, node: ast.Attribute) -> ReferenceExprDto:
+    def attribute_to_expr(self, node: ast.Attribute) -> ReferenceExprDto:
         target = node.attr
-        source = self.parse_ast_node(node.value)
+        source = self._node_to_expr(node.value)
         return ReferenceExprDto(
             target=target,
             source=source,
         )
 
-    def parse_ast_call(self, node: ast.Call) -> CallExprDto:
-        callee = self.parse_ast_node(node.func)
-        args = [self.parse_ast_node(arg) for arg in node.args]
+    def call_to_expr(self, node: ast.Call) -> CallExprDto:
+        callee = self._node_to_expr(node.func)
+        args = [self._node_to_expr(arg) for arg in node.args]
         parsed_kwargs: dict[str, ParsedExpr] = {}
         for kw in node.keywords:
             if kw.arg is not None:
-                parsed_kwargs[kw.arg] = self.parse_ast_node(kw.value)
+                parsed_kwargs[kw.arg] = self._node_to_expr(kw.value)
             else:
-                parsed_kwargs["**"] = self.parse_ast_node(kw.value)
+                parsed_kwargs["**"] = self._node_to_expr(kw.value)
         return CallExprDto(
             callee=callee,
             args=args,
             kwargs=parsed_kwargs,
         )
 
-    def parse_ast_list(self, node: ast.List) -> SequenceExprDto:
-        elements = [self.parse_ast_node(elt) for elt in node.elts]
+    def list_to_expr(self, node: ast.List) -> SequenceExprDto:
+        elements = [self._node_to_expr(elt) for elt in node.elts]
         return SequenceExprDto(
             container_type="list",
             elements=elements,
         )
 
-    def parse_ast_tuple(self, node: ast.Tuple) -> SequenceExprDto:
-        elements = [self.parse_ast_node(elt) for elt in node.elts]
+    def tuple_to_expr(self, node: ast.Tuple) -> SequenceExprDto:
+        elements = [self._node_to_expr(elt) for elt in node.elts]
         return SequenceExprDto(
             container_type="tuple",
             elements=elements,
         )
 
-    def parse_ast_set(self, node: ast.Set) -> SequenceExprDto:
-        elements = [self.parse_ast_node(elt) for elt in node.elts]
+    def set_to_expr(self, node: ast.Set) -> SequenceExprDto:
+        elements = [self._node_to_expr(elt) for elt in node.elts]
         return SequenceExprDto(
             container_type="set",
             elements=elements,
         )
 
-    def parse_ast_dict(self, node: ast.Dict) -> DictExprDto:
+    def dict_to_expr(self, node: ast.Dict) -> DictExprDto:
         items: list[DictItemDto] = []
         for k, v in zip(node.keys, node.values):
-            parsed_key = self.parse_ast_node(k) if k is not None else None
-            parsed_value = self.parse_ast_node(v)
+            parsed_key = self._node_to_expr(k) if k is not None else None
+            parsed_value = self._node_to_expr(v)
             items.append(DictItemDto(key=parsed_key, value=parsed_value))
         return DictExprDto(items=items)
