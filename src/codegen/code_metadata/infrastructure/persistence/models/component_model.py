@@ -2,6 +2,7 @@ from uuid import UUID
 from sqlalchemy import String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.orderinglist import ordering_list
 from typing import Any
 
 from codegen.shared.infrastructure.orm import BaseORM
@@ -32,7 +33,9 @@ class ComponentModel(BaseORM):
         "AttributeModel",
         back_populates="component",
         cascade="all, delete-orphan",
-        foreign_keys="[AttributeModel.component_id]"
+        foreign_keys="[AttributeModel.component_id]",
+        order_by="AttributeModel.position",
+        collection_class=ordering_list("position")
     )
 
     # 关联：一个组件拥有多个行为

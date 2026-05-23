@@ -1,6 +1,6 @@
 from uuid import UUID
 from typing import Any
-from sqlalchemy import ForeignKey, String, Text
+from sqlalchemy import ForeignKey, String, Text, Integer
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -15,6 +15,8 @@ class AttributeModel(BaseORM):
     __tablename__: str = "attributes"
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
+    
+    position: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
     
     # 可选外键：取决于该属性是属于 Component 还是作为 Behavior 的输入
     component_id: Mapped[UUID | None] = mapped_column(
