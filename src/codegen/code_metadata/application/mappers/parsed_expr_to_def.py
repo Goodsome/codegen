@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from codegen.code_metadata.application.dtos.call_expr_dto import CallExprDto
 from codegen.code_metadata.application.dtos.dict_expr_dto import DictExprDto
 from codegen.code_metadata.application.dtos.dict_item_dto import DictItemDto
+from codegen.code_metadata.application.dtos.lambda_expr_dto import LambdaExprDto
 from codegen.code_metadata.application.dtos.parsed_expr import ParsedExpr
 from codegen.code_metadata.application.dtos.reference_expr_dto import ReferenceExprDto
 from codegen.code_metadata.application.dtos.sequence_expr_dto import SequenceExprDto
@@ -13,6 +14,7 @@ from codegen.code_metadata.domain.value_objects.call_expr import CallExpr
 from codegen.code_metadata.domain.value_objects.dict_expr import DictExpr
 from codegen.code_metadata.domain.value_objects.dict_item import DictItem
 from codegen.code_metadata.domain.value_objects.expr_def import ExprDef
+from codegen.code_metadata.domain.value_objects.lambda_expr import LambdaExpr
 from codegen.code_metadata.domain.value_objects.reference_expr import ReferenceExpr
 from codegen.code_metadata.domain.value_objects.sequence_expr import SequenceExpr
 
@@ -48,6 +50,8 @@ class ParsedExprToDef:
                 return self._map_sequence(expr)
             case ExprKind.DICT:
                 return self._map_dict(expr)
+            case ExprKind.LAMBDA:
+                return self._map_lambda(expr)
             case _:
                 raise ValueError(f"Unsupported expr kind: {expr.kind}")
 
@@ -102,3 +106,12 @@ class ParsedExprToDef:
         key = self._map_expr(item.key) if item.key else None
         value = self._map_expr(item.value)
         return DictItem(key=key, value=value)
+
+    def _map_lambda(
+        self, expr: LambdaExprDto,
+    ) -> LambdaExpr:
+        body = self._map_expr(expr.body)
+        return LambdaExpr(
+            params=expr.params,
+            body=body,
+        )

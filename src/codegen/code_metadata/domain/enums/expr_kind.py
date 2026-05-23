@@ -6,4 +6,5 @@ class ExprKind(StrEnum):
     CONSTANT = auto()
     REFERENCE = auto()
     SEQUENCE = auto()
+    LAMBDA = auto()
     

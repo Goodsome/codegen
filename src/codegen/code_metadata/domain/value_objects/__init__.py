@@ -3,6 +3,7 @@ from .constant_expr import ConstantExpr
 from .dict_expr import DictExpr
 from .dict_item import DictItem
 from .expr_def import ExprDef
+from .lambda_expr import LambdaExpr
 from .reference_expr import ReferenceExpr
 from .sequence_expr import SequenceExpr
 
@@ -12,6 +13,7 @@ __all__ = [
     "ConstantExpr",
     "DictExpr",
     "DictItem",
+    "LambdaExpr",
     "ReferenceExpr",
     "SequenceExpr",
 ]
@@ -19,5 +21,6 @@ __all__ = [
 CallExpr.model_rebuild()
 DictItem.model_rebuild()
 DictExpr.model_rebuild()
+LambdaExpr.model_rebuild()
 SequenceExpr.model_rebuild()
 ReferenceExpr.model_rebuild()

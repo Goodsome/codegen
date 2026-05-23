@@ -165,7 +165,7 @@ class ProjectSyncService:
                         component_type=f.type,
                     )
                 except AttributeNotFound as e:
-                    print(e)
+                    print(f"{e=}, {component.name=}")
                     continue
                     
                 component.update(component_sync_data=component_sync_data)

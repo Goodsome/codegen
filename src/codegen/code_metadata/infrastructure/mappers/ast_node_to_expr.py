@@ -3,6 +3,7 @@ import ast
 from codegen.code_metadata.application.dtos.call_expr_dto import CallExprDto
 from codegen.code_metadata.application.dtos.dict_expr_dto import DictExprDto
 from codegen.code_metadata.application.dtos.dict_item_dto import DictItemDto
+from codegen.code_metadata.application.dtos.lambda_expr_dto import LambdaExprDto
 from codegen.code_metadata.application.dtos.parsed_expr import ParsedExpr
 from codegen.code_metadata.application.dtos.reference_expr_dto import ReferenceExprDto
 from codegen.code_metadata.application.dtos.sequence_expr_dto import SequenceExprDto
@@ -29,6 +30,8 @@ class AstNodeToExpr:
                 return self.set_to_expr(node)
             case ast.Dict():
                 return self.dict_to_expr(node)
+            case ast.Lambda():
+                return self.lambda_to_expr(node)
             case _:
                 raise ValueError(f"Unsupported AST node: {node}")
 
@@ -91,3 +94,13 @@ class AstNodeToExpr:
             parsed_value = self._node_to_expr(v)
             items.append(DictItemDto(key=parsed_key, value=parsed_value))
         return DictExprDto(items=items)
+
+    def lambda_to_expr(self, node: ast.Lambda) -> LambdaExprDto:
+        params = [arg.arg for arg in node.args.args]
+        if node.args.vararg:
+            params.append(f"*{node.args.vararg.arg}")
+        params += [arg.arg for arg in node.args.kwonlyargs]
+        if node.args.kwarg:
+            params.append(f"**{node.args.kwarg.arg}")
+        body = self._node_to_expr(node.body)
+        return LambdaExprDto(params=params, body=body)

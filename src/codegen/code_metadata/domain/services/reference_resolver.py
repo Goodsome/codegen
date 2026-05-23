@@ -63,7 +63,6 @@ class ReferenceResolver:
         elif target.builtin_type:
             return target.builtin_type
 
-        breakpoint()
         raise ValueError(f"Unsupported {target=}")
 
     def resolve_component_id(self, component_id: ComponentId) -> str:
