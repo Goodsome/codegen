@@ -1,6 +1,7 @@
 from pathlib import Path
 from codegen.code_metadata.application.dtos.file_collection import FileCollection
 from codegen.code_metadata.application.dtos.imported_component import ImportedComponent
+from codegen.code_metadata.application.dtos.parsed_component import ParsedComponent
 from codegen.code_metadata.application.mappers.parsed_component_to_sync_data import ParsedComponentToSyncData
 from codegen.code_metadata.application.ports.code_parser import CodeParser
 from codegen.code_metadata.application.services.memory_component_collection import MemoryComponentCollection
@@ -51,7 +52,7 @@ class ProjectSyncService:
             component_type=component_type,
             component_name=component_name,
         )
-        existing_dependencies = self._ensure_dependencies(file_collections)
+        existing_dependencies = self._get_dependencies(file_collections)
         self._sync_components(file_collections, existing_dependencies)
 
     def _collect_files(
@@ -76,11 +77,15 @@ class ProjectSyncService:
             if "interfaces" in str(file_path):
                 continue
             file_name = file_path.stem
-            if file_name in ["__init__", "container"]:
+            if file_name in ["__init__", "container", "expr_def", "parsed_expr"]:
                 continue
             code = self.file_system_port.read_file(file_path)
             parsed_path = self.path_parser.parse_file_path(file_path)
-            
+            parsed_component = self.parser.parse(
+                code=code, 
+                component_name=PascalString(file_name),
+            )
+            reference_sources = self._collect_reference_sources(file_path, parsed_component)
             result.append(
                 FileCollection(
                     context=parsed_path.context,
@@ -89,50 +94,52 @@ class ProjectSyncService:
                     layer=parsed_path.layer,
                     name=PascalString(file_name),
                     path=file_path,
+                    parsed_component=parsed_component,
+                    reference_sources=reference_sources,
                 )
             )
         return result
 
-    def _ensure_dependencies(
+    def _collect_reference_sources(self, file_path: Path, parsed_component: ParsedComponent) -> list[ReferenceSource]:
+        reference_sources: list[ReferenceSource] = []
+        for import_dto in parsed_component.imports:
+            if import_dto.level == 0:
+                module = import_dto.module or ""
+            else:
+                parts = file_path.parts[:-import_dto.level]
+                module = ".".join(parts) + "." + (import_dto.module or "")
+            
+            parsed_path = self.path_parser.parse_module_path(
+                module,
+            )
+            reference_sources.append(
+                ReferenceSource(
+                    context=parsed_path.context,
+                    components=import_dto.names,
+                )
+            )
+
+        return reference_sources
+
+    def _get_dependencies(
         self,
         file_collections: list[FileCollection],
     ) -> dict[tuple[str, str], Component]:
-        dependencies: set[ImportedComponent] = set()
+        context_names: set[tuple[str, str]] = set()
+        contexts_only: set[str] = set()
         for fc in file_collections:
-            import_components = self.parser.parse_dependencies(
-                code=fc.code,
-                component_path=fc.path
-            )
-            fc.import_components = import_components
-            dependencies.update(import_components)
-                
-        context_names: set[tuple[str, str]] = {
-            (ic.context, ic.name) for ic in dependencies
-        }
+            context_names.update(fc.collect_dependency_components())
+            contexts_only.update(fc.collect_dependency_contexts_only())
+            
         with self.uow:
             existing_dependencies = self.uow.repository.find_by_context_names(
                 context_names=context_names
             )
-            for dep in dependencies:
-                if (dep.context, dep.name) not in existing_dependencies:
-                    new_c = Component(
-                        id=ComponentId.create(),
-                        context=dep.context,
-                        name=dep.name,
-                        type=ComponentType.EXTERNAL,
-                        layer=ArchitectureLayer.UNKNOWN,
-                        description="",
-                    )
-                    self.uow.repository.add(new_c)
-                    existing_dependencies[(dep.context, dep.name)] = new_c
+            existing_dependencies_by_context = self.uow.repository.find_by_contexts(
+                contexts=contexts_only
+            )
+            existing_dependencies.update(existing_dependencies_by_context)
                     
-            self.uow.commit()
-
-        for fc in file_collections:
-            for ic in fc.import_components:
-                component = existing_dependencies[(ic.context, ic.name)]
-                fc.id_dependencies[component.id] = component
-
         return existing_dependencies
 
     def _sync_components(
@@ -156,44 +163,19 @@ class ProjectSyncService:
                 context_names=context_names
             )
             for f in file_collections:
-                if f.name in ["ExprDef", "ParsedExpr"]:
-                    continue
                 component = existing_components.get((f.context, f.name))
                 if not component:
                     component = f.new_component()
 
-                parsed_component = self.parser.parse(
-                    code=f.code, 
-                    component_name=f.name
-                )
-                reference_sources: list[ReferenceSource] = []
-                for import_dto in parsed_component.imports:
-                    if import_dto.level == 0:
-                        module = import_dto.module or ""
-                    else:
-                        parts = f.path.parts[:-import_dto.level]
-                        module = ".".join(parts) + "." + (import_dto.module or "")
-                    
-                    parsed_path = self.path_parser.parse_module_path(
-                        module,
-                    )
-                    reference_sources.append(
-                        ReferenceSource(
-                            context=parsed_path.context,
-                            components=import_dto.names,
-                        )
-                    )
-                print(reference_sources)
                 resolver = ReferenceResolver(
                     component=component,
-                    id_map=f.id_dependencies,
                     components=component_collection,
-                    reference_sources=reference_sources,
+                    reference_sources=f.reference_sources,
                 )
                 mapper = ParsedComponentToSyncData(resolver=resolver)
                 component_sync_data = mapper.map(
                     context=f.context,
-                    parsed_component=parsed_component,
+                    parsed_component=f.parsed_component,
                     component_type=f.type,
                     layer=f.layer,
                 )

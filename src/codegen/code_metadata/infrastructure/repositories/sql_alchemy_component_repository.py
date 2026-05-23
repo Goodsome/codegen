@@ -21,6 +21,7 @@ from codegen.code_metadata.infrastructure.orm_models.component_model import (
 from codegen.shared.application.dtos.page import Page
 from codegen.shared.application.dtos.page_query import PageQuery
 
+
 @dataclass
 class SqlAlchemyComponentRepository(ComponentRepository):
     """
@@ -82,7 +83,7 @@ class SqlAlchemyComponentRepository(ComponentRepository):
         orm_models = [ComponentMapper.to_orm(aggregate) for aggregate in aggregates]
         for orm_model in orm_models:
             self.session.merge(orm_model)
-            
+
     @override
     def _delete(self, id: ComponentId) -> None:
         """
@@ -122,14 +123,19 @@ class SqlAlchemyComponentRepository(ComponentRepository):
         if page_query.current and page_query.size:
             offset = (page_query.current - 1) * page_query.size
             stmt = stmt.offset(offset).limit(page_query.size)
-            
+
         models = self.session.execute(stmt).scalars().all()
 
         items = [ComponentMapper.to_domain(m) for m in models]
-        return Page(items=items, total=total, current=page_query.current, size=page_query.size)
+        return Page(
+            items=items, total=total, current=page_query.current, size=page_query.size
+        )
 
     @override
-    def find_by_context_names(self, context_names: set[tuple[str, str]]) -> dict[tuple[str, str], Component]:
+    def find_by_context_names(
+        self,
+        context_names: set[tuple[str, str]],
+    ) -> dict[tuple[str, str], Component]:
         if not context_names:
             return {}
         stmt = (
@@ -145,20 +151,19 @@ class SqlAlchemyComponentRepository(ComponentRepository):
             )
         )
         models = self.session.execute(stmt).scalars().all()
-        return {
-            (m.context, m.name): ComponentMapper.to_domain(m)
-            for m in models
-        }
-
+        return {(m.context, m.name): ComponentMapper.to_domain(m) for m in models}
+    
     @override
-    def find_by_ids(self, ids: Collection[ComponentId]) -> dict[ComponentId, Component]:
-        if not ids:
+    def find_by_contexts(
+        self,
+        contexts: set[str],
+    ) -> dict[tuple[str, str], Component]:
+        if not contexts:
             return {}
-        unique_ids: set[str] = {str(i) for i in ids}
         stmt = (
             select(ComponentModel)
             .where(
-                ComponentModel.id.in_(unique_ids)
+                ComponentModel.context.in_(contexts)
             )
             .options(
                 selectinload(ComponentModel.attributes),
@@ -168,7 +173,24 @@ class SqlAlchemyComponentRepository(ComponentRepository):
             )
         )
         models = self.session.execute(stmt).scalars().all()
+        return {(m.context, m.name): ComponentMapper.to_domain(m) for m in models}
+
+    @override
+    def find_by_ids(self, ids: Collection[ComponentId]) -> dict[ComponentId, Component]:
+        if not ids:
+            return {}
+        unique_ids: set[str] = {str(i) for i in ids}
+        stmt = (
+            select(ComponentModel)
+            .where(ComponentModel.id.in_(unique_ids))
+            .options(
+                selectinload(ComponentModel.attributes),
+                selectinload(ComponentModel.behaviors).selectinload(
+                    BehaviorModel.inputs
+                ),
+            )
+        )
+        models = self.session.execute(stmt).scalars().all()
         return {
-            ComponentId.reconstitute(m.id): ComponentMapper.to_domain(m)
-            for m in models
+            ComponentId.reconstitute(m.id): ComponentMapper.to_domain(m) for m in models
         }

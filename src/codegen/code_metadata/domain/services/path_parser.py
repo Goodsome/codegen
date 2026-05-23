@@ -41,7 +41,6 @@ class PathParser:
                 component_type=ComponentType.EXTERNAL,
             )
 
-        print(module_path)
         groups = match.groupdict()
         context = groups["context"]
         dir_str = groups["dir"]
