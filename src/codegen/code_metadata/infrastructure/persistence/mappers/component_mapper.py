@@ -1,4 +1,4 @@
-from codegen.code_metadata.application.dtos.component_dto import ComponentDTO
+from codegen.code_metadata.application.dtos.component_dto import ComponentDto
 from codegen.code_metadata.domain.aggregates.component import Component
 from codegen.code_metadata.domain.entities.attribute import Attribute
 from codegen.code_metadata.domain.entities.behavior import Behavior
@@ -26,8 +26,8 @@ class ComponentMapper:
     """
 
     @classmethod
-    def to_dto(cls, orm_model: ComponentModel) -> ComponentDTO:
-        return ComponentDTO(
+    def to_dto(cls, orm_model: ComponentModel) -> ComponentDto:
+        return ComponentDto(
             id=str(orm_model.id),
             type=orm_model.type,
             name=orm_model.name,

@@ -46,8 +46,9 @@ class OSFileSystem(FileSystemPort):
             
             for file_name in file_names:
                 file_path = root_dir / file_name
-                if file_path.match(pattern):
-                    yield file_path.relative_to(self.root)
+                rp = file_path.relative_to(self.root)
+                if rp.match(pattern):
+                    yield rp
                     
 
     def list_directory_flat(self, path: Path) -> Iterator[Path]:

@@ -1,0 +1,26 @@
+[
+    {
+        "label": "CLI: Reverse Code",
+        "command": "uv run python -m codegen.entrypoints.cli reverse-code code_metadata -t dto",
+        "use_new_terminal": false,
+        "allow_concurrent_runs": false
+    },
+    {
+        "label": "[Debug] CLI: Reverse Code",
+        "command": "uv run python -m pdb -m codegen.entrypoints.cli reverse-code code_metadata -t dto",
+        "use_new_terminal": false,
+        "allow_concurrent_runs": false
+    },
+    {
+        "label": "CLI: Get Dev Progress",
+        "command": "python -m codegen get-dev-progress code_metadata",
+        "use_new_terminal": false,
+        "allow_concurrent_runs": false
+    },
+    {
+        "label": "CLI: Get Component",
+        "command": "uv run codegen get-component code_metadata $ZED_SELECTED_TEXT",
+        "use_new_terminal": false,
+        "allow_concurrent_runs": false
+    }
+]

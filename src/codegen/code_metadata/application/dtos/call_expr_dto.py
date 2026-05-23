@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing_extensions import Literal
 from pydantic import BaseModel, Field
@@ -10,7 +11,7 @@ if TYPE_CHECKING:
 
 class CallExprDto(BaseModel):
     kind: Literal[ExprKind.CALL] = ExprKind.CALL
-    callee: "ParsedExpr"
-    args: list["ParsedExpr"] = Field(default_factory=list)
-    kwargs: dict[str, "ParsedExpr"] = Field(default_factory=dict)
+    callee: ParsedExpr
+    args: list[ParsedExpr] = Field(default_factory=list)
+    kwargs: dict[str, ParsedExpr] = Field(default_factory=dict)
 

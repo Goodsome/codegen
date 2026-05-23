@@ -10,4 +10,9 @@ class ComponentDir(StrEnum):
     EXCEPTIONS = auto()
     REPOSITORIES = auto()
     IDENTIFIERS = auto()
+    DTOS = auto()
+    QUERIES = auto()
+    COMMANDS = auto()
+    MAPPERS = auto()
+    PORTS = auto()
     

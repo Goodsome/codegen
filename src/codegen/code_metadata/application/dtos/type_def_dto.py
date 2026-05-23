@@ -1,5 +1,5 @@
 from pydantic import BaseModel
 
 
-class TypeDefDTO(BaseModel):
+class TypeDefDto(BaseModel):
     origin: str

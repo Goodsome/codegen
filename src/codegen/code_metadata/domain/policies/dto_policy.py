@@ -5,6 +5,6 @@ from codegen.code_metadata.domain.enums.component_dir import ComponentDir
 from codegen.code_metadata.domain.policies.component_policy import ComponentPolicy
 
 
-class IdentifierPolicy(ComponentPolicy):
-    component_type: ClassVar[ComponentType] = ComponentType.IDENTIFIER
-    dir_name: ClassVar[ComponentDir] = ComponentDir.IDENTIFIERS
+class DtoPolicy(ComponentPolicy):
+    component_type: ClassVar[ComponentType] = ComponentType.DTO
+    dir_name: ClassVar[ComponentDir] = ComponentDir.DTOS

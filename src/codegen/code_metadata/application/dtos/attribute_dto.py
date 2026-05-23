@@ -1,8 +1,8 @@
 from pydantic import BaseModel
-from codegen.code_metadata.application.dtos.type_def_dto import TypeDefDTO
+from codegen.code_metadata.application.dtos.type_def_dto import TypeDefDto
 
 
-class AttributeDTO(BaseModel):
+class AttributeDto(BaseModel):
     name: str
     description: str
-    type: TypeDefDTO
+    type: TypeDefDto

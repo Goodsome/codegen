@@ -1,3 +1,4 @@
+from pathlib import Path
 from codegen.code_metadata.application.dtos.file_collection import FileCollection
 from codegen.code_metadata.application.dtos.imported_component import ImportedComponent
 from codegen.code_metadata.application.mappers.parsed_component_to_sync_data import ParsedComponentToSyncData
@@ -58,40 +59,35 @@ class ProjectSyncService:
         component_type: str | None,
         component_name: str | None,
     ) -> list[FileCollection]:
-        if component_type is None:
-            policies = self.component_policy_factory.get_policies()
-        else:
-            policies = [
-                self.component_policy_factory.get_policy(ComponentType(component_type))
-            ]
-
+        
         result: list[FileCollection] = []
-        for policy in policies:
-            if policy.component_type is ComponentType.EXTERNAL:
+        path = Path(f"src/codegen/{context}")
+        
+        pattern = "*.py"
+        if component_name is not None:
+            pattern = f"{SnakeString(component_name)}.py"
+        if component_type is not None:
+            policy =  self.component_policy_factory.get_policy(ComponentType(component_type))
+            pattern = f"{policy.dir_name}/{pattern}"
+        for file_path in self.file_system_port.list_directory_recursively(
+            path=path, pattern=pattern
+        ):
+            file_name = file_path.stem
+            if file_name == "__init__":
                 continue
-            tp = policy.get_target_path(context=context)
-            pattern = "*.py"
-            if component_name is not None:
-                pattern = f"{SnakeString(component_name)}.py"
-            for file_path in self.file_system_port.list_directory_recursively(
-                path=tp, pattern=pattern
-            ):
-                file_name = file_path.stem
-                if file_name == "__init__":
-                    continue
-                code = self.file_system_port.read_file(file_path)
-                parsed_path = self.path_parser.parse_file_path(file_path)
-                
-                result.append(
-                    FileCollection(
-                        context=parsed_path.context,
-                        code=code,
-                        type=parsed_path.component_type,
-                        layer=parsed_path.layer,
-                        name=PascalString(file_name),
-                        path=file_path,
-                    )
+            code = self.file_system_port.read_file(file_path)
+            parsed_path = self.path_parser.parse_file_path(file_path)
+            
+            result.append(
+                FileCollection(
+                    context=parsed_path.context,
+                    code=code,
+                    type=parsed_path.component_type,
+                    layer=parsed_path.layer,
+                    name=PascalString(file_name),
+                    path=file_path,
                 )
+            )
         return result
 
     def _ensure_dependencies(
@@ -149,7 +145,7 @@ class ProjectSyncService:
                 context_names=context_names
             )
             for f in file_collections:
-                if f.name in ["ExprDef"]:
+                if f.name in ["ExprDef", "ParsedExpr"]:
                     continue
                 component = existing_components.get((f.context, f.name))
                 if not component:

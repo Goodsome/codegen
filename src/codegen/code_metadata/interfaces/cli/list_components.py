@@ -3,7 +3,7 @@ from typing import Annotated
 from rich.console import Console
 from dependency_injector.wiring import Provide, inject
 
-from codegen.code_metadata.application.dtos.component_dto import ComponentDTO
+from codegen.code_metadata.application.dtos.component_dto import ComponentDto
 from codegen.code_metadata.application.dtos.component_filter import ComponentFilter
 from codegen.code_metadata.application.queries.list_components import ListComponents
 from codegen.shared.application.dtos.page import Page
@@ -16,7 +16,7 @@ console = Console()
 def _list_components(
     query: PageQuery[ComponentFilter],
     use_case: ListComponents = Provide["code_metadata_container.list_components"],
-) -> Page[ComponentDTO]:
+) -> Page[ComponentDto]:
     return use_case.execute(query)
 
 

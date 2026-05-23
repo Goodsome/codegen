@@ -33,7 +33,7 @@ class AstNodeToExpr:
             case ast.Lambda():
                 return self.lambda_to_expr(node)
             case _:
-                raise ValueError(f"Unsupported AST node: {node}")
+                raise ValueError(f"Unsupported AST node: {node=}, {ast.dump(node)=}")
 
     def name_to_expr(self, node: ast.Name) -> ReferenceExprDto:
         target = node.id

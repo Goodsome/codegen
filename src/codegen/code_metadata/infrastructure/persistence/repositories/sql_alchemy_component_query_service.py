@@ -5,7 +5,7 @@ from typing import override
 from sqlalchemy import ColumnElement, func, select, tuple_
 from sqlalchemy.orm import Session, sessionmaker
 
-from codegen.code_metadata.application.dtos.component_dto import ComponentDTO
+from codegen.code_metadata.application.dtos.component_dto import ComponentDto
 from codegen.code_metadata.application.dtos.component_filter import ComponentFilter
 from codegen.code_metadata.application.ports.component_query_service import (
     ComponentQueryService,
@@ -26,7 +26,7 @@ class SQLAlchemyComponentQueryService(ComponentQueryService):
     session_factory: sessionmaker[Session]
 
     @override
-    def find_by_name(self, name: str, context: str) -> ComponentDTO | None:
+    def find_by_name(self, name: str, context: str) -> ComponentDto | None:
         stmt = select(ComponentModel).where(
             ComponentModel.name == name, ComponentModel.context == context
         )
@@ -40,7 +40,7 @@ class SQLAlchemyComponentQueryService(ComponentQueryService):
         return dto
 
     @override
-    def find_page(self, query: PageQuery[ComponentFilter]) -> Page[ComponentDTO]:
+    def find_page(self, query: PageQuery[ComponentFilter]) -> Page[ComponentDto]:
         conditions: list[ColumnElement[bool]] = []
         if query.condition.type is not None:
             conditions.append(ComponentModel.type == query.condition.type)
@@ -69,7 +69,7 @@ class SQLAlchemyComponentQueryService(ComponentQueryService):
     @override
     def find_by_context_names(
         self, context_names: set[tuple[str, str]]
-    ) -> list[ComponentDTO]:
+    ) -> list[ComponentDto]:
         if not context_names:
             return []
 
@@ -85,7 +85,7 @@ class SQLAlchemyComponentQueryService(ComponentQueryService):
     @override
     def find_by_ids(
         self, ids: Collection[ComponentId]
-    ) -> dict[ComponentId, ComponentDTO]:
+    ) -> dict[ComponentId, ComponentDto]:
         if not ids:
             return {}
 

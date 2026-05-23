@@ -1,3 +1,4 @@
+from __future__ import annotations
 from pydantic import BaseModel
 from typing import TYPE_CHECKING, Literal
 
@@ -10,5 +11,5 @@ class ReferenceExprDto(BaseModel):
 
     kind: Literal[ExprKind.REFERENCE] = ExprKind.REFERENCE
     target: str
-    source: "ParsedExpr | ReferenceExprDto | None"
+    source: ParsedExpr | ReferenceExprDto | None
     

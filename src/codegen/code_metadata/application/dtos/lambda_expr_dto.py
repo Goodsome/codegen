@@ -1,3 +1,6 @@
+
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from typing_extensions import Literal
@@ -12,4 +15,4 @@ if TYPE_CHECKING:
 class LambdaExprDto(BaseModel):
     kind: Literal[ExprKind.LAMBDA] = ExprKind.LAMBDA
     params: list[str] = Field(default_factory=list)
-    body: "ParsedExpr"
+    body: ParsedExpr

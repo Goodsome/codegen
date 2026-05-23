@@ -101,7 +101,7 @@ class Component(AggregateRoot[ComponentId]):
     def get_import_module(self, type_policy: ComponentPolicy) -> str:
         if self.type is ComponentType.EXTERNAL:
             return self.context
-        dir_name = type_policy.get_dir_name()
+        dir_name = type_policy.dir_name
         return (
             f"codegen.{self.context}.{self.layer}.{dir_name}.{SnakeString(self.name)}"
         )

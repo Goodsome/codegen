@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import Any
 
 
-class ComponentDTO(BaseModel):
+class ComponentDto(BaseModel):
     id: str
     type: str
     name: str

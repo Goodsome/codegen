@@ -48,6 +48,7 @@ class PythonBuiltinType(StrEnum):
     UNION = "Union"
     INT = "int"
     BOOL = "bool"
+    FLOAT = "float"
 
     T_ID = "T_ID"
 

@@ -7,6 +7,10 @@ class ComponentType(StrEnum):
     VALUE_OBJECT = auto()
     ENUM = auto()
     
+    DTO = auto()
+    
+    EXTERNAL = auto()
+    
     DOMAIN_SERVICE = auto()
     DOMAIN_PORT = auto()
     DOMAIN_EVENT = auto()
@@ -24,4 +28,3 @@ class ComponentType(StrEnum):
     MCP_TOOL = auto()
     HTTP_ENDPOINT = auto()
 
-    EXTERNAL = auto()

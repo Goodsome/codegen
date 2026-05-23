@@ -12,6 +12,7 @@ from codegen.code_metadata.domain.policies import (
     ValueObjectPolicy,
 )
 from codegen.code_metadata.domain.policies.component_policy import ComponentPolicy
+from codegen.code_metadata.domain.policies.dto_policy import DtoPolicy
 
 
 @dataclass
@@ -23,6 +24,7 @@ class ComponentPolicyFactory:
         self._policies = [
             AggregatePolicy(),
             CorePolicy(),
+            DtoPolicy(),
             EntityPolicy(),
             EnumPolicy(),
             ExternalPolicy(),
