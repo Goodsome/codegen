@@ -11,10 +11,10 @@ from codegen.code_metadata.application.ports.component_query_service import (
     ComponentQueryService,
 )
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
-from codegen.code_metadata.infrastructure.persistence.mappers.component_mapper import (
+from codegen.code_metadata.infrastructure.mappers.component_mapper import (
     ComponentMapper,
 )
-from codegen.code_metadata.infrastructure.persistence.models.component_model import (
+from codegen.code_metadata.infrastructure.orm_models.component_model import (
     ComponentModel,
 )
 from codegen.shared.application.dtos.page import Page
@@ -22,7 +22,7 @@ from codegen.shared.application.dtos.page_query import PageQuery
 
 
 @dataclass
-class SQLAlchemyComponentQueryService(ComponentQueryService):
+class SqlAlchemyComponentQueryService(ComponentQueryService):
     session_factory: sessionmaker[Session]
 
     @override

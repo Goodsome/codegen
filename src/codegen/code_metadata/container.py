@@ -28,10 +28,10 @@ from codegen.code_metadata.infrastructure.gateways.python_code_generator import 
 from codegen.code_metadata.infrastructure.gateways.python_code_parser import (
     PythonCodeParser,
 )
-from codegen.code_metadata.infrastructure.persistence.repositories.sql_alchemy_component_query_service import (
-    SQLAlchemyComponentQueryService,
+from codegen.code_metadata.infrastructure.repositories.sql_alchemy_component_query_service import (
+    SqlAlchemyComponentQueryService,
 )
-from codegen.code_metadata.infrastructure.persistence.repositories.sql_alchemy_component_repository import (
+from codegen.code_metadata.infrastructure.repositories.sql_alchemy_component_repository import (
     SqlAlchemyComponentRepository,
 )
 from codegen.shared.domain.ports.file_system_port import FileSystemPort
@@ -54,8 +54,8 @@ class Container(DeclarativeContainer):
         SqlAlchemyComponentRepository,
     )
 
-    component_query_service: Factory[SQLAlchemyComponentQueryService] = Factory(
-        SQLAlchemyComponentQueryService,
+    component_query_service: Factory[SqlAlchemyComponentQueryService] = Factory(
+        SqlAlchemyComponentQueryService,
         session_factory=database.provided.session_factory,
     )
 

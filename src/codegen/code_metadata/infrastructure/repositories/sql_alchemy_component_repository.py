@@ -9,13 +9,13 @@ from codegen.code_metadata.application.dtos.component_filter import ComponentFil
 from codegen.code_metadata.domain.aggregates.component import Component
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.ports.component_repository import ComponentRepository
-from codegen.code_metadata.infrastructure.persistence.mappers.component_mapper import (
+from codegen.code_metadata.infrastructure.mappers.component_mapper import (
     ComponentMapper,
 )
-from codegen.code_metadata.infrastructure.persistence.models.behavior_model import (
+from codegen.code_metadata.infrastructure.orm_models.behavior_model import (
     BehaviorModel,
 )
-from codegen.code_metadata.infrastructure.persistence.models.component_model import (
+from codegen.code_metadata.infrastructure.orm_models.component_model import (
     ComponentModel,
 )
 from codegen.shared.application.dtos.page import Page

@@ -8,7 +8,7 @@ from codegen.code_metadata.application.dtos.file_metrics import FileMetrics
 from codegen.code_metadata.domain.aggregates.component import Component
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.ports.code_generator import CodeGenerator
-from codegen.code_metadata.domain.services.reference_resolver import ReferenceResolver
+from codegen.code_metadata.domain.services.translate_reference import TranslateReference
 from codegen.shared.domain.ports.file_system_port import FileSystemPort
 
 
@@ -60,7 +60,7 @@ class DevProgressService:
             for dep_id in component.get_dependencies():
                 id_map[dep_id] = components_depdencies[dep_id]
                 
-            resolver = ReferenceResolver(
+            resolver = TranslateReference(
                 component=component,
                 id_map=id_map,
             )

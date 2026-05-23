@@ -1,58 +1,102 @@
 from dataclasses import dataclass, field
+
 from codegen.code_metadata.domain.aggregates.component import Component
 from codegen.code_metadata.domain.entities.attribute import Attribute
-from codegen.code_metadata.domain.execptions.attribute_not_found import AttributeNotFound
-from codegen.code_metadata.domain.execptions.dep_component_not_found import DependencyComponentNotFound
+from codegen.code_metadata.domain.exceptions.attribute_not_found import (
+    AttributeNotFound,
+)
+from codegen.code_metadata.domain.exceptions.dep_component_not_found import (
+    DepComponentNotFound,
+)
 from codegen.code_metadata.domain.identifiers.attribute_id import AttributeId
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
+from codegen.code_metadata.domain.ports.component_collection import ComponentCollection
+from codegen.code_metadata.domain.value_objects.reference_source import ReferenceSource
 from codegen.code_metadata.domain.value_objects.reference_target import ReferenceTarget
 from codegen.shared.domain.enums import PythonBuiltinType
 
 
 @dataclass
 class ReferenceResolver:
-    
     component: Component
     id_map: dict[ComponentId, Component]
     attribute_id_map: dict[AttributeId, Attribute] = field(init=False)
-    name_map: dict[str, Component] = field(init=False)
+
+    components: ComponentCollection
+    reference_sources: list[ReferenceSource]
+
+    dep_contexts: set[str] = field(init=False)
+    dep_components: set[str] = field(init=False)
+    component_context_map: dict[str, str] = field(init=False)
 
     def __post_init__(self):
         self.attribute_id_map = {}
-        self.name_map = {}
         for component in self.id_map.values():
-            self.name_map[component.name] = component
             for attribute in component.attributes:
                 self.attribute_id_map[attribute.id] = attribute
 
-    def resolve_target(self, target: str, source_target: ReferenceTarget | None = None) -> ReferenceTarget:
-        if source_target is None:
-            return self.resolve_target_to_component_id(target=target)
-        elif source_target.component_id:
-            return self.resolve_target_to_attribute_id(target=target, component_id=source_target.component_id)
-            
-        raise NotImplementedError(f"Unsupported source target: {source_target}")
+        self.dep_contexts = set()
+        self.dep_components = set()
+        self.component_context_map = {}
+        for rs in self.reference_sources:
+            self.dep_contexts.add(rs.context)
+            for component in rs.components:
+                self.dep_components.add(component)
+                self.component_context_map[component] = rs.context
 
-    def resolve_target_to_component_id(self, target: str) -> ReferenceTarget:
-        if target in PythonBuiltinType._value2member_map_:
-            return ReferenceTarget(builtin_type=PythonBuiltinType(target))
-        elif target in self.name_map:
-            return ReferenceTarget(component_id=self.name_map[target].id)
-        elif "." in target:
+    def resolve_target(
+        self, target: str, source_target: ReferenceTarget | None = None
+    ) -> ReferenceTarget:
+        if "." in target:
             first, remainder = target.split(".", 1)
             first_rt = self.resolve_target(first)
             return self.resolve_target(remainder, source_target=first_rt)
-        elif target == self.component.name:
-            return ReferenceTarget(component_id=self.component.id)
-        raise ValueError(f"Unknown target: {target}, {self.component=}")
 
-    def resolve_target_to_attribute_id(self, target: str, component_id: ComponentId) -> ReferenceTarget:
-        component = self.id_map[component_id]
-        attribute = component.find_attribute(target)
-        if attribute is None:
-            raise AttributeNotFound(
-                attribute_name=target,
+        if target in self.dep_contexts:
+            return ReferenceTarget(context=target)
+
+        if target in PythonBuiltinType._value2member_map_:
+            return ReferenceTarget(builtin_type=PythonBuiltinType(target))
+
+        if target in self.dep_components:
+            context = self.component_context_map[target]
+            return self.resolve_target_to_component_id(
+                target=target,
+                context=context,
             )
+
+        if target == self.component.name:
+            return ReferenceTarget(component_id=self.component.id)
+
+        if source_target is None:
+            print(f"Resolving target {target=} without source target")
+            return ReferenceTarget(raw=target)
+
+        if source_target.context:
+            return self.resolve_target_to_component_id(
+                target=target, context=source_target.context
+            )
+
+        if source_target.component_id:
+            return self.resolve_target_to_attribute_id(
+                target=target, component_id=source_target.component_id
+            )
+
+        raise NotImplementedError(f"{target=}, {source_target=}, {self.component=}")
+
+    def resolve_target_to_component_id(
+        self, target: str, context: str
+    ) -> ReferenceTarget:
+        component = self.components.get_or_create_component(
+            context=context,
+            name=target,
+        )
+        return ReferenceTarget(component_id=component.id)
+
+    def resolve_target_to_attribute_id(
+        self, target: str, component_id: ComponentId
+    ) -> ReferenceTarget:
+        attribute = self.components.get_or_create_attribute(component_id, target)
         return ReferenceTarget(attribute_id=attribute.id)
 
     def resolve_reference_target(self, target: ReferenceTarget) -> str:
@@ -67,7 +111,7 @@ class ReferenceResolver:
 
     def resolve_component_id(self, component_id: ComponentId) -> str:
         if component_id not in self.id_map:
-            raise DependencyComponentNotFound(component_id=component_id)
+            raise DepComponentNotFound(component_id=component_id)
         return self.id_map[component_id].name
 
     def resolve_attribute_id(self, attribute_id: AttributeId) -> str:
@@ -83,5 +127,5 @@ class ReferenceResolver:
 
     def get_component(self, component_id: ComponentId) -> Component:
         if component_id not in self.id_map:
-            raise DependencyComponentNotFound(component_id=component_id)
+            raise DepComponentNotFound(component_id=component_id)
         return self.id_map[component_id]

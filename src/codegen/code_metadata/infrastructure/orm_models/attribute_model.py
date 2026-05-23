@@ -1,3 +1,4 @@
+from __future__ import annotations
 from uuid import UUID
 from typing import Any
 from sqlalchemy import ForeignKey, String, Text, Integer
@@ -39,12 +40,12 @@ class AttributeModel(BaseORM):
     value: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
 
     # 关联定义
-    component: Mapped["ComponentModel | None"] = relationship(
+    component: Mapped[ComponentModel | None] = relationship(
         "ComponentModel", 
         back_populates="attributes",
         foreign_keys=[component_id]
     )
-    behavior: Mapped["BehaviorModel | None"] = relationship(
+    behavior: Mapped[BehaviorModel | None] = relationship(
         "BehaviorModel", 
         back_populates="inputs",
         foreign_keys=[behavior_id]

@@ -15,4 +15,9 @@ class ComponentDir(StrEnum):
     COMMANDS = auto()
     MAPPERS = auto()
     PORTS = auto()
+    ORM_MODELS = auto()
+    GATEWAYS = auto()
+    POLICIES = auto()
+    FACTORIES = auto()
+    CLI = auto()
     

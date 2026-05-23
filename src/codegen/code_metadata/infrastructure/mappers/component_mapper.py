@@ -9,13 +9,13 @@ from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.value_objects.expr_def import expr_def_adapter
 from codegen.code_metadata.domain.value_objects.scenario import Scenario
 from codegen.code_metadata.domain.value_objects.type_def import TypeDef
-from codegen.code_metadata.infrastructure.persistence.models.attribute_model import (
+from codegen.code_metadata.infrastructure.orm_models.attribute_model import (
     AttributeModel,
 )
-from codegen.code_metadata.infrastructure.persistence.models.behavior_model import (
+from codegen.code_metadata.infrastructure.orm_models.behavior_model import (
     BehaviorModel,
 )
-from codegen.code_metadata.infrastructure.persistence.models.component_model import (
+from codegen.code_metadata.infrastructure.orm_models.component_model import (
     ComponentModel,
 )
 

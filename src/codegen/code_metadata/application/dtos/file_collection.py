@@ -17,9 +17,7 @@ class FileCollection(BaseModel):
     name: PascalString
     path: Path
     import_components: set[ImportedComponent] = Field(default_factory=set)
-    dependencies: dict[str, Component] = Field(default_factory=dict)
     id_dependencies: dict[ComponentId, Component] = Field(default_factory=dict)
-    id_map: dict[str, ComponentId] = Field(default_factory=dict)
 
     def new_component(self) -> Component:
         return Component(

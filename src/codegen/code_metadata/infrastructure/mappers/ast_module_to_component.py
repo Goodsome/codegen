@@ -1,17 +1,17 @@
 import ast
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import ClassVar
 
+from codegen.code_metadata.application.dtos.import_dto import ImportDto
 from codegen.code_metadata.application.dtos.imported_component import ImportedComponent
 from codegen.code_metadata.application.dtos.parsed_attribute import ParsedAttribute
 from codegen.code_metadata.application.dtos.parsed_behavior import ParsedBehavior
 from codegen.code_metadata.application.dtos.parsed_component import ParsedComponent
 from codegen.code_metadata.application.dtos.parsed_expr import ParsedExpr
 from codegen.code_metadata.application.dtos.parsed_type import ParsedType
-from codegen.code_metadata.domain.enums import ComponentType
 from codegen.code_metadata.infrastructure.mappers.ast_class_to_component import (
-    AstToComponent,
+    AstClassToComponent,
 )
 from codegen.code_metadata.infrastructure.mappers.ast_node_to_attribute import (
     AstNodeToAttribute,
@@ -28,7 +28,7 @@ from codegen.code_metadata.infrastructure.mappers.ast_to_behavior_mixin import (
 @dataclass
 class AstModuleToComponent(
     AstToBehaviorMixin,
-    AstToComponent,
+    AstClassToComponent,
     AstNodeToParsedType,
     AstNodeToExpr,
     AstNodeToAttribute,
@@ -64,20 +64,40 @@ class AstModuleToComponent(
 
     def map(self, module: ast.Module, component_name: str) -> ParsedComponent:
         component: ParsedComponent | None = None
+        imports: list[ImportDto] = []
         for node in module.body:
-            component = self.try_get_component(node, component_name)
+            imports.extend(self.try_get_imports(node))
+        for node in module.body:
+            component = self.try_get_component(node, component_name, imports=imports)
         if component is None:
             raise ValueError(f"No class definition found in module {component_name}")
         return component
 
     def try_get_component(
-        self, node: ast.AST, component_name: str
+        self, node: ast.AST, component_name: str, imports: list[ImportDto],
     ) -> ParsedComponent | None:
         if isinstance(node, ast.ClassDef) and node.name == component_name:
-            return self.class_def_to_component(node)
+            return self.class_def_to_component(node, imports=imports)
         elif isinstance(node, ast.Assign):
             return self.parse_assign(node, component_name)
         return None
+
+    def try_get_imports(
+        self, node: ast.stmt,
+    ) -> list[ImportDto]:
+        if isinstance(node, ast.ImportFrom):
+            module = "." * node.level + (node.module or "")
+            return [ImportDto(module=module, names=[a.name for a in node.names])]
+        elif isinstance(node, ast.Import):
+            return [ImportDto(module=a.name, names=[]) for a in node.names]
+        elif isinstance(node, ast.If):
+            imports: list[ImportDto] = []
+            for subnode in node.body:
+                imports.extend(self.try_get_imports(subnode))
+            for subnode in node.orelse:
+                imports.extend(self.try_get_imports(subnode))
+            return imports
+        return []
 
     def parse_assign(
         self, node: ast.Assign, component_name: str
@@ -95,6 +115,7 @@ class AstModuleToComponent(
             attributes=[parsed_attribute],
             behaviors=[],
             bases=[],
+            imports=[],
         )
 
     def parse_imports(

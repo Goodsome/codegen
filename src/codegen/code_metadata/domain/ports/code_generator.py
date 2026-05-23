@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from codegen.code_metadata.domain.aggregates.component import Component
-from codegen.code_metadata.domain.services.reference_resolver import ReferenceResolver
+from codegen.code_metadata.domain.services.translate_reference import TranslateReference
 
 
 class CodeGenerator(ABC):
@@ -9,5 +9,5 @@ class CodeGenerator(ABC):
     def generate(
         self,
         component: Component,
-        resolver: ReferenceResolver,
+        resolver: TranslateReference
     ) -> str: ...

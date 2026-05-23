@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+from codegen.code_metadata.application.dtos.import_dto import ImportDto
 from codegen.code_metadata.application.dtos.parsed_attribute import ParsedAttribute
 from codegen.code_metadata.application.dtos.parsed_behavior import ParsedBehavior
 from codegen.code_metadata.application.dtos.parsed_type import ParsedType
@@ -11,4 +12,5 @@ class ParsedComponent(BaseModel):
     bases: list[ParsedType]
     attributes: list[ParsedAttribute]
     behaviors: list[ParsedBehavior]
+    imports: list[ImportDto]
     

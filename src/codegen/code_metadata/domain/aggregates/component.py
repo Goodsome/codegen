@@ -89,6 +89,16 @@ class Component(AggregateRoot[ComponentId]):
 
         self.behaviors = synced_behaviors
 
+    def add_attribute(self, name: str) -> Attribute:
+        attr = Attribute(
+            id=AttributeId.create(),
+            name=name,
+            type=None,
+            value=None,
+        )
+        self.attributes.append(attr)
+        return attr
+
     def find_attribute(
         self,
         name: str,

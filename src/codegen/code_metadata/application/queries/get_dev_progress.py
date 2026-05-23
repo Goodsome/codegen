@@ -8,6 +8,7 @@ from codegen.code_metadata.application.dtos.get_dev_progress_query import (
 from codegen.code_metadata.application.services.dev_progress_service import (
     DevProgressService,
 )
+from codegen.code_metadata.application.services.memory_component_collection import MemoryComponentCollection
 from codegen.code_metadata.domain.aggregates.component import Component
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.ports.component_repository import ComponentRepository
