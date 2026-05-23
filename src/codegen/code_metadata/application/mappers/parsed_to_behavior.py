@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 from codegen.code_metadata.application.dtos.parsed_behavior import ParsedBehavior
-from codegen.code_metadata.application.mappers import parsed_type_to_type_def
 from codegen.code_metadata.application.mappers.parsed_attribute_mapper import ParsedAttributeMapper
 from codegen.code_metadata.application.mappers.parsed_type_to_type_def import ParsedTypeToTypeDef
 from codegen.code_metadata.domain.services.reference_resolver import ReferenceResolver

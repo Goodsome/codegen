@@ -11,3 +11,4 @@ class ParsedComponent(BaseModel):
     bases: list[ParsedType]
     attributes: list[ParsedAttribute]
     behaviors: list[ParsedBehavior]
+    

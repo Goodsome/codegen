@@ -1,3 +1,4 @@
+from calendar import c
 from codegen.code_metadata.application.dtos.file_collection import FileCollection
 from codegen.code_metadata.application.dtos.imported_component import ImportedComponent
 from codegen.code_metadata.application.mappers.parsed_component_to_sync_data import ParsedComponentToSyncData
@@ -24,7 +25,7 @@ class ProjectSyncService:
     file_system_port: FileSystemPort
     component_policy_factory: ComponentPolicyFactory
     uow: UnitOfWork[ComponentRepository]
-
+    
     def get_component(
         self,
         context: str,
@@ -64,6 +65,8 @@ class ProjectSyncService:
 
         result: list[FileCollection] = []
         for policy in policies:
+            if policy.component_type is ComponentType.EXTERNAL:
+                continue
             tp = policy.get_target_path(context=context)
             pattern = "*.py"
             if component_name is not None:
@@ -112,7 +115,7 @@ class ProjectSyncService:
                         id=ComponentId.create(),
                         context=dep.context,
                         name=dep.name,
-                        type=ComponentType(dep.type),
+                        type=ComponentType.EXTERNAL,
                         description="",
                     )
                     self.uow.repository.add(new_c)
@@ -164,6 +167,7 @@ class ProjectSyncService:
                 except AttributeNotFound as e:
                     print(e)
                     continue
+                    
                 component.update(component_sync_data=component_sync_data)
 
                 self.uow.repository.save(component)

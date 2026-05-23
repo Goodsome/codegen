@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 
 from codegen.code_metadata.domain.enums import ComponentType
+from codegen.code_metadata.domain.enums.component_dir import ComponentDir
 from codegen.code_metadata.domain.policies import (
     AggregatePolicy,
     CorePolicy,
@@ -38,3 +39,10 @@ class ComponentPolicyFactory:
 
     def get_policies(self) -> list[ComponentPolicy]:
         return self._policies
+
+    def get_dir_to_type_registry(self) -> dict[ComponentDir, ComponentType]:
+        return {
+            p.dir_name: p.component_type
+            for p in self._policies
+        }
+        
