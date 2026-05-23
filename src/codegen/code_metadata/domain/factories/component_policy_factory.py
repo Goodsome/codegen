@@ -7,12 +7,23 @@ from codegen.code_metadata.domain.policies import (
     CorePolicy,
     EntityPolicy,
     EnumPolicy,
+    EventPolicy,
+    ExceptionPolicy,
     ExternalPolicy,
+    FactoryPolicy,
     IdentifierPolicy,
+    MapperPolicy,
+    RepositoryPolicy,
+    PolicyPolicy,
+    OrmModelPolicy,
+    GatewayPolicy,
+    ServicePolicy,
     ValueObjectPolicy,
 )
+from codegen.code_metadata.domain.policies.command_policy import CommandPolicy
 from codegen.code_metadata.domain.policies.component_policy import ComponentPolicy
 from codegen.code_metadata.domain.policies.dto_policy import DtoPolicy
+from codegen.code_metadata.domain.policies.port_policy import PortPolicy
 from codegen.code_metadata.domain.policies.query_policy import QueryPolicy
 
 
@@ -32,6 +43,17 @@ class ComponentPolicyFactory:
             ValueObjectPolicy(),
             IdentifierPolicy(),
             QueryPolicy(),
+            CommandPolicy(),
+            PortPolicy(),
+            ServicePolicy(),
+            MapperPolicy(),
+            FactoryPolicy(),
+            EventPolicy(),
+            ExceptionPolicy(),
+            RepositoryPolicy(),
+            PolicyPolicy(),
+            OrmModelPolicy(),
+            GatewayPolicy(),
         ]
         self._registry = {p.component_type: p for p in self._policies}
 

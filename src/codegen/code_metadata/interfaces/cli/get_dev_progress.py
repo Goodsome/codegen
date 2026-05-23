@@ -54,7 +54,6 @@ def get_dev_progress(
             continue
         if r.component_type == "unknown":
             unknown_count += 1
-            continue
         diff_sign = "+" if r.line_diff > 0 else ""
         console.print(
             f"  {r.file_name:<40} {r.component_type:<20} "

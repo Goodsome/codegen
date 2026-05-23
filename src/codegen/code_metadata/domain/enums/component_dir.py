@@ -19,5 +19,6 @@ class ComponentDir(StrEnum):
     GATEWAYS = auto()
     POLICIES = auto()
     FACTORIES = auto()
+    EVENTS = auto()
     CLI = auto()
     

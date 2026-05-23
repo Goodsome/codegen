@@ -12,7 +12,7 @@ from codegen.code_metadata.application.ports.component_query_service import (
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.ports.code_generator import CodeGenerator
 from codegen.code_metadata.domain.ports.component_repository import ComponentRepository
-from codegen.code_metadata.domain.services.reference_resolver import ReferenceResolver
+from codegen.code_metadata.domain.services.translate_reference import TranslateReference
 from codegen.shared.application.ports.unit_of_work import UnitOfWork
 
 
@@ -31,6 +31,9 @@ class GenerateCode:
             )
         code = self.generator.generate(
             component,
-            resolver=ReferenceResolver(name_map=dep_components),
+            resolver=TranslateReference(
+                component=component,
+                id_map=dep_components
+            ),
         )
         return GenerateCodeResult(code=code)

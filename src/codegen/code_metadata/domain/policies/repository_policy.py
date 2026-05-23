@@ -5,6 +5,6 @@ from codegen.code_metadata.domain.enums.component_dir import ComponentDir
 from codegen.code_metadata.domain.policies.component_policy import ComponentPolicy
 
 
-class AggregatePolicy(ComponentPolicy):
-    component_type: ClassVar[ComponentType] = ComponentType.AGGREGATE
-    dir_name: ClassVar[ComponentDir] = ComponentDir.AGGREGATES
+class RepositoryPolicy(ComponentPolicy):
+    component_type: ClassVar[ComponentType] = ComponentType.REPOSITORY
+    dir_name: ClassVar[ComponentDir] = ComponentDir.REPOSITORIES

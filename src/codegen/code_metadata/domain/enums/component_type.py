@@ -6,26 +6,20 @@ class ComponentType(StrEnum):
     ENTITY = auto()
     VALUE_OBJECT = auto()
     ENUM = auto()
-    
     DTO = auto()
     QUERY = auto()
-    
-    EXTERNAL = auto()
-    
-    DOMAIN_SERVICE = auto()
-    DOMAIN_PORT = auto()
-    DOMAIN_EVENT = auto()
-    DOMAIN_EXCEPTION = auto()
-    REPOSITORY = auto()
+    COMMAND = auto()
+    PORT = auto()
     IDENTIFIER = auto()
-
-    USE_CASE = auto()
-    APP_PORT = auto()
-    APP_SERVICE = auto()
     
-    IMPLEMENTATION = auto()
-    
-    CLI_COMMAND = auto()
-    MCP_TOOL = auto()
-    HTTP_ENDPOINT = auto()
+    SERVICE = auto()
+    MAPPER = auto()
+    FACTORY = auto()
+    EVENT = auto()
+    EXCEPTION = auto()
+    REPOSITORY = auto()
 
+    POLICY = auto()
+    ORM_MODEL = auto()
+    GATEWAY = auto()
+    EXTERNAL = auto()
