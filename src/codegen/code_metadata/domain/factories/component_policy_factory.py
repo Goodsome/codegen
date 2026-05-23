@@ -13,6 +13,7 @@ from codegen.code_metadata.domain.policies import (
 )
 from codegen.code_metadata.domain.policies.component_policy import ComponentPolicy
 from codegen.code_metadata.domain.policies.dto_policy import DtoPolicy
+from codegen.code_metadata.domain.policies.query_policy import QueryPolicy
 
 
 @dataclass
@@ -30,6 +31,7 @@ class ComponentPolicyFactory:
             ExternalPolicy(),
             ValueObjectPolicy(),
             IdentifierPolicy(),
+            QueryPolicy(),
         ]
         self._registry = {p.component_type: p for p in self._policies}
 

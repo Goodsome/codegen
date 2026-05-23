@@ -4,7 +4,7 @@ from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from codegen.shared.infrastructure.orm import BaseORM
+from codegen.shared.infrastructure.orm_models.base import BaseORM
 
 from typing import TYPE_CHECKING
 

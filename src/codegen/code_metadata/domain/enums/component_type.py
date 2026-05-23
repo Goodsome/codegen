@@ -8,6 +8,7 @@ class ComponentType(StrEnum):
     ENUM = auto()
     
     DTO = auto()
+    QUERY = auto()
     
     EXTERNAL = auto()
     

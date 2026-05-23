@@ -168,8 +168,14 @@ class ProjectSyncService:
                 )
                 reference_sources: list[ReferenceSource] = []
                 for import_dto in parsed_component.imports:
+                    if import_dto.level == 0:
+                        module = import_dto.module or ""
+                    else:
+                        parts = f.path.parts[:-import_dto.level]
+                        module = ".".join(parts) + "." + (import_dto.module or "")
+                    
                     parsed_path = self.path_parser.parse_module_path(
-                        import_dto.module,
+                        module,
                     )
                     reference_sources.append(
                         ReferenceSource(
@@ -177,6 +183,7 @@ class ProjectSyncService:
                             components=import_dto.names,
                         )
                     )
+                print(reference_sources)
                 resolver = ReferenceResolver(
                     component=component,
                     id_map=f.id_dependencies,

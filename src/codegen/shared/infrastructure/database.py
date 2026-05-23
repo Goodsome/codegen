@@ -2,7 +2,7 @@ from collections.abc import Iterator
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.engine import Engine
-from codegen.shared.infrastructure.orm import BaseORM
+from codegen.shared.infrastructure.orm_models.base import BaseORM
 import logging
 
 class Database:

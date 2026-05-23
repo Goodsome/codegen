@@ -2,5 +2,6 @@ from pydantic import BaseModel
 
 
 class ImportDto(BaseModel):
-    module: str
+    module: str | None
+    level: int
     names: list[str]

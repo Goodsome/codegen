@@ -2,7 +2,7 @@ import sys
 import argparse
 import logging
 from codegen.bootstrap.setup import create_container
-from codegen.shared.infrastructure.orm import BaseORM
+from codegen.shared.infrastructure.orm_models.base import BaseORM
 
 logging.basicConfig(
     level=logging.INFO,

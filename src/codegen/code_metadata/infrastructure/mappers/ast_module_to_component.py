@@ -86,10 +86,9 @@ class AstModuleToComponent(
         self, node: ast.stmt,
     ) -> list[ImportDto]:
         if isinstance(node, ast.ImportFrom):
-            module = "." * node.level + (node.module or "")
-            return [ImportDto(module=module, names=[a.name for a in node.names])]
+            return [ImportDto(module=node.module, names=[a.name for a in node.names], level=node.level)]
         elif isinstance(node, ast.Import):
-            return [ImportDto(module=a.name, names=[]) for a in node.names]
+            return [ImportDto(module=a.name, names=[], level=0) for a in node.names]
         elif isinstance(node, ast.If):
             imports: list[ImportDto] = []
             for subnode in node.body:

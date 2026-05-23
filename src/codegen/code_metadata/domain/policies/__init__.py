@@ -6,6 +6,8 @@ from .value_object_policy import ValueObjectPolicy
 from .core_policy import CorePolicy
 from .identifier_policy import IdentifierPolicy
 from .external_policy import ExternalPolicy
+from .query_policy import QueryPolicy
+
 
 __all__ = [
     "AggregatePolicy",
@@ -16,4 +18,5 @@ __all__ = [
     "CorePolicy",
     "IdentifierPolicy",
     "ExternalPolicy",
+    "QueryPolicy",
 ]

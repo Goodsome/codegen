@@ -14,7 +14,7 @@ class PathParser:
     dir_to_type_registry: dict[ComponentDir, ComponentType]
 
     PATTERN: ClassVar[re.Pattern[str]] = re.compile(
-        r"codegen\.(?P<context>[^.]+)\.(?P<layer>[^.]+)\.(?P<dir>[^.]+)\.(?P<name>[^.\s]+)"
+        r"codegen\.(?P<context>[^.]+)\.(?P<layer>[^.]+)\.(?P<dir>[^.]+)"
     )
 
     @staticmethod
@@ -41,6 +41,7 @@ class PathParser:
                 component_type=ComponentType.EXTERNAL,
             )
 
+        print(module_path)
         groups = match.groupdict()
         context = groups["context"]
         dir_str = groups["dir"]

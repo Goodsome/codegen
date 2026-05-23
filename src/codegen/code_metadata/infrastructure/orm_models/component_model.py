@@ -5,7 +5,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.orderinglist import ordering_list
 from typing import Any
 
-from codegen.shared.infrastructure.orm import BaseORM
+from codegen.shared.infrastructure.orm_models.base import BaseORM
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
