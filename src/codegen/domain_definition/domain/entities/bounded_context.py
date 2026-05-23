@@ -3,7 +3,6 @@ from typing import Self
 
 from pydantic import Field
 
-from codegen.code_metadata.application.dtos.upsert_component_command import UpsertComponentCommand
 from codegen.domain_definition.domain.entities.application_spec import ApplicationSpec
 from codegen.domain_definition.domain.entities.config_spec import ConfigSpec
 from codegen.domain_definition.domain.entities.container_spec import ContainerSpec
@@ -187,9 +186,3 @@ class BoundedContext(Entity):
             elif pkg.name == "application":
                 self.application.load_test_package(pkg)
         return self
-
-    def collect_components(self: Self) -> list[UpsertComponentCommand]:
-        """Collect all components from the bounded context."""
-        components: list[UpsertComponentCommand] = []
-        components.extend(self.domain.collect_components(context=self.name))
-        return components

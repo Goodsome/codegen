@@ -2,7 +2,7 @@ from codegen.code_metadata.application.dtos.component_dto import ComponentDTO
 from codegen.code_metadata.domain.aggregates.component import Component
 from codegen.code_metadata.domain.entities.attribute import Attribute
 from codegen.code_metadata.domain.entities.behavior import Behavior
-from codegen.code_metadata.domain.enums import ComponentType
+from codegen.code_metadata.domain.enums import ArchitectureLayer, ComponentType
 from codegen.code_metadata.domain.identifiers.attribute_id import AttributeId
 from codegen.code_metadata.domain.identifiers.behavior_id import BehaviorId
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
@@ -33,6 +33,7 @@ class ComponentMapper:
             name=orm_model.name,
             description=orm_model.description,
             context=orm_model.context,
+            layer=orm_model.layer,
             bases=orm_model.bases,
         )
 
@@ -48,6 +49,7 @@ class ComponentMapper:
             name=orm_model.name,
             description=orm_model.description,
             context=orm_model.context,
+            layer=ArchitectureLayer(orm_model.layer),
             bases=[TypeDef.model_validate(t) for t in orm_model.bases],
             # 级联映射子实体
             attributes=[cls._attr_to_domain(attr) for attr in orm_model.attributes],
@@ -102,6 +104,7 @@ class ComponentMapper:
             name=domain_entity.name,
             description=domain_entity.description,
             context=domain_entity.context,
+            layer=domain_entity.layer.value,
             bases=[t.model_dump(mode="json") for t in domain_entity.bases],
             # 级联映射子实体，需要注入外键 component_id
             attributes=[

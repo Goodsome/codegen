@@ -25,6 +25,7 @@ class ComponentModel(BaseORM):
     context: Mapped[str] = mapped_column(String(255), index=True)
     name: Mapped[str] = mapped_column(String(255))
     description: Mapped[str] = mapped_column(Text)
+    layer: Mapped[str] = mapped_column(String(50), index=True, server_default="unknown")
     
     bases: Mapped[list[dict[str, Any]]] = mapped_column(JSONB)
 

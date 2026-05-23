@@ -6,6 +6,7 @@ class ComponentType(StrEnum):
     ENTITY = auto()
     VALUE_OBJECT = auto()
     ENUM = auto()
+    
     DOMAIN_SERVICE = auto()
     DOMAIN_PORT = auto()
     DOMAIN_EVENT = auto()

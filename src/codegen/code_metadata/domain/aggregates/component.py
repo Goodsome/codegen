@@ -4,13 +4,16 @@ from pydantic import Field
 
 from codegen.code_metadata.domain.entities.attribute import Attribute
 from codegen.code_metadata.domain.entities.behavior import Behavior
-from codegen.code_metadata.domain.enums import ComponentType
+from codegen.code_metadata.domain.enums import ArchitectureLayer, ComponentType
 from codegen.code_metadata.domain.identifiers.attribute_id import AttributeId
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
+from codegen.code_metadata.domain.policies.component_policy import ComponentPolicy
 from codegen.code_metadata.domain.value_objects.attribute_sync_data import (
     AttributeSyncData,
 )
-from codegen.code_metadata.domain.value_objects.behavior_sync_data import BehaviorSyncData
+from codegen.code_metadata.domain.value_objects.behavior_sync_data import (
+    BehaviorSyncData,
+)
 from codegen.code_metadata.domain.value_objects.component_sync_data import (
     ComponentSyncData,
 )
@@ -22,10 +25,11 @@ from codegen.shared.domain.value_objects.snake_string import SnakeString
 class Component(AggregateRoot[ComponentId]):
     """component"""
 
+    context: str
+    layer: ArchitectureLayer
     type: ComponentType
     name: str
     description: str
-    context: str
 
     bases: list[TypeDef] = Field(default_factory=list)
 
@@ -51,6 +55,7 @@ class Component(AggregateRoot[ComponentId]):
         self.name = component_sync_data.name
         self.description = component_sync_data.description
         self.context = component_sync_data.context
+        self.layer = component_sync_data.layer
         self.bases = component_sync_data.bases
 
         self.sync_attributes(component_sync_data.attributes)
@@ -67,7 +72,7 @@ class Component(AggregateRoot[ComponentId]):
                 attr = Attribute.create(attr_sync_data)
 
             synced_attrs.append(attr)
-            
+
         self.attributes = synced_attrs
 
     def sync_behaviors(self, behaviors: list[BehaviorSyncData]) -> None:
@@ -83,10 +88,20 @@ class Component(AggregateRoot[ComponentId]):
             synced_behaviors.append(behavior)
 
         self.behaviors = synced_behaviors
-                
 
-    def find_attribute(self, name: str, ) -> Attribute | None:
+    def find_attribute(
+        self,
+        name: str,
+    ) -> Attribute | None:
         return next((attr for attr in self.attributes if attr.name == name), None)
-        
+
     def find_attribute_by_id(self, attribute_id: AttributeId) -> Attribute | None:
         return next((attr for attr in self.attributes if attr.id == attribute_id), None)
+
+    def get_import_module(self, type_policy: ComponentPolicy) -> str:
+        if self.type is ComponentType.EXTERNAL:
+            return self.context
+        dir_name = type_policy.get_dir_name()
+        return (
+            f"codegen.{self.context}.{self.layer}.{dir_name}.{SnakeString(self.name)}"
+        )

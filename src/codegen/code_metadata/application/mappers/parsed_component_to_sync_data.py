@@ -7,7 +7,7 @@ from codegen.code_metadata.application.mappers.parsed_to_behavior import ParsedT
 from codegen.code_metadata.application.mappers.parsed_type_to_type_def import (
     ParsedTypeToTypeDef,
 )
-from codegen.code_metadata.domain.enums import ComponentType
+from codegen.code_metadata.domain.enums import ArchitectureLayer, ComponentType
 from codegen.code_metadata.domain.services.reference_resolver import ReferenceResolver
 from codegen.code_metadata.domain.value_objects.component_sync_data import (
     ComponentSyncData,
@@ -33,6 +33,7 @@ class ParsedComponentToSyncData:
         context: str,
         parsed_component: ParsedComponent,
         component_type: ComponentType,
+        layer: ArchitectureLayer,
     ) -> ComponentSyncData:
         bases = [
             self.parsed_type_to_type_def.map_type(base)
@@ -51,6 +52,7 @@ class ParsedComponentToSyncData:
             name=parsed_component.name,
             type=component_type,
             description=parsed_component.description,
+            layer=layer,
             bases=bases,
             attributes=attributes,
             behaviors=behaviors

@@ -734,6 +734,8 @@ contexts:
         name: description
       - type: string
         name: context
+      - type: ArchitectureLayer
+        name: layer
       - type: TypeDef
         container: list
         name: bases

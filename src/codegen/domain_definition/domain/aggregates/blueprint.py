@@ -2,7 +2,6 @@ from typing import Self, Union
 
 from pydantic import Field
 
-from codegen.code_metadata.application.dtos.upsert_component_command import UpsertComponentCommand
 from codegen.domain_definition.domain.entities.bootstrap_spec import BootstrapSpec
 from codegen.domain_definition.domain.entities.bounded_context import BoundedContext
 from codegen.python_gen.domain.value_objects.package_spec import PackageSpec
@@ -98,10 +97,3 @@ class Blueprint(AggregateRoot[str]):
                 ctx = self.get_context(ctx_pkg.name)
                 ctx.load_test_package(ctx_pkg)
         return self
-
-    def collect_components(self: Self) -> list[UpsertComponentCommand]:
-        """Collect all components from the blueprint."""
-        components: list[UpsertComponentCommand] = []
-        for ctx in self.contexts:
-            components.extend(ctx.collect_components())
-        return components

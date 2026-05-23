@@ -58,12 +58,9 @@ class ComponentToAstModule:
         for dep_id in component.get_dependencies():
             dc = self.resolver.get_component(dep_id)
             policy = self.component_policy_factory.get_policy(
-                component_type=ComponentType(dc.type)
+                component_type=dc.type
             )
-            module = policy.get_import_module(
-                context=dc.context,
-                component_name=dc.name,
-            )
+            module = dc.get_import_module(policy)
             collect_module_names[module].add(dc.name)
 
         result: list[ast.ImportFrom] = []

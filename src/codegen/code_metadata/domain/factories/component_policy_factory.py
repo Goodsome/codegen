@@ -44,5 +44,6 @@ class ComponentPolicyFactory:
         return {
             p.dir_name: p.component_type
             for p in self._policies
+            if p.component_type is not ComponentType.EXTERNAL
         }
         

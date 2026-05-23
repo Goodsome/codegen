@@ -1,16 +1,17 @@
-from calendar import c
 from codegen.code_metadata.application.dtos.file_collection import FileCollection
 from codegen.code_metadata.application.dtos.imported_component import ImportedComponent
 from codegen.code_metadata.application.mappers.parsed_component_to_sync_data import ParsedComponentToSyncData
 from codegen.code_metadata.application.ports.code_parser import CodeParser
 from codegen.code_metadata.domain.aggregates.component import Component
 from codegen.code_metadata.domain.enums import ComponentType
+from codegen.code_metadata.domain.enums.architecture_layer import ArchitectureLayer
 from codegen.code_metadata.domain.execptions.attribute_not_found import AttributeNotFound
 from codegen.code_metadata.domain.factories.component_policy_factory import (
     ComponentPolicyFactory,
 )
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.ports.component_repository import ComponentRepository
+from codegen.code_metadata.domain.services.path_parser import PathParser
 from codegen.code_metadata.domain.services.reference_resolver import ReferenceResolver
 from codegen.shared.application.ports.unit_of_work import UnitOfWork
 from codegen.shared.domain.ports.file_system_port import FileSystemPort
@@ -25,6 +26,7 @@ class ProjectSyncService:
     file_system_port: FileSystemPort
     component_policy_factory: ComponentPolicyFactory
     uow: UnitOfWork[ComponentRepository]
+    path_parser: PathParser
     
     def get_component(
         self,
@@ -78,11 +80,14 @@ class ProjectSyncService:
                 if file_name == "__init__":
                     continue
                 code = self.file_system_port.read_file(file_path)
+                parsed_path = self.path_parser.parse_file_path(file_path)
+                
                 result.append(
                     FileCollection(
-                        context=context,
+                        context=parsed_path.context,
                         code=code,
-                        type=policy.component_type,
+                        type=parsed_path.component_type,
+                        layer=parsed_path.layer,
                         name=PascalString(file_name),
                         path=file_path,
                     )
@@ -116,6 +121,7 @@ class ProjectSyncService:
                         context=dep.context,
                         name=dep.name,
                         type=ComponentType.EXTERNAL,
+                        layer=ArchitectureLayer.UNKNOWN,
                         description="",
                     )
                     self.uow.repository.add(new_c)
@@ -161,8 +167,9 @@ class ProjectSyncService:
                 try:
                     component_sync_data = mapper.map(
                         context=f.context,
-                        parsed_component=parsed_component, 
+                        parsed_component=parsed_component,
                         component_type=f.type,
+                        layer=f.layer,
                     )
                 except AttributeNotFound as e:
                     print(f"{e=}, {component.name=}")

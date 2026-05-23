@@ -3,7 +3,6 @@ from collections.abc import Iterable
 
 from pydantic import BaseModel, Field
 
-from codegen.code_metadata.application.dtos.upsert_component_command import UpsertComponentCommand
 from codegen.domain_definition.domain.core.attribute_spec_list import AttributeSpecList
 from codegen.domain_definition.domain.core.method_spec_list import MethodSpecList
 from codegen.python_gen.domain.enums import FieldFlavor
@@ -122,12 +121,3 @@ class DomainConcept(BaseModel):
                     behavior.load_test_module(module)
 
         return self
-
-    def to_component_dto(self: Self, context: str, component_type: str) -> UpsertComponentCommand:
-        return UpsertComponentCommand(
-            context=context,
-            type=component_type,
-            name=self.name,
-            description=self.description,
-        )
-        

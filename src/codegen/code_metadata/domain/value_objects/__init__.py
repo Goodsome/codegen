@@ -4,6 +4,7 @@ from .dict_expr import DictExpr
 from .dict_item import DictItem
 from .expr_def import ExprDef
 from .lambda_expr import LambdaExpr
+from .parsed_path import ParsedPath
 from .reference_expr import ReferenceExpr
 from .sequence_expr import SequenceExpr
 
@@ -14,6 +15,7 @@ __all__ = [
     "DictExpr",
     "DictItem",
     "LambdaExpr",
+    "ParsedPath",
     "ReferenceExpr",
     "SequenceExpr",
 ]
