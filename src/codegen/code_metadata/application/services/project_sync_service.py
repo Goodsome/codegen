@@ -1,17 +1,14 @@
 from pathlib import Path
 from codegen.code_metadata.application.dtos.file_collection import FileCollection
-from codegen.code_metadata.application.dtos.imported_component import ImportedComponent
 from codegen.code_metadata.application.dtos.parsed_component import ParsedComponent
 from codegen.code_metadata.application.mappers.parsed_component_to_sync_data import ParsedComponentToSyncData
 from codegen.code_metadata.application.ports.code_parser import CodeParser
 from codegen.code_metadata.application.services.memory_component_collection import MemoryComponentCollection
 from codegen.code_metadata.domain.aggregates.component import Component
 from codegen.code_metadata.domain.enums import ComponentType
-from codegen.code_metadata.domain.enums.architecture_layer import ArchitectureLayer
 from codegen.code_metadata.domain.factories.component_policy_factory import (
     ComponentPolicyFactory,
 )
-from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.ports.component_repository import ComponentRepository
 from codegen.code_metadata.domain.services.path_parser import PathParser
 from codegen.code_metadata.domain.services.reference_resolver import ReferenceResolver
@@ -52,7 +49,7 @@ class ProjectSyncService:
             component_type=component_type,
             component_name=component_name,
         )
-        existing_dependencies = self._get_dependencies(file_collections)
+        existing_dependencies = self._get_existing_components(file_collections)
         self._sync_components(file_collections, existing_dependencies)
 
     def _collect_files(
@@ -121,68 +118,59 @@ class ProjectSyncService:
 
         return reference_sources
 
-    def _get_dependencies(
+    def _get_existing_components(
         self,
         file_collections: list[FileCollection],
     ) -> dict[tuple[str, str], Component]:
         context_names: set[tuple[str, str]] = set()
         contexts_only: set[str] = set()
         for fc in file_collections:
+            context_names.add((fc.context, fc.name))
             context_names.update(fc.collect_dependency_components())
             contexts_only.update(fc.collect_dependency_contexts_only())
             
         with self.uow:
-            existing_dependencies = self.uow.repository.find_by_context_names(
+            existing_components = self.uow.repository.find_by_context_names(
                 context_names=context_names
             )
             existing_dependencies_by_context = self.uow.repository.find_by_contexts(
                 contexts=contexts_only
             )
-            existing_dependencies.update(existing_dependencies_by_context)
+            existing_components.update(existing_dependencies_by_context)
                     
-        return existing_dependencies
+        return existing_components
 
     def _sync_components(
         self,
         file_collections: list[FileCollection],
-        existing_dependencies: dict[tuple[str, str], Component],
+        existing_components: dict[tuple[str, str], Component],
     ) -> None:
         
-        context_names: set[tuple[str, str]] = {
-            (f.context, f.name) for f in file_collections
-        }
         id_maps = {
-            c.id: c for c in existing_dependencies.values()
+            c.id: c for c in existing_components.values()
         }
         component_collection = MemoryComponentCollection(
-            store=existing_dependencies,
+            store=existing_components,
             components=id_maps,
         )
-        with self.uow:
-            existing_components = self.uow.repository.find_by_context_names(
-                context_names=context_names
+        for f in file_collections:
+            component = component_collection.get_or_create_component(f.context, f.name)
+            resolver = ReferenceResolver(
+                component=component,
+                components=component_collection,
+                reference_sources=f.reference_sources,
             )
-            for f in file_collections:
-                component = existing_components.get((f.context, f.name))
-                if not component:
-                    component = f.new_component()
-
-                resolver = ReferenceResolver(
-                    component=component,
-                    components=component_collection,
-                    reference_sources=f.reference_sources,
-                )
-                mapper = ParsedComponentToSyncData(resolver=resolver)
-                component_sync_data = mapper.map(
-                    context=f.context,
-                    parsed_component=f.parsed_component,
-                    component_type=f.type,
-                    layer=f.layer,
-                )
-                component.update(component_sync_data=component_sync_data)
-                self.uow.repository.save(component)
-
+            mapper = ParsedComponentToSyncData(resolver=resolver)
+            component_sync_data = mapper.map(
+                context=f.context,
+                parsed_component=f.parsed_component,
+                component_type=f.type,
+                layer=f.layer,
+            )
+            component.update(component_sync_data=component_sync_data)
+            component_collection.update(component=component)
+            
+        with self.uow:
             for component in component_collection.need_saves.values():
                 self.uow.repository.save(component)
-
             self.uow.commit()

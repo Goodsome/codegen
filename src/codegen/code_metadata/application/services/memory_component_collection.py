@@ -16,6 +16,10 @@ class MemoryComponentCollection(ComponentCollection):
     
     need_saves: dict[tuple[str, str], Component] = field(default_factory=dict)
 
+    def update(self, component: Component) -> None:
+        self.store[(component.context, component.name)] = component
+        self.need_saves[(component.context, component.name)] = component
+        self.components[component.id] = component
 
     @override
     def get_or_create_component(self, context: str, name: str) -> Component:
@@ -31,9 +35,7 @@ class MemoryComponentCollection(ComponentCollection):
             layer=ArchitectureLayer.UNKNOWN,
             description=""
         )
-        self.store[(context, name)] = component
-        self.need_saves[(context, name)] = component
-        self.components[component.id] = component
+        self.update(component)
         return component
 
     @override

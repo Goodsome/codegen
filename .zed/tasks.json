@@ -13,7 +13,7 @@
     },
     {
         "label": "CLI: Get Dev Progress",
-        "command": "python -m codegen get-dev-progress code_metadata",
+        "command": "uv run codegen get-dev-progress code_metadata",
         "use_new_terminal": false,
         "allow_concurrent_runs": false
     },
