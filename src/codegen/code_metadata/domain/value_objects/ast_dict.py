@@ -1,11 +1,15 @@
-from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Literal, Optional
 
-from codegen.code_metadata.domain.core.ast_expr import AstExpr
+from pydantic import Field
+
+from codegen.code_metadata.domain.enums.ast_expr_kind import AstExprKind
+from codegen.shared.domain.core import ValueObject
+
+if TYPE_CHECKING:
+    from codegen.code_metadata.domain.value_objects.ast_expr import AstExpr
 
 
-@dataclass
-class AstDict(AstExpr):
-    """Represents an ast.Dict node."""
-
-    keys: list[AstExpr | None] = field(default_factory=list)
-    values: list[AstExpr] = field(default_factory=list)
+class AstDict(ValueObject):
+    kind: Literal[AstExprKind.DICT] = AstExprKind.DICT
+    keys: list[Optional["AstExpr"]] = Field(default_factory=list)
+    values: list["AstExpr"] = Field(default_factory=list)

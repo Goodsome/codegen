@@ -1,0 +1,27 @@
+from enum import StrEnum, auto
+
+
+class AstExprKind(StrEnum):
+    CONSTANT = auto()
+    NAME = auto()
+    ATTRIBUTE = auto()
+    CALL = auto()
+    BIN_OP = auto()
+    BOOL_OP = auto()
+    UNARY_OP = auto()
+    COMPARE = auto()
+    IF_EXP = auto()
+    LAMBDA = auto()
+    JOINED_STR = auto()
+    FORMATTED_VALUE = auto()
+    LIST_COMP = auto()
+    SET_COMP = auto()
+    DICT_COMP = auto()
+    GENERATOR_EXP = auto()
+    SLICE = auto()
+    STARRED = auto()
+    SUBSCRIPT = auto()
+    TUPLE = auto()
+    LIST = auto()
+    SET = auto()
+    DICT = auto()

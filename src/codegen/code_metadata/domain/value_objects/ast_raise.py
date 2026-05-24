@@ -1,12 +1,13 @@
-from dataclasses import dataclass
+from typing import TYPE_CHECKING, Literal, Optional
 
-from codegen.code_metadata.domain.core.ast_expr import AstExpr
-from codegen.code_metadata.domain.core.ast_stmt import AstStmt
+from codegen.code_metadata.domain.enums.ast_stmt_kind import AstStmtKind
+from codegen.shared.domain.core import ValueObject
+
+if TYPE_CHECKING:
+    from codegen.code_metadata.domain.value_objects.ast_expr import AstExpr
 
 
-@dataclass
-class AstRaise(AstStmt):
-    """Represents an ast.Raise node."""
-
-    exc: AstExpr | None = None
-    cause: AstExpr | None = None
+class AstRaise(ValueObject):
+    kind: Literal[AstStmtKind.RAISE] = AstStmtKind.RAISE
+    exc: Optional["AstExpr"] = None
+    cause: Optional["AstExpr"] = None

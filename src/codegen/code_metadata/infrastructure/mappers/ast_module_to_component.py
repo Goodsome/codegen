@@ -69,6 +69,8 @@ class AstModuleToComponent(
             imports.extend(self.try_get_imports(node))
         for node in module.body:
             component = self.try_get_component(node, component_name, imports=imports)
+            if component:
+                break
         if component is None:
             raise ValueError(f"No class definition found in module {component_name}")
         return component

@@ -1,14 +1,15 @@
-from dataclasses import dataclass
-import ast
+from typing import TYPE_CHECKING, Literal
 
-from codegen.code_metadata.domain.core.ast_expr import AstExpr
-from codegen.code_metadata.domain.core.ast_stmt import AstStmt
+from codegen.code_metadata.domain.enums.ast_stmt_kind import AstStmtKind
+from codegen.code_metadata.domain.enums.bin_op import BinOp
+from codegen.shared.domain.core import ValueObject
+
+if TYPE_CHECKING:
+    from codegen.code_metadata.domain.value_objects.ast_expr import AstExpr
 
 
-@dataclass
-class AstAugAssign(AstStmt):
-    """Represents an ast.AugAssign node (e.g., x += 1)."""
-
-    target: AstExpr
-    op: ast.operator
-    value: AstExpr
+class AstAugAssign(ValueObject):
+    kind: Literal[AstStmtKind.AUG_ASSIGN] = AstStmtKind.AUG_ASSIGN
+    target: "AstExpr"
+    op: BinOp
+    value: "AstExpr"

@@ -18,6 +18,7 @@ from codegen.code_metadata.domain.value_objects.expr_def import ExprDef
 from codegen.code_metadata.domain.value_objects.reference_expr import ReferenceExpr
 from codegen.code_metadata.domain.value_objects.sequence_expr import SequenceExpr
 from codegen.code_metadata.domain.value_objects.type_def import TypeDef
+from codegen.code_metadata.infrastructure.mappers.stmt_to_ast import StmtToAst
 from codegen.shared.domain.enums import PythonBuiltinType
 
 
@@ -248,9 +249,8 @@ class ComponentToAstModule:
         body: list[ast.stmt] = []
         if behavior.description:
             body.append(ast.Expr(value=ast.Constant(value=behavior.description)))
-        body.append(
-            ast.Expr(value=ast.Constant(value=...))
-        )
+        for b in behavior.body:
+            body.append(StmtToAst.to_node(b))
         arguments = self.attributes_to_arguments(behavior.inputs)
         returns = self.type_to_ast_expr(behavior.output)
         return ast.FunctionDef(

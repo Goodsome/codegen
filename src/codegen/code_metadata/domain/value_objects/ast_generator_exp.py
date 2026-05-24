@@ -1,12 +1,16 @@
-from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Literal
 
-from codegen.code_metadata.domain.core.ast_expr import AstExpr
-from codegen.code_metadata.domain.value_objects.ast_list_comp import AstComprehension
+from pydantic import Field
+
+from codegen.code_metadata.domain.enums.ast_expr_kind import AstExprKind
+from codegen.code_metadata.domain.value_objects.ast_comprehension import AstComprehension
+from codegen.shared.domain.core import ValueObject
+
+if TYPE_CHECKING:
+    from codegen.code_metadata.domain.value_objects.ast_expr import AstExpr
 
 
-@dataclass
-class AstGeneratorExp(AstExpr):
-    """Represents an ast.GeneratorExp node."""
-
-    elt: AstExpr
-    generators: list[AstComprehension] = field(default_factory=list)
+class AstGeneratorExp(ValueObject):
+    kind: Literal[AstExprKind.GENERATOR_EXP] = AstExprKind.GENERATOR_EXP
+    elt: "AstExpr"
+    generators: list[AstComprehension] = Field(default_factory=list)

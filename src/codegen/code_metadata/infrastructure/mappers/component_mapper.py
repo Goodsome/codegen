@@ -6,6 +6,7 @@ from codegen.code_metadata.domain.enums import ArchitectureLayer, ComponentType
 from codegen.code_metadata.domain.identifiers.attribute_id import AttributeId
 from codegen.code_metadata.domain.identifiers.behavior_id import BehaviorId
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
+from codegen.code_metadata.domain.value_objects.ast_stmt import ast_stmt_adapter
 from codegen.code_metadata.domain.value_objects.expr_def import expr_def_adapter
 from codegen.code_metadata.domain.value_objects.scenario import Scenario
 from codegen.code_metadata.domain.value_objects.type_def import TypeDef
@@ -62,10 +63,10 @@ class ComponentMapper:
             id=BehaviorId.reconstitute(orm_model.id),
             name=orm_model.name,
             description=orm_model.description,
-            # 利用 Pydantic V2 的 model_validate 从 JSON dict 快速恢复嵌套值对象
             scenarios=[Scenario.model_validate(s) for s in orm_model.scenarios],
             inputs=[cls._attr_to_domain(attr) for attr in orm_model.inputs],
             output=TypeDef.model_validate(orm_model.output),
+            body=[ast_stmt_adapter.validate_python(s) for s in orm_model.body],
         )
 
     @classmethod
@@ -131,6 +132,7 @@ class ComponentMapper:
             # Pydantic V2: model_dump(mode='json') 会自动将里面的所有类型(包括UUID, 枚举等)转为JSON兼容的基本类型
             scenarios=[s.model_dump(mode="json") for s in domain_entity.scenarios],
             output=domain_entity.output.model_dump(mode="json"),
+            body=[s.model_dump(mode="json") for s in domain_entity.body],
             # Behavior 拥有的 inputs，注入外键 behavior_id
             inputs=[
                 cls._attr_to_orm(attr, behavior_id=domain_entity.id)

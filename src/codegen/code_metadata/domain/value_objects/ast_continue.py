@@ -1,9 +1,8 @@
-from dataclasses import dataclass
+from typing import Literal
 
-from codegen.code_metadata.domain.core.ast_stmt import AstStmt
+from codegen.code_metadata.domain.enums.ast_stmt_kind import AstStmtKind
+from codegen.shared.domain.core import ValueObject
 
 
-@dataclass
-class AstContinue(AstStmt):
-    """Represents an ast.Continue node."""
-    pass
+class AstContinue(ValueObject):
+    kind: Literal[AstStmtKind.CONTINUE] = AstStmtKind.CONTINUE

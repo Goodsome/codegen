@@ -74,7 +74,7 @@ class ProjectSyncService:
             if "interfaces" in str(file_path):
                 continue
             file_name = file_path.stem
-            if file_name in ["__init__", "container", "expr_def", "parsed_expr"]:
+            if file_name in ["__init__", "container", "expr_def", "parsed_expr", "_convert", "ast_stmt", "ast_expr", "match_pattern"]:
                 continue
             code = self.file_system_port.read_file(file_path)
             parsed_path = self.path_parser.parse_file_path(file_path)

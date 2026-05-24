@@ -1,12 +1,14 @@
-from dataclasses import dataclass
-import ast
+from typing import TYPE_CHECKING, Literal
 
-from codegen.code_metadata.domain.core.ast_expr import AstExpr
+from codegen.code_metadata.domain.enums.ast_expr_kind import AstExprKind
+from codegen.code_metadata.domain.value_objects.lambda_args import LambdaArgs
+from codegen.shared.domain.core import ValueObject
+
+if TYPE_CHECKING:
+    from codegen.code_metadata.domain.value_objects.ast_expr import AstExpr
 
 
-@dataclass
-class AstLambda(AstExpr):
-    """Represents an ast.Lambda node."""
-
-    args: ast.arguments
-    body: AstExpr
+class AstLambda(ValueObject):
+    kind: Literal[AstExprKind.LAMBDA] = AstExprKind.LAMBDA
+    args: LambdaArgs
+    body: "AstExpr"

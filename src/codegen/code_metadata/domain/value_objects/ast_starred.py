@@ -1,12 +1,14 @@
-import ast
-from dataclasses import dataclass
+from typing import TYPE_CHECKING, Literal
 
-from codegen.code_metadata.domain.core.ast_expr import AstExpr
+from codegen.code_metadata.domain.enums.ast_expr_kind import AstExprKind
+from codegen.code_metadata.domain.enums.expr_context import ExprContext
+from codegen.shared.domain.core import ValueObject
+
+if TYPE_CHECKING:
+    from codegen.code_metadata.domain.value_objects.ast_expr import AstExpr
 
 
-@dataclass
-class AstStarred(AstExpr):
-    """Represents an ast.Starred node (e.g., *args)."""
-
-    value: AstExpr
-    ctx: ast.expr_context | None = None
+class AstStarred(ValueObject):
+    kind: Literal[AstExprKind.STARRED] = AstExprKind.STARRED
+    value: "AstExpr"
+    ctx: ExprContext | None = None

@@ -1,12 +1,15 @@
-from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Literal, Optional
 
-from codegen.code_metadata.domain.core.ast_expr import AstExpr
-from codegen.code_metadata.domain.core.ast_stmt import AstStmt
+from pydantic import Field
+
+from codegen.code_metadata.domain.enums.ast_stmt_kind import AstStmtKind
+from codegen.shared.domain.core import ValueObject
+
+if TYPE_CHECKING:
+    from codegen.code_metadata.domain.value_objects.ast_expr import AstExpr
 
 
-@dataclass
-class AstAssign(AstStmt):
-    """Represents an ast.Assign node."""
-
-    targets: list[AstExpr] = field(default_factory=list)
-    value: AstExpr | None = None
+class AstAssign(ValueObject):
+    kind: Literal[AstStmtKind.ASSIGN] = AstStmtKind.ASSIGN
+    targets: list["AstExpr"] = Field(default_factory=list)
+    value: Optional["AstExpr"] = None

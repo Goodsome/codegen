@@ -1,12 +1,16 @@
-from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Literal
 
-from codegen.code_metadata.domain.core.ast_stmt import AstStmt
+from pydantic import Field
+
+from codegen.code_metadata.domain.enums.ast_stmt_kind import AstStmtKind
 from codegen.code_metadata.domain.value_objects.ast_with_item import AstWithItem
+from codegen.shared.domain.core import ValueObject
+
+if TYPE_CHECKING:
+    from codegen.code_metadata.domain.value_objects.ast_stmt import AstStmt
 
 
-@dataclass
-class AstWith(AstStmt):
-    """Represents an ast.With node."""
-
-    items: list[AstWithItem] = field(default_factory=list)
-    body: list[AstStmt] = field(default_factory=list)
+class AstWith(ValueObject):
+    kind: Literal[AstStmtKind.WITH] = AstStmtKind.WITH
+    items: list[AstWithItem] = Field(default_factory=list)
+    body: list["AstStmt"] = Field(default_factory=list)

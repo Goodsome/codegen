@@ -1,12 +1,14 @@
-from dataclasses import dataclass
+from typing import TYPE_CHECKING, Literal, Optional
 
-from codegen.code_metadata.domain.core.ast_expr import AstExpr
+from codegen.code_metadata.domain.enums.ast_expr_kind import AstExprKind
+from codegen.shared.domain.core import ValueObject
+
+if TYPE_CHECKING:
+    from codegen.code_metadata.domain.value_objects.ast_expr import AstExpr
 
 
-@dataclass
-class AstSlice(AstExpr):
-    """Represents an ast.Slice node."""
-
-    lower: AstExpr | None = None
-    upper: AstExpr | None = None
-    step: AstExpr | None = None
+class AstSlice(ValueObject):
+    kind: Literal[AstExprKind.SLICE] = AstExprKind.SLICE
+    lower: Optional["AstExpr"] = None
+    upper: Optional["AstExpr"] = None
+    step: Optional["AstExpr"] = None

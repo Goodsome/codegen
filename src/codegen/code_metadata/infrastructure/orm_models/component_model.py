@@ -43,5 +43,8 @@ class ComponentModel(BaseORM):
     behaviors: Mapped[list["BehaviorModel"]] = relationship(
         "BehaviorModel",
         back_populates="component",
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
+        foreign_keys="[BehaviorModel.component_id]",
+        order_by="BehaviorModel.position",
+        collection_class=ordering_list("position")
     )

@@ -1,14 +1,18 @@
-from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Literal
 
-from codegen.code_metadata.domain.core.ast_expr import AstExpr
-from codegen.code_metadata.domain.core.ast_stmt import AstStmt
+from pydantic import Field
+
+from codegen.code_metadata.domain.enums.ast_stmt_kind import AstStmtKind
+from codegen.shared.domain.core import ValueObject
+
+if TYPE_CHECKING:
+    from codegen.code_metadata.domain.value_objects.ast_expr import AstExpr
+    from codegen.code_metadata.domain.value_objects.ast_stmt import AstStmt
 
 
-@dataclass
-class AstFor(AstStmt):
-    """Represents an ast.For node."""
-
-    target: AstExpr
-    iter: AstExpr
-    body: list[AstStmt] = field(default_factory=list)
-    orelse: list[AstStmt] = field(default_factory=list)
+class AstFor(ValueObject):
+    kind: Literal[AstStmtKind.FOR] = AstStmtKind.FOR
+    target: "AstExpr"
+    iter: "AstExpr"
+    body: list["AstStmt"] = Field(default_factory=list)
+    orelse: list["AstStmt"] = Field(default_factory=list)

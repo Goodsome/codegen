@@ -1,21 +1,25 @@
 import ast
-from typing import overload
 
-from codegen.code_metadata.domain.core.ast_stmt import AstStmt
-from codegen.code_metadata.domain.value_objects.ast_ann_assign import AstAnnAssign
-from codegen.code_metadata.domain.value_objects.ast_assign import AstAssign
-from codegen.code_metadata.domain.value_objects.ast_aug_assign import AstAugAssign
-from codegen.code_metadata.domain.value_objects.ast_continue import AstContinue
-from codegen.code_metadata.domain.value_objects.ast_expr_stmt import AstExprStmt
-from codegen.code_metadata.domain.value_objects.ast_for import AstFor
-from codegen.code_metadata.domain.value_objects.ast_if import AstIf
-from codegen.code_metadata.domain.value_objects.ast_match import AstMatch
-from codegen.code_metadata.domain.value_objects.ast_match_case import AstMatchCase
-from codegen.code_metadata.domain.value_objects.ast_pass import AstPass
-from codegen.code_metadata.domain.value_objects.ast_raise import AstRaise
-from codegen.code_metadata.domain.value_objects.ast_return import AstReturn
-from codegen.code_metadata.domain.value_objects.ast_with import AstWith
-from codegen.code_metadata.domain.value_objects.ast_with_item import AstWithItem
+from codegen.code_metadata.domain.value_objects import (
+    AstStmt,
+    AstAnnAssign,
+    AstAssign,
+    AstAugAssign,
+    AstBreak,
+    AstContinue,
+    AstExprStmt,
+    AstFor,
+    AstIf,
+    AstMatch,
+    AstMatchCase,
+    AstPass,
+    AstRaise,
+    AstReturn,
+    AstWith,
+    AstWithItem,
+)
+from codegen.code_metadata.infrastructure.mappers._convert import binop_from_ast
+from codegen.code_metadata.infrastructure.mappers.ast_to_match_pattern import AstToMatchPattern
 from codegen.code_metadata.infrastructure.mappers.ast_to_expr import AstToExpr
 
 
@@ -30,6 +34,8 @@ class AstToStmt:
                 return AstToStmt.to_ast_raise(node)
             case ast.Pass():
                 return AstToStmt.to_ast_pass(node)
+            case ast.Break():
+                return AstToStmt.to_ast_break(node)
             case ast.Continue():
                 return AstToStmt.to_ast_continue(node)
             case ast.With():
@@ -67,6 +73,10 @@ class AstToStmt:
         return AstPass()
 
     @staticmethod
+    def to_ast_break(node: ast.Break) -> AstBreak:
+        return AstBreak()
+
+    @staticmethod
     def to_ast_continue(node: ast.Continue) -> AstContinue:
         return AstContinue()
 
@@ -100,7 +110,7 @@ class AstToStmt:
     def to_ast_aug_assign(node: ast.AugAssign) -> AstAugAssign:
         return AstAugAssign(
             target=AstToExpr.to_expr(node.target),
-            op=node.op,
+            op=binop_from_ast(node.op),
             value=AstToExpr.to_expr(node.value),
         )
 
@@ -125,7 +135,7 @@ class AstToStmt:
     def to_ast_match(node: ast.Match) -> AstMatch:
         cases = [
             AstMatchCase(
-                pattern=case.pattern,
+                pattern=AstToMatchPattern.to_match_pattern(case.pattern),
                 guard=AstToExpr.to_expr(case.guard),
                 body=[AstToStmt.to_stmt(stmt) for stmt in case.body],
             )

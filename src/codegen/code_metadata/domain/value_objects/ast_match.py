@@ -1,13 +1,16 @@
-from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Literal
 
-from codegen.code_metadata.domain.core.ast_expr import AstExpr
-from codegen.code_metadata.domain.core.ast_stmt import AstStmt
+from pydantic import Field
+
+from codegen.code_metadata.domain.enums.ast_stmt_kind import AstStmtKind
 from codegen.code_metadata.domain.value_objects.ast_match_case import AstMatchCase
+from codegen.shared.domain.core import ValueObject
+
+if TYPE_CHECKING:
+    from codegen.code_metadata.domain.value_objects.ast_expr import AstExpr
 
 
-@dataclass
-class AstMatch(AstStmt):
-    """Represents an ast.Match node (Python 3.10+)."""
-
-    subject: AstExpr
-    cases: list[AstMatchCase] = field(default_factory=list)
+class AstMatch(ValueObject):
+    kind: Literal[AstStmtKind.MATCH] = AstStmtKind.MATCH
+    subject: "AstExpr"
+    cases: list[AstMatchCase] = Field(default_factory=list)

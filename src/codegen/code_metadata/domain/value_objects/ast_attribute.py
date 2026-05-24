@@ -1,11 +1,13 @@
-from dataclasses import dataclass
+from typing import TYPE_CHECKING, Literal
 
-from codegen.code_metadata.domain.core.ast_expr import AstExpr
+from codegen.code_metadata.domain.enums.ast_expr_kind import AstExprKind
+from codegen.shared.domain.core import ValueObject
+
+if TYPE_CHECKING:
+    from codegen.code_metadata.domain.value_objects.ast_expr import AstExpr
 
 
-@dataclass
-class AstAttribute(AstExpr):
-    """Represents an ast.Attribute node (e.g., obj.attr)."""
-
-    value: AstExpr
+class AstAttribute(ValueObject):
+    kind: Literal[AstExprKind.ATTRIBUTE] = AstExprKind.ATTRIBUTE
+    value: "AstExpr"
     attr: str

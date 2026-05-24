@@ -1,9 +1,14 @@
-from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Literal
 
-from codegen.code_metadata.domain.core.ast_expr import AstExpr
+from pydantic import Field
 
-@dataclass
-class AstJoinedStr(AstExpr):
-    """Represents an ast.JoinedStr node (f-string)."""
+from codegen.code_metadata.domain.enums.ast_expr_kind import AstExprKind
+from codegen.shared.domain.core import ValueObject
 
-    values: list[AstExpr] = field(default_factory=list)
+if TYPE_CHECKING:
+    from codegen.code_metadata.domain.value_objects.ast_expr import AstExpr
+
+
+class AstJoinedStr(ValueObject):
+    kind: Literal[AstExprKind.JOINED_STR] = AstExprKind.JOINED_STR
+    values: list["AstExpr"] = Field(default_factory=list)

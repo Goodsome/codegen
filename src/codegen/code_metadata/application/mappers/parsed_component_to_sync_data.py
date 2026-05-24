@@ -183,5 +183,6 @@ class ParsedComponentToSyncData:
             description=parsed_behavior.description or "",
             inputs=inputs,
             output=output,
+            body=parsed_behavior.body,
         )
     

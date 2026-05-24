@@ -1,31 +1,41 @@
 import ast
 from typing import overload
 
-from codegen.code_metadata.domain.core.ast_expr import AstExpr
-from codegen.code_metadata.domain.value_objects.ast_attribute import AstAttribute
-from codegen.code_metadata.domain.value_objects.ast_bin_op import AstBinOp
-from codegen.code_metadata.domain.value_objects.ast_bool_op import AstBoolOp
-from codegen.code_metadata.domain.value_objects.ast_call import AstCall
-from codegen.code_metadata.domain.value_objects.ast_compare import AstCompare
-from codegen.code_metadata.domain.value_objects.ast_constant import AstConstant
-from codegen.code_metadata.domain.value_objects.ast_dict import AstDict
-from codegen.code_metadata.domain.value_objects.ast_dict_comp import AstDictComp
-from codegen.code_metadata.domain.value_objects.ast_generator_exp import AstGeneratorExp
-from codegen.code_metadata.domain.value_objects.ast_if_exp import AstIfExp
-from codegen.code_metadata.domain.value_objects.ast_joined_str import AstJoinedStr
-from codegen.code_metadata.domain.value_objects.ast_formatted_value import AstFormattedValue
-from codegen.code_metadata.domain.value_objects.ast_lambda import AstLambda
-from codegen.code_metadata.domain.value_objects.ast_list import AstList
-from codegen.code_metadata.domain.value_objects.ast_list_comp import AstListComp
-from codegen.code_metadata.domain.value_objects.ast_comprehension import AstComprehension
-from codegen.code_metadata.domain.value_objects.ast_name import AstName
-from codegen.code_metadata.domain.value_objects.ast_set import AstSet
-from codegen.code_metadata.domain.value_objects.ast_set_comp import AstSetComp
-from codegen.code_metadata.domain.value_objects.ast_slice import AstSlice
-from codegen.code_metadata.domain.value_objects.ast_starred import AstStarred
-from codegen.code_metadata.domain.value_objects.ast_subscript import AstSubscript
-from codegen.code_metadata.domain.value_objects.ast_tuple import AstTuple
-from codegen.code_metadata.domain.value_objects.ast_unary_op import AstUnaryOp
+from codegen.code_metadata.domain.value_objects import (
+    AstExpr,
+    AstAttribute,
+    AstBinOp,
+    AstBoolOp,
+    AstCall,
+    AstCompare,
+    AstComprehension,
+    AstConstant,
+    AstDict,
+    AstDictComp,
+    AstFormattedValue,
+    AstGeneratorExp,
+    AstIfExp,
+    AstJoinedStr,
+    AstLambda,
+    AstList,
+    AstListComp,
+    AstName,
+    AstSet,
+    AstSetComp,
+    AstSlice,
+    AstStarred,
+    AstSubscript,
+    AstTuple,
+    AstUnaryOp,
+)
+from codegen.code_metadata.infrastructure.mappers._convert import (
+    binop_from_ast,
+    boolop_from_ast,
+    cmpop_from_ast,
+    ctx_from_ast,
+    unaryop_from_ast,
+)
+from codegen.code_metadata.infrastructure.mappers.ast_to_lambda_args import AstToLambdaArgs
 
 
 class AstToExpr:
@@ -118,7 +128,7 @@ class AstToExpr:
     @staticmethod
     def to_ast_lambda(node: ast.Lambda) -> AstLambda:
         return AstLambda(
-            args=node.args,
+            args=AstToLambdaArgs.to_lambda_args(node.args),
             body=AstToExpr.to_expr(node.body),
         )
 
@@ -134,21 +144,21 @@ class AstToExpr:
     def to_ast_bin_op(node: ast.BinOp) -> AstBinOp:
         return AstBinOp(
             left=AstToExpr.to_expr(node.left),
-            op=node.op,
+            op=binop_from_ast(node.op),
             right=AstToExpr.to_expr(node.right),
         )
 
     @staticmethod
     def to_ast_bool_op(node: ast.BoolOp) -> AstBoolOp:
         return AstBoolOp(
-            op=node.op,
+            op=boolop_from_ast(node.op),
             values=[AstToExpr.to_expr(value) for value in node.values],
         )
 
     @staticmethod
     def to_ast_unary_op(node: ast.UnaryOp) -> AstUnaryOp:
         return AstUnaryOp(
-            op=node.op,
+            op=unaryop_from_ast(node.op),
             operand=AstToExpr.to_expr(node.operand),
         )
 
@@ -156,7 +166,7 @@ class AstToExpr:
     def to_ast_compare(node: ast.Compare) -> AstCompare:
         return AstCompare(
             left=AstToExpr.to_expr(node.left),
-            ops=node.ops,
+            ops=[cmpop_from_ast(op) for op in node.ops],
             comparators=[AstToExpr.to_expr(comp) for comp in node.comparators],
         )
 
@@ -251,7 +261,7 @@ class AstToExpr:
     def to_ast_starred(node: ast.Starred) -> AstStarred:
         return AstStarred(
             value=AstToExpr.to_expr(node.value),
-            ctx=node.ctx,
+            ctx=ctx_from_ast(node.ctx),
         )
 
     @staticmethod

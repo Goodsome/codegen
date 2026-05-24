@@ -1,6 +1,7 @@
 from codegen.code_metadata.domain.entities.attribute import Attribute
 from codegen.code_metadata.domain.identifiers.behavior_id import BehaviorId
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
+from codegen.code_metadata.domain.value_objects import AstStmt
 from codegen.code_metadata.domain.value_objects.attribute_sync_data import (
     AttributeSyncData,
 )
@@ -19,6 +20,7 @@ class Behavior(Entity):
     scenarios: list[Scenario]
     inputs: list[Attribute]
     output: TypeDef
+    body: list[AstStmt]
 
     @classmethod
     def create(cls, data: BehaviorSyncData):
@@ -29,12 +31,14 @@ class Behavior(Entity):
             inputs=[Attribute.create(a) for a in data.inputs],
             output=data.output,
             scenarios=[],
+            body=data.body,
         )
 
     def update(self, data: BehaviorSyncData):
         self.name = data.name
         self.description = data.description
         self.output = data.output
+        self.body = data.body
 
         self.sync_inputs(data.inputs)
 
