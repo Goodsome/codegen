@@ -5,6 +5,7 @@ from pydantic import Field
 from codegen.code_metadata.domain.entities.attribute import Attribute
 from codegen.code_metadata.domain.entities.behavior import Behavior
 from codegen.code_metadata.domain.enums import ArchitectureLayer, ComponentType
+from codegen.code_metadata.domain.enums.component_kind import ComponentKind
 from codegen.code_metadata.domain.identifiers.attribute_id import AttributeId
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.policies.component_policy import ComponentPolicy
@@ -24,6 +25,8 @@ from codegen.shared.domain.value_objects.snake_string import SnakeString
 
 class Component(AggregateRoot[ComponentId]):
     """component"""
+
+    kind: ComponentKind = ComponentKind.CLASS
 
     context: str
     layer: ArchitectureLayer
@@ -51,6 +54,7 @@ class Component(AggregateRoot[ComponentId]):
         return result
 
     def update(self, component_sync_data: ComponentSyncData) -> None:
+        self.kind = component_sync_data.kind
         self.type = component_sync_data.type
         self.name = component_sync_data.name
         self.description = component_sync_data.description

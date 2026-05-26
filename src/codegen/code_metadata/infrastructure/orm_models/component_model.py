@@ -21,6 +21,7 @@ class ComponentModel(BaseORM):
     
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
+    kind: Mapped[str] = mapped_column(String(50), index=True, server_default="class")
     type: Mapped[str] = mapped_column(String(50), index=True)
     context: Mapped[str] = mapped_column(String(255), index=True)
     name: Mapped[str] = mapped_column(String(255))

@@ -3,6 +3,7 @@ from codegen.code_metadata.domain.aggregates.component import Component
 from codegen.code_metadata.domain.entities.attribute import Attribute
 from codegen.code_metadata.domain.entities.behavior import Behavior
 from codegen.code_metadata.domain.enums import ArchitectureLayer, ComponentType
+from codegen.code_metadata.domain.enums.component_kind import ComponentKind
 from codegen.code_metadata.domain.identifiers.attribute_id import AttributeId
 from codegen.code_metadata.domain.identifiers.behavior_id import BehaviorId
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
@@ -30,6 +31,7 @@ class ComponentMapper:
     def to_dto(cls, orm_model: ComponentModel) -> ComponentDto:
         return ComponentDto(
             id=str(orm_model.id),
+            kind=orm_model.kind,
             type=orm_model.type,
             name=orm_model.name,
             description=orm_model.description,
@@ -46,6 +48,7 @@ class ComponentMapper:
     def to_domain(cls, orm_model: ComponentModel) -> Component:
         return Component(
             id=ComponentId.reconstitute(orm_model.id),
+            kind=ComponentKind(orm_model.kind),
             type=ComponentType(orm_model.type),
             name=orm_model.name,
             description=orm_model.description,
@@ -101,6 +104,7 @@ class ComponentMapper:
 
         return ComponentModel(
             id=component_id_val.value,
+            kind=domain_entity.kind.value,
             type=domain_entity.type.value,  # 枚举转字符串
             name=domain_entity.name,
             description=domain_entity.description,
