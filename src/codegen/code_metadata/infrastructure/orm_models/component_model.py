@@ -18,7 +18,11 @@ class ComponentModel(BaseORM):
     __table_args__ = (
         UniqueConstraint("context", "name", name="uq_component_context_name"),
     )
-    
+
+    __mapper_args__ = {
+        "polymorphic_on": "kind",
+        "polymorphic_identity": "class",
+    }
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
     kind: Mapped[str] = mapped_column(String(50), index=True, server_default="class")

@@ -1,9 +1,8 @@
 from codegen.code_metadata.application.dtos.component_dto import ComponentDto
-from codegen.code_metadata.domain.aggregates.component import Component
+from codegen.code_metadata.domain.aggregates.component import ClassComponent
 from codegen.code_metadata.domain.entities.attribute import Attribute
 from codegen.code_metadata.domain.entities.behavior import Behavior
 from codegen.code_metadata.domain.enums import ArchitectureLayer, ComponentType
-from codegen.code_metadata.domain.enums.component_kind import ComponentKind
 from codegen.code_metadata.domain.identifiers.attribute_id import AttributeId
 from codegen.code_metadata.domain.identifiers.behavior_id import BehaviorId
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
@@ -45,10 +44,9 @@ class ComponentMapper:
     # ==========================================
 
     @classmethod
-    def to_domain(cls, orm_model: ComponentModel) -> Component:
-        return Component(
+    def to_domain(cls, orm_model: ComponentModel) -> ClassComponent:
+        return ClassComponent(
             id=ComponentId.reconstitute(orm_model.id),
-            kind=ComponentKind(orm_model.kind),
             type=ComponentType(orm_model.type),
             name=orm_model.name,
             description=orm_model.description,
@@ -97,7 +95,7 @@ class ComponentMapper:
     # ==========================================
 
     @classmethod
-    def to_orm(cls, domain_entity: Component) -> ComponentModel:
+    def to_orm(cls, domain_entity: ClassComponent) -> ComponentModel:
         # 注意：此处假设 domain_entity.id 能够直接提取为 UUID。
         # 如果你的 ComponentId 是一个复杂的类，请使用 domain_entity.id.value 提取底层 UUID
         component_id_val = domain_entity.id

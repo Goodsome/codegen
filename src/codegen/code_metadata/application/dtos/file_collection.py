@@ -3,7 +3,7 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 
 from codegen.code_metadata.application.dtos.parsed_component import ParsedComponent
-from codegen.code_metadata.domain.aggregates.component import Component
+from codegen.code_metadata.domain.aggregates.component import ClassComponent
 from codegen.code_metadata.domain.enums import ArchitectureLayer, ComponentType
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.value_objects.reference_source import ReferenceSource
@@ -20,8 +20,8 @@ class FileCollection(BaseModel):
     parsed_component: ParsedComponent
     reference_sources: list[ReferenceSource]
 
-    def new_component(self) -> Component:
-        return Component(
+    def new_component(self) -> ClassComponent:
+        return ClassComponent(
             id=ComponentId.create(),
             context=self.context,
             type=self.type,

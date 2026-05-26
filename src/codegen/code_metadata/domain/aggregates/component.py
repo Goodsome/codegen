@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Annotated, Literal
+
 from pydantic import Field
 
 from codegen.code_metadata.domain.entities.attribute import Attribute
@@ -23,10 +25,10 @@ from codegen.shared.domain.core.aggregate_root import AggregateRoot
 from codegen.shared.domain.value_objects.snake_string import SnakeString
 
 
-class Component(AggregateRoot[ComponentId]):
-    """component"""
+class ClassComponent(AggregateRoot[ComponentId]):
+    """class component"""
 
-    kind: ComponentKind = ComponentKind.CLASS
+    kind: Literal[ComponentKind.CLASS] = ComponentKind.CLASS
 
     context: str
     layer: ArchitectureLayer
@@ -54,7 +56,6 @@ class Component(AggregateRoot[ComponentId]):
         return result
 
     def update(self, component_sync_data: ComponentSyncData) -> None:
-        self.kind = component_sync_data.kind
         self.type = component_sync_data.type
         self.name = component_sync_data.name
         self.description = component_sync_data.description
@@ -119,3 +120,9 @@ class Component(AggregateRoot[ComponentId]):
         return (
             f"codegen.{self.context}.{self.layer}.{dir_name}.{SnakeString(self.name)}"
         )
+
+
+Component = Annotated[
+    ClassComponent,
+    Field(discriminator="kind"),
+]
