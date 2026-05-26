@@ -14,3 +14,9 @@ class ParsedComponent(BaseModel):
     behaviors: list[ParsedBehavior]
     imports: list[ImportDto]
     
+    members: list[str]
+    discriminator: str | None
+
+    @property
+    def is_union(self) -> bool:
+        return self.discriminator is not None

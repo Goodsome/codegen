@@ -48,7 +48,7 @@ class ClassComponentModel(ComponentModel):
         "polymorphic_identity": "class",
     }
 
-    bases: Mapped[list[dict[str, Any]]] = mapped_column(JSONB)
+    bases: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, default=list, server_default="[]")
     attributes: Mapped[list["AttributeModel"]] = relationship(
         "AttributeModel",
         back_populates="component",

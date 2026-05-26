@@ -1,5 +1,5 @@
-from typing import overload
 from dataclasses import dataclass
+from typing import overload
 
 from codegen.code_metadata.application.dtos.call_expr_dto import CallExprDto
 from codegen.code_metadata.application.dtos.dict_expr_dto import DictExprDto
@@ -14,9 +14,14 @@ from codegen.code_metadata.application.dtos.reference_expr_dto import ReferenceE
 from codegen.code_metadata.application.dtos.sequence_expr_dto import SequenceExprDto
 from codegen.code_metadata.domain.enums import ArchitectureLayer, ComponentType
 from codegen.code_metadata.domain.enums.expr_kind import ExprKind
+from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.services.reference_resolver import ReferenceResolver
-from codegen.code_metadata.domain.value_objects.attribute_sync_data import AttributeSyncData
-from codegen.code_metadata.domain.value_objects.behavior_sync_data import BehaviorSyncData
+from codegen.code_metadata.domain.value_objects.attribute_sync_data import (
+    AttributeSyncData,
+)
+from codegen.code_metadata.domain.value_objects.behavior_sync_data import (
+    BehaviorSyncData,
+)
 from codegen.code_metadata.domain.value_objects.call_expr import CallExpr
 from codegen.code_metadata.domain.value_objects.component_sync_data import (
     ComponentSyncData,
@@ -32,7 +37,6 @@ from codegen.code_metadata.domain.value_objects.type_def import TypeDef
 
 @dataclass
 class ParsedComponentToSyncData:
-    
     resolver: ReferenceResolver
 
     def map(
@@ -42,18 +46,14 @@ class ParsedComponentToSyncData:
         component_type: ComponentType,
         layer: ArchitectureLayer,
     ) -> ComponentSyncData:
-        bases = [
-            self.parsed_to_type(base)
-            for base in parsed_component.bases
-        ]
+        bases = [self.parsed_to_type(base) for base in parsed_component.bases]
         attributes = [
-            self.to_attribute_sync_data(attr)
-            for attr in parsed_component.attributes
+            self.to_attribute_sync_data(attr) for attr in parsed_component.attributes
         ]
-        behaviors = [
-            self.to_behavior(b)
-            for b in parsed_component.behaviors
-        ]
+        behaviors = [self.to_behavior(b) for b in parsed_component.behaviors]
+        members = self.translate_members(parsed_component.members)
+        discriminator = parsed_component.discriminator
+
         return ComponentSyncData(
             context=context,
             name=parsed_component.name,
@@ -62,18 +62,18 @@ class ParsedComponentToSyncData:
             layer=layer,
             bases=bases,
             attributes=attributes,
-            behaviors=behaviors
+            behaviors=behaviors,
+            members=members,
+            discriminator=discriminator,
         )
 
     @overload
-    def parsed_to_type(self, parsed_type: None) -> None:...
-    
+    def parsed_to_type(self, parsed_type: None) -> None: ...
+
     @overload
-    def parsed_to_type(self, parsed_type: ParsedType) -> TypeDef:...
-    
-    def parsed_to_type(
-        self, parsed_type: ParsedType | None
-    ) -> TypeDef | None:
+    def parsed_to_type(self, parsed_type: ParsedType) -> TypeDef: ...
+
+    def parsed_to_type(self, parsed_type: ParsedType | None) -> TypeDef | None:
         if parsed_type is None:
             return None
         origin = self.resolver.resolve_target(parsed_type.origin)
@@ -103,23 +103,24 @@ class ParsedComponentToSyncData:
                 raise ValueError(f"Unsupported expr kind: {expr.kind}")
 
     def _map_reference(
-        self, expr: ReferenceExprDto,
+        self,
+        expr: ReferenceExprDto,
     ) -> ReferenceExpr:
-        
         source = self.parsed_to_expr(expr.source)
         source_target = None
         if source and source.kind == ExprKind.REFERENCE:
             source_target = source.target
 
         target = self.resolver.resolve_target(expr.target, source_target)
-        
+
         return ReferenceExpr(
             target=target,
             source=source,
         )
 
     def _map_call(
-        self, expr: CallExprDto,
+        self,
+        expr: CallExprDto,
     ) -> CallExpr:
         callee = self._map_expr(expr.callee)
         args = [self._map_expr(arg) for arg in expr.args]
@@ -131,9 +132,9 @@ class ParsedComponentToSyncData:
         )
 
     def _map_sequence(
-        self, expr: SequenceExprDto,
+        self,
+        expr: SequenceExprDto,
     ) -> SequenceExpr:
-        
         container_type = expr.container_type
         elements = [self._map_expr(elem) for elem in expr.elements]
         return SequenceExpr(
@@ -142,20 +143,23 @@ class ParsedComponentToSyncData:
         )
 
     def _map_dict(
-        self, expr: DictExprDto,
+        self,
+        expr: DictExprDto,
     ) -> DictExpr:
         items = [self._map_dict_item(item) for item in expr.items]
         return DictExpr(items=items)
 
     def _map_dict_item(
-        self, item: DictItemDto,
+        self,
+        item: DictItemDto,
     ) -> DictItem:
         key = self._map_expr(item.key) if item.key else None
         value = self._map_expr(item.value)
         return DictItem(key=key, value=value)
 
     def _map_lambda(
-        self, expr: LambdaExprDto,
+        self,
+        expr: LambdaExprDto,
     ) -> LambdaExpr:
         body = self._map_expr(expr.body)
         return LambdaExpr(
@@ -185,4 +189,9 @@ class ParsedComponentToSyncData:
             output=output,
             body=parsed_behavior.body,
         )
-    
+
+    def translate_members(
+        self,
+        parsed_members: list[str],
+    ) -> list[ComponentId]:
+        return [self.resolver.get_component_id(name) for name in parsed_members]

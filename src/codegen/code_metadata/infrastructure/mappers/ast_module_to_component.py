@@ -73,6 +73,7 @@ class AstModuleToComponent(
                 break
         if component is None:
             raise ValueError(f"No class definition found in module {component_name}")
+        component.imports = imports
         return component
 
     def try_get_component(
@@ -109,15 +110,81 @@ class AstModuleToComponent(
             return None
         if node.targets[0].id != component_name:
             return None
-        parsed_attribute = self.parse_node_to_attribute(node)
+
+        # value must be Subscript
+        if not isinstance(node.value, ast.Subscript):
+            return None
+
+        # Subscript value must be 'Annotated' or 'typing.Annotated'
+        is_annotated = False
+        if isinstance(node.value.value, ast.Name) and node.value.value.id == "Annotated":
+            is_annotated = True
+        elif (
+            isinstance(node.value.value, ast.Attribute)
+            and isinstance(node.value.value.value, ast.Name)
+            and node.value.value.value.id in ("typing", "typing_extensions")
+            and node.value.value.attr == "Annotated"
+        ):
+            is_annotated = True
+
+        if not is_annotated:
+            return None
+
+        # slice must be Tuple containing elements (Python 3.9+)
+        if not isinstance(node.value.slice, ast.Tuple):
+            return None
+
+        elts = node.value.slice.elts
+        if len(elts) < 2:
+            return None
+
+        # First element: members
+        members = self._extract_union_members(elts[0])
+        if not members:
+            return None
+
+        # Find Field(discriminator=...) in the rest of elements
+        discriminator = None
+        for metadata_node in elts[1:]:
+            if (
+                isinstance(metadata_node, ast.Call)
+                and isinstance(metadata_node.func, ast.Name)
+                and metadata_node.func.id == "Field"
+            ):
+                for kw in metadata_node.keywords:
+                    if (
+                        kw.arg == "discriminator"
+                        and isinstance(kw.value, ast.Constant)
+                        and isinstance(kw.value.value, str)
+                    ):
+                        discriminator = kw.value.value
+                        break
+                if discriminator:
+                    break
+
+        if not discriminator:
+            return None
+
         return ParsedComponent(
             name=component_name,
             description="",
-            attributes=[parsed_attribute],
+            attributes=[],
             behaviors=[],
             bases=[],
             imports=[],
+            members=members,
+            discriminator=discriminator,
         )
+
+    def _extract_union_members(self, type_node: ast.AST) -> list[str] | None:
+        if isinstance(type_node, ast.Name):
+            return [type_node.id]
+        elif isinstance(type_node, ast.BinOp) and isinstance(type_node.op, ast.BitOr):
+            left_m = self._extract_union_members(type_node.left)
+            right_m = self._extract_union_members(type_node.right)
+            if left_m is not None and right_m is not None:
+                return left_m + right_m
+        return None
 
     def parse_imports(
         self, module: ast.Module, component_path: Path

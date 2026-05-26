@@ -1,14 +1,6 @@
 from dataclasses import dataclass, field
 
 from codegen.code_metadata.domain.aggregates.component import Component
-from codegen.code_metadata.domain.entities.attribute import Attribute
-from codegen.code_metadata.domain.exceptions.attribute_not_found import (
-    AttributeNotFound,
-)
-from codegen.code_metadata.domain.exceptions.dep_component_not_found import (
-    DepComponentNotFound,
-)
-from codegen.code_metadata.domain.identifiers.attribute_id import AttributeId
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.ports.component_collection import ComponentCollection
 from codegen.code_metadata.domain.value_objects.reference_source import ReferenceSource
@@ -51,10 +43,8 @@ class ReferenceResolver:
             return ReferenceTarget(builtin_type=PythonBuiltinType(target))
 
         if target in self.dep_components:
-            context = self.component_context_map[target]
             return self.resolve_target_to_component_id(
                 target=target,
-                context=context,
             )
 
         if target == self.component.name:
@@ -77,8 +67,10 @@ class ReferenceResolver:
         raise NotImplementedError(f"{target=}, {source_target=}, {self.component=}")
 
     def resolve_target_to_component_id(
-        self, target: str, context: str
+        self, target: str, context: str | None = None
     ) -> ReferenceTarget:
+        if context is None:
+            context = self.component_context_map[target]
         component = self.components.get_or_create_component(
             context=context,
             name=target,
@@ -90,3 +82,11 @@ class ReferenceResolver:
     ) -> ReferenceTarget:
         attribute = self.components.get_or_create_attribute(component_id, target)
         return ReferenceTarget(attribute_id=attribute.id)
+
+    def get_component_id(self, name: str) -> ComponentId:
+        context = self.component_context_map[name]
+        component = self.components.get_or_create_component(
+            context=context,
+            name=name,
+        )
+        return component.id

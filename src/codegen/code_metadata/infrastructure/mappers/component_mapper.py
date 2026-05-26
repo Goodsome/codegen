@@ -82,6 +82,7 @@ class ComponentMapper:
             layer=ArchitectureLayer(orm_model.layer),
             members=[ComponentId.reconstitute(m) for m in orm_model.members],
             discriminator=orm_model.discriminator,
+            description="",
         )
 
     @classmethod
@@ -164,7 +165,6 @@ class ComponentMapper:
             description="",
             context=domain_entity.context,
             layer=domain_entity.layer.value,
-            bases=[],
             members=[str(m) for m in domain_entity.members],
             discriminator=domain_entity.discriminator,
         )

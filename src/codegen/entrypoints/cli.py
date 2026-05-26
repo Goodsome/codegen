@@ -7,6 +7,7 @@ from codegen.orchestration.interfaces.cli.reverse import reverse
 from codegen.python_gen.interfaces.cli.schema import schema
 from codegen.domain_definition.interfaces.cli.tree import tree as tree_cmd
 from codegen.domain_definition.interfaces.cli.init import init
+from codegen.code_metadata.interfaces.cli.delete_component import delete_component
 from codegen.code_metadata.interfaces.cli.generate_code import generate_code
 from codegen.code_metadata.interfaces.cli.get_dev_progress import get_dev_progress
 from codegen.code_metadata.interfaces.cli.list_components import list_components
@@ -39,6 +40,7 @@ app.command()(get_dev_progress)
 app.command()(reverse_code)
 app.command()(list_components)
 app.command()(get_component)
+app.command()(delete_component)
 
 app.command(name="tree")(tree_cmd)
 

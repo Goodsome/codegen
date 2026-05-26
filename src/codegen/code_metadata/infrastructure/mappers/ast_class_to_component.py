@@ -32,4 +32,6 @@ class AstClassToComponent:
             attributes=attributes,
             behaviors=behaviors,
             imports=imports,
+            members=[],
+            discriminator=None,
         )

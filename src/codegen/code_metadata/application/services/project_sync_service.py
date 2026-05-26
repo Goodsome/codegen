@@ -1,11 +1,18 @@
+from dataclasses import dataclass
 from pathlib import Path
+
 from codegen.code_metadata.application.dtos.file_collection import FileCollection
 from codegen.code_metadata.application.dtos.parsed_component import ParsedComponent
-from codegen.code_metadata.application.mappers.parsed_component_to_sync_data import ParsedComponentToSyncData
+from codegen.code_metadata.application.mappers.parsed_component_to_sync_data import (
+    ParsedComponentToSyncData,
+)
 from codegen.code_metadata.application.ports.code_parser import CodeParser
-from codegen.code_metadata.application.services.memory_component_collection import MemoryComponentCollection
+from codegen.code_metadata.application.services.memory_component_collection import (
+    MemoryComponentCollection,
+)
 from codegen.code_metadata.domain.aggregates.component import Component
 from codegen.code_metadata.domain.enums import ComponentType
+from codegen.code_metadata.domain.enums.component_kind import ComponentKind
 from codegen.code_metadata.domain.factories.component_policy_factory import (
     ComponentPolicyFactory,
 )
@@ -17,7 +24,6 @@ from codegen.shared.application.ports.unit_of_work import UnitOfWork
 from codegen.shared.domain.ports.file_system_port import FileSystemPort
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.value_objects.snake_string import SnakeString
-from dataclasses import dataclass
 
 
 @dataclass
@@ -27,16 +33,17 @@ class ProjectSyncService:
     component_policy_factory: ComponentPolicyFactory
     uow: UnitOfWork[ComponentRepository]
     path_parser: PathParser
-    
+
     def get_component(
         self,
         context: str,
         component_name: str,
     ) -> Component | None:
         with self.uow:
-            components = self.uow.repository.find_by_context_names({(context, component_name)})
+            components = self.uow.repository.find_by_context_names(
+                {(context, component_name)}
+            )
             return components.get((context, component_name))
-        
 
     def reverse_code(
         self,
@@ -58,15 +65,16 @@ class ProjectSyncService:
         component_type: str | None,
         component_name: str | None,
     ) -> list[FileCollection]:
-        
         result: list[FileCollection] = []
         path = Path(f"src/codegen/{context}")
-        
+
         pattern = "*.py"
         if component_name is not None:
             pattern = f"{SnakeString(component_name)}.py"
         if component_type is not None:
-            policy =  self.component_policy_factory.get_policy(ComponentType(component_type))
+            policy = self.component_policy_factory.get_policy(
+                ComponentType(component_type)
+            )
             pattern = f"{policy.dir_name}/{pattern}"
         for file_path in self.file_system_port.list_directory_recursively(
             path=path, pattern=pattern
@@ -74,15 +82,24 @@ class ProjectSyncService:
             if "interfaces" in str(file_path):
                 continue
             file_name = file_path.stem
-            if file_name in ["__init__", "container", "expr_def", "parsed_expr", "_convert", "ast_stmt", "ast_expr", "match_pattern"]:
+            if file_name in [
+                "__init__",
+                "container",
+                "expr_def",
+                "parsed_expr",
+                "_convert",
+                "match_pattern",
+            ]:
                 continue
             code = self.file_system_port.read_file(file_path)
             parsed_path = self.path_parser.parse_file_path(file_path)
             parsed_component = self.parser.parse(
-                code=code, 
+                code=code,
                 component_name=PascalString(file_name),
             )
-            reference_sources = self._collect_reference_sources(file_path, parsed_component)
+            reference_sources = self._collect_reference_sources(
+                file_path, parsed_component
+            )
             result.append(
                 FileCollection(
                     context=parsed_path.context,
@@ -97,15 +114,17 @@ class ProjectSyncService:
             )
         return result
 
-    def _collect_reference_sources(self, file_path: Path, parsed_component: ParsedComponent) -> list[ReferenceSource]:
+    def _collect_reference_sources(
+        self, file_path: Path, parsed_component: ParsedComponent
+    ) -> list[ReferenceSource]:
         reference_sources: list[ReferenceSource] = []
         for import_dto in parsed_component.imports:
             if import_dto.level == 0:
                 module = import_dto.module or ""
             else:
-                parts = file_path.parts[:-import_dto.level]
+                parts = file_path.parts[: -import_dto.level]
                 module = ".".join(parts) + "." + (import_dto.module or "")
-            
+
             parsed_path = self.path_parser.parse_module_path(
                 module,
             )
@@ -128,7 +147,7 @@ class ProjectSyncService:
             context_names.add((fc.context, fc.name))
             context_names.update(fc.collect_dependency_components())
             contexts_only.update(fc.collect_dependency_contexts_only())
-            
+
         with self.uow:
             existing_components = self.uow.repository.find_by_context_names(
                 context_names=context_names
@@ -137,7 +156,7 @@ class ProjectSyncService:
                 contexts=contexts_only
             )
             existing_components.update(existing_dependencies_by_context)
-                    
+
         return existing_components
 
     def _sync_components(
@@ -145,16 +164,22 @@ class ProjectSyncService:
         file_collections: list[FileCollection],
         existing_components: dict[tuple[str, str], Component],
     ) -> None:
-        
-        id_maps = {
-            c.id: c for c in existing_components.values()
-        }
+        id_maps = {c.id: c for c in existing_components.values()}
         component_collection = MemoryComponentCollection(
             store=existing_components,
             components=id_maps,
         )
         for f in file_collections:
-            component = component_collection.get_or_create_component(f.context, f.name)
+            component_kind = (
+                ComponentKind.UNION
+                if f.parsed_component.is_union
+                else ComponentKind.CLASS
+            )
+            component = component_collection.get_or_create_component(
+                f.context,
+                f.name,
+                component_kind=component_kind,
+            )
             resolver = ReferenceResolver(
                 component=component,
                 components=component_collection,
@@ -169,7 +194,7 @@ class ProjectSyncService:
             )
             component.update(component_sync_data=component_sync_data)
             component_collection.update(component=component)
-            
+
         with self.uow:
             for component in component_collection.need_saves.values():
                 self.uow.repository.save(component)

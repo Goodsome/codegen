@@ -1,6 +1,5 @@
 from dependency_injector.containers import DeclarativeContainer
 from dependency_injector.providers import (
-    Callable,
     Configuration,
     Dependency,
     Factory,
@@ -8,6 +7,7 @@ from dependency_injector.providers import (
 )
 from event_hub import EventHub
 
+from codegen.code_metadata.application.commands.delete_component import DeleteComponent
 from codegen.code_metadata.application.commands.generate_code import GenerateCode
 from codegen.code_metadata.application.queries.get_dev_progress import GetDevProgress
 from codegen.code_metadata.application.queries.list_components import ListComponents
@@ -89,6 +89,11 @@ class Container(DeclarativeContainer):
         query_service=component_query_service,
         uow=unit_of_work,
         generator=python_code_generator,
+    )
+
+    delete_component: Factory[DeleteComponent] = Factory(
+        DeleteComponent,
+        uow=unit_of_work,
     )
 
     dev_progress_service: Factory[DevProgressService] = Factory(
