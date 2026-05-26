@@ -25,6 +25,20 @@ from codegen.shared.domain.core.aggregate_root import AggregateRoot
 from codegen.shared.domain.value_objects.snake_string import SnakeString
 
 
+class UnionComponent(AggregateRoot[ComponentId]):
+    """union component"""
+
+    kind: Literal[ComponentKind.UNION] = ComponentKind.UNION
+
+    context: str
+    layer: ArchitectureLayer
+    type: ComponentType
+    
+    name: str
+    members: list[ComponentId] = Field(default_factory=list)
+    discriminator: str | None = None
+
+
 class ClassComponent(AggregateRoot[ComponentId]):
     """class component"""
 
@@ -33,6 +47,7 @@ class ClassComponent(AggregateRoot[ComponentId]):
     context: str
     layer: ArchitectureLayer
     type: ComponentType
+    
     name: str
     description: str
 
@@ -123,6 +138,6 @@ class ClassComponent(AggregateRoot[ComponentId]):
 
 
 Component = Annotated[
-    ClassComponent,
+    ClassComponent | UnionComponent,
     Field(discriminator="kind"),
 ]

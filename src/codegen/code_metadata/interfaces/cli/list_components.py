@@ -42,7 +42,7 @@ def list_components(
     result = _list_components(query)
 
     for item in result.items:
-        console.print(f"[bold]{item.name}-{item.id}[/bold] ({item.type}) - {item.context} - {item.bases}")
+        console.print(f"[bold]{item.name}-{item.id}[/bold] ({item.type}) - {item.context}")
         console.print(f"  {item.description}")
 
     console.print(

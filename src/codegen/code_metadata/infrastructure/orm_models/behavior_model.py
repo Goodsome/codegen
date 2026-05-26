@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .attribute_model import AttributeModel
-    from .component_model import ComponentModel
+    from .component_model import ClassComponentModel
 
 class BehaviorModel(BaseORM):
     __tablename__: str = "behaviors"
@@ -26,7 +26,7 @@ class BehaviorModel(BaseORM):
     body: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, default=list)
 
     # 关联
-    component: Mapped["ComponentModel"] = relationship(back_populates="behaviors")
+    component: Mapped["ClassComponentModel"] = relationship(back_populates="behaviors")
     
     # 输入参数关联：Behavior 拥有的 inputs 也是 Attribute 实体
     inputs: Mapped[list["AttributeModel"]] = relationship(

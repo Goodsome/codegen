@@ -16,6 +16,7 @@ from codegen.code_metadata.infrastructure.orm_models.behavior_model import (
     BehaviorModel,
 )
 from codegen.code_metadata.infrastructure.orm_models.component_model import (
+    ClassComponentModel,
     ComponentModel,
 )
 from codegen.shared.application.dtos.page import Page
@@ -57,8 +58,8 @@ class SqlAlchemyComponentRepository(ComponentRepository):
             ComponentModel,
             id.value,
             options=[
-                selectinload(ComponentModel.attributes),
-                selectinload(ComponentModel.behaviors).selectinload(
+                selectinload(ClassComponentModel.attributes),
+                selectinload(ClassComponentModel.behaviors).selectinload(
                     BehaviorModel.inputs
                 ),
             ],
@@ -107,8 +108,8 @@ class SqlAlchemyComponentRepository(ComponentRepository):
             select(ComponentModel)
             .where(*conditions)
             .options(
-                selectinload(ComponentModel.attributes),
-                selectinload(ComponentModel.behaviors).selectinload(
+                selectinload(ClassComponentModel.attributes),
+                selectinload(ClassComponentModel.behaviors).selectinload(
                     BehaviorModel.inputs
                 ),
             )
@@ -144,8 +145,8 @@ class SqlAlchemyComponentRepository(ComponentRepository):
                 tuple_(ComponentModel.context, ComponentModel.name).in_(context_names)
             )
             .options(
-                selectinload(ComponentModel.attributes),
-                selectinload(ComponentModel.behaviors).selectinload(
+                selectinload(ClassComponentModel.attributes),
+                selectinload(ClassComponentModel.behaviors).selectinload(
                     BehaviorModel.inputs
                 ),
             )
@@ -166,8 +167,8 @@ class SqlAlchemyComponentRepository(ComponentRepository):
                 ComponentModel.context.in_(contexts)
             )
             .options(
-                selectinload(ComponentModel.attributes),
-                selectinload(ComponentModel.behaviors).selectinload(
+                selectinload(ClassComponentModel.attributes),
+                selectinload(ClassComponentModel.behaviors).selectinload(
                     BehaviorModel.inputs
                 ),
             )
@@ -184,8 +185,8 @@ class SqlAlchemyComponentRepository(ComponentRepository):
             select(ComponentModel)
             .where(ComponentModel.id.in_(unique_ids))
             .options(
-                selectinload(ComponentModel.attributes),
-                selectinload(ComponentModel.behaviors).selectinload(
+                selectinload(ClassComponentModel.attributes),
+                selectinload(ClassComponentModel.behaviors).selectinload(
                     BehaviorModel.inputs
                 ),
             )

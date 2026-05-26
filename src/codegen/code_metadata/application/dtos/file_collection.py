@@ -3,9 +3,7 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 
 from codegen.code_metadata.application.dtos.parsed_component import ParsedComponent
-from codegen.code_metadata.domain.aggregates.component import ClassComponent
 from codegen.code_metadata.domain.enums import ArchitectureLayer, ComponentType
-from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.value_objects.reference_source import ReferenceSource
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 
@@ -19,16 +17,6 @@ class FileCollection(BaseModel):
     path: Path
     parsed_component: ParsedComponent
     reference_sources: list[ReferenceSource]
-
-    def new_component(self) -> ClassComponent:
-        return ClassComponent(
-            id=ComponentId.create(),
-            context=self.context,
-            type=self.type,
-            layer=self.layer,
-            name=self.name,
-            description="",
-        )
 
     def collect_dependency_components(self) -> set[tuple[str, str]]:
         result: set[tuple[str, str]] = set()

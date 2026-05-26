@@ -10,5 +10,3 @@ class ComponentDto(BaseModel):
     description: str
     context: str
     layer: str
-
-    bases: list[dict[str, Any]] = []

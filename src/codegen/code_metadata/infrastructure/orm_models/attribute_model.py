@@ -9,7 +9,7 @@ from codegen.shared.infrastructure.orm_models.base import BaseORM
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .component_model import ComponentModel
+    from .component_model import ClassComponentModel
     from .behavior_model import BehaviorModel
 
 class AttributeModel(BaseORM):
@@ -40,8 +40,8 @@ class AttributeModel(BaseORM):
     value: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
 
     # 关联定义
-    component: Mapped[ComponentModel | None] = relationship(
-        "ComponentModel", 
+    component: Mapped[ClassComponentModel | None] = relationship(
+        "ClassComponentModel",
         back_populates="attributes",
         foreign_keys=[component_id]
     )

@@ -1,8 +1,9 @@
 from codegen.code_metadata.application.dtos.component_dto import ComponentDto
-from codegen.code_metadata.domain.aggregates.component import ClassComponent
+from codegen.code_metadata.domain.aggregates.component import ClassComponent, Component, UnionComponent
 from codegen.code_metadata.domain.entities.attribute import Attribute
 from codegen.code_metadata.domain.entities.behavior import Behavior
 from codegen.code_metadata.domain.enums import ArchitectureLayer, ComponentType
+from codegen.code_metadata.domain.enums.component_kind import ComponentKind
 from codegen.code_metadata.domain.identifiers.attribute_id import AttributeId
 from codegen.code_metadata.domain.identifiers.behavior_id import BehaviorId
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
@@ -17,7 +18,9 @@ from codegen.code_metadata.infrastructure.orm_models.behavior_model import (
     BehaviorModel,
 )
 from codegen.code_metadata.infrastructure.orm_models.component_model import (
+    ClassComponentModel,
     ComponentModel,
+    UnionComponentModel,
 )
 
 
@@ -36,7 +39,6 @@ class ComponentMapper:
             description=orm_model.description,
             context=orm_model.context,
             layer=orm_model.layer,
-            bases=orm_model.bases,
         )
 
     # ==========================================
@@ -44,7 +46,18 @@ class ComponentMapper:
     # ==========================================
 
     @classmethod
-    def to_domain(cls, orm_model: ComponentModel) -> ClassComponent:
+    def to_domain(cls, orm_model: ComponentModel) -> ClassComponent | UnionComponent:
+        match orm_model.kind:
+            case ComponentKind.CLASS:
+                return cls._to_class_component(orm_model)
+            case ComponentKind.UNION:
+                return cls._to_union_component(orm_model)
+            case _:
+                raise ValueError(f"Unknown component kind: {orm_model.kind}")
+
+    @classmethod
+    def _to_class_component(cls, orm_model: ComponentModel) -> ClassComponent:
+        assert isinstance(orm_model, ClassComponentModel)
         return ClassComponent(
             id=ComponentId.reconstitute(orm_model.id),
             type=ComponentType(orm_model.type),
@@ -56,6 +69,19 @@ class ComponentMapper:
             # 级联映射子实体
             attributes=[cls._attr_to_domain(attr) for attr in orm_model.attributes],
             behaviors=[cls._behavior_to_domain(beh) for beh in orm_model.behaviors],
+        )
+
+    @classmethod
+    def _to_union_component(cls, orm_model: ComponentModel) -> UnionComponent:
+        assert isinstance(orm_model, UnionComponentModel)
+        return UnionComponent(
+            id=ComponentId.reconstitute(orm_model.id),
+            type=ComponentType(orm_model.type),
+            name=orm_model.name,
+            context=orm_model.context,
+            layer=ArchitectureLayer(orm_model.layer),
+            members=[ComponentId.reconstitute(m) for m in orm_model.members],
+            discriminator=orm_model.discriminator,
         )
 
     @classmethod
@@ -95,12 +121,20 @@ class ComponentMapper:
     # ==========================================
 
     @classmethod
-    def to_orm(cls, domain_entity: ClassComponent) -> ComponentModel:
-        # 注意：此处假设 domain_entity.id 能够直接提取为 UUID。
-        # 如果你的 ComponentId 是一个复杂的类，请使用 domain_entity.id.value 提取底层 UUID
+    def to_orm(cls, domain_entity: Component) -> ComponentModel:
+        match domain_entity.kind:
+            case ComponentKind.CLASS:
+                return cls._class_to_orm(domain_entity)
+            case ComponentKind.UNION:
+                return cls._union_to_orm(domain_entity)
+            case _:
+                raise ValueError(f"Unknown component kind: {domain_entity.kind}")
+
+    @classmethod
+    def _class_to_orm(cls, domain_entity: ClassComponent) -> ClassComponentModel:
         component_id_val = domain_entity.id
 
-        return ComponentModel(
+        return ClassComponentModel(
             id=component_id_val.value,
             kind=domain_entity.kind.value,
             type=domain_entity.type.value,  # 枚举转字符串
@@ -118,6 +152,21 @@ class ComponentMapper:
                 cls._behavior_to_orm(beh, component_id=component_id_val)
                 for beh in domain_entity.behaviors
             ],
+        )
+
+    @classmethod
+    def _union_to_orm(cls, domain_entity: UnionComponent) -> UnionComponentModel:
+        return UnionComponentModel(
+            id=domain_entity.id.value,
+            kind=domain_entity.kind.value,
+            type=domain_entity.type.value,
+            name=domain_entity.name,
+            description="",
+            context=domain_entity.context,
+            layer=domain_entity.layer.value,
+            bases=[],
+            members=[str(m) for m in domain_entity.members],
+            discriminator=domain_entity.discriminator,
         )
 
     @classmethod

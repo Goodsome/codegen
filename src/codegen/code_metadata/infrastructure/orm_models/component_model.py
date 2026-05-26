@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from .attribute_model import AttributeModel
     from .behavior_model import BehaviorModel
 
+
 class ComponentModel(BaseORM):
     __tablename__: str = "components"
 
@@ -21,7 +22,6 @@ class ComponentModel(BaseORM):
 
     __mapper_args__ = {
         "polymorphic_on": "kind",
-        "polymorphic_identity": "class",
     }
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
@@ -31,10 +31,24 @@ class ComponentModel(BaseORM):
     name: Mapped[str] = mapped_column(String(255))
     description: Mapped[str] = mapped_column(Text)
     layer: Mapped[str] = mapped_column(String(50), index=True, server_default="unknown")
-    
-    bases: Mapped[list[dict[str, Any]]] = mapped_column(JSONB)
 
-    # 关联：一个组件拥有多个属性
+
+
+class UnionComponentModel(ComponentModel):
+    __mapper_args__ = {
+        "polymorphic_identity": "union",
+    }
+
+    members: Mapped[list[UUID]] = mapped_column(JSONB, default=list, server_default="[]")
+    discriminator: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+
+class ClassComponentModel(ComponentModel):
+    __mapper_args__ = {
+        "polymorphic_identity": "class",
+    }
+
+    bases: Mapped[list[dict[str, Any]]] = mapped_column(JSONB)
     attributes: Mapped[list["AttributeModel"]] = relationship(
         "AttributeModel",
         back_populates="component",
@@ -44,7 +58,6 @@ class ComponentModel(BaseORM):
         collection_class=ordering_list("position")
     )
 
-    # 关联：一个组件拥有多个行为
     behaviors: Mapped[list["BehaviorModel"]] = relationship(
         "BehaviorModel",
         back_populates="component",
