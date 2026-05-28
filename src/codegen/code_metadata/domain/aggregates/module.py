@@ -27,7 +27,7 @@ class DirectoryModule(BaseModule):
     kind: Literal[ModuleKind.DIRECTORY] = ModuleKind.DIRECTORY
     
     path: Path
-    module_ids: list[ModuleId]
+    sub_module_ids: list[ModuleId]
     parent_dir_id: ModuleId | None
     public_component_ids: list[ComponentId]
 

@@ -4,11 +4,11 @@ from pathlib import Path
 from typing import ClassVar
 
 from codegen.code_metadata.application.dtos.import_dto import ImportDto
-from codegen.code_metadata.application.dtos.imported_component import ImportedComponent
 from codegen.code_metadata.application.dtos.parsed_attribute import ParsedAttribute
 from codegen.code_metadata.application.dtos.parsed_behavior import ParsedBehavior
 from codegen.code_metadata.application.dtos.parsed_component import ParsedComponent
 from codegen.code_metadata.application.dtos.parsed_expr import ParsedExpr
+from codegen.code_metadata.application.dtos.parsed_module import ParsedDirectoryModule, ParsedFileModule
 from codegen.code_metadata.application.dtos.parsed_type import ParsedType
 from codegen.code_metadata.infrastructure.mappers.ast_class_to_component import (
     AstClassToComponent,
@@ -82,7 +82,7 @@ class AstModuleToComponent(
         if isinstance(node, ast.ClassDef) and node.name == component_name:
             return self.class_def_to_component(node, imports=imports)
         elif isinstance(node, ast.Assign):
-            return self.parse_assign(node, component_name)
+            return self.parse_assign(node)
         return None
 
     def try_get_imports(
@@ -101,15 +101,21 @@ class AstModuleToComponent(
             return imports
         return []
 
+    def _ast_import_from_to_import_dto(self, node: ast.ImportFrom) -> ImportDto:
+        return ImportDto(module=node.module, names=[a.name for a in node.names], level=node.level,)
+
+    def _ast_import_to_import_dto(self, node: ast.Import) -> ImportDto:
+        return ImportDto(module=node.names[0].name, names=[], level=0)
+
     def parse_assign(
-        self, node: ast.Assign, component_name: str
+        self, node: ast.Assign
     ) -> ParsedComponent | None:
         if len(node.targets) != 1:
             return None
         if not isinstance(node.targets[0], ast.Name):
             return None
-        if node.targets[0].id != component_name:
-            return None
+
+        name = node.targets[0].id
 
         # value must be Subscript
         if not isinstance(node.value, ast.Subscript):
@@ -166,7 +172,7 @@ class AstModuleToComponent(
             return None
 
         return ParsedComponent(
-            name=component_name,
+            name=name,
             description="",
             attributes=[],
             behaviors=[],
@@ -186,43 +192,41 @@ class AstModuleToComponent(
                 return left_m + right_m
         return None
 
-    def parse_imports(
-        self, module: ast.Module, component_path: Path
-    ) -> set[ImportedComponent]:
-        ics: set[ImportedComponent] = set()
+    def parse_module(
+        self, module: ast.Module, path: Path,
+    ) -> ParsedFileModule:
+        imports: list[ImportDto] = []
+        components: list[ParsedComponent] = []
         for node in module.body:
-            if isinstance(node, ast.ImportFrom):
-                ics.update(self.parse_import(node, component_path))
-            elif isinstance(node, ast.If):
-                for subnode in node.body:
-                    if isinstance(subnode, ast.ImportFrom):
-                        ics.update(self.parse_import(subnode, component_path))
-        return ics
+            match node:
+                case ast.ImportFrom():
+                    imports.append(self._ast_import_from_to_import_dto(node))
+                case ast.Import():
+                    imports.append(self._ast_import_to_import_dto(node))
+                case ast.ClassDef():
+                    components.append(self.class_def_to_component(node, imports=[]))
+                case ast.Assign():
+                    c = self.parse_assign(node)
+                    if c is not None:
+                        components.append(c)
+                case _:
+                    raise ValueError(f"not support {node=}")
 
-    def parse_import(
-        self, node: ast.ImportFrom, component_path: Path
-    ) -> list[ImportedComponent]:
-        module_path = node.module
-        if module_path is None:
-            return []
+        return ParsedFileModule(
+            name=path.stem,
+            path=path,
+            component_names=components,
+            dependencies=imports,
+        )
 
-        if node.level > 0:
-            module_path = str(component_path.parent).replace("/", ".")
-            if module_path.startswith("src."):
-                module_path = module_path.removeprefix("src.")
-
-        context = self._resolve_context(module_path)
-        return [
-            ImportedComponent(
-                context=context,
-                name=alias.name,
-                import_module=module_path
-            )
-            for alias in node.names
-        ]
-
-    def _resolve_context(self, module_path: str) -> str:
-        """Strip the ``codegen.`` prefix for internal imports; keep the full path for external ones."""
-        if module_path.startswith(self._CODEGEN_PREFIX):
-            return module_path.removeprefix(self._CODEGEN_PREFIX).split(".")[0]
-        return module_path
+    def parse_init_module(
+        self, module: ast.Module, path: Path,
+    ) -> ParsedDirectoryModule:
+        dir_path = path.parent
+        
+        return ParsedDirectoryModule(
+            name=dir_path.stem,
+            path=dir_path,
+            public_component_names=[]
+        )
+        

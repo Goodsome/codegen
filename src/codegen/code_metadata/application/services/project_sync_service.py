@@ -1,8 +1,19 @@
 from dataclasses import dataclass
 from pathlib import Path
+from typing import assert_never
 
 from codegen.code_metadata.application.dtos.file_collection import FileCollection
 from codegen.code_metadata.application.dtos.parsed_component import ParsedComponent
+from codegen.code_metadata.application.dtos.parsed_module import (
+    ParsedDirectoryModule,
+    ParsedFileModule,
+    ParsedModule,
+)
+from codegen.code_metadata.application.dtos.scan_payload import ScanPayload
+from codegen.code_metadata.application.dtos.scan_result import (
+    FileScanResult,
+    ScanResult,
+)
 from codegen.code_metadata.application.mappers.parsed_component_to_sync_data import (
     ParsedComponentToSyncData,
 )
@@ -51,13 +62,108 @@ class ProjectSyncService:
         component_type: str | None,
         component_name: str | None,
     ):
-        file_collections = self._collect_files(
-            context=context,
-            component_type=component_type,
-            component_name=component_name,
+        scan_payload = self._discover_files(
+            context_name=context,
+            component_type=ComponentType(component_type) if component_type else None,
+            mudule_name=component_name,
         )
-        existing_dependencies = self._get_existing_components(file_collections)
-        self._sync_components(file_collections, existing_dependencies)
+        parsed_modules = self._parse_scan_payload(scan_payload)
+
+        # file_collections = self._collect_files(
+        #     context=context,
+        #     component_type=component_type,
+        #     component_name=component_name,
+        # )
+        # existing_dependencies = self._get_existing_components(file_collections)
+        # self._sync_components(file_collections, existing_dependencies)
+
+    def _discover_files(
+        self,
+        context_name: str,
+        component_type: ComponentType | None,
+        mudule_name: str | None,
+    ) -> ScanPayload:
+        base_dir = self._get_base_dir(context_name)
+        pattern = self._get_include_pattern(
+            component_type=component_type,
+            mudule_name=mudule_name,
+        )
+        raw_scan_payloads: list[ScanResult] = []
+        for file_path in self.file_system_port.list_directory_recursively(
+            path=base_dir, pattern=pattern
+        ):
+            raw_scan_payloads.append(
+                FileScanResult(
+                    name=file_path.stem,
+                    path=file_path,
+                    extension=file_path.suffix,
+                )
+            )
+
+        return ScanPayload(
+            result=raw_scan_payloads,
+        )
+
+    def _get_base_dir(
+        self,
+        context_name: str,
+    ) -> Path:
+        base_dir = Path("src/codegen") / context_name
+        return base_dir
+
+    def _get_include_pattern(
+        self,
+        component_type: ComponentType | None,
+        mudule_name: str | None,
+    ) -> str:
+        pattern = "*.py"
+        if mudule_name is not None:
+            pattern = f"{mudule_name}.py"
+        if component_type is not None:
+            policy = self.component_policy_factory.get_policy(
+                ComponentType(component_type)
+            )
+            pattern = f"{policy.dir_name}/{pattern}"
+        return pattern
+
+    def _parse_scan_payload(
+        self,
+        scan_payload: ScanPayload,
+    ) -> list[ParsedModule]:
+        result: list[ParsedModule] = []
+        for scan_result in scan_payload.result:
+            parsed_module = self._parse_scan_result(scan_result)
+            result.append(parsed_module)
+
+        return result
+
+    def _parse_scan_result(
+        self,
+        scan_result: ScanResult,
+    ) -> ParsedModule:
+        match scan_result:
+            case FileScanResult(name="__init__"):
+                return self._parse_init_file(scan_result)
+            case FileScanResult():
+                return self._parse_file_scan_result(scan_result)
+            case _:
+                assert_never(scan_result)
+
+    def _parse_init_file(
+        self,
+        scan_result: FileScanResult,
+    ) -> ParsedDirectoryModule:
+        path = scan_result.path
+        code = self.file_system_port.read_file(path)
+        return self.parser.parse_init_module(code, path)
+
+    def _parse_file_scan_result(
+        self,
+        scan_result: FileScanResult,
+    ) -> ParsedFileModule:
+        path = scan_result.path
+        code = self.file_system_port.read_file(path)
+        return self.parser.parse_module(code, path)
 
     def _collect_files(
         self,

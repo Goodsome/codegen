@@ -1,4 +1,3 @@
-from codegen.code_metadata.domain.value_objects import AstExpr
 from .call_expr_dto import CallExprDto
 from .dict_expr_dto import DictExprDto
 from .dict_item_dto import DictItemDto
