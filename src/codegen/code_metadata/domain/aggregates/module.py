@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Annotated, Literal
 
 from pydantic import Field
@@ -8,27 +9,32 @@ from codegen.code_metadata.domain.identifiers.module_id import ModuleId
 from codegen.shared.domain.core.aggregate_root import AggregateRoot
 
 
-class FileModule(AggregateRoot[ModuleId]):
+class BaseModule(AggregateRoot[ModuleId]):
+    context: str
+    name: str
+
+
+class FileModule(BaseModule):
     kind: Literal[ModuleKind.FILE] = ModuleKind.FILE
+    
+    path: Path
+    component_ids: list[ComponentId]
+    dependency_ids: list[ComponentId]
+    parent_dir_id: ModuleId
 
-    name: str
-    components: list[ComponentId]
-    dependencies: list[ComponentId]
 
-
-class DirectoryModule(AggregateRoot[ModuleId]):
+class DirectoryModule(BaseModule):
     kind: Literal[ModuleKind.DIRECTORY] = ModuleKind.DIRECTORY
+    
+    path: Path
+    module_ids: list[ModuleId]
+    parent_dir_id: ModuleId | None
+    public_component_ids: list[ComponentId]
 
-    name: str
-    modules: list[ModuleId]
-    public_api: list[ComponentId]
 
-
-class ExternalModule(AggregateRoot[ModuleId]):
+class ExternalModule(BaseModule):
     kind: Literal[ModuleKind.EXTERNAL] = ModuleKind.EXTERNAL
-
-    name: str
-    components: list[ComponentId]
+    component_ids: list[ComponentId]
 
 
 Module = Annotated[

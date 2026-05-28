@@ -4,6 +4,7 @@ from codegen.code_metadata.domain.value_objects import (
     AstBreak,
     AstStmt,
     AstAnnAssign,
+    AstAssert,
     AstAssign,
     AstAugAssign,
     AstContinue,
@@ -38,6 +39,8 @@ class StmtToAst:
                 node = StmtToAst.from_return(stmt)
             case AstRaise():
                 node = StmtToAst.from_raise(stmt)
+            case AstAssert():
+                node = StmtToAst.from_assert(stmt)
             case AstPass():
                 node = StmtToAst.from_pass(stmt)
             case AstContinue():
@@ -92,6 +95,13 @@ class StmtToAst:
         return ast.Raise(
             exc=ExprToAst.to_node(stmt.exc),
             cause=ExprToAst.to_node(stmt.cause),
+        )
+
+    @staticmethod
+    def from_assert(stmt: AstAssert) -> ast.Assert:
+        return ast.Assert(
+            test=ExprToAst.to_node(stmt.test),
+            msg=ExprToAst.to_node(stmt.msg),
         )
 
     @staticmethod

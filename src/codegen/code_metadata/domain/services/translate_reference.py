@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from codegen.code_metadata.domain.aggregates.component import Component
+from codegen.code_metadata.domain.aggregates.component import ClassComponent, Component
 from codegen.code_metadata.domain.entities.attribute import Attribute
 from codegen.code_metadata.domain.exceptions.attribute_not_found import (
     AttributeNotFound,
@@ -22,6 +22,8 @@ class TranslateReference:
     def __post_init__(self):
         self.attribute_id_map = {}
         for component in self.id_map.values():
+            if not isinstance(component, ClassComponent):
+                continue
             for attribute in component.attributes:
                 self.attribute_id_map[attribute.id] = attribute
 

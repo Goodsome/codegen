@@ -3,6 +3,7 @@ import ast
 from codegen.code_metadata.domain.value_objects import (
     AstStmt,
     AstAnnAssign,
+    AstAssert,
     AstAssign,
     AstAugAssign,
     AstBreak,
@@ -32,6 +33,8 @@ class AstToStmt:
                 return AstToStmt.to_ast_return(node)
             case ast.Raise():
                 return AstToStmt.to_ast_raise(node)
+            case ast.Assert():
+                return AstToStmt.to_ast_assert(node)
             case ast.Pass():
                 return AstToStmt.to_ast_pass(node)
             case ast.Break():
@@ -66,6 +69,13 @@ class AstToStmt:
         return AstRaise(
             exc=AstToExpr.to_expr(node.exc),
             cause=AstToExpr.to_expr(node.cause),
+        )
+
+    @staticmethod
+    def to_ast_assert(node: ast.Assert) -> AstAssert:
+        return AstAssert(
+            test=AstToExpr.to_expr(node.test),
+            msg=AstToExpr.to_expr(node.msg),
         )
 
     @staticmethod

@@ -15,3 +15,4 @@ class AstStmtKind(StrEnum):
     IF = auto()
     WITH = auto()
     MATCH = auto()
+    ASSERT = auto()

@@ -4,6 +4,7 @@ from pydantic import Field
 from pydantic.type_adapter import TypeAdapter
 
 from .ast_ann_assign import AstAnnAssign
+from .ast_assert import AstAssert
 from .ast_assign import AstAssign
 from .ast_attribute import AstAttribute
 from .ast_aug_assign import AstAugAssign
@@ -59,6 +60,7 @@ from .match_pattern import MatchPattern, match_pattern_adapter
 
 __all__ = [
     "AstAnnAssign",
+    "AstAssert",
     "AstAssign",
     "AstAttribute",
     "AstAugAssign",
@@ -121,6 +123,7 @@ SequenceExpr.model_rebuild()
 ReferenceExpr.model_rebuild()
 
 AstAnnAssign.model_rebuild()
+AstAssert.model_rebuild()
 AstAssign.model_rebuild()
 AstAugAssign.model_rebuild()
 AstExprStmt.model_rebuild()
