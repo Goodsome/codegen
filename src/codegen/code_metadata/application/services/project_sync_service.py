@@ -2,6 +2,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import assert_never
 
+from codegen.code_metadata.application.contexts.sync_project_context import (
+    SyncProjectContext,
+)
 from codegen.code_metadata.application.dtos.file_collection import FileCollection
 from codegen.code_metadata.application.dtos.parsed_component import ParsedComponent
 from codegen.code_metadata.application.dtos.parsed_module import (
@@ -22,12 +25,15 @@ from codegen.code_metadata.application.services.memory_component_collection impo
     MemoryComponentCollection,
 )
 from codegen.code_metadata.domain.aggregates.component import Component
+from codegen.code_metadata.domain.aggregates.module import Module
 from codegen.code_metadata.domain.enums import ComponentType
 from codegen.code_metadata.domain.enums.component_kind import ComponentKind
+from codegen.code_metadata.domain.enums.module_kind import ModuleKind
 from codegen.code_metadata.domain.factories.component_policy_factory import (
     ComponentPolicyFactory,
 )
 from codegen.code_metadata.domain.ports.component_repository import ComponentRepository
+from codegen.code_metadata.domain.registries.module_registry import ModuleRegistry
 from codegen.code_metadata.domain.services.path_parser import PathParser
 from codegen.code_metadata.domain.services.reference_resolver import ReferenceResolver
 from codegen.code_metadata.domain.value_objects.reference_source import ReferenceSource
@@ -68,14 +74,21 @@ class ProjectSyncService:
             mudule_name=component_name,
         )
         parsed_modules = self._parse_scan_payload(scan_payload)
+        existing_modules = self._get_existing_modules()
+        module_registry = ModuleRegistry(init_modules=existing_modules)
+        sync_context = SyncProjectContext(
+            registry=module_registry,
+            path_parser=self.path_parser,
+        )
+        sync_modules = sync_context.sync_parsed_modules(parsed_modules)
+        for module in sync_modules.values():
+            if module.kind != ModuleKind.DIRECTORY:
+                continue
+            for reference_target in module.iter_reference_targets():
+                print(reference_target)
 
-        # file_collections = self._collect_files(
-        #     context=context,
-        #     component_type=component_type,
-        #     component_name=component_name,
-        # )
-        # existing_dependencies = self._get_existing_components(file_collections)
-        # self._sync_components(file_collections, existing_dependencies)
+    def _get_existing_modules(self) -> list[Module]:
+        return []
 
     def _discover_files(
         self,

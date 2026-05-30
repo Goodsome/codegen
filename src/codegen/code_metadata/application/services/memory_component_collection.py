@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import override
+from typing import assert_never, override
 
 from codegen.code_metadata.domain.aggregates.component import (
     ClassComponent,
@@ -43,7 +43,7 @@ class MemoryComponentCollection(ComponentCollection):
             case ComponentKind.UNION:
                 component_cls = UnionComponent
             case _:
-                raise ValueError(f"Unknown component kind {component_kind}")
+                assert_never(component_kind)
 
         component_id = ComponentId.create()
         component_type = ComponentType.EXTERNAL

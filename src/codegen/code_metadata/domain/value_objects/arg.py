@@ -1,8 +1,7 @@
-from dataclasses import dataclass
+from codegen.shared.domain.core import ValueObject
 
 
-@dataclass
-class Arg:
+class Arg(ValueObject):
     """Represents a single function/lambda parameter."""
 
     arg: str

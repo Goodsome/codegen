@@ -210,12 +210,12 @@ class AstModuleToComponent(
                     if c is not None:
                         components.append(c)
                 case _:
-                    raise ValueError(f"not support {node=}")
+                    print(f"skip {ast.unparse(node)=}")
 
         return ParsedFileModule(
             name=path.stem,
             path=path,
-            component_names=components,
+            components=components,
             dependencies=imports,
         )
 
@@ -223,10 +223,30 @@ class AstModuleToComponent(
         self, module: ast.Module, path: Path,
     ) -> ParsedDirectoryModule:
         dir_path = path.parent
-        
+        public_component_names = self._extract_all(module)
+
         return ParsedDirectoryModule(
             name=dir_path.stem,
             path=dir_path,
-            public_component_names=[]
+            public_component_names=public_component_names,
         )
+
+    def _extract_all(self, module: ast.Module) -> list[str]:
+        """Extract string values from ``__all__ = [...]`` assignments."""
+        for node in module.body:
+            if not isinstance(node, ast.Assign):
+                continue
+            for target in node.targets:
+                if isinstance(target, ast.Name) and target.id == "__all__":
+                    return self._parse_all_value(node.value)
+        return []
+
+    def _parse_all_value(self, node: ast.expr) -> list[str]:
+        if not isinstance(node, (ast.List, ast.Tuple)):
+            return []
+        names: list[str] = []
+        for elt in node.elts:
+            if isinstance(elt, ast.Constant) and isinstance(elt.value, str):
+                names.append(elt.value)
+        return names
         

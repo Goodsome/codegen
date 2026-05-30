@@ -1,3 +1,4 @@
+from collections.abc import Iterator
 from typing import Self
 
 from pydantic import Field
@@ -18,3 +19,18 @@ class TypeDef(ValueObject):
         for arg in self.args:
             result.update(arg.get_component_ids())
         return result
+
+    def resolve(
+        self,
+        map: dict[str, ReferenceTarget],
+    ) -> Self:
+        self.origin.resolve(map)
+        for arg in self.args:
+            arg.resolve(map)
+        return self
+
+
+    def iter_reference_targets(self) -> Iterator[ReferenceTarget]:
+        yield self.origin
+        for arg in self.args:
+            yield from arg.iter_reference_targets()

@@ -26,6 +26,8 @@ from .ast_starred import AstStarred
 from .ast_subscript import AstSubscript
 from .ast_tuple import AstTuple
 from .ast_unary_op import AstUnaryOp
+from .ast_yield import AstYield
+from .ast_yield_from import AstYieldFrom
 
 AstExpr = Annotated[
     AstConstant | AstName | AstAttribute | AstCall
@@ -33,7 +35,8 @@ AstExpr = Annotated[
     | AstIfExp | AstLambda | AstJoinedStr | AstFormattedValue
     | AstListComp | AstSetComp | AstDictComp | AstGeneratorExp
     | AstSlice | AstStarred | AstSubscript
-    | AstTuple | AstList | AstSet | AstDict,
+    | AstTuple | AstList | AstSet | AstDict
+    | AstYield | AstYieldFrom,
     Field(discriminator="kind")
 ]
 

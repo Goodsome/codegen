@@ -18,7 +18,7 @@ class PathParser:
     )
 
     @staticmethod
-    def _normalize(path: Path) -> str:
+    def normalize(path: Path) -> str:
         p = PurePosixPath(path)
         parts = list(p.parts)
         if p.suffix:
@@ -29,7 +29,7 @@ class PathParser:
         return normalized
 
     def parse_file_path(self, path: Path) -> ParsedPath:
-        module_path = self._normalize(path)
+        module_path = self.normalize(path)
         return self.parse_module_path(module_path)
 
     def parse_module_path(self, module_path: str) -> ParsedPath:

@@ -25,3 +25,5 @@ class AstExprKind(StrEnum):
     LIST = auto()
     SET = auto()
     DICT = auto()
+    YIELD = auto()
+    YIELD_FROM = auto()

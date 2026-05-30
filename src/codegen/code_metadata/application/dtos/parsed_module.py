@@ -14,8 +14,15 @@ class ParsedFileModule(BaseModel):
     name: str
     path: Path
     
-    component_names: list[ParsedComponent]
+    components: list[ParsedComponent]
     dependencies: list[ImportDto]
+
+    @property
+    def import_path(self) -> str:
+        root_path = Path("src")
+        relative_path = self.path.relative_to(root_path)
+        parts = relative_path.with_suffix("").parts
+        return ".".join(parts)
 
 
 class ParsedDirectoryModule(BaseModel):
@@ -25,12 +32,23 @@ class ParsedDirectoryModule(BaseModel):
     path: Path
     
     public_component_names: list[str]
+    
+    @property
+    def import_path(self) -> str:
+        root_path = Path("src")
+        relative_path = self.path.relative_to(root_path)
+        parts = relative_path.parts
+        return ".".join(parts)
 
 
 class ParsedExternalModule(BaseModel):
     kind: Literal[ModuleKind.EXTERNAL] = ModuleKind.EXTERNAL
     name: str
     components: list[str]
+
+    @property
+    def import_path(self) -> str:
+        return self.name
 
 
 ParsedModule = Annotated[

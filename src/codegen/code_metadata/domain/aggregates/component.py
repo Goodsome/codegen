@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Self
+from typing_extensions import Iterator
 
 from pydantic import Field
 
@@ -20,6 +21,7 @@ from codegen.code_metadata.domain.value_objects.behavior_sync_data import (
 from codegen.code_metadata.domain.value_objects.component_sync_data import (
     ComponentSyncData,
 )
+from codegen.code_metadata.domain.value_objects.reference_target import ReferenceTarget
 from codegen.code_metadata.domain.value_objects.type_def import TypeDef
 from codegen.shared.domain.core.aggregate_root import AggregateRoot
 from codegen.shared.domain.value_objects.snake_string import SnakeString
@@ -34,7 +36,7 @@ class UnionComponent(AggregateRoot[ComponentId]):
     layer: ArchitectureLayer
     type: ComponentType
     description: str
-    
+
     name: str
     members: list[ComponentId] = Field(default_factory=list)
     discriminator: str | None = None
@@ -42,7 +44,7 @@ class UnionComponent(AggregateRoot[ComponentId]):
     @property
     def file_name(self) -> str:
         return SnakeString(self.name)
-        
+
     def get_dependencies(self) -> set[ComponentId]:
         result: set[ComponentId] = set()
         for member in self.members:
@@ -57,7 +59,7 @@ class UnionComponent(AggregateRoot[ComponentId]):
 
         self.members = component_sync_data.members
         self.discriminator = component_sync_data.discriminator
-        
+
     def get_import_module(self, type_policy: ComponentPolicy) -> str:
         if self.type is ComponentType.EXTERNAL:
             return self.context
@@ -65,6 +67,15 @@ class UnionComponent(AggregateRoot[ComponentId]):
         return (
             f"codegen.{self.context}.{self.layer}.{dir_name}.{SnakeString(self.name)}"
         )
+
+    def resolve(
+        self,
+        map: dict[str, ReferenceTarget],
+    ) -> Self:
+        return self
+        
+    def iter_reference_targets(self) -> Iterator[ReferenceTarget]:
+        yield from []
 
 class ClassComponent(AggregateRoot[ComponentId]):
     """class component"""
@@ -74,7 +85,7 @@ class ClassComponent(AggregateRoot[ComponentId]):
     context: str
     layer: ArchitectureLayer
     type: ComponentType
-    
+
     name: str
     description: str
 
@@ -162,6 +173,21 @@ class ClassComponent(AggregateRoot[ComponentId]):
         return (
             f"codegen.{self.context}.{self.layer}.{dir_name}.{SnakeString(self.name)}"
         )
+
+    def find_behavior(self, name: str) -> Behavior | None:
+        return next((b for b in self.behaviors if b.name == name), None)
+
+    def resolve(
+        self,
+        map: dict[str, ReferenceTarget],
+    ) -> Self:
+        for base in self.bases:
+            base.resolve(map)
+        return self
+
+    def iter_reference_targets(self) -> Iterator[ReferenceTarget]:
+        for base in self.bases:
+            yield from base.iter_reference_targets()
 
 
 Component = Annotated[

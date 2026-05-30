@@ -1,8 +1,3 @@
-from typing import Annotated
-
-from pydantic import Field
-from pydantic.type_adapter import TypeAdapter
-
 from .ast_ann_assign import AstAnnAssign
 from .ast_assert import AstAssert
 from .ast_assign import AstAssign
@@ -41,6 +36,8 @@ from .ast_starred import AstStarred
 from .ast_subscript import AstSubscript
 from .ast_tuple import AstTuple
 from .ast_unary_op import AstUnaryOp
+from .ast_yield import AstYield
+from .ast_yield_from import AstYieldFrom
 from .ast_with import AstWith
 from .ast_with_item import AstWithItem
 from .call_expr import CallExpr
@@ -101,6 +98,8 @@ __all__ = [
     "AstSubscript",
     "AstTuple",
     "AstUnaryOp",
+    "AstYield",
+    "AstYieldFrom",
     "AstWith",
     "AstWithItem",
     "CallExpr",
@@ -156,4 +155,6 @@ AstMatchCase.model_rebuild()
 AstComprehension.model_rebuild()
 AstReturn.model_rebuild()
 AstUnaryOp.model_rebuild()
+AstYield.model_rebuild()
+AstYieldFrom.model_rebuild()
 AstRaise.model_rebuild()
