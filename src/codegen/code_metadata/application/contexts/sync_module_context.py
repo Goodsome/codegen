@@ -86,6 +86,7 @@ class SyncModuleContext:
             
         parsed_path = self.path_parser.parse_file_path(self.module.path)
         members = self.parsed_members_to_component_ids(parsed_component.members)
+        members_v2 = [ReferenceTarget(raw=m) for m in parsed_component.members]
 
         return UnionComponent(
             id=component_id,
@@ -97,6 +98,7 @@ class SyncModuleContext:
             description=parsed_component.description,
             members=members,
             discriminator=parsed_component.discriminator,
+            members_v2=members_v2,
         )
 
     @overload

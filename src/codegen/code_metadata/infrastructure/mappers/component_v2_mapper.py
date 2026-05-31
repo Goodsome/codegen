@@ -11,6 +11,7 @@ from codegen.code_metadata.domain.enums import ArchitectureLayer, ComponentType
 from codegen.code_metadata.domain.enums.component_kind import ComponentKind
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.identifiers.module_id import ModuleId
+from codegen.code_metadata.domain.value_objects.reference_target import ReferenceTarget
 from codegen.code_metadata.domain.value_objects.type_def import TypeDef
 from codegen.code_metadata.infrastructure.orm_models.component_v2_model import (
     ClassComponentV2Model,
@@ -68,6 +69,7 @@ class ComponentV2Mapper:
             context=orm_model.context,
             layer=ArchitectureLayer(orm_model.layer),
             members=[ComponentId.reconstitute(m) for m in orm_model.members],
+            members_v2=[ReferenceTarget.model_validate(m) for m in orm_model.members_v2],
             discriminator=orm_model.discriminator,
             description="",
         )
@@ -118,5 +120,6 @@ class ComponentV2Mapper:
             context=domain_entity.context,
             layer=domain_entity.layer.value,
             members=[str(m) for m in domain_entity.members],
+            members_v2=[m.model_dump(mode="json") for m in domain_entity.members_v2],
             discriminator=domain_entity.discriminator,
         )

@@ -16,6 +16,7 @@ from codegen.code_metadata.domain.value_objects.call_expr import CallExpr
 from codegen.code_metadata.domain.value_objects.constant_expr import ConstantExpr
 from codegen.code_metadata.domain.value_objects.dict_expr import DictExpr
 from codegen.code_metadata.domain.value_objects.expr_def import ExprDef
+from codegen.code_metadata.domain.value_objects.lambda_expr import LambdaExpr
 from codegen.code_metadata.domain.value_objects.module_dependency import ModuleDependency
 from codegen.code_metadata.domain.value_objects.reference_expr import ReferenceExpr
 from codegen.code_metadata.domain.value_objects.sequence_expr import SequenceExpr
@@ -68,8 +69,8 @@ class ComponentToAstModule:
     ) -> ast.Assign:
         # Resolve member ComponentIds to Name nodes
         member_names = [
-            ast.Name(id=self.resolver.resolve_component_id(member_id))
-            for member_id in component.members
+            ast.Name(id=self.resolver.resolve_reference(member_id))
+            for member_id in component.members_v2
         ]
         # Build the union expression: Member1 | Member2 | ...
         print(component)
@@ -216,6 +217,8 @@ class ComponentToAstModule:
                 return self.map_dict(expr)
             case ExprKind.SEQUENCE:
                 return self.map_sequence(expr)
+            case ExprKind.LAMBDA:
+                return self.map_lambda(expr)
             case _:
                 raise ValueError(f"Unsupported expression kind: {expr.kind}")
 
@@ -273,6 +276,19 @@ class ComponentToAstModule:
             keys.append(self.expr_to_ast_expr(item.key) if item.key is not None else None)
             values.append(self.expr_to_ast_expr(item.value))
         return ast.Dict(keys=keys, values=values)
+
+    def map_lambda(
+        self,
+        expr: LambdaExpr,
+    ) -> ast.Lambda:
+        args = ast.arguments(
+            args=[ast.arg(arg=arg) for arg in expr.params],
+            kwonlyargs=[],
+            kw_defaults=[],
+            defaults=[],
+        )
+        body = self.expr_to_ast_expr(expr.body)
+        return ast.Lambda(args=args, body=body)
 
 
     def attribute_to_ast_assign(self, attribute: Attribute) -> ast.AnnAssign | ast.Assign | ast.Expr:

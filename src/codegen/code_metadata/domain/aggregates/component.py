@@ -43,6 +43,7 @@ class UnionComponent(BaseComponent):
     description: str
     discriminator: str | None = None
     members: list[ComponentId] = Field(default_factory=list)
+    members_v2: list[ReferenceTarget] = Field(default_factory=list)
 
     @property
     def file_name(self) -> str:
@@ -71,14 +72,8 @@ class UnionComponent(BaseComponent):
             f"codegen.{self.context}.{self.layer}.{dir_name}.{SnakeString(self.name)}"
         )
 
-    def resolve(
-        self,
-        map: dict[str, ReferenceTarget],
-    ) -> Self:
-        return self
-        
     def iter_reference_targets(self) -> Iterator[ReferenceTarget]:
-        yield from []
+        yield from self.members_v2
 
 class ClassComponent(BaseComponent):
     """class component"""
