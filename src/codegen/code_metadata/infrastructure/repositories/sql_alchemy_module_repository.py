@@ -5,10 +5,18 @@ from sqlalchemy import ColumnElement, func, select
 from sqlalchemy.orm import Session
 
 from codegen.code_metadata.application.dtos.module_filter import ModuleFilter
+from codegen.code_metadata.domain.aggregates.component import Component
 from codegen.code_metadata.domain.aggregates.module import Module
+from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.identifiers.module_id import ModuleId
 from codegen.code_metadata.domain.ports.module_repository import ModuleRepository
+from codegen.code_metadata.infrastructure.mappers.component_v2_mapper import (
+    ComponentV2Mapper,
+)
 from codegen.code_metadata.infrastructure.mappers.module_mapper import ModuleMapper
+from codegen.code_metadata.infrastructure.orm_models.component_v2_model import (
+    ComponentV2Model,
+)
 from codegen.code_metadata.infrastructure.orm_models.module_model import ModuleModel
 from codegen.shared.application.dtos.page import Page
 from codegen.shared.application.dtos.page_query import PageQuery
@@ -84,14 +92,40 @@ class SqlAlchemyModuleRepository(ModuleRepository):
         return {m.path: ModuleMapper.to_domain(m) for m in models}
 
     @override
-    def find_page(self, page_query: PageQuery[ModuleFilter]) -> Page[Module]:
+    def find_components_by_ids(
+        self, component_ids: list[ComponentId],
+    ) -> dict[ComponentId, Component]:
+        if not component_ids:
+            return {}
+        unique_ids = {cid.value for cid in component_ids}
+        stmt = select(ComponentV2Model).where(ComponentV2Model.id.in_(unique_ids))
+        models = self.session.execute(stmt).scalars().all()
+        return {
+            ComponentId.reconstitute(m.id): ComponentV2Mapper.to_domain(m)
+            for m in models
+        }
+
+    @staticmethod
+    def _build_conditions(filter: ModuleFilter) -> list[ColumnElement[bool]]:
         conditions: list[ColumnElement[bool]] = []
-        if page_query.condition.kind is not None:
-            conditions.append(ModuleModel.kind == page_query.condition.kind)
-        if page_query.condition.name is not None:
-            conditions.append(ModuleModel.name == page_query.condition.name)
-        if page_query.condition.path is not None:
-            conditions.append(ModuleModel.path == page_query.condition.path)
+        if filter.kind is not None:
+            conditions.append(ModuleModel.kind == filter.kind)
+        if filter.name is not None:
+            conditions.append(ModuleModel.name == filter.name)
+        if filter.path is not None:
+            conditions.append(ModuleModel.path == filter.path)
+        return conditions
+
+    @override
+    def find_by_filter(self, filter: ModuleFilter) -> list[Module]:
+        conditions = self._build_conditions(filter)
+        stmt = select(ModuleModel).where(*conditions)
+        models = self.session.execute(stmt).scalars().all()
+        return [ModuleMapper.to_domain(m) for m in models]
+
+    @override
+    def find_page(self, page_query: PageQuery[ModuleFilter]) -> Page[Module]:
+        conditions = self._build_conditions(page_query.condition)
 
         stmt = select(ModuleModel).where(*conditions)
 

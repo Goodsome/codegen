@@ -41,8 +41,8 @@ class UnionComponent(BaseComponent):
     kind: Literal[ComponentKind.UNION] = ComponentKind.UNION
 
     description: str
-    members: list[ComponentId] = Field(default_factory=list)
     discriminator: str | None = None
+    members: list[ComponentId] = Field(default_factory=list)
 
     @property
     def file_name(self) -> str:

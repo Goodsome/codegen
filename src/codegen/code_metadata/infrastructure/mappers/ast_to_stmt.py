@@ -3,22 +3,28 @@ import ast
 from codegen.code_metadata.domain.value_objects import (
     AstStmt,
     AstAnnAssign,
+    AstArguments,
     AstAssert,
     AstAssign,
+    AstAsyncFunctionDef,
     AstAugAssign,
     AstBreak,
     AstContinue,
+    AstExceptHandler,
     AstExprStmt,
     AstFor,
+    AstFunctionDef,
     AstIf,
     AstMatch,
     AstMatchCase,
     AstPass,
     AstRaise,
     AstReturn,
+    AstTry,
     AstWith,
     AstWithItem,
 )
+from codegen.code_metadata.domain.value_objects.arg import Arg
 from codegen.code_metadata.infrastructure.mappers._convert import binop_from_ast
 from codegen.code_metadata.infrastructure.mappers.ast_to_match_pattern import AstToMatchPattern
 from codegen.code_metadata.infrastructure.mappers.ast_to_expr import AstToExpr
@@ -55,10 +61,16 @@ class AstToStmt:
                 return AstToStmt.to_ast_if(node)
             case ast.Match():
                 return AstToStmt.to_ast_match(node)
+            case ast.Try():
+                return AstToStmt.to_ast_try(node)
+            case ast.FunctionDef():
+                return AstToStmt.to_ast_function_def(node)
+            case ast.AsyncFunctionDef():
+                return AstToStmt.to_ast_async_function_def(node)
             case ast.Expr():
                 return AstToStmt.to_ast_expr_stmt(node)
             case _:
-                raise NotImplementedError(f"Unsupported AST node: {node}")
+                raise NotImplementedError(f"Unsupported AST node: {node=} \n{ast.unparse(node)}")
 
     @staticmethod
     def to_ast_return(node: ast.Return) -> AstReturn:
@@ -154,6 +166,65 @@ class AstToStmt:
         return AstMatch(
             subject=AstToExpr.to_expr(node.subject),
             cases=cases,
+        )
+
+    @staticmethod
+    def to_ast_try(node: ast.Try) -> AstTry:
+        handlers = [
+            AstExceptHandler(
+                type=AstToExpr.to_expr(handler.type) if handler.type else None,
+                name=handler.name,
+                body=[AstToStmt.to_stmt(stmt) for stmt in handler.body],
+            )
+            for handler in node.handlers
+        ]
+        return AstTry(
+            body=[AstToStmt.to_stmt(stmt) for stmt in node.body],
+            handlers=handlers,
+            orelse=[AstToStmt.to_stmt(stmt) for stmt in node.orelse],
+            finalbody=[AstToStmt.to_stmt(stmt) for stmt in node.finalbody],
+        )
+
+    @staticmethod
+    def _to_arg(node: ast.arg) -> Arg:
+        return Arg(
+            arg=node.arg,
+            annotation=getattr(node.annotation, "id", None) or (ast.unparse(node.annotation) if node.annotation else None),
+            type_comment=node.type_comment,
+        )
+
+    @staticmethod
+    def _to_arguments(node: ast.arguments) -> AstArguments:
+        return AstArguments(
+            posonlyargs=[AstToStmt._to_arg(a) for a in node.posonlyargs],
+            args=[AstToStmt._to_arg(a) for a in node.args],
+            vararg=AstToStmt._to_arg(node.vararg) if node.vararg else None,
+            kwonlyargs=[AstToStmt._to_arg(a) for a in node.kwonlyargs],
+            kw_defaults=[AstToExpr.to_expr(d) if d is not None else None for d in node.kw_defaults],
+            kwarg=AstToStmt._to_arg(node.kwarg) if node.kwarg else None,
+            defaults=[AstToExpr.to_expr(d) for d in node.defaults],
+        )
+
+    @staticmethod
+    def to_ast_function_def(node: ast.FunctionDef) -> AstFunctionDef:
+        return AstFunctionDef(
+            name=node.name,
+            args=AstToStmt._to_arguments(node.args),
+            body=[AstToStmt.to_stmt(stmt) for stmt in node.body],
+            decorator_list=[AstToExpr.to_expr(dec) for dec in node.decorator_list],
+            returns=AstToExpr.to_expr(node.returns) if node.returns else None,
+            type_comment=node.type_comment,
+        )
+
+    @staticmethod
+    def to_ast_async_function_def(node: ast.AsyncFunctionDef) -> AstAsyncFunctionDef:
+        return AstAsyncFunctionDef(
+            name=node.name,
+            args=AstToStmt._to_arguments(node.args),
+            body=[AstToStmt.to_stmt(stmt) for stmt in node.body],
+            decorator_list=[AstToExpr.to_expr(dec) for dec in node.decorator_list],
+            returns=AstToExpr.to_expr(node.returns) if node.returns else None,
+            type_comment=node.type_comment,
         )
 
     @staticmethod

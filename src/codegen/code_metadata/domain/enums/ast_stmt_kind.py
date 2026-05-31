@@ -16,3 +16,6 @@ class AstStmtKind(StrEnum):
     WITH = auto()
     MATCH = auto()
     ASSERT = auto()
+    TRY = auto()
+    FUNCTION_DEF = auto()
+    ASYNC_FUNCTION_DEF = auto()

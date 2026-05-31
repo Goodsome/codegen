@@ -1,6 +1,8 @@
 from .ast_ann_assign import AstAnnAssign
+from .ast_arguments import AstArguments
 from .ast_assert import AstAssert
 from .ast_assign import AstAssign
+from .ast_async_function_def import AstAsyncFunctionDef
 from .ast_attribute import AstAttribute
 from .ast_aug_assign import AstAugAssign
 from .ast_bin_op import AstBinOp
@@ -13,9 +15,11 @@ from .ast_break import AstBreak
 from .ast_continue import AstContinue
 from .ast_dict import AstDict
 from .ast_dict_comp import AstDictComp
+from .ast_except_handler import AstExceptHandler
 from .ast_expr_stmt import AstExprStmt
 from .ast_for import AstFor
 from .ast_formatted_value import AstFormattedValue
+from .ast_function_def import AstFunctionDef
 from .ast_generator_exp import AstGeneratorExp
 from .ast_if import AstIf
 from .ast_if_exp import AstIfExp
@@ -35,6 +39,7 @@ from .ast_slice import AstSlice
 from .ast_starred import AstStarred
 from .ast_subscript import AstSubscript
 from .ast_tuple import AstTuple
+from .ast_try import AstTry
 from .ast_unary_op import AstUnaryOp
 from .ast_yield import AstYield
 from .ast_yield_from import AstYieldFrom
@@ -57,8 +62,10 @@ from .match_pattern import MatchPattern, match_pattern_adapter
 
 __all__ = [
     "AstAnnAssign",
+    "AstArguments",
     "AstAssert",
     "AstAssign",
+    "AstAsyncFunctionDef",
     "AstAttribute",
     "AstAugAssign",
     "AstBinOp",
@@ -71,10 +78,12 @@ __all__ = [
     "AstContinue",
     "AstDict",
     "AstDictComp",
+    "AstExceptHandler",
     "AstExpr",
     "AstExprStmt",
     "AstFor",
     "AstFormattedValue",
+    "AstFunctionDef",
     "AstGeneratorExp",
     "AstIf",
     "AstIfExp",
@@ -97,6 +106,7 @@ __all__ = [
     "AstStmt",
     "AstSubscript",
     "AstTuple",
+    "AstTry",
     "AstUnaryOp",
     "AstYield",
     "AstYieldFrom",
@@ -130,6 +140,11 @@ AstFor.model_rebuild()
 AstIf.model_rebuild()
 AstWith.model_rebuild()
 AstMatch.model_rebuild()
+AstExceptHandler.model_rebuild()
+AstTry.model_rebuild()
+AstArguments.model_rebuild()
+AstFunctionDef.model_rebuild()
+AstAsyncFunctionDef.model_rebuild()
 AstAttribute.model_rebuild()
 AstCall.model_rebuild()
 AstBinOp.model_rebuild()

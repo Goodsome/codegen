@@ -27,6 +27,8 @@ from codegen.code_metadata.domain.value_objects import (
     AstSubscript,
     AstTuple,
     AstUnaryOp,
+    AstYield,
+    AstYieldFrom,
 )
 from codegen.code_metadata.infrastructure.mappers._convert import (
     binop_to_ast,
@@ -99,6 +101,10 @@ class ExprToAst:
                 return ExprToAst.from_set(expr)
             case AstDict():
                 return ExprToAst.from_dict(expr)
+            case AstYield():
+                return ExprToAst.from_yield(expr)
+            case AstYieldFrom():
+                return ExprToAst.from_yield_from(expr)
             case _:
                 raise NotImplementedError(f"Unsupported AstExpr type: {type(expr)}")
 
@@ -276,3 +282,11 @@ class ExprToAst:
             keys=[ExprToAst.to_node(k) for k in expr.keys],
             values=[ExprToAst.to_node(v) for v in expr.values],
         )
+
+    @staticmethod
+    def from_yield(expr: AstYield) -> ast.Yield:
+        return ast.Yield(value=ExprToAst.to_node(expr.value))
+
+    @staticmethod
+    def from_yield_from(expr: AstYieldFrom) -> ast.YieldFrom:
+        return ast.YieldFrom(value=ExprToAst.to_node(expr.value))

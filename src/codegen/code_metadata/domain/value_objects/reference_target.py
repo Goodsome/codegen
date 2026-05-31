@@ -53,8 +53,8 @@ class ReferenceTarget(Entity):
         if self.is_resolved:
             return self
         if self.raw in PythonBuiltinType._value2member_map_:
-            self.raw = None
             self.builtin_type = PythonBuiltinType(self.raw)
+            self.raw = None
             return self
         if self.raw not in map:
             return self

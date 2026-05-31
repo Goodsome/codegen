@@ -6,32 +6,28 @@ from typer import Argument, Option
 from codegen.code_metadata.application.dtos.dev_progress import DevProgress
 from codegen.code_metadata.application.dtos.get_dev_progress_query import GetDevProgressQuery
 from codegen.code_metadata.application.queries.get_dev_progress import GetDevProgress
+from codegen.code_metadata.application.services.dev_progress_service import DevProgressService
 
 console = Console()
 
 
 @inject
 def _get_dev_progress(
-    query: GetDevProgressQuery,
-    use_case: GetDevProgress = Provide["code_metadata_container.get_dev_progress"],
+    module_path: str | None,
+    service: DevProgressService = Provide["code_metadata_container.dev_progress_service"],
 ) -> DevProgress:
-    return use_case.execute(query=query)
+    return service.get_dev_progress_v2(module_path=module_path)
 
 
 def get_dev_progress(
-    context: Annotated[str, Argument()],
+    module_path: Annotated[str | None, Option( "--path", "-p" )] = None,
     component_type: Annotated[str | None, Option( "--type", "-t" )] = None,
-    component_name: Annotated[str | None, Option( "--name", "-n" )] = None,
 ) -> None:
     """Show development progress: AST similarity and line diffs per file."""
-    query = GetDevProgressQuery(
-        context=context,
-        component_type=component_type,
-        component_name=component_name,
-    )
-    result = _get_dev_progress(query=query)
+    result = _get_dev_progress(module_path=module_path)
 
     result.order_by_type()
+    component_name = module_path.split(".")[-1] if module_path else None
     if component_type:
         result = result.filter_by_type(component_type)
     if component_name:

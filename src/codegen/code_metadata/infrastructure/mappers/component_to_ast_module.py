@@ -3,7 +3,8 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing_extensions import overload
 
-from codegen.code_metadata.domain.aggregates.component import Component
+from codegen.code_metadata.domain.aggregates import ClassComponent, FileModule
+from codegen.code_metadata.domain.aggregates.component import Component, UnionComponent
 from codegen.code_metadata.domain.entities.attribute import Attribute
 from codegen.code_metadata.domain.entities.behavior import Behavior
 from codegen.code_metadata.domain.enums.expr_kind import ExprKind
@@ -15,6 +16,7 @@ from codegen.code_metadata.domain.value_objects.call_expr import CallExpr
 from codegen.code_metadata.domain.value_objects.constant_expr import ConstantExpr
 from codegen.code_metadata.domain.value_objects.dict_expr import DictExpr
 from codegen.code_metadata.domain.value_objects.expr_def import ExprDef
+from codegen.code_metadata.domain.value_objects.module_dependency import ModuleDependency
 from codegen.code_metadata.domain.value_objects.reference_expr import ReferenceExpr
 from codegen.code_metadata.domain.value_objects.sequence_expr import SequenceExpr
 from codegen.code_metadata.domain.value_objects.type_def import TypeDef
@@ -27,17 +29,88 @@ class ComponentToAstModule:
     resolver: TranslateReference
     component_policy_factory: ComponentPolicyFactory
 
+    def module_to_ast(
+        self, module: FileModule
+    ) -> ast.Module:
+        body: list[ast.stmt] = []
+        for dependency in module.dependencies:
+            body.append(self.module_dependency_to_ast(dependency))
+        for component in module.components:
+            body.append(self.component_to_ast(component))
+        return ast.Module(body=body)
+        
+    def module_dependency_to_ast(
+        self, dependency: ModuleDependency
+    ) -> ast.ImportFrom | ast.Import:
+        module = self.resolver.resolve_reference(dependency.module)
+        if dependency.component:
+            component = self.resolver.resolve_reference(dependency.component)
+            return ast.ImportFrom(
+                module=module,
+                names=[ast.alias(name=component, asname=None)],
+                level=0,
+            )
+        return ast.Import(
+            names=[ast.alias(name=module, asname=None)],
+        )
+
+    def component_to_ast(
+        self, component: Component
+    ) -> ast.stmt:
+        match component:
+            case ClassComponent():
+                return self.to_ast_class(component)
+            case UnionComponent():
+                return self.union_component_to_ast(component)
+
+    def union_component_to_ast(
+        self, component: UnionComponent
+    ) -> ast.Assign:
+        # Resolve member ComponentIds to Name nodes
+        member_names = [
+            ast.Name(id=self.resolver.resolve_component_id(member_id))
+            for member_id in component.members
+        ]
+        # Build the union expression: Member1 | Member2 | ...
+        print(component)
+        union_expr: ast.expr = member_names[0]
+        for name_node in member_names[1:]:
+            union_expr = ast.BinOp(left=union_expr, op=ast.BitOr(), right=name_node)
+
+        # Field(discriminator="kind")
+        field_call = ast.Call(
+            func=ast.Name(id="Field"),
+            args=[],
+            keywords=[
+                ast.keyword(
+                    arg="discriminator",
+                    value=ast.Constant(value=component.discriminator),
+                ),
+            ],
+        )
+
+        # Annotated[<union_expr>, Field(discriminator="kind")]
+        annotated_subscript = ast.Subscript(
+            value=ast.Name(id="Annotated"),
+            slice=ast.Tuple(elts=[union_expr, field_call], ctx=ast.Load()),
+            ctx=ast.Load(),
+        )
+
+        return ast.Assign(
+            targets=[ast.Name(id=component.name, ctx=ast.Store())],
+            value=annotated_subscript,
+        )
+
     def to_ast_module(
         self, component: Component
     ) -> ast.Module:
         import_froms = self._get_import_froms(component)
-        class_def = self.to_ast_class(
-            component
-        )
-        body: list[ast.stmt] = [
-            *import_froms,
-            class_def,
-        ]
+        body: list[ast.stmt] = [ *import_froms, ]
+        match component:
+            case ClassComponent():
+                body.append(self.to_ast_class(component))
+            case UnionComponent():
+                body.append(self.union_component_to_ast(component))
         module = ast.Module(
             body=body,
         )
@@ -262,7 +335,7 @@ class ComponentToAstModule:
         
     def to_ast_class(
         self,
-        component: Component,
+        component: ClassComponent,
     ) -> ast.ClassDef:
         body: list[ast.stmt] = []
         if component.description:

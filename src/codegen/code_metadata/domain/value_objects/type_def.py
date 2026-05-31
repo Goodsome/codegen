@@ -29,7 +29,6 @@ class TypeDef(ValueObject):
             arg.resolve(map)
         return self
 
-
     def iter_reference_targets(self) -> Iterator[ReferenceTarget]:
         yield self.origin
         for arg in self.args:

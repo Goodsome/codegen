@@ -109,21 +109,23 @@ class Container(DeclarativeContainer):
         uow=unit_of_work,
     )
 
+    path_parser: Factory[PathParser] = Factory(
+        PathParser,
+        dir_to_type_registry=component_policy_factory.provided.get_dir_to_type_registry.call(),
+    )
+    
     dev_progress_service: Factory[DevProgressService] = Factory(
         DevProgressService,
         file_system_port=file_system_port,
         generator=python_code_generator,
+        uow=module_unit_of_work,
+        path_parser=path_parser,
     )
 
     get_dev_progress: Factory[GetDevProgress] = Factory(
         GetDevProgress,
         uow=unit_of_work,
         dev_progress_service=dev_progress_service,
-    )
-
-    path_parser: Factory[PathParser] = Factory(
-        PathParser,
-        dir_to_type_registry=component_policy_factory.provided.get_dir_to_type_registry.call(),
     )
 
     project_sync_service: Factory[ProjectSyncService] = Factory(

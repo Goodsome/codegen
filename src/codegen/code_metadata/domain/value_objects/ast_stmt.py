@@ -7,8 +7,10 @@ from .ast_assert import AstAssert
 from .ast_assign import AstAssign
 from .ast_ann_assign import AstAnnAssign
 from .ast_aug_assign import AstAugAssign
+from .ast_async_function_def import AstAsyncFunctionDef
 from .ast_expr_stmt import AstExprStmt
 from .ast_for import AstFor
+from .ast_function_def import AstFunctionDef
 from .ast_if import AstIf
 from .ast_with import AstWith
 from .ast_raise import AstRaise
@@ -16,11 +18,13 @@ from .ast_pass import AstPass
 from .ast_break import AstBreak
 from .ast_continue import AstContinue
 from .ast_match import AstMatch
+from .ast_try import AstTry
 
 AstStmt = Annotated[
     AstReturn | AstRaise | AstAssert | AstPass | AstBreak | AstContinue
     | AstAssign | AstAnnAssign | AstAugAssign | AstExprStmt
-    | AstFor | AstIf | AstWith | AstMatch,
+    | AstFor | AstIf | AstWith | AstMatch | AstTry
+    | AstFunctionDef | AstAsyncFunctionDef,
     Field(discriminator="kind")
 ]
 
