@@ -73,7 +73,6 @@ class ComponentToAstModule:
             for member_id in component.members_v2
         ]
         # Build the union expression: Member1 | Member2 | ...
-        print(component)
         union_expr: ast.expr = member_names[0]
         for name_node in member_names[1:]:
             union_expr = ast.BinOp(left=union_expr, op=ast.BitOr(), right=name_node)

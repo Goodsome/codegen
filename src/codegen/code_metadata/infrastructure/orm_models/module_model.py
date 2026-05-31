@@ -5,6 +5,7 @@ from uuid import UUID
 
 from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from codegen.code_metadata.infrastructure.orm_models.component_v2_model import ComponentV2Model
@@ -34,6 +35,8 @@ class ModuleModel(BaseORM):
         "ComponentV2Model",
         foreign_keys="[ComponentV2Model.module_id]",
         cascade="all, delete-orphan",
+        order_by="ComponentV2Model.position",
+        collection_class=ordering_list("position"),
     )
 
 

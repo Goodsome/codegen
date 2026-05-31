@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, String, Text, UniqueConstraint
+from sqlalchemy import ForeignKey, String, Text, UniqueConstraint, Integer
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -20,6 +20,7 @@ class ComponentV2Model(BaseORM):
     __mapper_args__ = {
         "polymorphic_on": "kind",
     }
+    
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
     module_id: Mapped[UUID] = mapped_column(
@@ -34,6 +35,8 @@ class ComponentV2Model(BaseORM):
     layer: Mapped[str] = mapped_column(
         String(50), index=True, server_default="unknown",
     )
+    
+    position: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
 
 class UnionComponentV2Model(ComponentV2Model):
