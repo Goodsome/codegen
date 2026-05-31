@@ -21,4 +21,6 @@ class ComponentDir(StrEnum):
     FACTORIES = auto()
     EVENTS = auto()
     CLI = auto()
+    CONTEXTS = auto()
+    REGISTRIES = auto()
     

@@ -21,6 +21,7 @@ from codegen.code_metadata.domain.factories.component_policy_factory import (
     ComponentPolicyFactory,
 )
 from codegen.code_metadata.domain.ports.component_repository import ComponentRepository
+from codegen.code_metadata.domain.ports.module_repository import ModuleRepository
 from codegen.code_metadata.domain.services.path_parser import PathParser
 from codegen.code_metadata.infrastructure.gateways.python_code_generator import (
     PythonCodeGenerator,
@@ -34,6 +35,7 @@ from codegen.code_metadata.infrastructure.repositories.sql_alchemy_component_que
 from codegen.code_metadata.infrastructure.repositories.sql_alchemy_component_repository import (
     SqlAlchemyComponentRepository,
 )
+from codegen.code_metadata.infrastructure.repositories.sql_alchemy_module_repository import SqlAlchemyModuleRepository
 from codegen.shared.domain.ports.file_system_port import FileSystemPort
 from codegen.shared.infrastructure.database import Database
 from codegen.shared.infrastructure.sql_alchemy_unit_of_work import SqlAlchemyUnitOfWork
@@ -54,6 +56,10 @@ class Container(DeclarativeContainer):
         SqlAlchemyComponentRepository,
     )
 
+    module_repository_factory: Factory[SqlAlchemyModuleRepository] = Factory(
+        SqlAlchemyModuleRepository,
+    )
+
     component_query_service: Factory[SqlAlchemyComponentQueryService] = Factory(
         SqlAlchemyComponentQueryService,
         session_factory=database.provided.session_factory,
@@ -63,6 +69,13 @@ class Container(DeclarativeContainer):
         SqlAlchemyUnitOfWork,
         session_factory=database.provided.session_factory,
         repository_factory=component_repository_factory.provider,
+        event_publisher_factory=event_publisher_factory,
+    )
+
+    module_unit_of_work: Factory[SqlAlchemyUnitOfWork[ModuleRepository]] = Factory(
+        SqlAlchemyUnitOfWork,
+        session_factory=database.provided.session_factory,
+        repository_factory=module_repository_factory.provider,
         event_publisher_factory=event_publisher_factory,
     )
 
@@ -120,4 +133,5 @@ class Container(DeclarativeContainer):
         component_policy_factory=component_policy_factory,
         uow=unit_of_work,
         path_parser=path_parser,
+        module_uow=module_unit_of_work,
     )

@@ -18,6 +18,9 @@ from .repository_policy import RepositoryPolicy
 from .policy_policy import PolicyPolicy
 from .orm_model_policy import OrmModelPolicy
 from .gateway_policy import GatewayPolicy
+from .context_policy import ContextPolicy
+from .registry_policy import RegistryPolicy
+
 
 
 __all__ = [
@@ -35,10 +38,12 @@ __all__ = [
     "ServicePolicy",
     "MapperPolicy",
     "FactoryPolicy",
+    "RegistryPolicy",
     "EventPolicy",
     "ExceptionPolicy",
     "RepositoryPolicy",
     "PolicyPolicy",
     "OrmModelPolicy",
     "GatewayPolicy",
+    "ContextPolicy",
 ]

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Iterator
 from typing import Annotated, Literal, Self
-from typing_extensions import Iterator
 
 from pydantic import Field
 
@@ -11,6 +11,7 @@ from codegen.code_metadata.domain.enums import ArchitectureLayer, ComponentType
 from codegen.code_metadata.domain.enums.component_kind import ComponentKind
 from codegen.code_metadata.domain.identifiers.attribute_id import AttributeId
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
+from codegen.code_metadata.domain.identifiers.module_id import ModuleId
 from codegen.code_metadata.domain.policies.component_policy import ComponentPolicy
 from codegen.code_metadata.domain.value_objects.attribute_sync_data import (
     AttributeSyncData,
@@ -26,18 +27,20 @@ from codegen.code_metadata.domain.value_objects.type_def import TypeDef
 from codegen.shared.domain.core.aggregate_root import AggregateRoot
 from codegen.shared.domain.value_objects.snake_string import SnakeString
 
+class BaseComponent(AggregateRoot[ComponentId]):
+    module_id: ModuleId
 
-class UnionComponent(AggregateRoot[ComponentId]):
+    name: str
+    context: str
+    layer: ArchitectureLayer
+    type: ComponentType
+
+class UnionComponent(BaseComponent):
     """union component"""
 
     kind: Literal[ComponentKind.UNION] = ComponentKind.UNION
 
-    context: str
-    layer: ArchitectureLayer
-    type: ComponentType
     description: str
-
-    name: str
     members: list[ComponentId] = Field(default_factory=list)
     discriminator: str | None = None
 
@@ -77,20 +80,14 @@ class UnionComponent(AggregateRoot[ComponentId]):
     def iter_reference_targets(self) -> Iterator[ReferenceTarget]:
         yield from []
 
-class ClassComponent(AggregateRoot[ComponentId]):
+class ClassComponent(BaseComponent):
     """class component"""
 
     kind: Literal[ComponentKind.CLASS] = ComponentKind.CLASS
 
-    context: str
-    layer: ArchitectureLayer
-    type: ComponentType
-
-    name: str
     description: str
 
     bases: list[TypeDef] = Field(default_factory=list)
-
     attributes: list[Attribute] = Field(default_factory=list)
     behaviors: list[Behavior] = Field(default_factory=list)
 

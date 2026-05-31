@@ -61,6 +61,7 @@ class SyncProjectContext:
             case _:
                 raise ValueError(f"Unsupported parsed module type: {parsed_module}")
         self.registry.register(module)
+        self.mark_for_sync(module)
         return module
 
     def parsed_directory_module_to_directory_module(
@@ -108,6 +109,7 @@ class SyncProjectContext:
         component_registry = ComponentRegistry(initial_components=module_components)
 
         sync_module_context = SyncModuleContext(
+            module_id=module_id,
             module=parsed_file_module,
             component_registry=component_registry,
             path_parser=self.path_parser,

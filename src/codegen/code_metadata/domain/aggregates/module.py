@@ -50,7 +50,6 @@ class FileModule(BaseModule):
                 return component
         return None
 
-
     @override
     def iter_reference_targets(self) -> Iterator[ReferenceTarget]:
         for component in self.components:

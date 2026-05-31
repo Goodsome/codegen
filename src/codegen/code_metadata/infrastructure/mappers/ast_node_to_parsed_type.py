@@ -20,6 +20,8 @@ class AstNodeToParsedType:
             return self.constant_to_type(node)
         elif isinstance(node, ast.Attribute):
             return self.attribute_to_type(node)
+        elif isinstance(node, ast.List):
+            return self.list_to_type(node)
         raise NotImplementedError(f"Unsupported AST node: {node}, {ast.dump(node)}, {ast.unparse(node)}")
 
     def expr_to_type(self, expr: ast.Expr) -> ParsedType:
@@ -82,4 +84,10 @@ class AstNodeToParsedType:
         return ParsedType(
             origin=origin,
         )
-        
+
+    def list_to_type(self, expr: ast.List) -> ParsedType:
+        args = tuple(self._node_to_type(s) for s in expr.elts)
+        return ParsedType(
+            origin=PythonBuiltinType.LIST,
+            args=args,
+        )

@@ -13,6 +13,10 @@ from codegen.code_metadata.interfaces.cli.get_dev_progress import get_dev_progre
 from codegen.code_metadata.interfaces.cli.list_components import list_components
 from codegen.code_metadata.interfaces.cli.reverse_code import reverse_code
 from codegen.code_metadata.interfaces.cli.get_component import get_component
+from codegen.code_metadata.interfaces.cli.get_module import get_module
+from codegen.code_metadata.interfaces.cli.list_modules import list_modules
+
+
 
 app = typer.Typer(
     name="codegen",
@@ -23,6 +27,7 @@ app = typer.Typer(
   scaffold         Generate Python code skeleton from codegen.yaml
   reverse          Reverse-engineer Python code into codegen.yaml
   schema           Output JSON schema for the blueprint
+  get-module       Get module by path
   tree             Display blueprint structure as a visual tree
   get-dev-progress Show development progress with AST similarity metrics
     """,
@@ -40,6 +45,9 @@ app.command()(get_dev_progress)
 app.command()(reverse_code)
 app.command()(list_components)
 app.command()(get_component)
+app.command()(get_module)
+app.command()(list_modules)
+
 app.command()(delete_component)
 
 app.command(name="tree")(tree_cmd)

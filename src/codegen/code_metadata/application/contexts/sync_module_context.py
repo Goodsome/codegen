@@ -20,6 +20,7 @@ from codegen.code_metadata.domain.enums.expr_kind import ExprKind
 from codegen.code_metadata.domain.identifiers.attribute_id import AttributeId
 from codegen.code_metadata.domain.identifiers.behavior_id import BehaviorId
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
+from codegen.code_metadata.domain.identifiers.module_id import ModuleId
 from codegen.code_metadata.domain.registries.component_registry import ComponentRegistry
 from codegen.code_metadata.domain.services.path_parser import PathParser
 from codegen.code_metadata.domain.value_objects.call_expr import CallExpr
@@ -36,6 +37,7 @@ from codegen.code_metadata.domain.value_objects.type_def import TypeDef
 @dataclass
 class SyncModuleContext:
     
+    module_id: ModuleId
     module: ParsedFileModule
     component_registry: ComponentRegistry
     path_parser: PathParser
@@ -63,6 +65,7 @@ class SyncModuleContext:
         behaviors = [self.parsed_behavior_to_behavior(b, component) for b in parsed_component.behaviors]
 
         return ClassComponent(
+            module_id=self.module_id,
             id=component_id,
             name=parsed_component.name,
             context=parsed_path.context,
@@ -86,6 +89,7 @@ class SyncModuleContext:
 
         return UnionComponent(
             id=component_id,
+            module_id=self.module_id,
             name=parsed_component.name,
             context=parsed_path.context,
             layer=parsed_path.layer,

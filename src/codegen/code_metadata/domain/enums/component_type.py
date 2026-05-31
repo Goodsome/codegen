@@ -23,3 +23,6 @@ class ComponentType(StrEnum):
     ORM_MODEL = auto()
     GATEWAY = auto()
     EXTERNAL = auto()
+
+    CONTEXT = auto()
+    REGISTRY = auto()

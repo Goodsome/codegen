@@ -4,6 +4,7 @@ from codegen.code_metadata.domain.enums import ComponentType
 from codegen.code_metadata.domain.enums.component_dir import ComponentDir
 from codegen.code_metadata.domain.policies import (
     AggregatePolicy,
+    ContextPolicy,
     CorePolicy,
     EntityPolicy,
     EnumPolicy,
@@ -13,6 +14,7 @@ from codegen.code_metadata.domain.policies import (
     FactoryPolicy,
     IdentifierPolicy,
     MapperPolicy,
+    RegistryPolicy,
     RepositoryPolicy,
     PolicyPolicy,
     OrmModelPolicy,
@@ -54,6 +56,8 @@ class ComponentPolicyFactory:
             PolicyPolicy(),
             OrmModelPolicy(),
             GatewayPolicy(),
+            ContextPolicy(),
+            RegistryPolicy(),
         ]
         self._registry = {p.component_type: p for p in self._policies}
 

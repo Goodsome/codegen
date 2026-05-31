@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import assert_never
@@ -6,6 +7,7 @@ from codegen.code_metadata.application.contexts.sync_project_context import (
     SyncProjectContext,
 )
 from codegen.code_metadata.application.dtos.file_collection import FileCollection
+from codegen.code_metadata.application.dtos.module_filter import ModuleFilter
 from codegen.code_metadata.application.dtos.parsed_component import ParsedComponent
 from codegen.code_metadata.application.dtos.parsed_module import (
     ParsedDirectoryModule,
@@ -33,10 +35,13 @@ from codegen.code_metadata.domain.factories.component_policy_factory import (
     ComponentPolicyFactory,
 )
 from codegen.code_metadata.domain.ports.component_repository import ComponentRepository
+from codegen.code_metadata.domain.ports.module_repository import ModuleRepository
 from codegen.code_metadata.domain.registries.module_registry import ModuleRegistry
 from codegen.code_metadata.domain.services.path_parser import PathParser
 from codegen.code_metadata.domain.services.reference_resolver import ReferenceResolver
 from codegen.code_metadata.domain.value_objects.reference_source import ReferenceSource
+from codegen.shared.application.dtos.page import Page
+from codegen.shared.application.dtos.page_query import PageQuery
 from codegen.shared.application.ports.unit_of_work import UnitOfWork
 from codegen.shared.domain.ports.file_system_port import FileSystemPort
 from codegen.shared.domain.value_objects.pascal_string import PascalString
@@ -50,6 +55,7 @@ class ProjectSyncService:
     component_policy_factory: ComponentPolicyFactory
     uow: UnitOfWork[ComponentRepository]
     path_parser: PathParser
+    module_uow: UnitOfWork[ModuleRepository]
 
     def get_component(
         self,
@@ -61,6 +67,21 @@ class ProjectSyncService:
                 {(context, component_name)}
             )
             return components.get((context, component_name))
+
+    def get_module(self, path: str) -> Module | None:
+        with self.module_uow:
+            paths = {path}
+            module = self.module_uow.repository.find_by_paths(paths)
+            return module.get(path)
+
+    def list_modules(self, current: int=1, size: int=10) -> Page[Module]:
+        with self.module_uow:
+            page_query = PageQuery[ModuleFilter](
+                current=current, 
+                size=size,
+                condition=ModuleFilter(),
+            )
+            return self.module_uow.repository.find_page(page_query)
 
     def reverse_code(
         self,
@@ -74,21 +95,30 @@ class ProjectSyncService:
             mudule_name=component_name,
         )
         parsed_modules = self._parse_scan_payload(scan_payload)
-        existing_modules = self._get_existing_modules()
+        existing_modules = self._get_existing_modules(parsed_modules)
         module_registry = ModuleRegistry(init_modules=existing_modules)
         sync_context = SyncProjectContext(
             registry=module_registry,
             path_parser=self.path_parser,
         )
         sync_modules = sync_context.sync_parsed_modules(parsed_modules)
-        for module in sync_modules.values():
-            if module.kind != ModuleKind.DIRECTORY:
-                continue
-            for reference_target in module.iter_reference_targets():
-                print(reference_target)
+        self._save_modules(sync_modules.values())
 
-    def _get_existing_modules(self) -> list[Module]:
-        return []
+    def _save_modules(self, sync_modules: Iterable[Module]) -> None:
+        with self.module_uow:
+            for module in sync_modules:
+                self.module_uow.repository.save(module)
+            self.module_uow.commit()
+
+    def _get_existing_modules(self, parsed_modules: list[ParsedModule]) -> list[Module]:
+        module_paths: set[str] = set()
+        for parsed_module in parsed_modules:
+            module_paths.add(parsed_module.import_path)
+            module_paths.update(parsed_module.dependency_modules())
+            module_paths.update(parsed_module.father_paths())
+        with self.module_uow:
+            modules = self.module_uow.repository.find_by_paths(paths=module_paths)
+        return list(modules.values())
 
     def _discover_files(
         self,
