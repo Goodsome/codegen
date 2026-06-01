@@ -42,7 +42,6 @@ class UnionComponent(BaseComponent):
 
     description: str
     discriminator: str | None = None
-    members: list[ComponentId] = Field(default_factory=list)
     members_v2: list[ReferenceTarget] = Field(default_factory=list)
 
     @property
@@ -51,8 +50,6 @@ class UnionComponent(BaseComponent):
 
     def get_dependencies(self) -> set[ComponentId]:
         result: set[ComponentId] = set()
-        for member in self.members:
-            result.add(member)
         return result
 
     def update(self, component_sync_data: ComponentSyncData) -> None:
@@ -61,7 +58,6 @@ class UnionComponent(BaseComponent):
         self.context = component_sync_data.context
         self.layer = component_sync_data.layer
 
-        self.members = component_sync_data.members
         self.discriminator = component_sync_data.discriminator
 
     def get_import_module(self, type_policy: ComponentPolicy) -> str:

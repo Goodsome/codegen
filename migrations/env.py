@@ -11,8 +11,9 @@ from alembic import context
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "../src"))
 
-from codegen.shared.config import get_settings
+from codegen.shared.config import Settings
 from codegen.shared.infrastructure.orm_models.base import BaseORM
+from codegen.code_metadata.infrastructure import orm_models  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -35,7 +36,7 @@ target_metadata = BaseORM.metadata
 # ... etc.
 
 def get_url() -> str:
-    settings = get_settings()
+    settings = Settings()
     db_url = str(settings.database_url)
     if not db_url:
         raise ValueError("DATABASE_URL not set")

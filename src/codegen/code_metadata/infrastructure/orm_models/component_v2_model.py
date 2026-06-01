@@ -44,7 +44,6 @@ class UnionComponentV2Model(ComponentV2Model):
         "polymorphic_identity": "union",
     }
 
-    members: Mapped[list[UUID]] = mapped_column(JSONB, default=list, server_default="[]")
     members_v2: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, default=list, server_default="[]")
     discriminator: Mapped[str | None] = mapped_column(String(255), nullable=True)
 

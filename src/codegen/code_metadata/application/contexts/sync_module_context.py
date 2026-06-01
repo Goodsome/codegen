@@ -70,7 +70,6 @@ class SyncModuleContext:
             component_id = component.id
             
         parsed_path = self.path_parser.parse_file_path(self.module.path)
-        members = self.parsed_members_to_component_ids(parsed_component.members)
         members_v2 = [ReferenceTarget(raw=m) for m in parsed_component.members]
 
         return UnionComponent(
@@ -81,7 +80,6 @@ class SyncModuleContext:
             layer=parsed_path.layer,
             type=parsed_path.component_type,
             description=parsed_component.description,
-            members=members,
             discriminator=parsed_component.discriminator,
             members_v2=members_v2,
         )
@@ -149,16 +147,3 @@ class SyncModuleContext:
             output=output,
             body=parsed_behavior.body,
         )
-
-    def parsed_members_to_component_ids(
-        self,
-        parsed_members: list[str],
-    ) -> list[ComponentId]:
-        component_ids: list[ComponentId] = []
-        for name in parsed_members:
-            component = self.component_registry.find_by_name(name)
-            if component is None:
-                continue
-            component_ids.append(component.id)
-
-        return component_ids
