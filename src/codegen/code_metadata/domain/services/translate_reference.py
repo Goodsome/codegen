@@ -77,5 +77,4 @@ class TranslateReference:
             if component is None:
                 return reference.raw or ""
             return component.name
-        print(f"Unsupported {reference=}")
         return reference.raw or ""

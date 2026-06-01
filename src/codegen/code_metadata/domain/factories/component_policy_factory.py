@@ -22,8 +22,11 @@ from codegen.code_metadata.domain.policies import (
     ServicePolicy,
     ValueObjectPolicy,
 )
+from codegen.code_metadata.domain.policies.adapter_policy import AdapterPolicy
+from codegen.code_metadata.domain.policies.cli_policy import CliPolicy
 from codegen.code_metadata.domain.policies.command_policy import CommandPolicy
 from codegen.code_metadata.domain.policies.component_policy import ComponentPolicy
+from codegen.code_metadata.domain.policies.database_policy import DatabasePolicy
 from codegen.code_metadata.domain.policies.dto_policy import DtoPolicy
 from codegen.code_metadata.domain.policies.port_policy import PortPolicy
 from codegen.code_metadata.domain.policies.query_policy import QueryPolicy
@@ -58,6 +61,9 @@ class ComponentPolicyFactory:
             GatewayPolicy(),
             ContextPolicy(),
             RegistryPolicy(),
+            AdapterPolicy(),
+            DatabasePolicy(),
+            CliPolicy(),
         ]
         self._registry = {p.component_type: p for p in self._policies}
 

@@ -9,8 +9,8 @@ from pathlib import Path
 
 
 def add_sdk_logger(logger: logging.Logger):
-    sdk_logger = logging.getLogger("event_hub") # 接管整个 event_hub 命名空间
-     
+    sdk_logger = logging.getLogger("event_hub")  # 接管整个 event_hub 命名空间
+
     # 关键：将主程序的 handlers 共享给 SDK logger
     for handler in logger.handlers:
         sdk_logger.addHandler(handler)
@@ -59,7 +59,7 @@ def setup_logging(
     logger.setLevel(log_level)
 
     logger.propagate = False
-    
+
     # 避免重复添加处理器
     if logger.handlers:
         return logger
@@ -91,7 +91,7 @@ def setup_logging(
         logger.addHandler(console_handler)
 
     logger = add_sdk_logger(logger)
-    
+
     return logger
 
 
@@ -100,7 +100,12 @@ def setup_mcp_logging() -> logging.Logger:
     """为MCP服务配置日志"""
     return setup_logging(logger_name="codegen", log_file="mcp.log")
 
+
 def setup_cli_logging() -> logging.Logger:
     """为CLI服务配置日志"""
-    logger = setup_logging(logger_name="codegen", log_file="cli.log", console_output=False)
+    logger = setup_logging(
+        logger_name="codegen",
+        log_file="cli.log",
+        console_output=False,
+    )
     return logger

@@ -23,6 +23,9 @@ from codegen.code_metadata.infrastructure.mappers.ast_node_to_parsed_type import
 from codegen.code_metadata.infrastructure.mappers.ast_to_behavior_mixin import (
     AstToBehaviorMixin,
 )
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -209,8 +212,10 @@ class AstModuleToComponent(
                     c = self.parse_assign(node)
                     if c is not None:
                         components.append(c)
+                    else:
+                        logger.info(f"skip {ast.unparse(node)=}")
                 case _:
-                    print(f"skip {ast.unparse(node)=}")
+                    logger.info(f"skip {ast.unparse(node)=}")
 
         return ParsedFileModule(
             name=path.stem,

@@ -47,9 +47,8 @@ class PathParser:
         layer = groups["layer"]
 
         component_dir = ComponentDir(dir_str)
-        component_type = self.dir_to_type_registry.get(
-            component_dir, ComponentType.EXTERNAL
-        )
+        component_type = self.dir_to_type_registry[component_dir]
+        
         return ParsedPath(
             context=context,
             layer=ArchitectureLayer(layer),

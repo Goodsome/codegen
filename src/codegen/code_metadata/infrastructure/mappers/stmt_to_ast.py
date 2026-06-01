@@ -1,6 +1,7 @@
 import ast
 
 from codegen.code_metadata.domain.value_objects import (
+    AstAsyncFunctionDef,
     AstBreak,
     AstStmt,
     AstAnnAssign,
@@ -8,18 +9,22 @@ from codegen.code_metadata.domain.value_objects import (
     AstAssign,
     AstAugAssign,
     AstContinue,
+    AstExceptHandler,
     AstExprStmt,
     AstFor,
+    AstFunctionDef,
     AstIf,
     AstMatch,
     AstMatchCase,
     AstPass,
     AstRaise,
     AstReturn,
+    AstTry,
     AstWith,
     AstWithItem,
 )
 from codegen.code_metadata.infrastructure.mappers._convert import binop_to_ast
+from codegen.code_metadata.infrastructure.mappers.arguments_to_ast import ArgumentsToAst
 from codegen.code_metadata.infrastructure.mappers.match_pattern_to_ast import MatchPatternToAst
 from codegen.code_metadata.infrastructure.mappers.expr_to_ast import ExprToAst
 
@@ -63,6 +68,12 @@ class StmtToAst:
                 node = StmtToAst.from_expr_stmt(stmt)
             case AstBreak():
                 node = StmtToAst.from_break(stmt)
+            case AstTry():
+                node = StmtToAst.from_try(stmt)
+            case AstFunctionDef():
+                node = StmtToAst.from_function_def(stmt)
+            case AstAsyncFunctionDef():
+                node = StmtToAst.from_async_function_def(stmt)
             case _:
                 raise NotImplementedError(f"Unsupported AstStmt type: {type(stmt)}")
         return StmtToAst._fix_pos(node)
@@ -174,3 +185,42 @@ class StmtToAst:
     @staticmethod
     def from_expr_stmt(stmt: AstExprStmt) -> ast.Expr:
         return ast.Expr(value=ExprToAst.to_node(stmt.value))
+
+    @staticmethod
+    def _to_except_handler(handler: AstExceptHandler) -> ast.ExceptHandler:
+        return ast.ExceptHandler(
+            type=ExprToAst.to_node(handler.type),
+            name=handler.name,
+            body=StmtToAst._to_body(handler.body),
+        )
+
+    @staticmethod
+    def from_try(stmt: AstTry) -> ast.Try:
+        return ast.Try(
+            body=StmtToAst._to_body(stmt.body),
+            handlers=[StmtToAst._to_except_handler(h) for h in stmt.handlers],
+            orelse=StmtToAst._to_body(stmt.orelse),
+            finalbody=StmtToAst._to_body(stmt.finalbody),
+        )
+
+    @staticmethod
+    def from_function_def(stmt: AstFunctionDef) -> ast.FunctionDef:
+        return ast.FunctionDef(
+            name=stmt.name,
+            args=ArgumentsToAst.to_node(stmt.args),
+            body=StmtToAst._to_body(stmt.body),
+            decorator_list=[ExprToAst.to_node(d) for d in stmt.decorator_list],
+            returns=ExprToAst.to_node(stmt.returns) if stmt.returns else None,
+            type_comment=stmt.type_comment,
+        )
+
+    @staticmethod
+    def from_async_function_def(stmt: AstAsyncFunctionDef) -> ast.AsyncFunctionDef:
+        return ast.AsyncFunctionDef(
+            name=stmt.name,
+            args=ArgumentsToAst.to_node(stmt.args),
+            body=StmtToAst._to_body(stmt.body),
+            decorator_list=[ExprToAst.to_node(d) for d in stmt.decorator_list],
+            returns=ExprToAst.to_node(stmt.returns) if stmt.returns else None,
+            type_comment=stmt.type_comment,
+        )

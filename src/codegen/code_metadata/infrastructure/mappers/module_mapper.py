@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from codegen.code_metadata.application.dtos.module_dto import ModuleDto
 from codegen.code_metadata.domain.aggregates.module import (
     DirectoryModule,
     ExternalModule,
@@ -27,6 +28,20 @@ class ModuleMapper:
     - FileModule / ExternalModule 的 components 通过 ComponentV2Mapper 转换。
     - DirectoryModule 的 public_component_ids / sub_module_ids 以 JSONB 存储。
     """
+
+    # ==========================================
+    # ORM -> DTO
+    # ==========================================
+
+    @classmethod
+    def to_dto(cls, orm_model: ModuleModel) -> ModuleDto:
+        return ModuleDto(
+            id=str(orm_model.id),
+            name=orm_model.name,
+            path=orm_model.path,
+            kind=ModuleKind(orm_model.kind),
+            dir_module_id=str(orm_model.dir_module_id) if orm_model.dir_module_id else None,
+        )
 
     # ==========================================
     # ORM -> Domain

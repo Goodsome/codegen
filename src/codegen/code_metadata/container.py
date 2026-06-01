@@ -35,10 +35,13 @@ from codegen.code_metadata.infrastructure.repositories.sql_alchemy_component_que
 from codegen.code_metadata.infrastructure.repositories.sql_alchemy_component_repository import (
     SqlAlchemyComponentRepository,
 )
+from codegen.code_metadata.infrastructure.repositories.sql_alchemy_module_query_service import (
+    SqlAlchemyModuleQueryService,
+)
 from codegen.code_metadata.infrastructure.repositories.sql_alchemy_module_repository import SqlAlchemyModuleRepository
 from codegen.shared.domain.ports.file_system_port import FileSystemPort
 from codegen.shared.infrastructure.database import Database
-from codegen.shared.infrastructure.sql_alchemy_unit_of_work import SqlAlchemyUnitOfWork
+from codegen.shared.infrastructure.adapters.sql_alchemy_unit_of_work import SqlAlchemyUnitOfWork
 
 
 class Container(DeclarativeContainer):
@@ -62,6 +65,11 @@ class Container(DeclarativeContainer):
 
     component_query_service: Factory[SqlAlchemyComponentQueryService] = Factory(
         SqlAlchemyComponentQueryService,
+        session_factory=database.provided.session_factory,
+    )
+
+    module_query_service: Factory[SqlAlchemyModuleQueryService] = Factory(
+        SqlAlchemyModuleQueryService,
         session_factory=database.provided.session_factory,
     )
 

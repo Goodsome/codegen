@@ -23,4 +23,6 @@ class ComponentDir(StrEnum):
     CLI = auto()
     CONTEXTS = auto()
     REGISTRIES = auto()
+    DATABASE = auto()
+    ADAPTERS = auto()
     

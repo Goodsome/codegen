@@ -6,7 +6,7 @@ from dependency_injector.containers import DeclarativeContainer
 from dependency_injector.providers import Configuration, Resource, Callable
 
 from codegen.shared.infrastructure.database import Database, init_database
-from codegen.shared.infrastructure.event_hub_adapter import EventHubAdapter
+from codegen.shared.infrastructure.adapters.event_hub_adapter import EventHubAdapter
 
 def init_event_hub() -> Iterator[EventHub]:
     publisher=RedisStreamPublisher()

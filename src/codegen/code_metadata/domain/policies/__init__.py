@@ -20,6 +20,10 @@ from .orm_model_policy import OrmModelPolicy
 from .gateway_policy import GatewayPolicy
 from .context_policy import ContextPolicy
 from .registry_policy import RegistryPolicy
+from .adapter_policy import AdapterPolicy
+from .database_policy import DatabasePolicy
+from .cli_policy import CliPolicy
+
 
 
 
@@ -37,7 +41,10 @@ __all__ = [
     "PortPolicy",
     "ServicePolicy",
     "MapperPolicy",
+    "CliPolicy",
     "FactoryPolicy",
+    "AdapterPolicy",
+    "DatabasePolicy",
     "RegistryPolicy",
     "EventPolicy",
     "ExceptionPolicy",

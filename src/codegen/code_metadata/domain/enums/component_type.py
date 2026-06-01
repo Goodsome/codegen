@@ -26,3 +26,6 @@ class ComponentType(StrEnum):
 
     CONTEXT = auto()
     REGISTRY = auto()
+    DATABASE = auto()
+    ADAPTERS = auto()
+    CLI = auto()

@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 from dataclasses import dataclass
+import logging
 from pathlib import Path
 from typing import assert_never
 
@@ -47,6 +48,7 @@ from codegen.shared.domain.ports.file_system_port import FileSystemPort
 from codegen.shared.domain.value_objects.pascal_string import PascalString
 from codegen.shared.domain.value_objects.snake_string import SnakeString
 
+logger = logging.getLogger(__name__)
 
 @dataclass
 class ProjectSyncService:
@@ -109,6 +111,7 @@ class ProjectSyncService:
             for module in sync_modules:
                 self.module_uow.repository.save(module)
             self.module_uow.commit()
+        logger.info(f"save {len(list(sync_modules))} modules")
 
     def _get_existing_modules(self, parsed_modules: list[ParsedModule]) -> list[Module]:
         module_paths: set[str] = set()

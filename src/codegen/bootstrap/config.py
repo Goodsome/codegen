@@ -4,7 +4,7 @@ Loads project-level settings and merges context configurations.
 """
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from codegen.shared.config import Settings as SharedSettings, get_settings as get_shared_settings
+from codegen.shared.config import Settings as SharedSettings
 
 class AppConfig(BaseSettings):
     """
@@ -13,7 +13,7 @@ class AppConfig(BaseSettings):
     """
     # --- 聚合的限界上下文配置 (保留自治性) ---
     # 使用 default_factory 确保每次实例化 AppConfig 时，都会调用各自的 get_settings()
-    shared: SharedSettings = Field(default_factory=get_shared_settings)
+    shared: SharedSettings = Field(default_factory=SharedSettings)
 
     model_config = SettingsConfigDict(
         # 允许从 .env 文件读取全局配置
@@ -28,5 +28,3 @@ class AppConfig(BaseSettings):
 def load_all_configurations() -> AppConfig:
     """实例化全局配置（会自动触发各级环境变量的读取）"""
     return AppConfig()
-
-__all__ = ["AppConfig", "load_all_configurations"]
