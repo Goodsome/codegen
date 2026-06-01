@@ -68,7 +68,7 @@ class ComponentV2Mapper:
             name=orm_model.name,
             context=orm_model.context,
             layer=ArchitectureLayer(orm_model.layer),
-            members_v2=[ReferenceTarget.model_validate(m) for m in orm_model.members_v2],
+            members=[ReferenceTarget.model_validate(m) for m in orm_model.members],
             discriminator=orm_model.discriminator,
             description="",
         )
@@ -118,6 +118,6 @@ class ComponentV2Mapper:
             description="",
             context=domain_entity.context,
             layer=domain_entity.layer.value,
-            members_v2=[m.model_dump(mode="json") for m in domain_entity.members_v2],
+            members=[m.model_dump(mode="json") for m in domain_entity.members],
             discriminator=domain_entity.discriminator,
         )

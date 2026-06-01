@@ -79,7 +79,7 @@ class ComponentToAstModule:
         # Resolve member ComponentIds to Name nodes
         member_names = [
             ast.Name(id=self.resolver.resolve_reference(member_id))
-            for member_id in component.members_v2
+            for member_id in component.members
         ]
         # Build the union expression: Member1 | Member2 | ...
         union_expr: ast.expr = member_names[0]

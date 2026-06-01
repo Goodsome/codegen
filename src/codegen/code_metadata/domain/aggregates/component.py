@@ -42,7 +42,7 @@ class UnionComponent(BaseComponent):
 
     description: str
     discriminator: str | None = None
-    members_v2: list[ReferenceTarget] = Field(default_factory=list)
+    members: list[ReferenceTarget] = Field(default_factory=list)
 
     @property
     def file_name(self) -> str:
@@ -69,7 +69,7 @@ class UnionComponent(BaseComponent):
         )
 
     def iter_reference_targets(self) -> Iterator[ReferenceTarget]:
-        yield from self.members_v2
+        yield from self.members
 
 class ClassComponent(BaseComponent):
     """class component"""
