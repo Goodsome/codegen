@@ -150,6 +150,7 @@ class SyncProjectContext:
             module_dependency = ModuleDependency(
                 module=ReferenceTarget(raw=module_path),
                 component=ReferenceTarget(raw=name),
+                type_checking=import_dto.type_checking
             )
             dependencies.append(module_dependency)
 
@@ -158,6 +159,7 @@ class SyncProjectContext:
                 ModuleDependency(
                     module=ReferenceTarget(raw=module_path),
                     component=None,
+                    type_checking=import_dto.type_checking
                 )
             )
 

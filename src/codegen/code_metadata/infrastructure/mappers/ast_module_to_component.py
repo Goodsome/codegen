@@ -1,4 +1,5 @@
 import ast
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import ClassVar
@@ -7,8 +8,10 @@ from codegen.code_metadata.application.dtos.import_dto import ImportDto
 from codegen.code_metadata.application.dtos.parsed_attribute import ParsedAttribute
 from codegen.code_metadata.application.dtos.parsed_behavior import ParsedBehavior
 from codegen.code_metadata.application.dtos.parsed_component import ParsedComponent
-from codegen.code_metadata.application.dtos.parsed_expr import ParsedExpr
-from codegen.code_metadata.application.dtos.parsed_module import ParsedDirectoryModule, ParsedFileModule
+from codegen.code_metadata.application.dtos.parsed_module import (
+    ParsedDirectoryModule,
+    ParsedFileModule,
+)
 from codegen.code_metadata.application.dtos.parsed_type import ParsedType
 from codegen.code_metadata.infrastructure.mappers.ast_class_to_component import (
     AstClassToComponent,
@@ -23,7 +26,6 @@ from codegen.code_metadata.infrastructure.mappers.ast_node_to_parsed_type import
 from codegen.code_metadata.infrastructure.mappers.ast_to_behavior_mixin import (
     AstToBehaviorMixin,
 )
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +79,10 @@ class AstModuleToComponent(
         return component
 
     def try_get_component(
-        self, node: ast.AST, component_name: str, imports: list[ImportDto],
+        self,
+        node: ast.AST,
+        component_name: str,
+        imports: list[ImportDto],
     ) -> ParsedComponent | None:
         if isinstance(node, ast.ClassDef) and node.name == component_name:
             return self.class_def_to_component(node, imports=imports)
@@ -86,30 +91,34 @@ class AstModuleToComponent(
         return None
 
     def try_get_imports(
-        self, node: ast.stmt,
+        self,
+        node: ast.stmt,
+        type_checking: bool = False,
     ) -> list[ImportDto]:
         if isinstance(node, ast.ImportFrom):
-            return [ImportDto(module=node.module, names=[a.name for a in node.names], level=node.level)]
+            return [
+                ImportDto(
+                    module=node.module,
+                    names=[a.name for a in node.names],
+                    level=node.level,
+                    type_checking=type_checking,
+                )
+            ]
         elif isinstance(node, ast.Import):
-            return [ImportDto(module=a.name, names=[], level=0) for a in node.names]
+            return [
+                ImportDto(module=a.name, names=[], level=0, type_checking=type_checking)
+                for a in node.names
+            ]
         elif isinstance(node, ast.If):
             imports: list[ImportDto] = []
             for subnode in node.body:
-                imports.extend(self.try_get_imports(subnode))
+                imports.extend(self.try_get_imports(subnode, type_checking=True))
             for subnode in node.orelse:
-                imports.extend(self.try_get_imports(subnode))
+                imports.extend(self.try_get_imports(subnode, type_checking=True))
             return imports
         return []
 
-    def _ast_import_from_to_import_dto(self, node: ast.ImportFrom) -> ImportDto:
-        return ImportDto(module=node.module, names=[a.name for a in node.names], level=node.level,)
-
-    def _ast_import_to_import_dto(self, node: ast.Import) -> ImportDto:
-        return ImportDto(module=node.names[0].name, names=[], level=0)
-
-    def parse_assign(
-        self, node: ast.Assign
-    ) -> ParsedComponent | None:
+    def parse_assign(self, node: ast.Assign) -> ParsedComponent | None:
         if len(node.targets) != 1:
             return None
         if not isinstance(node.targets[0], ast.Name):
@@ -123,7 +132,10 @@ class AstModuleToComponent(
 
         # Subscript value must be 'Annotated' or 'typing.Annotated'
         is_annotated = False
-        if isinstance(node.value.value, ast.Name) and node.value.value.id == "Annotated":
+        if (
+            isinstance(node.value.value, ast.Name)
+            and node.value.value.id == "Annotated"
+        ):
             is_annotated = True
         elif (
             isinstance(node.value.value, ast.Attribute)
@@ -193,16 +205,16 @@ class AstModuleToComponent(
         return None
 
     def parse_module(
-        self, module: ast.Module, path: Path,
+        self,
+        module: ast.Module,
+        path: Path,
     ) -> ParsedFileModule:
         imports: list[ImportDto] = []
         components: list[ParsedComponent] = []
         for node in module.body:
             match node:
-                case ast.ImportFrom():
-                    imports.append(self._ast_import_from_to_import_dto(node))
-                case ast.Import():
-                    imports.append(self._ast_import_to_import_dto(node))
+                case ast.ImportFrom() | ast.Import() | ast.If(test=ast.Name(id="TYPE_CHECKING")):
+                    imports.extend(self.try_get_imports(node))
                 case ast.ClassDef():
                     components.append(self.class_def_to_component(node, imports=[]))
                 case ast.Assign():
@@ -222,7 +234,9 @@ class AstModuleToComponent(
         )
 
     def parse_init_module(
-        self, module: ast.Module, path: Path,
+        self,
+        module: ast.Module,
+        path: Path,
     ) -> ParsedDirectoryModule:
         dir_path = path.parent
         public_component_names = self._extract_all(module)
@@ -251,4 +265,3 @@ class AstModuleToComponent(
             if isinstance(elt, ast.Constant) and isinstance(elt.value, str):
                 names.append(elt.value)
         return names
-        

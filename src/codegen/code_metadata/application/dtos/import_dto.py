@@ -9,6 +9,7 @@ class ImportDto(BaseModel):
     module: str | None
     level: int
     names: list[str]
+    type_checking: bool = False
 
     def resolve_module_path(self, current_file_dir: Path) -> str:
         if self.level == 0:

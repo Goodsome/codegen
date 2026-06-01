@@ -1,6 +1,7 @@
 import ast
 from collections import defaultdict
 from dataclasses import dataclass
+
 from typing_extensions import overload
 
 from codegen.code_metadata.domain.aggregates import ClassComponent, FileModule
@@ -17,7 +18,9 @@ from codegen.code_metadata.domain.value_objects.constant_expr import ConstantExp
 from codegen.code_metadata.domain.value_objects.dict_expr import DictExpr
 from codegen.code_metadata.domain.value_objects.expr_def import ExprDef
 from codegen.code_metadata.domain.value_objects.lambda_expr import LambdaExpr
-from codegen.code_metadata.domain.value_objects.module_dependency import ModuleDependency
+from codegen.code_metadata.domain.value_objects.module_dependency import (
+    ModuleDependency,
+)
 from codegen.code_metadata.domain.value_objects.reference_expr import ReferenceExpr
 from codegen.code_metadata.domain.value_objects.sequence_expr import SequenceExpr
 from codegen.code_metadata.domain.value_objects.type_def import TypeDef
@@ -31,43 +34,48 @@ class ComponentToAstModule:
     resolver: TranslateReference
     component_policy_factory: ComponentPolicyFactory
 
-    def module_to_ast(
-        self, module: FileModule
-    ) -> ast.Module:
+    def module_to_ast(self, module: FileModule) -> ast.Module:
         body: list[ast.stmt] = []
+        type_checkings: list[ast.stmt] = []
         for dependency in module.dependencies:
-            body.append(self.module_dependency_to_ast(dependency))
+            if dependency.type_checking:
+                type_checkings.append(self.module_dependency_to_ast(dependency))
+            else:
+                body.append(self.module_dependency_to_ast(dependency))
+        if type_checkings:
+            body.append(
+                ast.If(
+                    test=ast.Name(id="TYPE_CHECKING"), body=type_checkings, orelse=[]
+                )
+            )
         for component in module.components:
             body.append(self.component_to_ast(component))
         return ast.Module(body=body)
-        
+
     def module_dependency_to_ast(
         self, dependency: ModuleDependency
     ) -> ast.ImportFrom | ast.Import:
         module = self.resolver.resolve_reference(dependency.module)
         if dependency.component:
             component = self.resolver.resolve_reference(dependency.component)
-            return ast.ImportFrom(
+            node = ast.ImportFrom(
                 module=module,
                 names=[ast.alias(name=component, asname=None)],
                 level=0,
             )
-        return ast.Import(
-            names=[ast.alias(name=module, asname=None)],
-        )
+        else:
+            node = ast.Import(names=[ast.alias(name=module, asname=None)])
 
-    def component_to_ast(
-        self, component: Component
-    ) -> ast.stmt:
+        return node
+
+    def component_to_ast(self, component: Component) -> ast.stmt:
         match component:
             case ClassComponent():
                 return self.to_ast_class(component)
             case UnionComponent():
                 return self.union_component_to_ast(component)
 
-    def union_component_to_ast(
-        self, component: UnionComponent
-    ) -> ast.Assign:
+    def union_component_to_ast(self, component: UnionComponent) -> ast.Assign:
         # Resolve member ComponentIds to Name nodes
         member_names = [
             ast.Name(id=self.resolver.resolve_reference(member_id))
@@ -102,11 +110,11 @@ class ComponentToAstModule:
             value=annotated_subscript,
         )
 
-    def to_ast_module(
-        self, component: Component
-    ) -> ast.Module:
+    def to_ast_module(self, component: Component) -> ast.Module:
         import_froms = self._get_import_froms(component)
-        body: list[ast.stmt] = [ *import_froms, ]
+        body: list[ast.stmt] = [
+            *import_froms,
+        ]
         match component:
             case ClassComponent():
                 body.append(self.to_ast_class(component))
@@ -117,15 +125,11 @@ class ComponentToAstModule:
         )
         return module
 
-    def _get_import_froms(
-        self, component: Component
-    ) -> list[ast.ImportFrom]:
+    def _get_import_froms(self, component: Component) -> list[ast.ImportFrom]:
         collect_module_names: dict[str, set[str]] = defaultdict(set)
         for dep_id in component.get_dependencies():
             dc = self.resolver.get_component(dep_id)
-            policy = self.component_policy_factory.get_policy(
-                component_type=dc.type
-            )
+            policy = self.component_policy_factory.get_policy(component_type=dc.type)
             module = dc.get_import_module(policy)
             collect_module_names[module].add(dc.name)
 
@@ -138,7 +142,6 @@ class ComponentToAstModule:
             )
             result.append(import_from)
         return result
-
 
     @overload
     def type_to_ast_expr(self, type_: TypeDef) -> ast.expr: ...
@@ -192,7 +195,6 @@ class ComponentToAstModule:
             ctx=ast.Load(),
         )
 
-    
     @overload
     def expr_to_ast_expr(self, expr: None) -> None: ...
 
@@ -205,7 +207,7 @@ class ComponentToAstModule:
     ) -> ast.expr | None:
         if expr is None:
             return None
-            
+
         match expr.kind:
             case ExprKind.CONSTANT:
                 return self.map_constant(expr)
@@ -273,7 +275,9 @@ class ComponentToAstModule:
         keys: list[ast.expr | None] = []
         values: list[ast.expr] = []
         for item in expr.items:
-            keys.append(self.expr_to_ast_expr(item.key) if item.key is not None else None)
+            keys.append(
+                self.expr_to_ast_expr(item.key) if item.key is not None else None
+            )
             values.append(self.expr_to_ast_expr(item.value))
         return ast.Dict(keys=keys, values=values)
 
@@ -290,8 +294,9 @@ class ComponentToAstModule:
         body = self.expr_to_ast_expr(expr.body)
         return ast.Lambda(args=args, body=body)
 
-
-    def attribute_to_ast_assign(self, attribute: Attribute) -> ast.AnnAssign | ast.Assign | ast.Expr:
+    def attribute_to_ast_assign(
+        self, attribute: Attribute
+    ) -> ast.AnnAssign | ast.Assign | ast.Expr:
         target = ast.Name(id=attribute.name, ctx=ast.Store())
         annotation = self.type_to_ast_expr(attribute.type)
         value = ExprToAst.to_node(attribute.value_v2)
@@ -328,11 +333,7 @@ class ComponentToAstModule:
             if value:
                 defaults.append(value)
 
-        return ast.arguments(
-            args=args,
-            defaults=defaults
-        )
-
+        return ast.arguments(args=args, defaults=defaults)
 
     def to_ast(self, behavior: Behavior) -> ast.FunctionDef:
         body: list[ast.stmt] = []
@@ -348,7 +349,7 @@ class ComponentToAstModule:
             body=body,
             returns=returns,
         )
-        
+
     def to_ast_class(
         self,
         component: ClassComponent,

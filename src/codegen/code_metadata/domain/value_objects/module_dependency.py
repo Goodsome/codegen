@@ -7,6 +7,7 @@ from codegen.shared.domain.core import ValueObject
 class ModuleDependency(ValueObject):
     module: ReferenceTarget
     component: ReferenceTarget | None
+    type_checking: bool = False
 
     def iter_reference_targets(self) -> Iterator[ReferenceTarget]:
         yield self.module
