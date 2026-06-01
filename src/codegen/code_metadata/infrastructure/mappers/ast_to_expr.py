@@ -16,6 +16,7 @@ from codegen.code_metadata.domain.value_objects import (
     AstGeneratorExp,
     AstIfExp,
     AstJoinedStr,
+    AstKeyword,
     AstLambda,
     AstList,
     AstListComp,
@@ -125,10 +126,14 @@ class AstToExpr:
 
     @staticmethod
     def to_ast_call(node: ast.Call) -> AstCall:
+        kwargs = [
+            AstKeyword(arg=kw.arg, value=AstToExpr.to_expr(kw.value))
+            for kw in node.keywords if kw.arg
+        ]
         return AstCall(
             func=AstToExpr.to_expr(node.func),
             args=[AstToExpr.to_expr(arg) for arg in node.args],
-            kwargs={kw.arg: AstToExpr.to_expr(kw.value) for kw in node.keywords if kw.arg},
+            kwargs=kwargs,
         )
 
     @staticmethod

@@ -57,6 +57,8 @@ from .sequence_expr import SequenceExpr
 
 from .ast_stmt import AstStmt
 from .ast_expr import AstExpr
+from .ast_keyword import AstKeyword
+
 from .match_pattern import MatchPattern, match_pattern_adapter
 
 
@@ -121,6 +123,7 @@ __all__ = [
     "ParsedPath",
     "ReferenceExpr",
     "SequenceExpr",
+    "AstKeyword",
 ]
 
 # model_rebuild() for ExprDef members
@@ -130,6 +133,7 @@ DictExpr.model_rebuild()
 LambdaExpr.model_rebuild()
 SequenceExpr.model_rebuild()
 ReferenceExpr.model_rebuild()
+AstKeyword.model_rebuild()
 
 AstAnnAssign.model_rebuild()
 AstAssert.model_rebuild()

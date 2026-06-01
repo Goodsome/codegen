@@ -21,6 +21,7 @@ from codegen.code_metadata.domain.value_objects.module_dependency import ModuleD
 from codegen.code_metadata.domain.value_objects.reference_expr import ReferenceExpr
 from codegen.code_metadata.domain.value_objects.sequence_expr import SequenceExpr
 from codegen.code_metadata.domain.value_objects.type_def import TypeDef
+from codegen.code_metadata.infrastructure.mappers.expr_to_ast import ExprToAst
 from codegen.code_metadata.infrastructure.mappers.stmt_to_ast import StmtToAst
 from codegen.shared.domain.enums import PythonBuiltinType
 
@@ -293,7 +294,7 @@ class ComponentToAstModule:
     def attribute_to_ast_assign(self, attribute: Attribute) -> ast.AnnAssign | ast.Assign | ast.Expr:
         target = ast.Name(id=attribute.name, ctx=ast.Store())
         annotation = self.type_to_ast_expr(attribute.type)
-        value = self.expr_to_ast_expr(attribute.value)
+        value = ExprToAst.to_node(attribute.value_v2)
 
         if annotation:
             return ast.AnnAssign(

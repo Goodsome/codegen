@@ -3,6 +3,7 @@ from codegen.code_metadata.application.dtos.parsed_attribute import ParsedAttrib
 from codegen.code_metadata.infrastructure.mappers.ast_mapper_protocol import (
     AstMapperProtocol,
 )
+from codegen.code_metadata.infrastructure.mappers.ast_to_expr import AstToExpr
 
 
 class AstNodeToAttribute:
@@ -16,13 +17,13 @@ class AstNodeToAttribute:
             raise ValueError(f"Unsupported AST node: {node}")
 
         _type = self.parse_node_to_type(node.annotation)
-        value = self.parse_node_to_expr(node.value) if node.value else None
+        value_v2 = AstToExpr.to_expr(node.value)
 
         return ParsedAttribute(
             name=name,
             description="",
             type=_type,
-            value=value,
+            value_v2=value_v2,
         )
 
     def assign_to_attribute(
@@ -36,12 +37,12 @@ class AstNodeToAttribute:
         else:
             raise ValueError(f"Unsupported AST node: {node}")
 
-        value = self.parse_node_to_expr(node.value)
+        value_v2 = AstToExpr.to_expr(node.value)
         return ParsedAttribute(
             name=name,
             description="",
             type=None,
-            value=value,
+            value_v2=value_v2,
         )
 
     def arg_to_attribute(
@@ -53,7 +54,7 @@ class AstNodeToAttribute:
             name=name,
             description="",
             type=_type,
-            value=None
+            value_v2=None,
         )
         
     def _parse_node_to_attributes(self: AstMapperProtocol, node: ast.arguments) -> list[ParsedAttribute]:
@@ -67,7 +68,7 @@ class AstNodeToAttribute:
             attr = self.parse_node_to_attribute(arg)
             default_idx = i - offset
             if default_idx >= 0:
-                attr.value = self.parse_node_to_expr(node.defaults[default_idx])
+                attr.value_v2 = AstToExpr.to_expr(node.defaults[default_idx])
             result.append(attr)
 
         if node.vararg:
@@ -77,7 +78,7 @@ class AstNodeToAttribute:
             attr = self.parse_node_to_attribute(arg)
             kw_default = node.kw_defaults[i]
             if kw_default is not None:
-                attr.value = self.parse_node_to_expr(kw_default)
+                attr.value_v2 = AstToExpr.to_expr(kw_default)
             result.append(attr)
 
         if node.kwarg:

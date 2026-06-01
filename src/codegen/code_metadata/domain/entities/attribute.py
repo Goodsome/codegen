@@ -4,6 +4,7 @@ from pydantic import Field
 
 from codegen.code_metadata.domain.identifiers.attribute_id import AttributeId
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
+from codegen.code_metadata.domain.value_objects import AstExpr
 from codegen.code_metadata.domain.value_objects.attribute_sync_data import (
     AttributeSyncData,
 )
@@ -16,7 +17,8 @@ class Attribute(Entity):
     id: AttributeId
     name: str
     type: TypeDef | None
-    value: ExprDef | None
+    value: ExprDef | None = None
+    value_v2: AstExpr | None = None
 
     description: str = Field(default="")
 

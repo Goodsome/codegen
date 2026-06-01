@@ -225,12 +225,11 @@ class SyncModuleContext:
         else:
             attribute_id = attribute.id
         type_def = self.parsed_type_to_type_def(parsed_attribute.type)
-        expr_def = self.parsed_expr_to_expr_def(parsed_attribute.value)
         return Attribute(
             id=attribute_id,
             name=parsed_attribute.name,
             type=type_def,
-            value=expr_def,
+            value_v2=parsed_attribute.value_v2,
         )
 
     def parsed_behavior_to_behavior(self, parsed_behavior: ParsedBehavior, component: ClassComponent | None) -> Behavior:

@@ -144,7 +144,7 @@ class ClassComponent(BaseComponent):
             id=AttributeId.create(),
             name=name,
             type=None,
-            value=None,
+            value_v2=None,
         )
         self.attributes.append(attr)
         return attr

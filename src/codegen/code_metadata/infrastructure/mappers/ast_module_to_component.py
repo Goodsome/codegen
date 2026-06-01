@@ -62,9 +62,6 @@ class AstModuleToComponent(
     def parse_node_to_type(self, node: ast.AST) -> ParsedType:
         return self._node_to_type(node)
 
-    def parse_node_to_expr(self, node: ast.expr) -> ParsedExpr:
-        return self._node_to_expr(node)
-
     def map(self, module: ast.Module, component_name: str) -> ParsedComponent:
         component: ParsedComponent | None = None
         imports: list[ImportDto] = []

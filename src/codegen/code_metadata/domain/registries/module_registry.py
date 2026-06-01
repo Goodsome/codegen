@@ -4,10 +4,8 @@ from typing import Callable
 from codegen.code_metadata.domain.aggregates.module import (
     DirectoryModule,
     ExternalModule,
-    FileModule,
     Module,
 )
-from codegen.code_metadata.domain.enums.module_kind import ModuleKind
 from codegen.code_metadata.domain.identifiers.module_id import ModuleId
 
 

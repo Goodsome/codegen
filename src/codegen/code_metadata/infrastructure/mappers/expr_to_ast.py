@@ -2,7 +2,6 @@ import ast
 from typing import overload
 
 from codegen.code_metadata.domain.value_objects import (
-    AstExpr,
     AstAttribute,
     AstBinOp,
     AstBoolOp,
@@ -12,6 +11,7 @@ from codegen.code_metadata.domain.value_objects import (
     AstConstant,
     AstDict,
     AstDictComp,
+    AstExpr,
     AstFormattedValue,
     AstGeneratorExp,
     AstIfExp,
@@ -37,11 +37,12 @@ from codegen.code_metadata.infrastructure.mappers._convert import (
     ctx_to_ast,
     unaryop_to_ast,
 )
-from codegen.code_metadata.infrastructure.mappers.lambda_args_to_ast import LambdaArgsToAst
+from codegen.code_metadata.infrastructure.mappers.lambda_args_to_ast import (
+    LambdaArgsToAst,
+)
 
 
 class ExprToAst:
-
     @overload
     @staticmethod
     def to_node(expr: None) -> None: ...
@@ -136,8 +137,8 @@ class ExprToAst:
     @staticmethod
     def from_call(expr: AstCall) -> ast.Call:
         keywords = [
-            ast.keyword(arg=name, value=ExprToAst.to_node(value))
-            for name, value in expr.kwargs.items()
+            ast.keyword(arg=keyword.arg, value=ExprToAst.to_node(keyword.value))
+            for keyword in expr.kwargs
         ]
         return ast.Call(
             func=ExprToAst.to_node(expr.func),

@@ -121,7 +121,10 @@ class DevProgressService:
 
     def _get_origin_code(self, module: FileModule) -> str:
         file_path = Path("src") / module.path.replace(".", "/")
-        origin_code = self.file_system_port.read_file(file_path.with_suffix(".py"))
+        file_path = file_path.with_suffix(".py")
+        if not self.file_system_port.exists(file_path):
+            return ""
+        origin_code = self.file_system_port.read_file(file_path)
 
         return origin_code
 
