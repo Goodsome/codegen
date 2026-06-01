@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from pydantic import Field
@@ -9,7 +11,7 @@ if TYPE_CHECKING:
 
 
 class AstComprehension(ValueObject):
-    target: "AstExpr"
-    iter: "AstExpr"
-    ifs: list["AstExpr"] = Field(default_factory=list)
+    target: AstExpr
+    iter: AstExpr
+    ifs: list[AstExpr] = Field(default_factory=list)
     is_async: int = 0

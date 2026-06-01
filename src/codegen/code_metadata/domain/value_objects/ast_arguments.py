@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Optional
 
 from pydantic import Field
@@ -16,6 +18,6 @@ class AstArguments(ValueObject):
     args: list[Arg] = Field(default_factory=list)
     vararg: Optional[Arg] = None
     kwonlyargs: list[Arg] = Field(default_factory=list)
-    kw_defaults: list[Optional["AstExpr"]] = Field(default_factory=list)
+    kw_defaults: list[Optional[AstExpr]] = Field(default_factory=list)
     kwarg: Optional[Arg] = None
-    defaults: list["AstExpr"] = Field(default_factory=list)
+    defaults: list[AstExpr] = Field(default_factory=list)

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Literal
 
 from pydantic import Field
@@ -12,6 +14,6 @@ if TYPE_CHECKING:
 
 class AstCompare(ValueObject):
     kind: Literal[AstExprKind.COMPARE] = AstExprKind.COMPARE
-    left: "AstExpr"
+    left: AstExpr
     ops: list[CmpOp] = Field(default_factory=list)
-    comparators: list["AstExpr"] = Field(default_factory=list)
+    comparators: list[AstExpr] = Field(default_factory=list)

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Literal
 
 from codegen.code_metadata.domain.enums.ast_expr_kind import AstExprKind
@@ -9,6 +11,6 @@ if TYPE_CHECKING:
 
 class AstIfExp(ValueObject):
     kind: Literal[AstExprKind.IF_EXP] = AstExprKind.IF_EXP
-    test: "AstExpr"
-    body: "AstExpr"
-    orelse: "AstExpr"
+    test: AstExpr
+    body: AstExpr
+    orelse: AstExpr

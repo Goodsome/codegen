@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Literal
 
 from codegen.code_metadata.domain.enums.ast_expr_kind import AstExprKind
@@ -10,6 +12,6 @@ if TYPE_CHECKING:
 
 class AstBinOp(ValueObject):
     kind: Literal[AstExprKind.BIN_OP] = AstExprKind.BIN_OP
-    left: "AstExpr"
+    left: AstExpr
     op: BinOp
-    right: "AstExpr"
+    right: AstExpr

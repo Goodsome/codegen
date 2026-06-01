@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Literal, Optional
 
 from codegen.code_metadata.domain.enums.ast_expr_kind import AstExprKind
@@ -9,4 +11,4 @@ if TYPE_CHECKING:
 
 class AstYield(ValueObject):
     kind: Literal[AstExprKind.YIELD] = AstExprKind.YIELD
-    value: Optional["AstExpr"] = None
+    value: Optional[AstExpr] = None

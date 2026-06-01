@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Literal, Optional
 
 from codegen.code_metadata.domain.enums.ast_expr_kind import AstExprKind
@@ -9,6 +11,6 @@ if TYPE_CHECKING:
 
 class AstFormattedValue(ValueObject):
     kind: Literal[AstExprKind.FORMATTED_VALUE] = AstExprKind.FORMATTED_VALUE
-    value: "AstExpr"
+    value: AstExpr
     conversion: int
-    format_spec: Optional["AstExpr"] = None
+    format_spec: Optional[AstExpr] = None

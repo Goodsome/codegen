@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Literal
 
 from pydantic import Field
@@ -12,7 +14,7 @@ if TYPE_CHECKING:
 
 class AstTry(ValueObject):
     kind: Literal[AstStmtKind.TRY] = AstStmtKind.TRY
-    body: list["AstStmt"] = Field(default_factory=list)
+    body: list[AstStmt] = Field(default_factory=list)
     handlers: list[AstExceptHandler] = Field(default_factory=list)
-    orelse: list["AstStmt"] = Field(default_factory=list)
-    finalbody: list["AstStmt"] = Field(default_factory=list)
+    orelse: list[AstStmt] = Field(default_factory=list)
+    finalbody: list[AstStmt] = Field(default_factory=list)

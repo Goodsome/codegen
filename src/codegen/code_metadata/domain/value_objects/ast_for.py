@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Literal
 
 from pydantic import Field
@@ -12,7 +14,7 @@ if TYPE_CHECKING:
 
 class AstFor(ValueObject):
     kind: Literal[AstStmtKind.FOR] = AstStmtKind.FOR
-    target: "AstExpr"
-    iter: "AstExpr"
-    body: list["AstStmt"] = Field(default_factory=list)
-    orelse: list["AstStmt"] = Field(default_factory=list)
+    target: AstExpr
+    iter: AstExpr
+    body: list[AstStmt] = Field(default_factory=list)
+    orelse: list[AstStmt] = Field(default_factory=list)

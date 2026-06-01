@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Literal
 
 from pydantic import Field
@@ -12,6 +14,6 @@ if TYPE_CHECKING:
 
 class AstDictComp(ValueObject):
     kind: Literal[AstExprKind.DICT_COMP] = AstExprKind.DICT_COMP
-    key: "AstExpr"
-    value: "AstExpr"
+    key: AstExpr
+    value: AstExpr
     generators: list[AstComprehension] = Field(default_factory=list)

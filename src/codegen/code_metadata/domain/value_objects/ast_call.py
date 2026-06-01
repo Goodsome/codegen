@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Literal
 
 from pydantic import Field
@@ -12,6 +14,6 @@ if TYPE_CHECKING:
 
 class AstCall(ValueObject):
     kind: Literal[AstExprKind.CALL] = AstExprKind.CALL
-    func: "AstExpr"
-    args: list["AstExpr"] = Field(default_factory=list)
+    func: AstExpr
+    args: list[AstExpr] = Field(default_factory=list)
     kwargs: list[AstKeyword] = Field(default_factory=list)

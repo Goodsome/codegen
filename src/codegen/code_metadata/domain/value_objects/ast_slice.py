@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Literal, Optional
 
 from codegen.code_metadata.domain.enums.ast_expr_kind import AstExprKind
@@ -9,6 +11,6 @@ if TYPE_CHECKING:
 
 class AstSlice(ValueObject):
     kind: Literal[AstExprKind.SLICE] = AstExprKind.SLICE
-    lower: Optional["AstExpr"] = None
-    upper: Optional["AstExpr"] = None
-    step: Optional["AstExpr"] = None
+    lower: Optional[AstExpr] = None
+    upper: Optional[AstExpr] = None
+    step: Optional[AstExpr] = None

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Optional
 
 from pydantic import Field
@@ -10,6 +12,6 @@ if TYPE_CHECKING:
 
 
 class AstExceptHandler(ValueObject):
-    type: Optional["AstExpr"] = None
+    type: Optional[AstExpr] = None
     name: Optional[str] = None
-    body: list["AstStmt"] = Field(default_factory=list)
+    body: list[AstStmt] = Field(default_factory=list)

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Literal
 
 from pydantic import Field
@@ -15,7 +17,7 @@ class AstAsyncFunctionDef(ValueObject):
     kind: Literal[AstStmtKind.ASYNC_FUNCTION_DEF] = AstStmtKind.ASYNC_FUNCTION_DEF
     name: str
     args: AstArguments
-    body: list["AstStmt"] = Field(default_factory=list)
-    decorator_list: list["AstExpr"] = Field(default_factory=list)
-    returns: "AstExpr | None" = None
+    body: list[AstStmt] = Field(default_factory=list)
+    decorator_list: list[AstExpr] = Field(default_factory=list)
+    returns: AstExpr | None = None
     type_comment: str | None = None

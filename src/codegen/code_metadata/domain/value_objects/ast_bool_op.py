@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Literal
 
 from pydantic import Field
@@ -13,4 +15,4 @@ if TYPE_CHECKING:
 class AstBoolOp(ValueObject):
     kind: Literal[AstExprKind.BOOL_OP] = AstExprKind.BOOL_OP
     op: BoolOp
-    values: list["AstExpr"] = Field(default_factory=list)
+    values: list[AstExpr] = Field(default_factory=list)

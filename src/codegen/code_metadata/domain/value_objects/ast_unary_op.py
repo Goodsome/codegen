@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Literal
 
 from codegen.code_metadata.domain.enums.ast_expr_kind import AstExprKind
@@ -11,4 +13,4 @@ if TYPE_CHECKING:
 class AstUnaryOp(ValueObject):
     kind: Literal[AstExprKind.UNARY_OP] = AstExprKind.UNARY_OP
     op: UnaryOp
-    operand: "AstExpr"
+    operand: AstExpr

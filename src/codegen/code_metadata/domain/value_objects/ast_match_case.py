@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Optional
 
 from pydantic import Field
@@ -12,5 +14,5 @@ if TYPE_CHECKING:
 
 class AstMatchCase(ValueObject):
     pattern: MatchPattern
-    guard: Optional["AstExpr"] = None
-    body: list["AstStmt"] = Field(default_factory=list)
+    guard: Optional[AstExpr] = None
+    body: list[AstStmt] = Field(default_factory=list)

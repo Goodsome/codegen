@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Literal
 
 from pydantic import Field
@@ -12,5 +14,5 @@ if TYPE_CHECKING:
 
 class AstMatch(ValueObject):
     kind: Literal[AstStmtKind.MATCH] = AstStmtKind.MATCH
-    subject: "AstExpr"
+    subject: AstExpr
     cases: list[AstMatchCase] = Field(default_factory=list)

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Literal, Optional
 
 from pydantic import Field
@@ -11,5 +13,5 @@ if TYPE_CHECKING:
 
 class AstAssign(ValueObject):
     kind: Literal[AstStmtKind.ASSIGN] = AstStmtKind.ASSIGN
-    targets: list["AstExpr"] = Field(default_factory=list)
-    value: Optional["AstExpr"] = None
+    targets: list[AstExpr] = Field(default_factory=list)
+    value: Optional[AstExpr] = None

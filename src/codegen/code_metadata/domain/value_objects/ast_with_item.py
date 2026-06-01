@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Optional
 
 from codegen.shared.domain.core import ValueObject
@@ -7,5 +9,5 @@ if TYPE_CHECKING:
 
 
 class AstWithItem(ValueObject):
-    context_expr: "AstExpr"
-    optional_vars: Optional["AstExpr"] = None
+    context_expr: AstExpr
+    optional_vars: Optional[AstExpr] = None

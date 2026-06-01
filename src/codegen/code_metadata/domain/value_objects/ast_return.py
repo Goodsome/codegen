@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Literal, Optional
 
 from codegen.code_metadata.domain.enums.ast_stmt_kind import AstStmtKind
@@ -9,4 +11,4 @@ if TYPE_CHECKING:
 
 class AstReturn(ValueObject):
     kind: Literal[AstStmtKind.RETURN] = AstStmtKind.RETURN
-    value: Optional["AstExpr"] = None
+    value: Optional[AstExpr] = None
