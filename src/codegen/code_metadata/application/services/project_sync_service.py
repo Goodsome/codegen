@@ -31,7 +31,6 @@ from codegen.code_metadata.domain.aggregates.component import Component
 from codegen.code_metadata.domain.aggregates.module import Module
 from codegen.code_metadata.domain.enums import ComponentType
 from codegen.code_metadata.domain.enums.component_kind import ComponentKind
-from codegen.code_metadata.domain.enums.module_kind import ModuleKind
 from codegen.code_metadata.domain.factories.component_policy_factory import (
     ComponentPolicyFactory,
 )

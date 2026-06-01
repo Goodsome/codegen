@@ -5,7 +5,7 @@ from pydantic import Field, model_validator
 from codegen.code_metadata.domain.identifiers.attribute_id import AttributeId
 from codegen.code_metadata.domain.identifiers.component_id import ComponentId
 from codegen.code_metadata.domain.identifiers.module_id import ModuleId
-from codegen.shared.domain.core import Entity, ValueObject
+from codegen.shared.domain.core import Entity
 from codegen.shared.domain.enums import PythonBuiltinType
 
 

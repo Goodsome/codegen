@@ -19,7 +19,6 @@ from codegen.code_metadata.infrastructure.mappers.ast_class_to_component import 
 from codegen.code_metadata.infrastructure.mappers.ast_node_to_attribute import (
     AstNodeToAttribute,
 )
-from codegen.code_metadata.infrastructure.mappers.ast_node_to_expr import AstNodeToExpr
 from codegen.code_metadata.infrastructure.mappers.ast_node_to_parsed_type import (
     AstNodeToParsedType,
 )
@@ -35,7 +34,6 @@ class AstModuleToComponent(
     AstToBehaviorMixin,
     AstClassToComponent,
     AstNodeToParsedType,
-    AstNodeToExpr,
     AstNodeToAttribute,
 ):
     _CODEGEN_PREFIX: ClassVar[str] = "codegen."

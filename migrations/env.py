@@ -13,7 +13,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "../src"))
 
 from codegen.shared.config import get_settings
 from codegen.shared.infrastructure.orm_models.base import BaseORM
-from codegen.code_metadata.infrastructure import orm_models
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

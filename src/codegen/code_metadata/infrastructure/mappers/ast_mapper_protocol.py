@@ -1,9 +1,8 @@
 import ast
-from typing import Protocol, Any
+from typing import Protocol
 
 from codegen.code_metadata.application.dtos.parsed_attribute import ParsedAttribute
 from codegen.code_metadata.application.dtos.parsed_behavior import ParsedBehavior
-from codegen.code_metadata.application.dtos.parsed_expr import ParsedExpr
 from codegen.code_metadata.application.dtos.parsed_type import ParsedType
 
 

@@ -1,11 +1,9 @@
 from typing import Annotated
 from rich.console import Console
 from dependency_injector.wiring import Provide, inject
-from typer import Argument, Option
+from typer import Option
 
 from codegen.code_metadata.application.dtos.dev_progress import DevProgress
-from codegen.code_metadata.application.dtos.get_dev_progress_query import GetDevProgressQuery
-from codegen.code_metadata.application.queries.get_dev_progress import GetDevProgress
 from codegen.code_metadata.application.services.dev_progress_service import DevProgressService
 
 console = Console()
