@@ -40,6 +40,7 @@ class CodeNodeModel(BaseORM):
         "CodeEdgeModel",
         foreign_keys="[CodeEdgeModel.source_id]",
         cascade="all, delete-orphan",
+        order_by="CodeEdgeModel.position.asc()"
     )
 
     inbound_edges: Mapped[list[CodeEdgeModel]] = relationship(
