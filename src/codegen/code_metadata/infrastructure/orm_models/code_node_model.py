@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import Index, String, Text
+from sqlalchemy import String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -36,9 +36,15 @@ class CodeNodeModel(BaseORM):
         JSONB, default=dict, server_default="{}"
     )
 
+    # Mark-and-Sweep 同步批次号：每次 ingest 生成一个，用于识别幽灵节点
+    last_sync_id: Mapped[str | None] = mapped_column(
+        String(64), nullable=True, index=True,
+    )
+
     outbound_edges: Mapped[list[CodeEdgeModel]] = relationship(
         "CodeEdgeModel",
         foreign_keys="[CodeEdgeModel.source_id]",
+        back_populates="source_entity",
         cascade="all, delete-orphan",
         order_by="CodeEdgeModel.position.asc()"
     )
@@ -46,6 +52,7 @@ class CodeNodeModel(BaseORM):
     inbound_edges: Mapped[list[CodeEdgeModel]] = relationship(
         "CodeEdgeModel",
         foreign_keys="[CodeEdgeModel.target_id]",
+        back_populates="target_entity",
         viewonly=True,
     )
 

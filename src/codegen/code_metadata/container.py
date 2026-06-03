@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from dependency_injector.containers import DeclarativeContainer
 from dependency_injector.providers import (
     Configuration,
@@ -9,6 +11,11 @@ from event_hub import EventHub
 
 from codegen.code_metadata.application.commands.delete_component import DeleteComponent
 from codegen.code_metadata.application.commands.generate_code import GenerateCode
+from codegen.code_metadata.application.commands.ingest_project import IngestProject
+from codegen.code_metadata.application.ports.code_graph_builder import CodeGraphBuilder
+from codegen.code_metadata.application.ports.code_node_sync_service import (
+    CodeNodeSyncService,
+)
 from codegen.code_metadata.application.queries.get_dev_progress import GetDevProgress
 from codegen.code_metadata.application.queries.list_components import ListComponents
 from codegen.code_metadata.application.services.dev_progress_service import (
@@ -23,6 +30,12 @@ from codegen.code_metadata.domain.factories.component_policy_factory import (
 from codegen.code_metadata.domain.ports.component_repository import ComponentRepository
 from codegen.code_metadata.domain.ports.module_repository import ModuleRepository
 from codegen.code_metadata.domain.services.path_parser import PathParser
+from codegen.code_metadata.infrastructure.gateways.file_system_code_graph_builder import (
+    FileSystemCodeGraphBuilder,
+)
+from codegen.code_metadata.infrastructure.repositories.sql_alchemy_code_node_sync_service import (
+    SqlAlchemyCodeNodeSyncService,
+)
 from codegen.code_metadata.infrastructure.gateways.python_code_generator import (
     PythonCodeGenerator,
 )
@@ -38,10 +51,14 @@ from codegen.code_metadata.infrastructure.repositories.sql_alchemy_component_rep
 from codegen.code_metadata.infrastructure.repositories.sql_alchemy_module_query_service import (
     SqlAlchemyModuleQueryService,
 )
-from codegen.code_metadata.infrastructure.repositories.sql_alchemy_module_repository import SqlAlchemyModuleRepository
+from codegen.code_metadata.infrastructure.repositories.sql_alchemy_module_repository import (
+    SqlAlchemyModuleRepository,
+)
 from codegen.shared.domain.ports.file_system_port import FileSystemPort
 from codegen.shared.infrastructure.database import Database
-from codegen.shared.infrastructure.adapters.sql_alchemy_unit_of_work import SqlAlchemyUnitOfWork
+from codegen.shared.infrastructure.adapters.sql_alchemy_unit_of_work import (
+    SqlAlchemyUnitOfWork,
+)
 
 
 class Container(DeclarativeContainer):
@@ -55,6 +72,10 @@ class Container(DeclarativeContainer):
         instance_of=FileSystemPort
     )
 
+    project_root: Dependency[Path] = Dependency(instance_of=Path)
+
+    # ── 仓储工厂 ──
+
     component_repository_factory: Factory[SqlAlchemyComponentRepository] = Factory(
         SqlAlchemyComponentRepository,
     )
@@ -62,6 +83,8 @@ class Container(DeclarativeContainer):
     module_repository_factory: Factory[SqlAlchemyModuleRepository] = Factory(
         SqlAlchemyModuleRepository,
     )
+
+    # ── 查询服务 ──
 
     component_query_service: Factory[SqlAlchemyComponentQueryService] = Factory(
         SqlAlchemyComponentQueryService,
@@ -72,6 +95,8 @@ class Container(DeclarativeContainer):
         SqlAlchemyModuleQueryService,
         session_factory=database.provided.session_factory,
     )
+
+    # ── Unit of Work ──
 
     unit_of_work: Factory[SqlAlchemyUnitOfWork[ComponentRepository]] = Factory(
         SqlAlchemyUnitOfWork,
@@ -87,6 +112,8 @@ class Container(DeclarativeContainer):
         event_publisher_factory=event_publisher_factory,
     )
 
+    # ── 领域服务 ──
+
     component_policy_factory: Singleton[ComponentPolicyFactory] = Singleton(
         ComponentPolicyFactory,
     )
@@ -95,14 +122,33 @@ class Container(DeclarativeContainer):
         PythonCodeParser,
     )
 
-    list_components: Factory[ListComponents] = Factory(
-        ListComponents,
-        query_service=component_query_service,
-    )
-
     python_code_generator: Factory[PythonCodeGenerator] = Factory(
         PythonCodeGenerator,
         component_policy_factory=component_policy_factory,
+    )
+
+    path_parser: Factory[PathParser] = Factory(
+        PathParser,
+        dir_to_type_registry=component_policy_factory.provided.get_dir_to_type_registry.call(),
+    )
+
+    # ── CodeNode 图谱：应用层 Port → 基础设施实现 ──
+
+    code_graph_builder: Factory[CodeGraphBuilder] = Factory(
+        FileSystemCodeGraphBuilder,
+        root=project_root,
+    )
+
+    code_node_sync_service: Factory[CodeNodeSyncService] = Factory(
+        SqlAlchemyCodeNodeSyncService,
+        session_factory=database.provided.session_factory,
+    )
+
+    # ── Command / Query ──
+
+    list_components: Factory[ListComponents] = Factory(
+        ListComponents,
+        query_service=component_query_service,
     )
 
     generate_code: Factory[GenerateCode] = Factory(
@@ -117,11 +163,12 @@ class Container(DeclarativeContainer):
         uow=unit_of_work,
     )
 
-    path_parser: Factory[PathParser] = Factory(
-        PathParser,
-        dir_to_type_registry=component_policy_factory.provided.get_dir_to_type_registry.call(),
+    ingest_project: Factory[IngestProject] = Factory(
+        IngestProject,
+        graph_builder=code_graph_builder,
+        sync_service=code_node_sync_service,
     )
-    
+
     dev_progress_service: Factory[DevProgressService] = Factory(
         DevProgressService,
         file_system_port=file_system_port,

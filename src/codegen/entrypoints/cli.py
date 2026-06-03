@@ -8,6 +8,7 @@ from codegen.python_gen.interfaces.cli.schema import schema
 from codegen.domain_definition.interfaces.cli.tree import tree as tree_cmd
 from codegen.domain_definition.interfaces.cli.init import init
 from codegen.code_metadata.interfaces.cli.delete_component import delete_component
+from codegen.code_metadata.interfaces.cli.ingest_project import ingest_project
 from codegen.code_metadata.interfaces.cli.generate_code import generate_code
 from codegen.code_metadata.interfaces.cli.get_dev_progress import get_dev_progress
 from codegen.code_metadata.interfaces.cli.list_components import list_components
@@ -49,6 +50,7 @@ app.command()(get_module)
 app.command()(list_modules)
 
 app.command()(delete_component)
+app.command()(ingest_project)
 
 app.command(name="tree")(tree_cmd)
 

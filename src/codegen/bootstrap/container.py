@@ -41,6 +41,7 @@ class AppContainer(containers.DeclarativeContainer):
         event_publisher_factory=shared_container.event_publisher_factory,
         event_hub=shared_container.event_hub,
         file_system_port=os_file_system,
+        project_root=config.project_root,
     )
 
     # DomainDefinition sub-container
