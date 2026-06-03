@@ -38,4 +38,11 @@ class FileNodeDto(_BaseNodeDto):
     kind: CodeNodeKind = field(default=CodeNodeKind.FILE, init=False)
 
 
-CodeNodeDto: TypeAlias = DirectoryNodeDto | FileNodeDto
+@dataclass
+class ModuleNodeDto(_BaseNodeDto):
+    """模块节点的 DTO：kind 固定为 MODULE，由文件节点自动派生。"""
+
+    kind: CodeNodeKind = field(default=CodeNodeKind.MODULE, init=False)
+
+
+CodeNodeDto: TypeAlias = DirectoryNodeDto | FileNodeDto | ModuleNodeDto

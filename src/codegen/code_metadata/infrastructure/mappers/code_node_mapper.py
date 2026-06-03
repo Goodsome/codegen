@@ -1,9 +1,11 @@
 from __future__ import annotations
+from typing import assert_never
 
 from codegen.code_metadata.application.dtos.code_node_dto import (
     CodeNodeDto,
     DirectoryNodeDto,
     FileNodeDto,
+    ModuleNodeDto,
     OutboundEdgeDto,
 )
 from codegen.code_metadata.domain.aggregates.code_node import (
@@ -83,7 +85,8 @@ class CodeNodeMapper:
             OutboundEdgeDto(type=EdgeType(e.type), target_fqn=e.target_entity.fqn)
             for e in orm_model.outbound_edges
         ]
-        match CodeNodeKind(orm_model.kind):
+        node_kind = CodeNodeKind(orm_model.kind)
+        match node_kind:
             case CodeNodeKind.DIRECTORY:
                 return DirectoryNodeDto(
                     fqn=orm_model.fqn,
@@ -96,8 +99,14 @@ class CodeNodeMapper:
                     name=orm_model.name,
                     outbound_edges=edges,
                 )
+            case CodeNodeKind.MODULE:
+                return ModuleNodeDto(
+                    fqn=orm_model.fqn,
+                    name=orm_model.name,
+                    outbound_edges=edges,
+                )
             case _:
-                raise ValueError(f"Unknown code node kind: {orm_model.kind}")
+                assert_never(node_kind)
 
     # ==========================================
     # Domain -> ORM
@@ -111,7 +120,7 @@ class CodeNodeMapper:
             case CodeNodeKind.FILE:
                 return cls._file_to_orm(domain_entity)
             case _:
-                raise ValueError(f"Unknown code node kind: {domain_entity.kind}")
+                assert_never(domain_entity.kind)
 
     @classmethod
     def _directory_to_orm(cls, domain_entity: DirectoryNode) -> DirectoryNodeModel:

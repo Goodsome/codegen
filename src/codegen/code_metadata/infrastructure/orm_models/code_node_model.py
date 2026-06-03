@@ -63,3 +63,7 @@ class DirectoryNodeModel(CodeNodeModel):
 
 class FileNodeModel(CodeNodeModel):
     __mapper_args__: dict[str, str] = {"polymorphic_identity": CodeNodeKind.FILE}
+
+class ModuleNodeModel(CodeNodeModel):
+    __mapper_args__: dict[str, str] = {"polymorphic_identity": CodeNodeKind.MODULE}
+    
