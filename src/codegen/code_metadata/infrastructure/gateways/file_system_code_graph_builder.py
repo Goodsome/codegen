@@ -31,39 +31,36 @@ class FileSystemCodeGraphBuilder(CodeGraphBuilder):
         nodes: list[CodeNodeDto] = []
         fqn_to_dto: dict[str, CodeNodeDto] = {}
 
-        # 核心修复：直接使用迭代器，移除 _walk 递归函数
+        base_dto = self._build_dto(context_path, fqn_to_dto)
+        nodes.append(base_dto)
+        fqn_to_dto[base_dto.fqn] = base_dto
+
         for dirpath, dirnames, filenames in context_path.walk():
-            # 1. 过滤并排序（原地修改 dirnames 决定了 walk 接下来要进入的目录）
             dirnames[:] = sorted(d for d in dirnames if d not in _IGNORE_DIRS)
 
-            # 2. 确定父节点 DTO
-            parent_dto: CodeNodeDto | None = None
-            if dirpath != context_path:
-                parent_dto = fqn_to_dto.get(self._dir_fqn(dirpath))
-
-            # 3. 构造子目录节点
             for dname in dirnames:
-                fqn = self._dir_fqn(dirpath / dname)
-                dto = CodeNodeDto(fqn=fqn, name=dname, kind=CodeNodeKind.DIRECTORY)
-                if parent_dto is not None:
-                    parent_dto.outbound_edges.append(
-                        OutboundEdgeDto(type=EdgeType.CONTAINS, target_fqn=fqn)
-                    )
+                dto = self._build_dto(dirpath / dname, fqn_to_dto)
                 nodes.append(dto)
-                fqn_to_dto[fqn] = dto
+                fqn_to_dto[dto.fqn] = dto
 
-            # 4. 构造文件节点
             for fname in sorted(filenames):
-                fqn = self._file_fqn(dirpath / fname)
-                dto = CodeNodeDto(fqn=fqn, name=fname, kind=CodeNodeKind.FILE)
-                if parent_dto is not None:
-                    parent_dto.outbound_edges.append(
-                        OutboundEdgeDto(type=EdgeType.CONTAINS, target_fqn=fqn)
-                    )
+                dto = self._build_dto(dirpath / fname, fqn_to_dto)
                 nodes.append(dto)
-                fqn_to_dto[fqn] = dto
+                fqn_to_dto[dto.fqn] = dto
 
         return nodes
+
+    def _build_dto(self, path: Path, fqn_to_dto: dict[str, CodeNodeDto]) -> CodeNodeDto:
+        fqn = self._dir_fqn(path) if path.is_dir() else self._file_fqn(path)
+        name = path.name
+        kind = CodeNodeKind.DIRECTORY if path.is_dir() else CodeNodeKind.FILE
+        parent_fqn = self._dir_fqn(path.parent)
+        if parent_fqn in fqn_to_dto:
+            parent_dto = fqn_to_dto[parent_fqn]
+            parent_dto.outbound_edges.append(
+                OutboundEdgeDto(type=EdgeType.CONTAINS, target_fqn=fqn)
+            )
+        return CodeNodeDto(fqn=fqn, name=name, kind=kind)
 
     def _dir_fqn(self, path: Path) -> str:
         """目录 FQN：context_name/相对路径/，以 / 结尾。"""

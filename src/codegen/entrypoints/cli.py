@@ -5,7 +5,7 @@ from codegen.bootstrap.setup import create_container
 from codegen.orchestration.interfaces.cli.build import scaffold
 from codegen.orchestration.interfaces.cli.reverse import reverse
 from codegen.python_gen.interfaces.cli.schema import schema
-from codegen.domain_definition.interfaces.cli.tree import tree as tree_cmd
+from codegen.code_metadata.interfaces.cli.get_directory_tree import get_directory_tree as tree_cmd
 from codegen.domain_definition.interfaces.cli.init import init
 from codegen.code_metadata.interfaces.cli.delete_component import delete_component
 from codegen.code_metadata.interfaces.cli.ingest_project import ingest_project
@@ -29,7 +29,7 @@ app = typer.Typer(
   reverse          Reverse-engineer Python code into codegen.yaml
   schema           Output JSON schema for the blueprint
   get-module       Get module by path
-  tree             Display blueprint structure as a visual tree
+  tree             Display code-node directory tree by FQN prefix
   get-dev-progress Show development progress with AST similarity metrics
     """,
     add_completion=False,

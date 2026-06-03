@@ -13,10 +13,12 @@ from codegen.code_metadata.application.commands.delete_component import DeleteCo
 from codegen.code_metadata.application.commands.generate_code import GenerateCode
 from codegen.code_metadata.application.commands.ingest_project import IngestProject
 from codegen.code_metadata.application.ports.code_graph_builder import CodeGraphBuilder
+from codegen.code_metadata.application.ports.code_node_query_service import CodeNodeQueryService
 from codegen.code_metadata.application.ports.code_node_sync_service import (
     CodeNodeSyncService,
 )
 from codegen.code_metadata.application.queries.get_dev_progress import GetDevProgress
+from codegen.code_metadata.application.queries.get_directory_tree import GetDirectoryTree
 from codegen.code_metadata.application.queries.list_components import ListComponents
 from codegen.code_metadata.application.services.dev_progress_service import (
     DevProgressService,
@@ -32,6 +34,9 @@ from codegen.code_metadata.domain.ports.module_repository import ModuleRepositor
 from codegen.code_metadata.domain.services.path_parser import PathParser
 from codegen.code_metadata.infrastructure.gateways.file_system_code_graph_builder import (
     FileSystemCodeGraphBuilder,
+)
+from codegen.code_metadata.infrastructure.repositories.sql_alchemy_code_node_query_service import (
+    SqlAlchemyCodeNodeQueryService,
 )
 from codegen.code_metadata.infrastructure.repositories.sql_alchemy_code_node_sync_service import (
     SqlAlchemyCodeNodeSyncService,
@@ -144,6 +149,11 @@ class Container(DeclarativeContainer):
         session_factory=database.provided.session_factory,
     )
 
+    code_node_query_service: Factory[CodeNodeQueryService] = Factory(
+        SqlAlchemyCodeNodeQueryService,
+        session_factory=database.provided.session_factory,
+    )
+
     # ── Command / Query ──
 
     list_components: Factory[ListComponents] = Factory(
@@ -181,6 +191,11 @@ class Container(DeclarativeContainer):
         GetDevProgress,
         uow=unit_of_work,
         dev_progress_service=dev_progress_service,
+    )
+
+    get_directory_tree: Factory[GetDirectoryTree] = Factory(
+        GetDirectoryTree,
+        query_service=code_node_query_service,
     )
 
     project_sync_service: Factory[ProjectSyncService] = Factory(
