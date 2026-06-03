@@ -4,10 +4,11 @@ from typing import override
 
 from codegen.code_metadata.application.dtos.code_node_dto import (
     CodeNodeDto,
+    DirectoryNodeDto,
+    FileNodeDto,
     OutboundEdgeDto,
 )
 from codegen.code_metadata.application.ports.code_graph_builder import CodeGraphBuilder
-from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
 
 _IGNORE_DIRS = frozenset({
@@ -29,11 +30,10 @@ class FileSystemCodeGraphBuilder(CodeGraphBuilder):
     def build(self, fqn_prefix: str) -> list[CodeNodeDto]:
         context_path = self.root / fqn_prefix
         nodes: list[CodeNodeDto] = []
-        fqn_to_dto: dict[str, CodeNodeDto] = {}
+        fqn_to_dto: dict[str, DirectoryNodeDto] = {}
 
         base_dto = self._build_dto(context_path, fqn_to_dto)
         nodes.append(base_dto)
-        fqn_to_dto[base_dto.fqn] = base_dto
 
         for dirpath, dirnames, filenames in context_path.walk():
             dirnames[:] = sorted(d for d in dirnames if d not in _IGNORE_DIRS)
@@ -41,26 +41,27 @@ class FileSystemCodeGraphBuilder(CodeGraphBuilder):
             for dname in dirnames:
                 dto = self._build_dto(dirpath / dname, fqn_to_dto)
                 nodes.append(dto)
-                fqn_to_dto[dto.fqn] = dto
 
             for fname in sorted(filenames):
                 dto = self._build_dto(dirpath / fname, fqn_to_dto)
                 nodes.append(dto)
-                fqn_to_dto[dto.fqn] = dto
 
         return nodes
 
-    def _build_dto(self, path: Path, fqn_to_dto: dict[str, CodeNodeDto]) -> CodeNodeDto:
+    def _build_dto(self, path: Path, fqn_to_dto: dict[str, DirectoryNodeDto]) -> CodeNodeDto:
         fqn = self._dir_fqn(path) if path.is_dir() else self._file_fqn(path)
         name = path.name
-        kind = CodeNodeKind.DIRECTORY if path.is_dir() else CodeNodeKind.FILE
         parent_fqn = self._dir_fqn(path.parent)
         if parent_fqn in fqn_to_dto:
             parent_dto = fqn_to_dto[parent_fqn]
             parent_dto.outbound_edges.append(
                 OutboundEdgeDto(type=EdgeType.CONTAINS, target_fqn=fqn)
             )
-        return CodeNodeDto(fqn=fqn, name=name, kind=kind)
+        if path.is_dir():
+            dto = DirectoryNodeDto(fqn=fqn, name=name)
+            fqn_to_dto[fqn] = dto
+            return dto
+        return FileNodeDto(fqn=fqn, name=name)
 
     def _dir_fqn(self, path: Path) -> str:
         """目录 FQN：context_name/相对路径/，以 / 结尾。"""

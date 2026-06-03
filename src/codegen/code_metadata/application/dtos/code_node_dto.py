@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from typing import TypeAlias
 
 from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
@@ -17,14 +18,23 @@ class OutboundEdgeDto:
 
 
 @dataclass
-class CodeNodeDto:
-    """CodeNode 的 DTO：不含 id，仅携带自然键和业务数据。
-
-    用于领域服务（CodeGraphBuilder）向仓储层传递扫描结果。
-    仓储层负责将 DTO 转为带数据库 ID 的领域实体后持久化。
-    """
+class DirectoryNodeDto:
+    """目录节点的 DTO：kind 固定为 DIRECTORY。"""
 
     fqn: str
     name: str
-    kind: CodeNodeKind
     outbound_edges: list[OutboundEdgeDto] = field(default_factory=list)
+    kind: CodeNodeKind = field(default=CodeNodeKind.DIRECTORY, init=False)
+
+
+@dataclass
+class FileNodeDto:
+    """文件节点的 DTO：kind 固定为 FILE。"""
+
+    fqn: str
+    name: str
+    outbound_edges: list[OutboundEdgeDto] = field(default_factory=list)
+    kind: CodeNodeKind = field(default=CodeNodeKind.FILE, init=False)
+
+
+CodeNodeDto: TypeAlias = DirectoryNodeDto | FileNodeDto

@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+from codegen.code_metadata.application.dtos.code_node_dto import (
+    CodeNodeDto,
+    DirectoryNodeDto,
+    FileNodeDto,
+    OutboundEdgeDto,
+)
 from codegen.code_metadata.domain.aggregates.code_node import (
     CodeNode,
     DirectoryNode,
@@ -21,7 +27,7 @@ from codegen.code_metadata.infrastructure.orm_models.code_node_model import (
 
 class CodeNodeMapper:
     """
-    负责 CodeNode 聚合根与 CodeNode ORM Model 之间的互相转换。
+    负责 CodeNode 在 ORM、Domain、DTO 三层之间的转换。
     - 单表继承：DirectoryNodeModel / FileNodeModel
     - outbound_edges 通过 CodeEdgeModel 转换
     """
@@ -66,6 +72,32 @@ class CodeNodeMapper:
             type=EdgeType(edge_model.type),
             target_id=CodeNodeId.reconstitute(edge_model.target_id),
         )
+
+    # ==========================================
+    # ORM -> DTO
+    # ==========================================
+
+    @classmethod
+    def to_dto(cls, orm_model: CodeNodeModel) -> CodeNodeDto:
+        edges = [
+            OutboundEdgeDto(type=EdgeType(e.type), target_fqn=e.target_entity.fqn)
+            for e in orm_model.outbound_edges
+        ]
+        match CodeNodeKind(orm_model.kind):
+            case CodeNodeKind.DIRECTORY:
+                return DirectoryNodeDto(
+                    fqn=orm_model.fqn,
+                    name=orm_model.name,
+                    outbound_edges=edges,
+                )
+            case CodeNodeKind.FILE:
+                return FileNodeDto(
+                    fqn=orm_model.fqn,
+                    name=orm_model.name,
+                    outbound_edges=edges,
+                )
+            case _:
+                raise ValueError(f"Unknown code node kind: {orm_model.kind}")
 
     # ==========================================
     # Domain -> ORM
