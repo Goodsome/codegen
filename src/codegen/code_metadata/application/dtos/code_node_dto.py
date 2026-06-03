@@ -18,22 +18,23 @@ class OutboundEdgeDto:
 
 
 @dataclass
-class DirectoryNodeDto:
-    """目录节点的 DTO：kind 固定为 DIRECTORY。"""
-
+class _BaseNodeDto:
     fqn: str
     name: str
     outbound_edges: list[OutboundEdgeDto] = field(default_factory=list)
+    
+
+@dataclass
+class DirectoryNodeDto(_BaseNodeDto):
+    """目录节点的 DTO：kind 固定为 DIRECTORY。"""
+
     kind: CodeNodeKind = field(default=CodeNodeKind.DIRECTORY, init=False)
 
 
 @dataclass
-class FileNodeDto:
+class FileNodeDto(_BaseNodeDto):
     """文件节点的 DTO：kind 固定为 FILE。"""
 
-    fqn: str
-    name: str
-    outbound_edges: list[OutboundEdgeDto] = field(default_factory=list)
     kind: CodeNodeKind = field(default=CodeNodeKind.FILE, init=False)
 
 
