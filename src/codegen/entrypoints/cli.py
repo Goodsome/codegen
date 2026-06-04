@@ -16,6 +16,7 @@ from codegen.code_metadata.interfaces.cli.reverse_code import reverse_code
 from codegen.code_metadata.interfaces.cli.get_component import get_component
 from codegen.code_metadata.interfaces.cli.get_module import get_module
 from codegen.code_metadata.interfaces.cli.list_modules import list_modules
+from codegen.code_metadata.interfaces.cli.get_code_node import get_code_node
 from codegen.code_dom.interfaces.cli.get_file_document import get_file_document
 
 
@@ -53,6 +54,7 @@ app.command()(list_modules)
 app.command()(delete_component)
 app.command()(ingest_project)
 app.command()(get_file_document)
+app.command()(get_code_node)
 
 app.command(name="tree")(tree_cmd)
 

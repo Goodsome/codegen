@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import TypeAlias
+from uuid import UUID
 
 from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
@@ -15,6 +16,14 @@ class OutboundEdgeDto:
 
     type: EdgeType
     target_fqn: str
+
+
+@dataclass
+class InboundEdgeDto:
+    """入边 DTO：用 source_fqn 引用源节点。"""
+
+    type: EdgeType
+    source_fqn: str
 
 
 @dataclass
@@ -60,10 +69,31 @@ class FunctionNodeDto(_BaseNodeDto):
 
 
 @dataclass
+class MethodNodeDto(_BaseNodeDto):
+    """方法节点的 DTO：kind 固定为 METHOD，由类节点的 AST 函数定义派生。"""
+
+    kind: CodeNodeKind = field(default=CodeNodeKind.METHOD, init=False)
+
+
+@dataclass
 class VariableNodeDto(_BaseNodeDto):
     """变量节点的 DTO：kind 固定为 VARIABLE，由模块节点的 AST 赋值语句派生。"""
 
     kind: CodeNodeKind = field(default=CodeNodeKind.VARIABLE, init=False)
 
 
-CodeNodeDto: TypeAlias = DirectoryNodeDto | FileNodeDto | ModuleNodeDto | ClassNodeDto | FunctionNodeDto | VariableNodeDto
+CodeNodeDto: TypeAlias = DirectoryNodeDto | FileNodeDto | ModuleNodeDto | ClassNodeDto | FunctionNodeDto | MethodNodeDto | VariableNodeDto
+
+
+@dataclass
+class CodeNodeDetailDto:
+    """CodeNode 详情 DTO：包含 id、基本信息、出边和入边。"""
+
+    id: UUID
+    fqn: str
+    name: str
+    kind: CodeNodeKind
+    description: str | None
+    properties: dict[str, object]
+    outbound_edges: list[OutboundEdgeDto] = field(default_factory=list)
+    inbound_edges: list[InboundEdgeDto] = field(default_factory=list)

@@ -7,4 +7,5 @@ class CodeNodeKind(StrEnum):
     MODULE = auto()
     CLASS = auto()
     FUNCTION = auto()
+    METHOD = auto()
     VARIABLE = auto()

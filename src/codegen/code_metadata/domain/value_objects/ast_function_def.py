@@ -1,10 +1,12 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING, Literal
 
 from pydantic import Field
 
 from codegen.code_metadata.domain.enums.ast_stmt_kind import AstStmtKind
 from codegen.code_metadata.domain.value_objects.ast_arguments import AstArguments
+from codegen.code_metadata.domain.value_objects.ast_name import AstName
 from codegen.shared.domain.core import ValueObject
 
 if TYPE_CHECKING:
@@ -20,3 +22,10 @@ class AstFunctionDef(ValueObject):
     decorator_list: list[AstExpr] = Field(default_factory=list)
     returns: AstExpr | None = None
     type_comment: str | None = None
+
+    @property
+    def is_overload(self) -> bool:
+        return any(
+            isinstance(decorator, AstName) and decorator.id == "overload"
+            for decorator in self.decorator_list
+        )

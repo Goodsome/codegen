@@ -13,6 +13,7 @@ from codegen.code_metadata.application.dtos.code_node_dto import (
     DirectoryNodeDto,
     FileNodeDto,
     FunctionNodeDto,
+    MethodNodeDto,
     ModuleNodeDto,
     OutboundEdgeDto,
     VariableNodeDto,
@@ -55,12 +56,24 @@ class CodeGraphAcl:
     root_path: Path
     nodes: list[CodeNodeDto] = field(default_factory=list)
     fqn_to_dto: dict[str, CodeNodeDto] = field(default_factory=dict)
+    overload_index: dict[str, int] = field(default_factory=dict)
 
     def build_nodes(self, code_documents: list[CodeDocument]) -> list[CodeNodeDto]:
         self._build_directory_nodes(code_documents)
         self._build_file_nodes(code_documents)
 
-        return self.nodes
+        return list(self.fqn_to_dto.values())
+
+    def _add_node(self, dto: CodeNodeDto) -> None:
+        if dto.fqn in self.fqn_to_dto:
+            raise ValueError(f"Duplicate: {dto.fqn=}")
+        self.fqn_to_dto[dto.fqn] = dto
+
+    def _get_ovrload_index(self, fqn: str) -> int:
+        if fqn not in self.overload_index:
+            self.overload_index[fqn] = 0
+        self.overload_index[fqn] += 1
+        return self.overload_index[fqn] - 1
 
     def _build_directory_nodes(self, code_documents: list[CodeDocument]) -> None:
         dir_paths: set[Path] = set()
@@ -87,8 +100,7 @@ class CodeGraphAcl:
                 OutboundEdgeDto(type=EdgeType.CONTAINS, target_fqn=fqn)
             )
 
-        self.fqn_to_dto[fqn] = dto
-        self.nodes.append(dto)
+        self._add_node(dto)
 
         return dto
 
@@ -101,7 +113,7 @@ class CodeGraphAcl:
                 OutboundEdgeDto(type=EdgeType.CONTAINS, target_fqn=fqn)
             )
         file_dto = FileNodeDto(fqn=fqn, name=path.name)
-        self.nodes.append(file_dto)
+        self._add_node(file_dto)
 
         self._build_module_node_node(code_document, file_dto)
 
@@ -111,8 +123,7 @@ class CodeGraphAcl:
         path = code_document.physical_path
         module_fqn = self._module_fqn(path)
         dto = ModuleNodeDto(fqn=module_fqn, name=module_fqn.rsplit(".", maxsplit=1)[-1])
-        self.fqn_to_dto[module_fqn] = dto
-        self.nodes.append(dto)
+        self._add_node(dto)
         file_node.outbound_edges.append(
             OutboundEdgeDto(type=EdgeType.DEFINES_MODULE, target_fqn=module_fqn)
         )
@@ -145,20 +156,28 @@ class CodeGraphAcl:
         module_node.outbound_edges.append(
             OutboundEdgeDto(type=EdgeType.CONTAINS, target_fqn=class_fqn)
         )
-        self.nodes.append(dto)
         for stmt in class_def.body:
             self._parse_stmt(stmt, dto)
+            
+        self._add_node(dto)
         return dto
 
     def _parse_function_def(
-        self, func_def: AstFunctionDef, module_node: ModuleNodeDto | ClassNodeDto
-    ) -> FunctionNodeDto:
-        func_fqn = f"{module_node.fqn}::{func_def.name}"
-        dto = FunctionNodeDto(fqn=func_fqn, name=func_def.name)
-        module_node.outbound_edges.append(
+        self, func_def: AstFunctionDef, parent_node: ModuleNodeDto | ClassNodeDto
+    ) -> FunctionNodeDto | MethodNodeDto:
+        func_fqn = f"{parent_node.fqn}::{func_def.name}"
+        if func_def.is_overload:
+            overload_index = self._get_ovrload_index(func_fqn)
+            func_fqn = f"{func_fqn}::<overload_{overload_index}>"
+        match parent_node:
+            case ClassNodeDto():
+                dto = MethodNodeDto(fqn=func_fqn, name=func_def.name)
+            case ModuleNodeDto():
+                dto = FunctionNodeDto(fqn=func_fqn, name=func_def.name)
+        parent_node.outbound_edges.append(
             OutboundEdgeDto(type=EdgeType.CONTAINS, target_fqn=func_fqn)
         )
-        self.nodes.append(dto)
+        self._add_node(dto)
         return dto
 
     def _build_variable_node(
@@ -169,7 +188,7 @@ class CodeGraphAcl:
         module_node.outbound_edges.append(
             OutboundEdgeDto(type=EdgeType.CONTAINS, target_fqn=var_fqn)
         )
-        self.nodes.append(dto)
+        self._add_node(dto)
         return dto
 
     def _parse_ann_assign(
@@ -183,7 +202,7 @@ class CodeGraphAcl:
         parent_node.outbound_edges.append(
             OutboundEdgeDto(type=EdgeType.CONTAINS, target_fqn=var_fqn)
         )
-        self.nodes.append(dto)
+        self._add_node(dto)
 
     def _parse_assign(
         self, assign: AstAssign, parent_node: ModuleNodeDto | ClassNodeDto
@@ -200,7 +219,7 @@ class CodeGraphAcl:
         parent_node.outbound_edges.append(
             OutboundEdgeDto(type=EdgeType.CONTAINS, target_fqn=var_fqn)
         )
-        self.nodes.append(dto)
+        self._add_node(dto)
 
     def _dir_fqn(self, path: Path) -> str:
         """目录 FQN：相对路径/，以 / 结尾。根目录为 /。"""

@@ -17,6 +17,7 @@ from codegen.code_metadata.application.ports.code_node_query_service import Code
 from codegen.code_metadata.application.ports.code_node_sync_service import (
     CodeNodeSyncService,
 )
+from codegen.code_metadata.application.queries.get_code_node_detail import GetCodeNodeDetail
 from codegen.code_metadata.application.queries.get_dev_progress import GetDevProgress
 from codegen.code_metadata.application.queries.get_directory_tree import GetDirectoryTree
 from codegen.code_metadata.application.queries.list_components import ListComponents
@@ -202,6 +203,11 @@ class Container(DeclarativeContainer):
 
     get_directory_tree: Factory[GetDirectoryTree] = Factory(
         GetDirectoryTree,
+        query_service=code_node_query_service,
+    )
+
+    get_code_node_detail: Factory[GetCodeNodeDetail] = Factory(
+        GetCodeNodeDetail,
         query_service=code_node_query_service,
     )
 
