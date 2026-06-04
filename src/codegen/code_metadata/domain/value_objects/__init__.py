@@ -8,6 +8,7 @@ from .ast_aug_assign import AstAugAssign
 from .ast_bin_op import AstBinOp
 from .ast_bool_op import AstBoolOp
 from .ast_call import AstCall
+from .ast_class_def import AstClassDef
 from .ast_compare import AstCompare
 from .ast_comprehension import AstComprehension
 from .ast_constant import AstConstant
@@ -23,6 +24,9 @@ from .ast_function_def import AstFunctionDef
 from .ast_generator_exp import AstGeneratorExp
 from .ast_if import AstIf
 from .ast_if_exp import AstIfExp
+from .ast_import import AstImport
+from .ast_import_from import AstImportFrom
+from .ast_alias import AstAlias
 from .ast_joined_str import AstJoinedStr
 from .ast_lambda import AstLambda
 from .ast_list import AstList
@@ -43,6 +47,7 @@ from .ast_try import AstTry
 from .ast_unary_op import AstUnaryOp
 from .ast_yield import AstYield
 from .ast_yield_from import AstYieldFrom
+from .ast_while import AstWhile
 from .ast_with import AstWith
 from .ast_with_item import AstWithItem
 from .call_expr import CallExpr
@@ -55,7 +60,7 @@ from .parsed_path import ParsedPath
 from .reference_expr import ReferenceExpr
 from .sequence_expr import SequenceExpr
 
-from .ast_stmt import AstStmt
+from .ast_stmt import AstStmt, ast_stmt_adapter
 from .ast_expr import AstExpr
 from .ast_keyword import AstKeyword
 
@@ -73,6 +78,7 @@ __all__ = [
     "AstBinOp",
     "AstBoolOp",
     "AstCall",
+    "AstClassDef",
     "AstCompare",
     "AstComprehension",
     "AstConstant",
@@ -89,6 +95,9 @@ __all__ = [
     "AstGeneratorExp",
     "AstIf",
     "AstIfExp",
+    "AstImport",
+    "AstImportFrom",
+    "AstAlias",
     "AstJoinedStr",
     "AstLambda",
     "AstList",
@@ -106,12 +115,14 @@ __all__ = [
     "AstSlice",
     "AstStarred",
     "AstStmt",
+    "ast_stmt_adapter",
     "AstSubscript",
     "AstTuple",
     "AstTry",
     "AstUnaryOp",
     "AstYield",
     "AstYieldFrom",
+    "AstWhile",
     "AstWith",
     "AstWithItem",
     "CallExpr",
@@ -177,3 +188,7 @@ AstUnaryOp.model_rebuild()
 AstYield.model_rebuild()
 AstYieldFrom.model_rebuild()
 AstRaise.model_rebuild()
+AstImport.model_rebuild()
+AstImportFrom.model_rebuild()
+AstClassDef.model_rebuild()
+AstWhile.model_rebuild()

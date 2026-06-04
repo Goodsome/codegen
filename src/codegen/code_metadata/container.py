@@ -59,6 +59,9 @@ from codegen.code_metadata.infrastructure.repositories.sql_alchemy_module_query_
 from codegen.code_metadata.infrastructure.repositories.sql_alchemy_module_repository import (
     SqlAlchemyModuleRepository,
 )
+from codegen.code_dom.application.queries.get_project_documents import (
+    GetProjectDocumentsHandler,
+)
 from codegen.shared.domain.ports.file_system_port import FileSystemPort
 from codegen.shared.infrastructure.database import Database
 from codegen.shared.infrastructure.adapters.sql_alchemy_unit_of_work import (
@@ -78,6 +81,10 @@ class Container(DeclarativeContainer):
     )
 
     project_root: Dependency[Path] = Dependency(instance_of=Path)
+
+    get_project_documents: Dependency[GetProjectDocumentsHandler] = Dependency(
+        instance_of=GetProjectDocumentsHandler
+    )
 
     # ── 仓储工厂 ──
 
@@ -141,7 +148,7 @@ class Container(DeclarativeContainer):
 
     code_graph_builder: Factory[CodeGraphBuilder] = Factory(
         FileSystemCodeGraphBuilder,
-        root=project_root,
+        get_project_documents=get_project_documents,
     )
 
     code_node_sync_service: Factory[CodeNodeSyncService] = Factory(

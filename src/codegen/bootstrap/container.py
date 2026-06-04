@@ -7,6 +7,7 @@ from codegen.python_gen.container import Container as PythonGenContainer
 from codegen.shared.infrastructure.adapters.os_file_system import OSFileSystem
 from codegen.shared.container import Container as SharedContainer
 from codegen.code_metadata.container import Container as CodeMetadataContainer
+from codegen.code_dom.container import Container as CodeDomContainer
 
 
 class AppContainer(containers.DeclarativeContainer):
@@ -35,6 +36,11 @@ class AppContainer(containers.DeclarativeContainer):
         file_system_port=os_file_system,
     )
 
+    code_dom_container: Container[CodeDomContainer] = Container(
+        CodeDomContainer,
+        file_system_port=os_file_system,
+    )
+
     code_metadata_container: Container[CodeMetadataContainer] = Container(
         CodeMetadataContainer,
         database=shared_container.database,
@@ -42,6 +48,7 @@ class AppContainer(containers.DeclarativeContainer):
         event_hub=shared_container.event_hub,
         file_system_port=os_file_system,
         project_root=config.project_root,
+        get_project_documents=code_dom_container.get_project_documents,
     )
 
     # DomainDefinition sub-container

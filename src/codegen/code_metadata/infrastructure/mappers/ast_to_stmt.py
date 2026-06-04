@@ -13,8 +13,14 @@ from codegen.code_metadata.domain.value_objects import (
     AstExceptHandler,
     AstExprStmt,
     AstFor,
+    AstWhile,
     AstFunctionDef,
     AstIf,
+    AstImport,
+    AstImportFrom,
+    AstAlias,
+    AstClassDef,
+    AstKeyword,
     AstMatch,
     AstMatchCase,
     AstPass,
@@ -57,6 +63,8 @@ class AstToStmt:
                 return AstToStmt.to_ast_aug_assign(node)
             case ast.For():
                 return AstToStmt.to_ast_for(node)
+            case ast.While():
+                return AstToStmt.to_ast_while(node)
             case ast.If():
                 return AstToStmt.to_ast_if(node)
             case ast.Match():
@@ -67,6 +75,12 @@ class AstToStmt:
                 return AstToStmt.to_ast_function_def(node)
             case ast.AsyncFunctionDef():
                 return AstToStmt.to_ast_async_function_def(node)
+            case ast.Import():
+                return AstToStmt.to_ast_import(node)
+            case ast.ImportFrom():
+                return AstToStmt.to_ast_import_from(node)
+            case ast.ClassDef():
+                return AstToStmt.to_ast_class_def(node)
             case ast.Expr():
                 return AstToStmt.to_ast_expr_stmt(node)
             case _:
@@ -141,6 +155,14 @@ class AstToStmt:
         return AstFor(
             target=AstToExpr.to_expr(node.target),
             iter=AstToExpr.to_expr(node.iter),
+            body=[AstToStmt.to_stmt(stmt) for stmt in node.body],
+            orelse=[AstToStmt.to_stmt(stmt) for stmt in node.orelse],
+        )
+
+    @staticmethod
+    def to_ast_while(node: ast.While) -> AstWhile:
+        return AstWhile(
+            test=AstToExpr.to_expr(node.test),
             body=[AstToStmt.to_stmt(stmt) for stmt in node.body],
             orelse=[AstToStmt.to_stmt(stmt) for stmt in node.orelse],
         )
@@ -225,6 +247,34 @@ class AstToStmt:
             decorator_list=[AstToExpr.to_expr(dec) for dec in node.decorator_list],
             returns=AstToExpr.to_expr(node.returns) if node.returns else None,
             type_comment=node.type_comment,
+        )
+
+    @staticmethod
+    def to_ast_import(node: ast.Import) -> AstImport:
+        names = [AstAlias(name=alias.name, asname=alias.asname) for alias in node.names]
+        return AstImport(names=names)
+
+    @staticmethod
+    def to_ast_import_from(node: ast.ImportFrom) -> AstImportFrom:
+        names = [AstAlias(name=alias.name, asname=alias.asname) for alias in node.names]
+        return AstImportFrom(
+            module=node.module,
+            names=names,
+            level=node.level,
+        )
+
+    @staticmethod
+    def to_ast_class_def(node: ast.ClassDef) -> AstClassDef:
+        bases = [AstToExpr.to_expr(base) for base in node.bases]
+        keywords = [AstKeyword(arg=kw.arg, value=AstToExpr.to_expr(kw.value)) for kw in node.keywords]
+        body = [AstToStmt.to_stmt(stmt) for stmt in node.body]
+        decorator_list = [AstToExpr.to_expr(dec) for dec in node.decorator_list]
+        return AstClassDef(
+            name=node.name,
+            bases=bases,
+            keywords=keywords,
+            body=body,
+            decorator_list=decorator_list,
         )
 
     @staticmethod
