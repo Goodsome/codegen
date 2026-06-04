@@ -5,4 +5,5 @@ class CodeNodeKind(StrEnum):
     DIRECTORY = auto()
     FILE = auto()
     MODULE = auto()
+    CLASS = auto()
     

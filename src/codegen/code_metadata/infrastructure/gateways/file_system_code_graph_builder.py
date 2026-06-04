@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import override
 
@@ -6,6 +6,7 @@ from codegen.code_dom.application.queries.get_project_documents import (
     GetProjectDocumentsHandler,
     GetProjectDocumentsQuery,
 )
+from codegen.code_dom.domain.aggregates.code_document import CodeDocument
 from codegen.code_metadata.application.dtos.code_node_dto import (
     CodeNodeDto,
     DirectoryNodeDto,
@@ -30,70 +31,88 @@ class FileSystemCodeGraphBuilder(CodeGraphBuilder):
     @override
     def build(self, fqn_prefix: str) -> list[CodeNodeDto]:
         context_path = Path(fqn_prefix)
-        nodes: list[CodeNodeDto] = []
-        fqn_to_dto: dict[str, DirectoryNodeDto] = {}
-
-        # 1. 获取项目文档
+        
         query = GetProjectDocumentsQuery(dir_path=context_path)
         result = self.get_project_documents.handle(query)
 
-        # 2. 收集所有唯一目录路径（从文档路径的 parent 链派生）
-        dir_paths: set[Path] = set()
-        for doc in result.code_documents:
-            parent = doc.physical_path.parent
-            while parent != context_path and context_path in parent.parents:
-                dir_paths.add(parent)
-                parent = parent.parent
-
-        # 3. 创建根目录节点
-        root_dto = self._build_directory_dto(context_path, fqn_to_dto)
-        nodes.append(root_dto)
-
-        # 4. 按深度排序创建目录节点，确保父目录先于子目录创建
-        for dir_path in sorted(dir_paths, key=lambda p: len(p.parts)):
-            nodes.append(self._build_directory_dto(dir_path, fqn_to_dto))
-
-        # 5. 为每个文档创建 FileNode + ModuleNode
-        for doc in result.code_documents:
-            nodes.extend(self._build_file_dto(doc.physical_path, fqn_to_dto))
+        acl = CodeGraphAcl(root_path=context_path)
+        nodes = acl.build_nodes(result.code_documents)
 
         return nodes
+        
+@dataclass
+class CodeGraphAcl:
+    
+    root_path: Path
+    nodes: list[CodeNodeDto] = field(default_factory=list)
+    fqn_to_dto: dict[str, DirectoryNodeDto] = field(default_factory=dict)
 
-    def _build_directory_dto(
-        self, path: Path, fqn_to_dto: dict[str, DirectoryNodeDto]
+    def build_nodes(self, code_documents: list[CodeDocument]) -> list[CodeNodeDto]:
+        self._build_directory_nodes(code_documents)
+        self._build_file_nodes(code_documents)
+
+        return self.nodes
+    
+    def _build_directory_nodes(
+        self, code_documents: list[CodeDocument]
+    ) -> None:
+        dir_paths: set[Path] = set()
+        for doc in code_documents:
+            parent = doc.physical_path.parent
+            while parent != self.root_path and self.root_path in parent.parents:
+                dir_paths.add(parent)
+                parent = parent.parent
+                
+        for dir_path in sorted(dir_paths, key=lambda p: len(p.parts)):
+            self._build_directory_node(dir_path)
+
+    def _build_file_nodes(
+        self, code_documents: list[CodeDocument]
+    ) -> None:
+        for doc in code_documents:
+            self._build_file_node(doc)
+
+    def _build_directory_node(
+        self, path: Path
     ) -> DirectoryNodeDto:
         fqn = self._dir_fqn(path)
         dto = DirectoryNodeDto(fqn=fqn, name=path.name or fqn)
-        fqn_to_dto[fqn] = dto
-
         # 为父目录添加 CONTAINS 边
         parent_fqn = self._dir_fqn(path.parent)
-        if parent_fqn in fqn_to_dto:
-            fqn_to_dto[parent_fqn].outbound_edges.append(
+        if parent_fqn in self.fqn_to_dto:
+            self.fqn_to_dto[parent_fqn].outbound_edges.append(
                 OutboundEdgeDto(type=EdgeType.CONTAINS, target_fqn=fqn)
             )
 
+        self.fqn_to_dto[fqn] = dto
+        self.nodes.append(dto)
+        
         return dto
 
-    def _build_file_dto(
-        self, path: Path, fqn_to_dto: dict[str, DirectoryNodeDto]
-    ) -> list[CodeNodeDto]:
+    def _build_file_node(
+        self, code_document: CodeDocument
+    ) -> None:
+        path = code_document.physical_path
         fqn = self._file_fqn(path)
         parent_fqn = self._dir_fqn(path.parent)
-        if parent_fqn in fqn_to_dto:
-            fqn_to_dto[parent_fqn].outbound_edges.append(
+        if parent_fqn in self.fqn_to_dto:
+            self.fqn_to_dto[parent_fqn].outbound_edges.append(
                 OutboundEdgeDto(type=EdgeType.CONTAINS, target_fqn=fqn)
             )
         file_dto = FileNodeDto(fqn=fqn, name=path.name)
-        module_dto = self._build_module_node_dto(path)
+        
+        module_dto = self._build_module_node_node(code_document)
         file_dto.outbound_edges.append(
             OutboundEdgeDto(type=EdgeType.DEFINES_MODULE, target_fqn=module_dto.fqn)
         )
-        return [file_dto, module_dto]
+        self.nodes.append(file_dto)
 
-    def _build_module_node_dto(self, path: Path) -> ModuleNodeDto:
+    def _build_module_node_node(self, code_document: CodeDocument) -> ModuleNodeDto:
+        path = code_document.physical_path
         module_fqn = self._module_fqn(path)
-        return ModuleNodeDto(fqn=module_fqn, name=module_fqn.rsplit(".", maxsplit=1)[-1])
+        dto = ModuleNodeDto(fqn=module_fqn, name=module_fqn.rsplit(".", maxsplit=1)[-1])
+        self.nodes.append(dto)
+        return dto
 
     def _dir_fqn(self, path: Path) -> str:
         """目录 FQN：相对路径/，以 / 结尾。根目录为 /。"""
@@ -114,3 +133,4 @@ class FileSystemCodeGraphBuilder(CodeGraphBuilder):
         if path.name == "__init__.py":
             return ".".join(path.parent.parts)
         return ".".join(path.with_suffix("").parts)
+
