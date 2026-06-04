@@ -1,7 +1,7 @@
 from .attribute_model import AttributeModel
 from .behavior_model import BehaviorModel
 from .code_edge_model import CodeEdgeModel
-from .code_node_model import ClassNodeModel, CodeNodeModel, DirectoryNodeModel, FileNodeModel, ModuleNodeModel
+from .code_node_model import ClassNodeModel, CodeNodeModel, DirectoryNodeModel, FileNodeModel, FunctionNodeModel, ModuleNodeModel
 from .component_model import ClassComponentModel, ComponentModel, UnionComponentModel
 from .component_v2_model import (
     ClassComponentV2Model,
@@ -30,6 +30,7 @@ __all__ = [
     "ExternalModuleModel",
     "FileModuleModel",
     "FileNodeModel",
+    "FunctionNodeModel",
     "ModuleModel",
     "UnionComponentModel",
     "UnionComponentV2Model",

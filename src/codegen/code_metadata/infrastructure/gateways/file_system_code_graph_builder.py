@@ -12,12 +12,14 @@ from codegen.code_metadata.application.dtos.code_node_dto import (
     CodeNodeDto,
     DirectoryNodeDto,
     FileNodeDto,
+    FunctionNodeDto,
     ModuleNodeDto,
     OutboundEdgeDto,
 )
 from codegen.code_metadata.application.ports.code_graph_builder import CodeGraphBuilder
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
 from codegen.code_metadata.domain.value_objects.ast_class_def import AstClassDef
+from codegen.code_metadata.domain.value_objects.ast_function_def import AstFunctionDef
 
 
 @dataclass
@@ -119,6 +121,8 @@ class CodeGraphAcl:
         for stmt in code_document.body:
             if isinstance(stmt, AstClassDef):
                 self._build_class_node(stmt, dto)
+            elif isinstance(stmt, AstFunctionDef):
+                self._build_function_node(stmt, dto)
 
         return dto
 
@@ -127,6 +131,15 @@ class CodeGraphAcl:
         dto = ClassNodeDto(fqn=class_fqn, name=class_def.name)
         module_node.outbound_edges.append(
             OutboundEdgeDto(type=EdgeType.CONTAINS, target_fqn=class_fqn)
+        )
+        self.nodes.append(dto)
+        return dto
+
+    def _build_function_node(self, func_def: AstFunctionDef, module_node: ModuleNodeDto) -> FunctionNodeDto:
+        func_fqn = f"{module_node.fqn}::{func_def.name}"
+        dto = FunctionNodeDto(fqn=func_fqn, name=func_def.name)
+        module_node.outbound_edges.append(
+            OutboundEdgeDto(type=EdgeType.CONTAINS, target_fqn=func_fqn)
         )
         self.nodes.append(dto)
         return dto

@@ -33,12 +33,18 @@ class DirectoryNode(BaseCodeNode):
 class FileNode(BaseCodeNode):
     kind: Literal[CodeNodeKind.FILE] = CodeNodeKind.FILE
 
+class ModuleNode(BaseCodeNode):
+    kind: Literal[CodeNodeKind.MODULE] = CodeNodeKind.MODULE
 
 class ClassNode(BaseCodeNode):
     kind: Literal[CodeNodeKind.CLASS] = CodeNodeKind.CLASS
 
 
+class FunctionNode(BaseCodeNode):
+    kind: Literal[CodeNodeKind.FUNCTION] = CodeNodeKind.FUNCTION
+
+
 CodeNode = Annotated[
-    DirectoryNode | FileNode | ClassNode,
+    DirectoryNode | FileNode | ModuleNode | ClassNode | FunctionNode,
     Field(discriminator="kind")
 ]

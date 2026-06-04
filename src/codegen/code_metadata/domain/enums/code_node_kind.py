@@ -6,4 +6,4 @@ class CodeNodeKind(StrEnum):
     FILE = auto()
     MODULE = auto()
     CLASS = auto()
-    
+    FUNCTION = auto()

@@ -52,4 +52,11 @@ class ClassNodeDto(_BaseNodeDto):
     kind: CodeNodeKind = field(default=CodeNodeKind.CLASS, init=False)
 
 
-CodeNodeDto: TypeAlias = DirectoryNodeDto | FileNodeDto | ModuleNodeDto | ClassNodeDto
+@dataclass
+class FunctionNodeDto(_BaseNodeDto):
+    """函数节点的 DTO：kind 固定为 FUNCTION，由模块节点的 AST 函数定义派生。"""
+
+    kind: CodeNodeKind = field(default=CodeNodeKind.FUNCTION, init=False)
+
+
+CodeNodeDto: TypeAlias = DirectoryNodeDto | FileNodeDto | ModuleNodeDto | ClassNodeDto | FunctionNodeDto

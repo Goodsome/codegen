@@ -6,6 +6,7 @@ from codegen.code_metadata.application.dtos.code_node_dto import (
     CodeNodeDto,
     DirectoryNodeDto,
     FileNodeDto,
+    FunctionNodeDto,
     ModuleNodeDto,
     OutboundEdgeDto,
 )
@@ -14,6 +15,8 @@ from codegen.code_metadata.domain.aggregates.code_node import (
     CodeNode,
     DirectoryNode,
     FileNode,
+    FunctionNode,
+    ModuleNode,
 )
 from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
@@ -27,13 +30,15 @@ from codegen.code_metadata.infrastructure.orm_models.code_node_model import (
     CodeNodeModel,
     DirectoryNodeModel,
     FileNodeModel,
+    FunctionNodeModel,
+    ModuleNodeModel,
 )
 
 
 class CodeNodeMapper:
     """
     负责 CodeNode 在 ORM、Domain、DTO 三层之间的转换。
-    - 单表继承：DirectoryNodeModel / FileNodeModel / ClassNodeModel
+    - 单表继承：DirectoryNodeModel / FileNodeModel / ClassNodeModel / FunctionNodeModel
     - outbound_edges 通过 CodeEdgeModel 转换
     """
 
@@ -43,15 +48,20 @@ class CodeNodeMapper:
 
     @classmethod
     def to_domain(cls, orm_model: CodeNodeModel) -> CodeNode:
-        match orm_model.kind:
+        kind = CodeNodeKind(orm_model.kind)
+        match kind:
             case CodeNodeKind.DIRECTORY:
                 return cls._to_directory_node(orm_model)
             case CodeNodeKind.FILE:
                 return cls._to_file_node(orm_model)
+            case CodeNodeKind.MODULE:
+                return cls._to_module_node(orm_model)
             case CodeNodeKind.CLASS:
                 return cls._to_class_node(orm_model)
+            case CodeNodeKind.FUNCTION:
+                return cls._to_function_node(orm_model)
             case _:
-                raise ValueError(f"Unknown code node kind: {orm_model.kind}")
+                assert_never(kind)
 
     @classmethod
     def _to_directory_node(cls, orm_model: CodeNodeModel) -> DirectoryNode:
@@ -74,9 +84,29 @@ class CodeNodeMapper:
         )
 
     @classmethod
+    def _to_module_node(cls, orm_model: CodeNodeModel) -> ModuleNode:
+        assert isinstance(orm_model, ModuleNodeModel)
+        return ModuleNode(
+            id=CodeNodeId.reconstitute(orm_model.id),
+            fqn=orm_model.fqn,
+            name=orm_model.name,
+            outbound_edges=[cls._to_outbound_edge(e) for e in orm_model.outbound_edges],
+        )
+
+    @classmethod
     def _to_class_node(cls, orm_model: CodeNodeModel) -> ClassNode:
         assert isinstance(orm_model, ClassNodeModel)
         return ClassNode(
+            id=CodeNodeId.reconstitute(orm_model.id),
+            fqn=orm_model.fqn,
+            name=orm_model.name,
+            outbound_edges=[cls._to_outbound_edge(e) for e in orm_model.outbound_edges],
+        )
+
+    @classmethod
+    def _to_function_node(cls, orm_model: CodeNodeModel) -> FunctionNode:
+        assert isinstance(orm_model, FunctionNodeModel)
+        return FunctionNode(
             id=CodeNodeId.reconstitute(orm_model.id),
             fqn=orm_model.fqn,
             name=orm_model.name,
@@ -126,6 +156,12 @@ class CodeNodeMapper:
                     name=orm_model.name,
                     outbound_edges=edges,
                 )
+            case CodeNodeKind.FUNCTION:
+                return FunctionNodeDto(
+                    fqn=orm_model.fqn,
+                    name=orm_model.name,
+                    outbound_edges=edges,
+                )
             case _:
                 assert_never(node_kind)
 
@@ -140,8 +176,12 @@ class CodeNodeMapper:
                 return cls._directory_to_orm(domain_entity)
             case CodeNodeKind.FILE:
                 return cls._file_to_orm(domain_entity)
+            case CodeNodeKind.MODULE:
+                return cls._module_to_orm(domain_entity)
             case CodeNodeKind.CLASS:
                 return cls._class_to_orm(domain_entity)
+            case CodeNodeKind.FUNCTION:
+                return cls._function_to_orm(domain_entity)
             case _:
                 assert_never(domain_entity.kind)
 
@@ -172,8 +212,35 @@ class CodeNodeMapper:
         return model
 
     @classmethod
+    def _module_to_orm(cls, domain_entity: ModuleNode) -> ModuleNodeModel:
+        model = ModuleNodeModel(
+            id=domain_entity.id.value,
+            fqn=domain_entity.fqn,
+            name=domain_entity.name,
+        )
+        model.outbound_edges = [
+            cls._to_edge_model(domain_entity.id, edge)
+            for edge in domain_entity.outbound_edges
+        ]
+        return model
+
+
+    @classmethod
     def _class_to_orm(cls, domain_entity: ClassNode) -> ClassNodeModel:
         model = ClassNodeModel(
+            id=domain_entity.id.value,
+            fqn=domain_entity.fqn,
+            name=domain_entity.name,
+        )
+        model.outbound_edges = [
+            cls._to_edge_model(domain_entity.id, edge)
+            for edge in domain_entity.outbound_edges
+        ]
+        return model
+
+    @classmethod
+    def _function_to_orm(cls, domain_entity: FunctionNode) -> FunctionNodeModel:
+        model = FunctionNodeModel(
             id=domain_entity.id.value,
             fqn=domain_entity.fqn,
             name=domain_entity.name,
