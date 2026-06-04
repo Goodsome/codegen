@@ -74,7 +74,10 @@ class SqlAlchemyCodeNodeSyncService(CodeNodeSyncService):
 
             # ── Phase 3: 子查询一键清空当前前缀下的旧出边 ──
             subq = select(CodeNodeModel.id).where(
-                CodeNodeModel.fqn.startswith(fqn_prefix)
+                or_(
+                    CodeNodeModel.fqn.startswith(fqn_prefix),
+                    CodeNodeModel.fqn.startswith(fqn_prefix.replace("/", "."))
+                )
             ).scalar_subquery()
 
             session.execute(

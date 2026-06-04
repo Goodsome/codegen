@@ -74,3 +74,7 @@ class ClassNodeModel(CodeNodeModel):
 
 class FunctionNodeModel(CodeNodeModel):
     __mapper_args__: dict[str, str] = {"polymorphic_identity": CodeNodeKind.FUNCTION}
+
+
+class VariableNodeModel(CodeNodeModel):
+    __mapper_args__: dict[str, str] = {"polymorphic_identity": CodeNodeKind.VARIABLE}

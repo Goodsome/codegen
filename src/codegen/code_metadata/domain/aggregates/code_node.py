@@ -44,7 +44,11 @@ class FunctionNode(BaseCodeNode):
     kind: Literal[CodeNodeKind.FUNCTION] = CodeNodeKind.FUNCTION
 
 
+class VariableNode(BaseCodeNode):
+    kind: Literal[CodeNodeKind.VARIABLE] = CodeNodeKind.VARIABLE
+
+
 CodeNode = Annotated[
-    DirectoryNode | FileNode | ModuleNode | ClassNode | FunctionNode,
+    DirectoryNode | FileNode | ModuleNode | ClassNode | FunctionNode | VariableNode,
     Field(discriminator="kind")
 ]

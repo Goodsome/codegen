@@ -59,4 +59,11 @@ class FunctionNodeDto(_BaseNodeDto):
     kind: CodeNodeKind = field(default=CodeNodeKind.FUNCTION, init=False)
 
 
-CodeNodeDto: TypeAlias = DirectoryNodeDto | FileNodeDto | ModuleNodeDto | ClassNodeDto | FunctionNodeDto
+@dataclass
+class VariableNodeDto(_BaseNodeDto):
+    """变量节点的 DTO：kind 固定为 VARIABLE，由模块节点的 AST 赋值语句派生。"""
+
+    kind: CodeNodeKind = field(default=CodeNodeKind.VARIABLE, init=False)
+
+
+CodeNodeDto: TypeAlias = DirectoryNodeDto | FileNodeDto | ModuleNodeDto | ClassNodeDto | FunctionNodeDto | VariableNodeDto
