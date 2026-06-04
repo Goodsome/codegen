@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import assert_never
 
 from codegen.code_metadata.application.dtos.code_node_dto import (
+    ClassNodeDto,
     CodeNodeDto,
     DirectoryNodeDto,
     FileNodeDto,
@@ -9,6 +10,7 @@ from codegen.code_metadata.application.dtos.code_node_dto import (
     OutboundEdgeDto,
 )
 from codegen.code_metadata.domain.aggregates.code_node import (
+    ClassNode,
     CodeNode,
     DirectoryNode,
     FileNode,
@@ -21,6 +23,7 @@ from codegen.code_metadata.infrastructure.orm_models.code_edge_model import (
     CodeEdgeModel,
 )
 from codegen.code_metadata.infrastructure.orm_models.code_node_model import (
+    ClassNodeModel,
     CodeNodeModel,
     DirectoryNodeModel,
     FileNodeModel,
@@ -30,7 +33,7 @@ from codegen.code_metadata.infrastructure.orm_models.code_node_model import (
 class CodeNodeMapper:
     """
     负责 CodeNode 在 ORM、Domain、DTO 三层之间的转换。
-    - 单表继承：DirectoryNodeModel / FileNodeModel
+    - 单表继承：DirectoryNodeModel / FileNodeModel / ClassNodeModel
     - outbound_edges 通过 CodeEdgeModel 转换
     """
 
@@ -45,6 +48,8 @@ class CodeNodeMapper:
                 return cls._to_directory_node(orm_model)
             case CodeNodeKind.FILE:
                 return cls._to_file_node(orm_model)
+            case CodeNodeKind.CLASS:
+                return cls._to_class_node(orm_model)
             case _:
                 raise ValueError(f"Unknown code node kind: {orm_model.kind}")
 
@@ -62,6 +67,16 @@ class CodeNodeMapper:
     def _to_file_node(cls, orm_model: CodeNodeModel) -> FileNode:
         assert isinstance(orm_model, FileNodeModel)
         return FileNode(
+            id=CodeNodeId.reconstitute(orm_model.id),
+            fqn=orm_model.fqn,
+            name=orm_model.name,
+            outbound_edges=[cls._to_outbound_edge(e) for e in orm_model.outbound_edges],
+        )
+
+    @classmethod
+    def _to_class_node(cls, orm_model: CodeNodeModel) -> ClassNode:
+        assert isinstance(orm_model, ClassNodeModel)
+        return ClassNode(
             id=CodeNodeId.reconstitute(orm_model.id),
             fqn=orm_model.fqn,
             name=orm_model.name,
@@ -105,6 +120,12 @@ class CodeNodeMapper:
                     name=orm_model.name,
                     outbound_edges=edges,
                 )
+            case CodeNodeKind.CLASS:
+                return ClassNodeDto(
+                    fqn=orm_model.fqn,
+                    name=orm_model.name,
+                    outbound_edges=edges,
+                )
             case _:
                 assert_never(node_kind)
 
@@ -119,6 +140,8 @@ class CodeNodeMapper:
                 return cls._directory_to_orm(domain_entity)
             case CodeNodeKind.FILE:
                 return cls._file_to_orm(domain_entity)
+            case CodeNodeKind.CLASS:
+                return cls._class_to_orm(domain_entity)
             case _:
                 assert_never(domain_entity.kind)
 
@@ -138,6 +161,19 @@ class CodeNodeMapper:
     @classmethod
     def _file_to_orm(cls, domain_entity: FileNode) -> FileNodeModel:
         model = FileNodeModel(
+            id=domain_entity.id.value,
+            fqn=domain_entity.fqn,
+            name=domain_entity.name,
+        )
+        model.outbound_edges = [
+            cls._to_edge_model(domain_entity.id, edge)
+            for edge in domain_entity.outbound_edges
+        ]
+        return model
+
+    @classmethod
+    def _class_to_orm(cls, domain_entity: ClassNode) -> ClassNodeModel:
+        model = ClassNodeModel(
             id=domain_entity.id.value,
             fqn=domain_entity.fqn,
             name=domain_entity.name,

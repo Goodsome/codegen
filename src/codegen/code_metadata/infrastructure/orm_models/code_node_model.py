@@ -66,4 +66,7 @@ class FileNodeModel(CodeNodeModel):
 
 class ModuleNodeModel(CodeNodeModel):
     __mapper_args__: dict[str, str] = {"polymorphic_identity": CodeNodeKind.MODULE}
-    
+
+
+class ClassNodeModel(CodeNodeModel):
+    __mapper_args__: dict[str, str] = {"polymorphic_identity": CodeNodeKind.CLASS}

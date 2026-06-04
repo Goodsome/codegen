@@ -8,6 +8,7 @@ from codegen.code_dom.application.queries.get_project_documents import (
 )
 from codegen.code_dom.domain.aggregates.code_document import CodeDocument
 from codegen.code_metadata.application.dtos.code_node_dto import (
+    ClassNodeDto,
     CodeNodeDto,
     DirectoryNodeDto,
     FileNodeDto,
@@ -16,6 +17,7 @@ from codegen.code_metadata.application.dtos.code_node_dto import (
 )
 from codegen.code_metadata.application.ports.code_graph_builder import CodeGraphBuilder
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
+from codegen.code_metadata.domain.value_objects.ast_class_def import AstClassDef
 
 
 @dataclass
@@ -45,7 +47,7 @@ class CodeGraphAcl:
     
     root_path: Path
     nodes: list[CodeNodeDto] = field(default_factory=list)
-    fqn_to_dto: dict[str, DirectoryNodeDto] = field(default_factory=dict)
+    fqn_to_dto: dict[str, CodeNodeDto] = field(default_factory=dict)
 
     def build_nodes(self, code_documents: list[CodeDocument]) -> list[CodeNodeDto]:
         self._build_directory_nodes(code_documents)
@@ -100,17 +102,32 @@ class CodeGraphAcl:
                 OutboundEdgeDto(type=EdgeType.CONTAINS, target_fqn=fqn)
             )
         file_dto = FileNodeDto(fqn=fqn, name=path.name)
-        
-        module_dto = self._build_module_node_node(code_document)
-        file_dto.outbound_edges.append(
-            OutboundEdgeDto(type=EdgeType.DEFINES_MODULE, target_fqn=module_dto.fqn)
-        )
         self.nodes.append(file_dto)
+        
+        self._build_module_node_node(code_document, file_dto)
 
-    def _build_module_node_node(self, code_document: CodeDocument) -> ModuleNodeDto:
+    def _build_module_node_node(self, code_document: CodeDocument, file_node: FileNodeDto) -> ModuleNodeDto:
         path = code_document.physical_path
         module_fqn = self._module_fqn(path)
         dto = ModuleNodeDto(fqn=module_fqn, name=module_fqn.rsplit(".", maxsplit=1)[-1])
+        self.fqn_to_dto[module_fqn] = dto
+        self.nodes.append(dto)
+        file_node.outbound_edges.append(
+            OutboundEdgeDto(type=EdgeType.DEFINES_MODULE, target_fqn=module_fqn)
+        )
+
+        for stmt in code_document.body:
+            if isinstance(stmt, AstClassDef):
+                self._build_class_node(stmt, dto)
+
+        return dto
+
+    def _build_class_node(self, class_def: AstClassDef, module_node: ModuleNodeDto) -> ClassNodeDto:
+        class_fqn = f"{module_node.fqn}::{class_def.name}"
+        dto = ClassNodeDto(fqn=class_fqn, name=class_def.name)
+        module_node.outbound_edges.append(
+            OutboundEdgeDto(type=EdgeType.CONTAINS, target_fqn=class_fqn)
+        )
         self.nodes.append(dto)
         return dto
 

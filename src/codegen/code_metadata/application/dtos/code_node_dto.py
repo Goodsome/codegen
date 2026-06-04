@@ -45,4 +45,11 @@ class ModuleNodeDto(_BaseNodeDto):
     kind: CodeNodeKind = field(default=CodeNodeKind.MODULE, init=False)
 
 
-CodeNodeDto: TypeAlias = DirectoryNodeDto | FileNodeDto | ModuleNodeDto
+@dataclass
+class ClassNodeDto(_BaseNodeDto):
+    """类节点的 DTO：kind 固定为 CLASS，由模块节点的 AST 类定义派生。"""
+
+    kind: CodeNodeKind = field(default=CodeNodeKind.CLASS, init=False)
+
+
+CodeNodeDto: TypeAlias = DirectoryNodeDto | FileNodeDto | ModuleNodeDto | ClassNodeDto
