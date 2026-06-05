@@ -15,11 +15,9 @@ from codegen.code_metadata.application.dtos.code_node_dto import (
     FunctionNodeDto,
     MethodNodeDto,
     ModuleNodeDto,
-    OutboundEdgeDto,
     VariableNodeDto,
 )
 from codegen.code_metadata.application.ports.code_graph_builder import CodeGraphBuilder
-from codegen.code_metadata.domain.enums.edge_type import EdgeType
 from codegen.code_metadata.domain.value_objects.ast_ann_assign import AstAnnAssign
 from codegen.code_metadata.domain.value_objects.ast_assign import AstAssign
 from codegen.code_metadata.domain.value_objects.ast_class_def import AstClassDef
@@ -57,6 +55,7 @@ class CodeGraphAcl:
     nodes: list[CodeNodeDto] = field(default_factory=list)
     fqn_to_dto: dict[str, CodeNodeDto] = field(default_factory=dict)
     overload_index: dict[str, int] = field(default_factory=dict)
+    local_aliases: dict[str, str] = field(default_factory=dict)
 
     def build_nodes(self, code_documents: list[CodeDocument]) -> list[CodeNodeDto]:
         self._build_directory_nodes(code_documents)
@@ -96,9 +95,9 @@ class CodeGraphAcl:
         # 为父目录添加 CONTAINS 边
         parent_fqn = self._dir_fqn(path.parent)
         if parent_fqn in self.fqn_to_dto:
-            self.fqn_to_dto[parent_fqn].outbound_edges.append(
-                OutboundEdgeDto(type=EdgeType.CONTAINS, target_fqn=fqn)
-            )
+            parent_node = self.fqn_to_dto[parent_fqn]
+            assert isinstance(parent_node, DirectoryNodeDto)
+            parent_node.contains(dto)
 
         self._add_node(dto)
 
@@ -107,37 +106,37 @@ class CodeGraphAcl:
     def _build_file_node(self, code_document: CodeDocument) -> None:
         path = code_document.physical_path
         fqn = self._file_fqn(path)
+        file_dto = FileNodeDto(fqn=fqn, name=path.name)
+        
         parent_fqn = self._dir_fqn(path.parent)
         if parent_fqn in self.fqn_to_dto:
-            self.fqn_to_dto[parent_fqn].outbound_edges.append(
-                OutboundEdgeDto(type=EdgeType.CONTAINS, target_fqn=fqn)
-            )
-        file_dto = FileNodeDto(fqn=fqn, name=path.name)
+            parent_node = self.fqn_to_dto[parent_fqn]
+            assert isinstance(parent_node, DirectoryNodeDto)
+            parent_node.contains(file_dto)
+            
         self._add_node(file_dto)
+        self._build_module_node(code_document, file_dto)
 
-        self._build_module_node_node(code_document, file_dto)
-
-    def _build_module_node_node(
+    def _build_module_node(
         self, code_document: CodeDocument, file_node: FileNodeDto
     ) -> ModuleNodeDto:
         path = code_document.physical_path
         module_fqn = self._module_fqn(path)
-        dto = ModuleNodeDto(fqn=module_fqn, name=module_fqn.rsplit(".", maxsplit=1)[-1])
-        self._add_node(dto)
-        file_node.outbound_edges.append(
-            OutboundEdgeDto(type=EdgeType.DEFINES_MODULE, target_fqn=module_fqn)
-        )
+        module_node = ModuleNodeDto(fqn=module_fqn, name=module_fqn.rsplit(".", maxsplit=1)[-1])
+        self._add_node(module_node)
+        file_node.defines_module(module_node)
 
         for stmt in code_document.body:
-            self._parse_stmt(stmt, dto)
+            self._parse_stmt(stmt, module_node)
 
-        return dto
+        return module_node
 
     def _parse_stmt(
         self, stmt: AstStmt, parent_node: ModuleNodeDto | ClassNodeDto
     ) -> None:
         match stmt:
             case AstClassDef():
+                assert isinstance(parent_node, ModuleNodeDto)
                 self._parse_class_def(stmt, parent_node)
             case AstFunctionDef():
                 self._parse_function_def(stmt, parent_node)
@@ -149,13 +148,11 @@ class CodeGraphAcl:
                 pass
 
     def _parse_class_def(
-        self, class_def: AstClassDef, module_node: ModuleNodeDto | ClassNodeDto
+        self, class_def: AstClassDef, module_node: ModuleNodeDto
     ) -> ClassNodeDto:
         class_fqn = f"{module_node.fqn}::{class_def.name}"
         dto = ClassNodeDto(fqn=class_fqn, name=class_def.name)
-        module_node.outbound_edges.append(
-            OutboundEdgeDto(type=EdgeType.CONTAINS, target_fqn=class_fqn)
-        )
+        module_node.contains(dto)
         for stmt in class_def.body:
             self._parse_stmt(stmt, dto)
             
@@ -172,22 +169,10 @@ class CodeGraphAcl:
         match parent_node:
             case ClassNodeDto():
                 dto = MethodNodeDto(fqn=func_fqn, name=func_def.name)
+                parent_node.contains(dto)
             case ModuleNodeDto():
                 dto = FunctionNodeDto(fqn=func_fqn, name=func_def.name)
-        parent_node.outbound_edges.append(
-            OutboundEdgeDto(type=EdgeType.CONTAINS, target_fqn=func_fqn)
-        )
-        self._add_node(dto)
-        return dto
-
-    def _build_variable_node(
-        self, name: str, module_node: ModuleNodeDto | ClassNodeDto
-    ) -> VariableNodeDto:
-        var_fqn = f"{module_node.fqn}::{name}"
-        dto = VariableNodeDto(fqn=var_fqn, name=name)
-        module_node.outbound_edges.append(
-            OutboundEdgeDto(type=EdgeType.CONTAINS, target_fqn=var_fqn)
-        )
+                parent_node.contains(dto)
         self._add_node(dto)
         return dto
 
@@ -199,9 +184,7 @@ class CodeGraphAcl:
             return
         var_fqn = f"{parent_node.fqn}::{target.id}"
         dto = VariableNodeDto(fqn=var_fqn, name=target.id)
-        parent_node.outbound_edges.append(
-            OutboundEdgeDto(type=EdgeType.CONTAINS, target_fqn=var_fqn)
-        )
+        parent_node.contains(dto)
         self._add_node(dto)
 
     def _parse_assign(
@@ -216,9 +199,7 @@ class CodeGraphAcl:
             return
         var_fqn = f"{parent_node.fqn}::{target.id}"
         dto = VariableNodeDto(fqn=var_fqn, name=target.id)
-        parent_node.outbound_edges.append(
-            OutboundEdgeDto(type=EdgeType.CONTAINS, target_fqn=var_fqn)
-        )
+        parent_node.contains(dto)
         self._add_node(dto)
 
     def _dir_fqn(self, path: Path) -> str:

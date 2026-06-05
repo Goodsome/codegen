@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from typing import TypeAlias
 from uuid import UUID
@@ -31,13 +33,21 @@ class _BaseNodeDto:
     fqn: str
     name: str
     outbound_edges: list[OutboundEdgeDto] = field(default_factory=list)
-    
+
+    def _add_edge(self, type: EdgeType, fqn: str):
+        if any(e.target_fqn == fqn for e in self.outbound_edges):
+            raise ValueError(f"Edge to {fqn} already exists")
+        self.outbound_edges.append(OutboundEdgeDto(type=type, target_fqn=fqn))
+
 
 @dataclass
 class DirectoryNodeDto(_BaseNodeDto):
     """目录节点的 DTO：kind 固定为 DIRECTORY。"""
 
     kind: CodeNodeKind = field(default=CodeNodeKind.DIRECTORY, init=False)
+
+    def contains(self, node: FileNodeDto | DirectoryNodeDto):
+        self._add_edge(EdgeType.CONTAINS, node.fqn)
 
 
 @dataclass
@@ -46,6 +56,9 @@ class FileNodeDto(_BaseNodeDto):
 
     kind: CodeNodeKind = field(default=CodeNodeKind.FILE, init=False)
 
+    def defines_module(self, node: ModuleNodeDto):
+        self._add_edge(EdgeType.DEFINES_MODULE, node.fqn)
+
 
 @dataclass
 class ModuleNodeDto(_BaseNodeDto):
@@ -53,12 +66,18 @@ class ModuleNodeDto(_BaseNodeDto):
 
     kind: CodeNodeKind = field(default=CodeNodeKind.MODULE, init=False)
 
+    def contains(self, node: ClassNodeDto | FunctionNodeDto | VariableNodeDto):
+        self._add_edge(EdgeType.CONTAINS, node.fqn)
+
 
 @dataclass
 class ClassNodeDto(_BaseNodeDto):
     """类节点的 DTO：kind 固定为 CLASS，由模块节点的 AST 类定义派生。"""
 
     kind: CodeNodeKind = field(default=CodeNodeKind.CLASS, init=False)
+
+    def contains(self, node: MethodNodeDto | VariableNodeDto):
+        self._add_edge(EdgeType.CONTAINS, node.fqn)
 
 
 @dataclass
@@ -82,7 +101,23 @@ class VariableNodeDto(_BaseNodeDto):
     kind: CodeNodeKind = field(default=CodeNodeKind.VARIABLE, init=False)
 
 
-CodeNodeDto: TypeAlias = DirectoryNodeDto | FileNodeDto | ModuleNodeDto | ClassNodeDto | FunctionNodeDto | MethodNodeDto | VariableNodeDto
+@dataclass
+class ExternalNodeDto(_BaseNodeDto):
+    """外部节点的 DTO：kind 固定为 EXTERNAL，表示项目外部的依赖（第三方库、标准库等）。"""
+
+    kind: CodeNodeKind = field(default=CodeNodeKind.EXTERNAL, init=False)
+
+
+CodeNodeDto: TypeAlias = (
+    DirectoryNodeDto
+    | FileNodeDto
+    | ModuleNodeDto
+    | ClassNodeDto
+    | FunctionNodeDto
+    | MethodNodeDto
+    | VariableNodeDto
+    | ExternalNodeDto
+)
 
 
 @dataclass

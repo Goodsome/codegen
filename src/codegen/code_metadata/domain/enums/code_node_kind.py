@@ -9,3 +9,4 @@ class CodeNodeKind(StrEnum):
     FUNCTION = auto()
     METHOD = auto()
     VARIABLE = auto()
+    EXTERNAL = auto()

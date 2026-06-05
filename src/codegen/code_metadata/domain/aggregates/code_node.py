@@ -52,7 +52,11 @@ class VariableNode(BaseCodeNode):
     kind: Literal[CodeNodeKind.VARIABLE] = CodeNodeKind.VARIABLE
 
 
+class ExternalNode(BaseCodeNode):
+    kind: Literal[CodeNodeKind.EXTERNAL] = CodeNodeKind.EXTERNAL
+
+
 CodeNode = Annotated[
-    DirectoryNode | FileNode | ModuleNode | ClassNode | FunctionNode | MethodNode | VariableNode,
+    DirectoryNode | FileNode | ModuleNode | ClassNode | FunctionNode | MethodNode | VariableNode | ExternalNode,
     Field(discriminator="kind")
 ]

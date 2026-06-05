@@ -6,6 +6,7 @@ from codegen.code_metadata.application.dtos.code_node_dto import (
     CodeNodeDetailDto,
     CodeNodeDto,
     DirectoryNodeDto,
+    ExternalNodeDto,
     FileNodeDto,
     FunctionNodeDto,
     InboundEdgeDto,
@@ -18,6 +19,7 @@ from codegen.code_metadata.domain.aggregates.code_node import (
     ClassNode,
     CodeNode,
     DirectoryNode,
+    ExternalNode,
     FileNode,
     FunctionNode,
     MethodNode,
@@ -35,6 +37,7 @@ from codegen.code_metadata.infrastructure.orm_models.code_node_model import (
     ClassNodeModel,
     CodeNodeModel,
     DirectoryNodeModel,
+    ExternalNodeModel,
     FileNodeModel,
     FunctionNodeModel,
     MethodNodeModel,
@@ -46,7 +49,7 @@ from codegen.code_metadata.infrastructure.orm_models.code_node_model import (
 class CodeNodeMapper:
     """
     负责 CodeNode 在 ORM、Domain、DTO 三层之间的转换。
-    - 单表继承：DirectoryNodeModel / FileNodeModel / ClassNodeModel / FunctionNodeModel / MethodNodeModel / VariableNodeModel
+    - 单表继承：DirectoryNodeModel / FileNodeModel / ClassNodeModel / FunctionNodeModel / MethodNodeModel / VariableNodeModel / ExternalNodeModel
     - outbound_edges 通过 CodeEdgeModel 转换
     """
 
@@ -72,6 +75,8 @@ class CodeNodeMapper:
                 return cls._to_method_node(orm_model)
             case CodeNodeKind.VARIABLE:
                 return cls._to_variable_node(orm_model)
+            case CodeNodeKind.EXTERNAL:
+                return cls._to_external_node(orm_model)
             case _:
                 assert_never(kind)
 
@@ -146,6 +151,16 @@ class CodeNodeMapper:
         )
 
     @classmethod
+    def _to_external_node(cls, orm_model: CodeNodeModel) -> ExternalNode:
+        assert isinstance(orm_model, ExternalNodeModel)
+        return ExternalNode(
+            id=CodeNodeId.reconstitute(orm_model.id),
+            fqn=orm_model.fqn,
+            name=orm_model.name,
+            outbound_edges=[cls._to_outbound_edge(e) for e in orm_model.outbound_edges],
+        )
+
+    @classmethod
     def _to_outbound_edge(cls, edge_model: CodeEdgeModel) -> OutboundEdge:
         return OutboundEdge(
             type=EdgeType(edge_model.type),
@@ -206,6 +221,12 @@ class CodeNodeMapper:
                     name=orm_model.name,
                     outbound_edges=edges,
                 )
+            case CodeNodeKind.EXTERNAL:
+                return ExternalNodeDto(
+                    fqn=orm_model.fqn,
+                    name=orm_model.name,
+                    outbound_edges=edges,
+                )
             case _:
                 assert_never(node_kind)
 
@@ -252,6 +273,8 @@ class CodeNodeMapper:
                 return cls._method_to_orm(domain_entity)
             case CodeNodeKind.VARIABLE:
                 return cls._variable_to_orm(domain_entity)
+            case CodeNodeKind.EXTERNAL:
+                return cls._external_to_orm(domain_entity)
             case _:
                 assert_never(domain_entity.kind)
 
@@ -337,6 +360,19 @@ class CodeNodeMapper:
     @classmethod
     def _variable_to_orm(cls, domain_entity: VariableNode) -> VariableNodeModel:
         model = VariableNodeModel(
+            id=domain_entity.id.value,
+            fqn=domain_entity.fqn,
+            name=domain_entity.name,
+        )
+        model.outbound_edges = [
+            cls._to_edge_model(domain_entity.id, edge)
+            for edge in domain_entity.outbound_edges
+        ]
+        return model
+
+    @classmethod
+    def _external_to_orm(cls, domain_entity: ExternalNode) -> ExternalNodeModel:
+        model = ExternalNodeModel(
             id=domain_entity.id.value,
             fqn=domain_entity.fqn,
             name=domain_entity.name,

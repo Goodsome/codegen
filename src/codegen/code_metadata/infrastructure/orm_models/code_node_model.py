@@ -82,3 +82,7 @@ class MethodNodeModel(CodeNodeModel):
 
 class VariableNodeModel(CodeNodeModel):
     __mapper_args__: dict[str, str] = {"polymorphic_identity": CodeNodeKind.VARIABLE}
+
+
+class ExternalNodeModel(CodeNodeModel):
+    __mapper_args__: dict[str, str] = {"polymorphic_identity": CodeNodeKind.EXTERNAL}
