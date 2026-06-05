@@ -107,6 +107,7 @@ class CodeNodeMapper:
             id=CodeNodeId.reconstitute(orm_model.id),
             fqn=orm_model.fqn,
             name=orm_model.name,
+            is_package=orm_model.is_package,
             outbound_edges=[cls._to_outbound_edge(e) for e in orm_model.outbound_edges],
         )
 
@@ -192,9 +193,11 @@ class CodeNodeMapper:
                     outbound_edges=edges,
                 )
             case CodeNodeKind.MODULE:
+                assert isinstance(orm_model, ModuleNodeModel)
                 return ModuleNodeDto(
                     fqn=orm_model.fqn,
                     name=orm_model.name,
+                    is_package=orm_model.is_package,
                     outbound_edges=edges,
                 )
             case CodeNodeKind.CLASS:
@@ -311,6 +314,7 @@ class CodeNodeMapper:
             fqn=domain_entity.fqn,
             name=domain_entity.name,
         )
+        model.is_package = domain_entity.is_package
         model.outbound_edges = [
             cls._to_edge_model(domain_entity.id, edge)
             for edge in domain_entity.outbound_edges

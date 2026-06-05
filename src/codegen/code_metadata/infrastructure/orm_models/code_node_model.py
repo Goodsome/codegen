@@ -5,6 +5,7 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import String, Text
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
@@ -66,6 +67,22 @@ class FileNodeModel(CodeNodeModel):
 
 class ModuleNodeModel(CodeNodeModel):
     __mapper_args__: dict[str, str] = {"polymorphic_identity": CodeNodeKind.MODULE}
+
+    @hybrid_property
+    def is_package(self) -> bool:
+        if self.properties is None:
+            return False
+        return self.properties.get("is_package", False)
+
+    @is_package.setter
+    def is_package(self, value: bool) -> None:
+        if self.properties is None:
+            self.properties = {}
+        self.properties = {**self.properties, "is_package": value}
+
+    @is_package.expression
+    def is_package(cls):
+        return cls.properties["is_package"].as_boolean()
 
 
 class ClassNodeModel(CodeNodeModel):

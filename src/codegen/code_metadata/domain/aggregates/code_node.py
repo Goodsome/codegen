@@ -35,6 +35,7 @@ class FileNode(BaseCodeNode):
 
 class ModuleNode(BaseCodeNode):
     kind: Literal[CodeNodeKind.MODULE] = CodeNodeKind.MODULE
+    is_package: bool = False
 
 class ClassNode(BaseCodeNode):
     kind: Literal[CodeNodeKind.CLASS] = CodeNodeKind.CLASS

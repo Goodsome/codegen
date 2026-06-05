@@ -120,7 +120,12 @@ def _detail_to_node_dto(detail: CodeNodeDetailDto) -> CodeNodeDto:
         case CodeNodeKind.FILE:
             return FileNodeDto(fqn=detail.fqn, name=detail.name, outbound_edges=outbound_edges)
         case CodeNodeKind.MODULE:
-            return ModuleNodeDto(fqn=detail.fqn, name=detail.name, outbound_edges=outbound_edges)
+            return ModuleNodeDto(
+                fqn=detail.fqn,
+                name=detail.name,
+                is_package=detail.properties.get("is_package", False),
+                outbound_edges=outbound_edges,
+            )
         case CodeNodeKind.CLASS:
             return ClassNodeDto(fqn=detail.fqn, name=detail.name, outbound_edges=outbound_edges)
         case CodeNodeKind.FUNCTION:

@@ -7,7 +7,7 @@ from sqlalchemy.engine import CursorResult
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session, sessionmaker
 
-from codegen.code_metadata.application.dtos.code_node_dto import CodeNodeDto
+from codegen.code_metadata.application.dtos.code_node_dto import CodeNodeDto, ModuleNodeDto
 from codegen.code_metadata.application.ports.code_node_sync_service import (
     CodeNodeSyncService,
 )
@@ -41,6 +41,7 @@ class SqlAlchemyCodeNodeSyncService(CodeNodeSyncService):
                     "fqn": dto.fqn,
                     "kind": dto.kind.value,
                     "name": dto.name,
+                    "properties": {"is_package": dto.is_package} if isinstance(dto, ModuleNodeDto) else {},
                     "last_sync_id": sync_id,
                 }
                 for dto in node_dtos
@@ -52,6 +53,7 @@ class SqlAlchemyCodeNodeSyncService(CodeNodeSyncService):
                 set_={
                     "name": stmt.excluded.name,
                     "kind": stmt.excluded.kind,
+                    "properties": stmt.excluded.properties,
                     "last_sync_id": stmt.excluded.last_sync_id,
                 },
             )

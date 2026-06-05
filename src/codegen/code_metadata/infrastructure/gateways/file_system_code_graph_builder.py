@@ -133,7 +133,9 @@ class CodeGraphAcl:
         path = code_document.physical_path
         module_fqn = self._module_fqn(path)
         module_node = ModuleNodeDto(
-            fqn=module_fqn, name=module_fqn.rsplit(".", maxsplit=1)[-1]
+            fqn=module_fqn,
+            name=module_fqn.rsplit(".", maxsplit=1)[-1],
+            is_package=path.name == "__init__.py",
         )
         self._add_node(module_node)
         file_node.defines_module(module_node)
@@ -181,6 +183,13 @@ class CodeGraphAcl:
         if func_def.is_overload:
             overload_index = self._get_ovrload_index(func_fqn)
             func_fqn = f"{func_fqn}::<overload_{overload_index}>"
+        elif func_def.is_setter_property:
+            func_fqn = f"{func_fqn}::<setter>"
+        elif func_def.is_deleter_property:
+            func_fqn = f"{func_fqn}::<deleter>"
+        elif func_def.is_expression_property:
+            func_fqn = f"{func_fqn}::<expression>"
+        
         match parent_node:
             case ClassNodeDto():
                 dto = MethodNodeDto(fqn=func_fqn, name=func_def.name)
@@ -236,11 +245,17 @@ class CodeGraphAcl:
         self, import_from: AstImportFrom, module_node: ModuleNodeDto
     ) -> None:
         if import_from.level > 0:
-            module_prefix = module_node.get_parent_by_level(import_from.level)
+            relative_level = import_from.level
+            if module_node.is_package:
+                relative_level = relative_level - 1
+            module_prefix = module_node.get_parent_by_level(relative_level)
+            # print(module_prefix, import_from.module, module_node.fqn)
         else:
             module_prefix = ""
 
-        module = module_prefix + (import_from.module or "")
+        module = import_from.module or ""
+        if module_prefix:
+            module = module_prefix + "." + module
         if not module:
             raise ValueError(f"ImportFrom module is empty: {import_from.module}")
 

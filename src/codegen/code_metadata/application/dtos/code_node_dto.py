@@ -60,6 +60,7 @@ class ModuleNodeDto(_BaseNodeDto):
     """模块节点的 DTO：kind 固定为 MODULE，由文件节点自动派生。"""
 
     kind: Literal[CodeNodeKind.MODULE] = CodeNodeKind.MODULE
+    is_package: bool = False
 
     def contains(self, node: ClassNodeDto | FunctionNodeDto | VariableNodeDto):
         self._add_edge(EdgeType.CONTAINS, node.fqn)
@@ -68,6 +69,8 @@ class ModuleNodeDto(_BaseNodeDto):
         self._add_edge(EdgeType.IMPORTS, node.fqn)
 
     def get_parent_by_level(self, level: int) -> str:
+        if level == 0:
+            return self.fqn
         parts = self.fqn.split(".")
         if level >= len(parts):
             raise ValueError(f"Level {level} is greater than the depth of the module {self.fqn}")
