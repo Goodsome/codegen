@@ -32,15 +32,20 @@ class IngestProject:
         sync_id = uuid.uuid4().hex
         # FQN 以 context_name/ 开头，如 code_metadata/domain/aggregates/
         fqn_prefix = f"src/codegen/{cmd.context_name}/"
+        module_fqn_prefix = f"codegen.{cmd.context_name}."
 
         # 1. 构建图：遍历文件系统，产出 CodeNodeDto 列表
         node_dtos = self.graph_builder.build(fqn_prefix=fqn_prefix)
 
         # 2. Mark：批量 UPSERT 节点 + 全量替换出边
-        self.sync_service.save_nodes_bulk(node_dtos, sync_id, fqn_prefix)
+        self.sync_service.save_nodes_bulk(
+            node_dtos, sync_id, fqn_prefix, module_fqn_prefix=module_fqn_prefix
+        )
 
         # 3. Sweep：清除属于该上下文但未被本次扫描标记的幽灵节点
-        deleted_count = self.sync_service.delete_stale_nodes(fqn_prefix, sync_id)
+        deleted_count = self.sync_service.delete_stale_nodes(
+            fqn_prefix, sync_id, module_fqn_prefix=module_fqn_prefix
+        )
 
         return IngestProjectResult(
             nodes_created=len(node_dtos),

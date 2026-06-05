@@ -13,6 +13,11 @@ class CodeNodeQueryService(ABC):
         pass
 
     @abstractmethod
+    def find_by_fqn(self, fqn: str) -> CodeNodeDetailDto | None:
+        """按 FQN 查询单个 CodeNode 的详情（含入边和出边）。"""
+        pass
+
+    @abstractmethod
     def find_by_id(self, node_id: UUID) -> CodeNodeDetailDto | None:
         """按 ID 查询单个 CodeNode 的详情（含入边和出边）。"""
         pass

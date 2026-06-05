@@ -29,6 +29,7 @@ class SqlAlchemyCodeNodeSyncService(CodeNodeSyncService):
         node_dtos: list[CodeNodeDto],
         sync_id: str,
         fqn_prefix: str,
+        module_fqn_prefix: str,
     ) -> None:
         if not node_dtos:
             return
@@ -76,7 +77,7 @@ class SqlAlchemyCodeNodeSyncService(CodeNodeSyncService):
             subq = select(CodeNodeModel.id).where(
                 or_(
                     CodeNodeModel.fqn.startswith(fqn_prefix),
-                    CodeNodeModel.fqn.startswith(fqn_prefix.replace("/", "."))
+                    CodeNodeModel.fqn.startswith(module_fqn_prefix),
                 )
             ).scalar_subquery()
 
@@ -116,10 +117,14 @@ class SqlAlchemyCodeNodeSyncService(CodeNodeSyncService):
         self,
         fqn_prefix: str,
         current_sync_id: str,
+        module_fqn_prefix: str,
     ) -> int:
         with self.session_factory() as session:
             stmt = delete(CodeNodeModel).where(
-                CodeNodeModel.fqn.startswith(fqn_prefix),
+                or_(
+                    CodeNodeModel.fqn.startswith(fqn_prefix),
+                    CodeNodeModel.fqn.startswith(module_fqn_prefix),
+                ),
                 CodeNodeModel.last_sync_id != current_sync_id,
             )
             result = session.execute(stmt)

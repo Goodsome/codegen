@@ -1,7 +1,7 @@
 from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import override
+from typing import ClassVar, override
 
 from codegen.code_dom.application.queries.get_project_documents import (
     GetProjectDocumentsHandler,
@@ -63,6 +63,8 @@ class CodeGraphAcl:
         default_factory=lambda: defaultdict(list)
     )
     local_aliases: dict[str, str] = field(default_factory=dict)
+
+    SOURCE_ROOTS: ClassVar[list[Path]] = [Path("src")]
 
     def build_nodes(self, code_documents: list[CodeDocument]) -> list[CodeNodeDto]:
         self._build_directory_nodes(code_documents)
@@ -223,8 +225,8 @@ class CodeGraphAcl:
                 match import_:
                     case AstImport():
                         self._parse_import(import_, module_node)
-                    case _:
-                        pass
+                    case AstImportFrom():
+                        self._parse_import_from(import_, module_node)
 
     def _parse_import(self, import_: AstImport, module_node: ModuleNodeDto) -> None:
         for name in import_.names:
@@ -300,7 +302,11 @@ class CodeGraphAcl:
         other_fqn = f"{from_name}::{name}"
         if other_fqn in self.node_register:
             return self.node_register[other_fqn]
-        raise ValueError(f"Cannot resolve import: {import_name} from {from_name}")
+        return ClassNodeDto(
+            name=name,
+            fqn=other_fqn,
+        )
+        # raise ValueError(f"Cannot resolve import: {import_name} from {from_name}")
         
 
     def _build_external_node(self, fqn: str) -> ExternalNodeDto:
@@ -327,6 +333,14 @@ class CodeGraphAcl:
         __init__.py 映射到其所在目录的包名(如 src/foo/__init__.py → src.foo),
         其余文件映射到模块路径(如 src/foo/bar.py → src.foo.bar)。
         """
-        if path.name == "__init__.py":
-            return ".".join(path.parent.parts)
-        return ".".join(path.with_suffix("").parts)
+        logical_path = path
+        for src_root in self.SOURCE_ROOTS:
+            try:
+                logical_path = path.relative_to(src_root)
+                break
+            except ValueError:
+                continue
+                
+        if logical_path.name == "__init__.py":
+            return ".".join(logical_path.parent.parts)
+        return ".".join(logical_path.with_suffix("").parts)

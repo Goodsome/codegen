@@ -33,6 +33,27 @@ class SqlAlchemyCodeNodeQueryService(CodeNodeQueryService):
         return [CodeNodeMapper.to_dto(m) for m in models]
 
     @override
+    def find_by_fqn(self, fqn: str) -> CodeNodeDetailDto | None:
+        stmt = (
+            select(CodeNodeModel)
+            .where(CodeNodeModel.fqn == fqn)
+            .options(
+                selectinload(CodeNodeModel.outbound_edges)
+                .joinedload(CodeEdgeModel.target_entity),
+                selectinload(CodeNodeModel.inbound_edges)
+                .joinedload(CodeEdgeModel.source_entity),
+            )
+        )
+
+        with self.session_factory() as session:
+            model = session.execute(stmt).scalars().unique().one_or_none()
+
+        if model is None:
+            return None
+
+        return CodeNodeMapper.to_detail_dto(model)
+
+    @override
     def find_by_id(self, node_id: UUID) -> CodeNodeDetailDto | None:
         stmt = (
             select(CodeNodeModel)

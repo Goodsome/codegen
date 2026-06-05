@@ -21,6 +21,7 @@ from codegen.code_metadata.application.queries.get_code_node_detail import GetCo
 from codegen.code_metadata.application.queries.get_dev_progress import GetDevProgress
 from codegen.code_metadata.application.queries.get_directory_tree import GetDirectoryTree
 from codegen.code_metadata.application.queries.list_components import ListComponents
+from codegen.code_metadata.application.queries.trace_symbol_dependencies import TraceSymbolDependenciesQueryHandler
 from codegen.code_metadata.application.services.dev_progress_service import (
     DevProgressService,
 )
@@ -208,6 +209,11 @@ class Container(DeclarativeContainer):
 
     get_code_node_detail: Factory[GetCodeNodeDetail] = Factory(
         GetCodeNodeDetail,
+        query_service=code_node_query_service,
+    )
+
+    trace_symbol_dependencies: Factory[TraceSymbolDependenciesQueryHandler] = Factory(
+        TraceSymbolDependenciesQueryHandler,
         query_service=code_node_query_service,
     )
 

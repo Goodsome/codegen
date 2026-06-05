@@ -17,6 +17,7 @@ from codegen.code_metadata.interfaces.cli.get_component import get_component
 from codegen.code_metadata.interfaces.cli.get_module import get_module
 from codegen.code_metadata.interfaces.cli.list_modules import list_modules
 from codegen.code_metadata.interfaces.cli.get_code_node import get_code_node
+from codegen.code_metadata.interfaces.cli.trace import trace
 from codegen.code_dom.interfaces.cli.get_file_document import get_file_document
 
 
@@ -32,6 +33,7 @@ app = typer.Typer(
   schema           Output JSON schema for the blueprint
   get-module       Get module by path
   tree             Display code-node directory tree by FQN prefix
+  trace            Trace symbol dependencies upstream/downstream
   get-dev-progress Show development progress with AST similarity metrics
     """,
     add_completion=False,
@@ -57,6 +59,7 @@ app.command()(get_file_document)
 app.command()(get_code_node)
 
 app.command(name="tree")(tree_cmd)
+app.command(name="trace")(trace)
 
 
 def main():
