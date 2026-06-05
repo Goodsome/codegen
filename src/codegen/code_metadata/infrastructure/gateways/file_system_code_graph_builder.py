@@ -1,4 +1,3 @@
-from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import ClassVar, override
@@ -20,6 +19,7 @@ from codegen.code_metadata.application.dtos.code_node_dto import (
     VariableNodeDto,
 )
 from codegen.code_metadata.application.ports.code_graph_builder import CodeGraphBuilder
+from codegen.code_metadata.domain.value_objects import AstExpr, AstSubscript
 from codegen.code_metadata.domain.value_objects.ast_ann_assign import AstAnnAssign
 from codegen.code_metadata.domain.value_objects.ast_assign import AstAssign
 from codegen.code_metadata.domain.value_objects.ast_class_def import AstClassDef
@@ -28,6 +28,7 @@ from codegen.code_metadata.domain.value_objects.ast_import import AstImport
 from codegen.code_metadata.domain.value_objects.ast_import_from import AstImportFrom
 from codegen.code_metadata.domain.value_objects.ast_name import AstName
 from codegen.code_metadata.domain.value_objects.ast_stmt import AstStmt
+from codegen.shared.domain.enums import PythonBuiltinType
 
 
 @dataclass
@@ -47,36 +48,115 @@ class FileSystemCodeGraphBuilder(CodeGraphBuilder):
         query = GetProjectDocumentsQuery(dir_path=context_path)
         result = self.get_project_documents.handle(query)
 
-        acl = CodeGraphAcl(root_path=context_path)
-        nodes = acl.build_nodes(result.code_documents)
+        node_registry = NodeRegistry()
 
-        return nodes
+        acl = CodeGraphAcl(
+            fqn_factory=FqnFactory(),
+            root_path=context_path,
+            node_registery=node_registry,
+        )
+        acl.build_nodes(result.code_documents)
 
+        return node_registry.nodes
+
+@dataclass
+class FqnFactory:
+    SOURCE_ROOTS: ClassVar[list[Path]] = [Path("src")]
+
+    def build_dir_fqn(self, path: Path) -> str:
+        """目录 FQN：相对路径/，以 / 结尾。根目录为 /。"""
+        if path == Path("."):
+            return "/"
+        return f"{path.as_posix()}/"
+
+    def build_file_fqn(self, path: Path) -> str:
+        """文件 FQN：相对文件路径。"""
+        return path.as_posix()
+
+    def build_module_fqn(self, path: Path) -> str:
+        """模块 FQN：将路径分隔符替换为 '.'，去除后缀。
+
+        __init__.py 映射到其所在目录的包名(如 src/foo/__init__.py → src.foo),
+        其余文件映射到模块路径(如 src/foo/bar.py → src.foo.bar)。
+        """
+        logical_path = path
+        for src_root in self.SOURCE_ROOTS:
+            try:
+                logical_path = path.relative_to(src_root)
+                break
+            except ValueError:
+                continue
+
+        if logical_path.name == "__init__.py":
+            return ".".join(logical_path.parent.parts)
+        return ".".join(logical_path.with_suffix("").parts)
+
+@dataclass
+class NodeRegistry:
+    store_by_fqn: dict[str, CodeNodeDto] = field(default_factory=dict)
+    temp_store: dict[str, CodeNodeDto] = field(default_factory=dict)
+
+    @property
+    def nodes(self) -> list[CodeNodeDto]:
+        return list(self.store_by_fqn.values())
+
+    def get_node(self, fqn: str) -> CodeNodeDto:
+        self._ensure_external_node(fqn)
+        if fqn in self.store_by_fqn:
+            return self.store_by_fqn[fqn]
+        if fqn in self.temp_store:
+            return self.temp_store[fqn]
+        raise ValueError(f"Unknown FQN: {fqn}")
+
+    def find_node(self, fqn: str) -> CodeNodeDto | None:
+        return self.store_by_fqn.get(fqn)
+
+    def _ensure_external_node(self, fqn: str) -> None:
+        if fqn in self.store_by_fqn:
+            return
+        if fqn in PythonBuiltinType._value2member_map_:
+            self.store_by_fqn[fqn] = ExternalNodeDto(fqn=fqn, name=fqn)
+        elif not fqn.startswith("codegen."):
+            self.store_by_fqn[fqn] = ExternalNodeDto(fqn=fqn, name=fqn.split(".")[-1])
+            
+    def add_node(self, dto: CodeNodeDto) -> None:
+        if dto.fqn in self.store_by_fqn:
+            raise ValueError(f"Duplicate: {dto.fqn=}")
+        self.store_by_fqn[dto.fqn] = dto
+
+    def add_temp_node(self, dto: CodeNodeDto) -> None:
+        self.temp_store[dto.fqn] = dto
 
 @dataclass
 class CodeGraphAcl:
+    fqn_factory: FqnFactory
     root_path: Path
-    nodes: list[CodeNodeDto] = field(default_factory=list)
-    node_register: dict[str, CodeNodeDto] = field(default_factory=dict)
+    node_registery: NodeRegistry
     overload_index: dict[str, int] = field(default_factory=dict)
-    collect_imports: defaultdict[str, list[AstImport | AstImportFrom]] = field(
-        default_factory=lambda: defaultdict(list)
-    )
-    local_aliases: dict[str, str] = field(default_factory=dict)
 
     SOURCE_ROOTS: ClassVar[list[Path]] = [Path("src")]
 
     def build_nodes(self, code_documents: list[CodeDocument]) -> list[CodeNodeDto]:
         self._build_directory_nodes(code_documents)
         self._build_file_nodes(code_documents)
-        self._build_imports_edges()
+        self._build_edges(code_documents=code_documents)
 
-        return list(self.node_register.values())
+        return self.node_registery.nodes
 
+    def _build_edges(self, code_documents: list[CodeDocument]) -> None:
+        for code_document in code_documents:
+            module_fqn = self.fqn_factory.build_module_fqn(code_document.physical_path)
+            module = self.node_registery.get_node(module_fqn)
+            assert isinstance(module, ModuleNodeDto)
+            module_builder = ModuleBuildContext(
+                module, 
+                code_document, 
+                self.node_registery
+            )
+            module_builder.build()
+            
     def _add_node(self, dto: CodeNodeDto) -> None:
-        if dto.fqn in self.node_register:
-            raise ValueError(f"Duplicate: {dto.fqn=}")
-        self.node_register[dto.fqn] = dto
+        self.node_registery.add_node(dto)
 
     def _get_ovrload_index(self, fqn: str) -> int:
         if fqn not in self.overload_index:
@@ -100,12 +180,11 @@ class CodeGraphAcl:
             self._build_file_node(doc)
 
     def _build_directory_node(self, path: Path) -> DirectoryNodeDto:
-        fqn = self._dir_fqn(path)
+        fqn = self.fqn_factory.build_dir_fqn(path)
         dto = DirectoryNodeDto(fqn=fqn, name=path.name or fqn)
-        # 为父目录添加 CONTAINS 边
-        parent_fqn = self._dir_fqn(path.parent)
-        if parent_fqn in self.node_register:
-            parent_node = self.node_register[parent_fqn]
+        parent_fqn = self.fqn_factory.build_dir_fqn(path.parent)
+        parent_node = self.node_registery.find_node(parent_fqn)
+        if parent_node is not None:
             assert isinstance(parent_node, DirectoryNodeDto)
             parent_node.contains(dto)
 
@@ -115,12 +194,12 @@ class CodeGraphAcl:
 
     def _build_file_node(self, code_document: CodeDocument) -> None:
         path = code_document.physical_path
-        fqn = self._file_fqn(path)
+        fqn = self.fqn_factory.build_file_fqn(path)
         file_dto = FileNodeDto(fqn=fqn, name=path.name)
 
-        parent_fqn = self._dir_fqn(path.parent)
-        if parent_fqn in self.node_register:
-            parent_node = self.node_register[parent_fqn]
+        parent_fqn = self.fqn_factory.build_dir_fqn(path.parent)
+        parent_node = self.node_registery.find_node(parent_fqn)
+        if parent_node is not None:
             assert isinstance(parent_node, DirectoryNodeDto)
             parent_node.contains(file_dto)
 
@@ -131,7 +210,7 @@ class CodeGraphAcl:
         self, code_document: CodeDocument, file_node: FileNodeDto
     ) -> ModuleNodeDto:
         path = code_document.physical_path
-        module_fqn = self._module_fqn(path)
+        module_fqn = self.fqn_factory.build_module_fqn(path)
         module_node = ModuleNodeDto(
             fqn=module_fqn,
             name=module_fqn.rsplit(".", maxsplit=1)[-1],
@@ -142,9 +221,6 @@ class CodeGraphAcl:
 
         for stmt in code_document.body:
             self._parse_stmt(stmt, module_node)
-
-            if isinstance(stmt, AstImport | AstImportFrom):
-                self.collect_imports[module_fqn].append(stmt)
 
         return module_node
 
@@ -168,13 +244,14 @@ class CodeGraphAcl:
         self, class_def: AstClassDef, module_node: ModuleNodeDto
     ) -> ClassNodeDto:
         class_fqn = f"{module_node.fqn}::{class_def.name}"
-        dto = ClassNodeDto(fqn=class_fqn, name=class_def.name)
-        module_node.contains(dto)
+        node = ClassNodeDto(fqn=class_fqn, name=class_def.name)
+        module_node.contains(node)
         for stmt in class_def.body:
-            self._parse_stmt(stmt, dto)
+            self._parse_stmt(stmt, node)
 
-        self._add_node(dto)
-        return dto
+        self._add_node(node)
+        return node
+
 
     def _parse_function_def(
         self, func_def: AstFunctionDef, parent_node: ModuleNodeDto | ClassNodeDto
@@ -189,7 +266,7 @@ class CodeGraphAcl:
             func_fqn = f"{func_fqn}::<deleter>"
         elif func_def.is_expression_property:
             func_fqn = f"{func_fqn}::<expression>"
-        
+
         match parent_node:
             case ClassNodeDto():
                 dto = MethodNodeDto(fqn=func_fqn, name=func_def.name)
@@ -226,30 +303,40 @@ class CodeGraphAcl:
         parent_node.contains(dto)
         self._add_node(dto)
 
-    def _build_imports_edges(self) -> None:
-        for fqn, imports in self.collect_imports.items():
-            module_node = self.node_register[fqn]
-            assert isinstance(module_node, ModuleNodeDto)
-            for import_ in imports:
-                match import_:
-                    case AstImport():
-                        self._parse_import(import_, module_node)
-                    case AstImportFrom():
-                        self._parse_import_from(import_, module_node)
 
-    def _parse_import(self, import_: AstImport, module_node: ModuleNodeDto) -> None:
+@dataclass
+class ModuleBuildContext:
+    module: ModuleNodeDto
+    code_document: CodeDocument
+    node_registery: NodeRegistry
+    local_aliases: dict[str, str] = field(default_factory=dict)
+
+    def build(self):
+        for stmt in self.code_document.body:
+            self._parse_stmt(stmt)
+        return self.module
+
+    def _parse_stmt(self, stmt: AstStmt):
+        match stmt:
+            case AstImport():
+                self._parse_import(stmt)
+            case AstImportFrom():
+                self._parse_import_from(stmt)
+            case AstClassDef():
+                self._parse_class_def(stmt)
+            case _:
+                pass
+                
+    def _parse_import(self, import_: AstImport) -> None:
         for name in import_.names:
-            self._parse_import_name(name.name, module_node, asname=name.asname)
-
-    def _parse_import_from(
-        self, import_from: AstImportFrom, module_node: ModuleNodeDto
-    ) -> None:
+            self._parse_import_name(name.name, asname=name.asname)
+            
+    def _parse_import_from(self, import_from: AstImportFrom) -> None:
         if import_from.level > 0:
             relative_level = import_from.level
-            if module_node.is_package:
+            if self.module.is_package:
                 relative_level = relative_level - 1
-            module_prefix = module_node.get_parent_by_level(relative_level)
-            # print(module_prefix, import_from.module, module_node.fqn)
+            module_prefix = self.module.get_parent_by_level(relative_level)
         else:
             module_prefix = ""
 
@@ -262,15 +349,13 @@ class CodeGraphAcl:
         for name in import_from.names:
             self._parse_import_name(
                 name.name,
-                module_node,
                 from_name=module,
                 asname=name.asname,
             )
-
+            
     def _parse_import_name(
         self,
         import_name: str,
-        module_node: ModuleNodeDto,
         from_name: str | None = None,
         asname: str | None = None,
     ) -> None:
@@ -281,7 +366,7 @@ class CodeGraphAcl:
 
         if is_external:
             external_fqn = f"{from_name}.{import_name}" if from_name else import_name
-            node = self._ensure_external_node(external_fqn)
+            node = self.node_registery.get_node(external_fqn)
         else:
             node = self._get_internel_node(
                 import_name=import_name,
@@ -290,19 +375,17 @@ class CodeGraphAcl:
         assert isinstance(
             node, ExternalNodeDto | ClassNodeDto | FunctionNodeDto | VariableNodeDto
         )
-        module_node.imports(node)
+        self.module.imports(node)
         if asname:
-            local_alias_key = f"{module_node.fqn}|{asname}"
+            local_alias_key = asname
         else:
-            local_alias_key = f"{module_node.fqn}|{node.name}"
-            
+            local_alias_key = node.name
+
         self.local_aliases[local_alias_key] = node.fqn
-
-    def _ensure_external_node(self, fqn: str) -> CodeNodeDto:
-        if fqn in self.node_register:
-            return self.node_register[fqn]
-        return self._build_external_node(fqn)
-
+        
+    def _add_node(self, dto: CodeNodeDto) -> None:
+        self.node_registery.add_node(dto)
+        
     def _get_internel_node(
         self,
         import_name: str,
@@ -310,52 +393,45 @@ class CodeGraphAcl:
     ) -> CodeNodeDto:
         name = import_name
         if from_name is None:
-            return self.node_register[name]
+            return self.node_registery.get_node(name)
         module_fqn = f"{from_name}.{name}"
-        if module_fqn in self.node_register:
-            return self.node_register[module_fqn]
+        module_node = self.node_registery.find_node(module_fqn)
+        if module_node:
+            return module_node
         other_fqn = f"{from_name}::{name}"
-        if other_fqn in self.node_register:
-            return self.node_register[other_fqn]
-        return ClassNodeDto(
+        other_node = self.node_registery.find_node(other_fqn)
+        if other_node:
+            return other_node
+        node = ClassNodeDto(
             name=name,
             fqn=other_fqn,
         )
-        # raise ValueError(f"Cannot resolve import: {import_name} from {from_name}")
-        
-
-    def _build_external_node(self, fqn: str) -> ExternalNodeDto:
-        node = ExternalNodeDto(
-            name=fqn.split(".", maxsplit=1)[-1],
-            fqn=fqn,
-        )
-        self._add_node(node)
+        self.node_registery.add_temp_node(node)
         return node
 
-    def _dir_fqn(self, path: Path) -> str:
-        """目录 FQN：相对路径/，以 / 结尾。根目录为 /。"""
-        if path == Path("."):
-            return "/"
-        return f"{path.as_posix()}/"
+    def _parse_class_def(self, class_def: AstClassDef) -> None:
+        class_fqn = f"{self.module.fqn}::{class_def.name}"
+        node = self.node_registery.get_node(class_fqn)
+        assert isinstance(node, ClassNodeDto)
+        for base in class_def.bases:
+            self._parse_base(base, node)
 
-    def _file_fqn(self, path: Path) -> str:
-        """文件 FQN：相对文件路径。"""
-        return path.as_posix()
-
-    def _module_fqn(self, path: Path) -> str:
-        """模块 FQN：将路径分隔符替换为 '.'，去除后缀。
-
-        __init__.py 映射到其所在目录的包名(如 src/foo/__init__.py → src.foo),
-        其余文件映射到模块路径(如 src/foo/bar.py → src.foo.bar)。
-        """
-        logical_path = path
-        for src_root in self.SOURCE_ROOTS:
-            try:
-                logical_path = path.relative_to(src_root)
-                break
-            except ValueError:
-                continue
-                
-        if logical_path.name == "__init__.py":
-            return ".".join(logical_path.parent.parts)
-        return ".".join(logical_path.with_suffix("").parts)
+    def _parse_base(
+        self,
+        base: AstExpr,
+        class_node: ClassNodeDto,
+    ):
+        match base:
+            case AstName():
+                node_alias_key = base.id
+                node_key = self.local_aliases.get(node_alias_key, node_alias_key)
+                node = self.node_registery.get_node(node_key)
+                assert isinstance(node, (ClassNodeDto, ExternalNodeDto)), node
+                class_node.inherits(node)
+            case AstSubscript():
+                self._parse_base(
+                    base=base.value,
+                    class_node=class_node,
+                )
+            case _:
+                raise ValueError(f"Unsupported base type: {base}")

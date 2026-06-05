@@ -32,7 +32,4 @@ def ingest_project(
 ) -> None:
     """Scan a bounded context's directory tree into the CodeNode graph."""
     cmd = IngestProjectCommand(context_name=context_name)
-    try:
-        _ingest_project(cmd)
-    except Exception as e:
-        console.print(f"[red]Error:[/red] {str(e)}")
+    _ingest_project(cmd)

@@ -8,7 +8,7 @@ from dependency_injector.providers import Configuration, Resource, Callable
 from codegen.shared.infrastructure.database import Database, init_database
 from codegen.shared.infrastructure.adapters.event_hub_adapter import EventHubAdapter
 
-def init_event_hub() -> Iterator[EventHub]:
+def _init_event_hub() -> Iterator[EventHub]:
     publisher=RedisStreamPublisher()
     hub = EventHub(
         publisher=publisher,
@@ -36,7 +36,7 @@ class Container(DeclarativeContainer):
         connection_string=config.database_url.as_(str),
     )
 
-    event_hub: Resource[EventHub] = Resource(init_event_hub)
+    event_hub: Resource[EventHub] = Resource(_init_event_hub)
     
     event_publisher_factory: Callable = Callable(EventHubAdapter.build_factory, hub=event_hub)
 

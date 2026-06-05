@@ -85,6 +85,9 @@ class ClassNodeDto(_BaseNodeDto):
     def contains(self, node: MethodNodeDto | VariableNodeDto):
         self._add_edge(EdgeType.CONTAINS, node.fqn)
 
+    def inherits(self, node: ClassNodeDto | ExternalNodeDto):
+        self._add_edge(EdgeType.INHERITS, node.fqn)
+
 
 class FunctionNodeDto(_BaseNodeDto):
     """函数节点的 DTO：kind 固定为 FUNCTION，由模块节点的 AST 函数定义派生。"""
