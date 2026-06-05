@@ -69,6 +69,15 @@ class ModuleNodeDto(_BaseNodeDto):
     def contains(self, node: ClassNodeDto | FunctionNodeDto | VariableNodeDto):
         self._add_edge(EdgeType.CONTAINS, node.fqn)
 
+    def imports(self, node: ExternalNodeDto | ClassNodeDto | FunctionNodeDto | VariableNodeDto):
+        self._add_edge(EdgeType.IMPORTS, node.fqn)
+
+    def get_parent_by_level(self, level: int) -> str:
+        parts = self.fqn.split(".")
+        if level >= len(parts):
+            raise ValueError(f"Level {level} is greater than the depth of the module {self.fqn}")
+        return ".".join(parts[:-level])
+
 
 @dataclass
 class ClassNodeDto(_BaseNodeDto):
