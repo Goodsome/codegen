@@ -38,7 +38,7 @@ class IngestProject:
         node_dtos = self.graph_builder.build(fqn_prefix=fqn_prefix)
 
         # 2. Mark：批量 UPSERT 节点 + 全量替换出边
-        self.sync_service.save_nodes_bulk(
+        bulk_result = self.sync_service.save_nodes_bulk(
             node_dtos, sync_id, fqn_prefix, module_fqn_prefix=module_fqn_prefix
         )
 
@@ -48,6 +48,7 @@ class IngestProject:
         )
 
         return IngestProjectResult(
-            nodes_created=len(node_dtos),
+            nodes_created=bulk_result.nodes_upserted,
+            edges_created=bulk_result.edges_created,
             nodes_deleted=deleted_count,
         )

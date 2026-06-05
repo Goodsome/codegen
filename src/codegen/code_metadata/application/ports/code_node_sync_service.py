@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+from codegen.code_metadata.application.dtos.bulk_save_result import BulkSaveResult
 from codegen.code_metadata.application.dtos.code_node_dto import CodeNodeDto
 
 
@@ -17,7 +18,7 @@ class CodeNodeSyncService(ABC):
         sync_id: str,
         fqn_prefix: str,
         module_fqn_prefix: str,
-    ) -> None:
+    ) -> BulkSaveResult:
         """批量 UPSERT 节点，并全量替换其出边。
 
         内部流程：
@@ -26,6 +27,9 @@ class CodeNodeSyncService(ABC):
         3. 查询 FQN → 数据库实际 ID 的映射。
         4. 将 OutboundEdgeDto.target_fqn 解析为 target_id。
         5. 清空旧出边 → 批量插入新出边。
+
+        Returns:
+            BulkSaveResult，包含 upsert 的节点数和新建的边数。
         """
         ...
 

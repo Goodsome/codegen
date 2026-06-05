@@ -20,6 +20,7 @@ def _ingest_project(
     console.print(
         f"[green]Ingest complete:[/green] "
         f"{result.nodes_created} nodes synced, "
+        f"{result.edges_created} edges recorded, "
         f"{result.nodes_deleted} stale nodes removed."
     )
 

@@ -7,6 +7,7 @@ from sqlalchemy.engine import CursorResult
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session, sessionmaker
 
+from codegen.code_metadata.application.dtos.bulk_save_result import BulkSaveResult
 from codegen.code_metadata.application.dtos.code_node_dto import CodeNodeDto, ModuleNodeDto
 from codegen.code_metadata.application.ports.code_node_sync_service import (
     CodeNodeSyncService,
@@ -30,9 +31,9 @@ class SqlAlchemyCodeNodeSyncService(CodeNodeSyncService):
         sync_id: str,
         fqn_prefix: str,
         module_fqn_prefix: str,
-    ) -> None:
+    ) -> BulkSaveResult:
         if not node_dtos:
-            return
+            return BulkSaveResult(nodes_upserted=0, edges_created=0)
 
         with self.session_factory() as session:
             # ── Phase 1: 批量 UPSERT 节点 (利用 executemany) ──
@@ -113,6 +114,11 @@ class SqlAlchemyCodeNodeSyncService(CodeNodeSyncService):
                 session.execute(insert(CodeEdgeModel), edge_values)
 
             session.commit()
+
+        return BulkSaveResult(
+            nodes_upserted=len(node_values),
+            edges_created=len(edge_values),
+        )
 
     @override
     def delete_stale_nodes(

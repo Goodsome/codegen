@@ -2,11 +2,13 @@ from dataclasses import dataclass
 from typing import override
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import exists, not_, select
 from sqlalchemy.orm import Session, selectinload, sessionmaker
 
 from codegen.code_metadata.application.dtos.code_node_dto import CodeNodeDto, CodeNodeDetailDto
 from codegen.code_metadata.application.ports.code_node_query_service import CodeNodeQueryService
+from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
+from codegen.code_metadata.domain.enums.edge_type import EdgeType
 from codegen.code_metadata.infrastructure.mappers.code_node_mapper import CodeNodeMapper
 from codegen.code_metadata.infrastructure.orm_models.code_edge_model import CodeEdgeModel
 from codegen.code_metadata.infrastructure.orm_models.code_node_model import CodeNodeModel
@@ -73,3 +75,37 @@ class SqlAlchemyCodeNodeQueryService(CodeNodeQueryService):
             return None
 
         return CodeNodeMapper.to_detail_dto(model)
+
+    @override
+    def find_unused_nodes(self, kind: CodeNodeKind) -> list[CodeNodeDto]:
+        _SUPPORTED = {CodeNodeKind.CLASS, CodeNodeKind.FUNCTION, CodeNodeKind.VARIABLE}
+        if kind not in _SUPPORTED:
+            raise ValueError(
+                f"Unsupported node kind for unused query: {kind}. "
+                f"Supported: {', '.join(k.value.lower() for k in sorted(_SUPPORTED))}"
+            )
+
+        # 不存在 IMPORTS 类型的入边即视为"未被使用"
+        has_imports_inbound = (
+            exists()
+            .where(
+                CodeEdgeModel.target_id == CodeNodeModel.id,
+                CodeEdgeModel.type == EdgeType.IMPORTS,
+            )
+        )
+        stmt = (
+            select(CodeNodeModel)
+            .where(
+                CodeNodeModel.kind == kind,
+                not_(has_imports_inbound),
+            )
+            .options(
+                selectinload(CodeNodeModel.outbound_edges)
+                .joinedload(CodeEdgeModel.target_entity),
+            )
+        )
+
+        with self.session_factory() as session:
+            models = session.execute(stmt).scalars().unique().all()
+
+        return [CodeNodeMapper.to_dto(m) for m in models]

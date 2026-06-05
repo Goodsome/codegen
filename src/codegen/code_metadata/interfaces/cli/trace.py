@@ -96,11 +96,16 @@ def trace(
         str,
         typer.Option("--direction", "-d", help="Trace direction: upstream or downstream"),
     ] = "upstream",
+    edge_type: Annotated[
+        str | None,
+        typer.Option("--edge-type", "-e", help="Filter by edge type (e.g. imports, calls, inherits)"),
+    ] = None,
 ) -> None:
     """Trace symbol dependencies in the code graph."""
     direction = _validate_direction(direction)
 
-    query = TraceSymbolDependenciesQuery(target_fqn=fqn, direction=direction)
+    parsed_edge_type = EdgeType(edge_type) if edge_type else None
+    query = TraceSymbolDependenciesQuery(target_fqn=fqn, direction=direction, edge_type=parsed_edge_type)
 
     try:
         root = _trace_symbol_dependencies(query)

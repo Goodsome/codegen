@@ -38,7 +38,7 @@ class TraceSymbolDependenciesQueryHandler:
         if detail is None:
             raise ValueError(f"Node with fqn '{query.target_fqn}' not found")
 
-        root = self._build_tree(detail, query.direction, visited=set())
+        root = self._build_tree(detail, query.direction, visited=set(), edge_type_filter=query.edge_type)
         return GraphViewDTO(root=root)
 
     def _build_tree(
@@ -46,6 +46,7 @@ class TraceSymbolDependenciesQueryHandler:
         detail: CodeNodeDetailDto,
         direction: str,
         visited: set[str],
+        edge_type_filter: EdgeType | None = None,
     ) -> GraphViewNode:
         """递归构建以 detail 为根的依赖子树。"""
         visited.add(detail.fqn)
@@ -56,24 +57,28 @@ class TraceSymbolDependenciesQueryHandler:
             for edge in detail.outbound_edges:
                 if edge.type in self._SKIP_EDGE_TYPES:
                     continue
+                if edge_type_filter is not None and edge.type != edge_type_filter:
+                    continue
                 if edge.target_fqn in visited:
                     continue
                 child_detail = self.query_service.find_by_fqn(edge.target_fqn)
                 if child_detail is None:
                     continue
-                child_node = self._build_tree(child_detail, direction, visited)
+                child_node = self._build_tree(child_detail, direction, visited, edge_type_filter)
                 child_node.edge_type = edge.type
                 children.append(child_node)
         else:
             for edge in detail.inbound_edges:
                 if edge.type in self._SKIP_EDGE_TYPES:
                     continue
+                if edge_type_filter is not None and edge.type != edge_type_filter:
+                    continue
                 if edge.source_fqn in visited:
                     continue
                 child_detail = self.query_service.find_by_fqn(edge.source_fqn)
                 if child_detail is None:
                     continue
-                child_node = self._build_tree(child_detail, direction, visited)
+                child_node = self._build_tree(child_detail, direction, visited, edge_type_filter)
                 child_node.edge_type = edge.type
                 children.append(child_node)
 

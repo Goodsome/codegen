@@ -17,6 +17,7 @@ from codegen.code_metadata.application.ports.code_node_query_service import Code
 from codegen.code_metadata.application.ports.code_node_sync_service import (
     CodeNodeSyncService,
 )
+from codegen.code_metadata.application.queries.find_unused_nodes import FindUnusedNodes
 from codegen.code_metadata.application.queries.get_code_node_detail import GetCodeNodeDetail
 from codegen.code_metadata.application.queries.get_dev_progress import GetDevProgress
 from codegen.code_metadata.application.queries.get_directory_tree import GetDirectoryTree
@@ -214,6 +215,11 @@ class Container(DeclarativeContainer):
 
     trace_symbol_dependencies: Factory[TraceSymbolDependenciesQueryHandler] = Factory(
         TraceSymbolDependenciesQueryHandler,
+        query_service=code_node_query_service,
+    )
+
+    find_unused_nodes: Factory[FindUnusedNodes] = Factory(
+        FindUnusedNodes,
         query_service=code_node_query_service,
     )
 
