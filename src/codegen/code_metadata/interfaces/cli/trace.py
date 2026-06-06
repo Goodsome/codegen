@@ -81,11 +81,11 @@ def _render_children(parent: Tree, children: list[GraphViewNode]) -> None:
 
 
 def trace(
-    fqn: Annotated[str, typer.Option("--fqn", help="Fully qualified name of the target symbol")],
+    fqn: Annotated[str, typer.Argument(help="Fully qualified name of the target symbol")],
     direction: Annotated[
         TraceDirection,
         typer.Option("--direction", "-d", help="Trace direction"),
-    ] = TraceDirection.UPSTREAM,
+    ] = TraceDirection.OUT,
     edge_type: Annotated[
         EdgeType | None,
         typer.Option("--edge-type", "-e", help="Filter by edge type"),

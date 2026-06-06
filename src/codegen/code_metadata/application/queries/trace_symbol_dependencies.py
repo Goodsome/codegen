@@ -54,7 +54,7 @@ class TraceSymbolDependenciesQueryHandler:
 
         children: list[GraphViewNode] = []
 
-        if direction == TraceDirection.UPSTREAM:
+        if direction == TraceDirection.OUT:
             for edge in detail.outbound_edges:
                 if edge.type in self._SKIP_EDGE_TYPES:
                     continue

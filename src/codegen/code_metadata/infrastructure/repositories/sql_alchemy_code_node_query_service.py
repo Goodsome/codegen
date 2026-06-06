@@ -85,19 +85,20 @@ class SqlAlchemyCodeNodeQueryService(CodeNodeQueryService):
                 f"Supported: {', '.join(k.value.lower() for k in sorted(_SUPPORTED))}"
             )
 
-        # 不存在 IMPORTS 类型的入边即视为"未被使用"
-        has_imports_inbound = (
+        # 不存在 IMPORTS 或 INHERITS 类型的入边即视为"未被使用"
+        _USAGE_EDGE_TYPES = {EdgeType.IMPORTS, EdgeType.INHERITS}
+        has_usage_inbound = (
             exists()
             .where(
                 CodeEdgeModel.target_id == CodeNodeModel.id,
-                CodeEdgeModel.type == EdgeType.IMPORTS,
+                CodeEdgeModel.type.in_(_USAGE_EDGE_TYPES),
             )
         )
         stmt = (
             select(CodeNodeModel)
             .where(
                 CodeNodeModel.kind == kind,
-                not_(has_imports_inbound),
+                not_(has_usage_inbound),
             )
             .options(
                 selectinload(CodeNodeModel.outbound_edges)

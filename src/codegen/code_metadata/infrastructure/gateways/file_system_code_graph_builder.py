@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import ClassVar, override
+from typing import override
 
 from codegen.code_dom.application.queries.get_project_documents import (
     GetProjectDocumentsHandler,
@@ -19,7 +19,9 @@ from codegen.code_metadata.application.dtos.code_node_dto import (
     VariableNodeDto,
 )
 from codegen.code_metadata.application.ports.code_graph_builder import CodeGraphBuilder
-from codegen.code_metadata.domain.value_objects import AstExpr, AstSubscript
+from codegen.code_metadata.domain.enums.edge_type import EdgeType
+from codegen.code_metadata.domain.factories.fqn_factory import FqnFactory
+from codegen.code_metadata.domain.value_objects import AstExpr, AstIf, AstSubscript
 from codegen.code_metadata.domain.value_objects.ast_ann_assign import AstAnnAssign
 from codegen.code_metadata.domain.value_objects.ast_assign import AstAssign
 from codegen.code_metadata.domain.value_objects.ast_class_def import AstClassDef
@@ -58,38 +60,6 @@ class FileSystemCodeGraphBuilder(CodeGraphBuilder):
         acl.build_nodes(result.code_documents)
 
         return node_registry.nodes
-
-@dataclass
-class FqnFactory:
-    SOURCE_ROOTS: ClassVar[list[Path]] = [Path("src")]
-
-    def build_dir_fqn(self, path: Path) -> str:
-        """目录 FQN：相对路径/，以 / 结尾。根目录为 /。"""
-        if path == Path("."):
-            return "/"
-        return f"{path.as_posix()}/"
-
-    def build_file_fqn(self, path: Path) -> str:
-        """文件 FQN：相对文件路径。"""
-        return path.as_posix()
-
-    def build_module_fqn(self, path: Path) -> str:
-        """模块 FQN：将路径分隔符替换为 '.'，去除后缀。
-
-        __init__.py 映射到其所在目录的包名(如 src/foo/__init__.py → src.foo),
-        其余文件映射到模块路径(如 src/foo/bar.py → src.foo.bar)。
-        """
-        logical_path = path
-        for src_root in self.SOURCE_ROOTS:
-            try:
-                logical_path = path.relative_to(src_root)
-                break
-            except ValueError:
-                continue
-
-        if logical_path.name == "__init__.py":
-            return ".".join(logical_path.parent.parts)
-        return ".".join(logical_path.with_suffix("").parts)
 
 @dataclass
 class NodeRegistry:
@@ -133,8 +103,6 @@ class CodeGraphAcl:
     root_path: Path
     node_registery: NodeRegistry
     overload_index: dict[str, int] = field(default_factory=dict)
-
-    SOURCE_ROOTS: ClassVar[list[Path]] = [Path("src")]
 
     def build_nodes(self, code_documents: list[CodeDocument]) -> list[CodeNodeDto]:
         self._build_directory_nodes(code_documents)
@@ -309,7 +277,15 @@ class ModuleBuildContext:
     module: ModuleNodeDto
     code_document: CodeDocument
     node_registery: NodeRegistry
-    local_aliases: dict[str, str] = field(default_factory=dict)
+    local_aliases: dict[str, str] = field(init=False)
+
+    def __post_init__(self):
+        self.local_aliases = {}
+        for edge in self.module.outbound_edges:
+            if edge.type is not EdgeType.CONTAINS:
+                continue
+            target_name = edge.target_fqn.split("::")[-1]
+            self.local_aliases[target_name] = edge.target_fqn
 
     def build(self):
         for stmt in self.code_document.body:
@@ -318,12 +294,22 @@ class ModuleBuildContext:
 
     def _parse_stmt(self, stmt: AstStmt):
         match stmt:
+            case AstImport() | AstImportFrom() | AstIf(test=AstName(id="TYPE_CHECKING")):
+                self._build_import_edges(stmt)
+            case AstClassDef():
+                self._parse_class_def(stmt)
+            case _:
+                pass
+
+    def _build_import_edges(self, stmt: AstStmt) -> None:
+        match stmt:
             case AstImport():
                 self._parse_import(stmt)
             case AstImportFrom():
                 self._parse_import_from(stmt)
-            case AstClassDef():
-                self._parse_class_def(stmt)
+            case AstIf(test=AstName(id="TYPE_CHECKING")):
+                for subnode in stmt.body:
+                    self._build_import_edges(subnode)
             case _:
                 pass
                 
