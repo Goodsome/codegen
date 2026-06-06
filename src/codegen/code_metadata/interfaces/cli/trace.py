@@ -12,6 +12,7 @@ from codegen.code_metadata.application.queries.trace_symbol_dependencies import 
 )
 from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
+from codegen.code_metadata.domain.enums.trace_direction import TraceDirection
 
 console = Console()
 
@@ -38,12 +39,6 @@ EDGE_LABELS = {
 }
 
 
-def _validate_direction(value: str) -> str:
-    if value not in ("upstream", "downstream"):
-        raise typer.BadParameter("direction must be 'upstream' or 'downstream'")
-    return value
-
-
 @inject
 def _trace_symbol_dependencies(
     query: TraceSymbolDependenciesQuery,
@@ -55,20 +50,15 @@ def _trace_symbol_dependencies(
     return result.root
 
 
-def _is_external(node) -> bool:
-    return node.kind == CodeNodeKind.EXTERNAL or "." not in node.fqn
-
-
 def _node_label(node) -> str:
     icon = KIND_ICONS.get(node.kind, "❓")
-    suffix = " (External)" if _is_external(node) else ""
-    return f"{icon} {node.kind.value.capitalize()}: {node.fqn}{suffix}"
+    return f"{icon} {node.kind.value.capitalize()}: {node.fqn}"
 
 
 def _render_node(parent: Tree, gv_node: GraphViewNode, *, is_last: bool) -> None:
     if gv_node.node is None:
         # 分组节点（如 "⚡ Calls:"）
-        edge_label = EDGE_LABELS.get(gv_node.edge_type, str(gv_node.edge_type))
+        edge_label = EDGE_LABELS[gv_node.edge_type] if gv_node.edge_type is not None else "UNKNOWN"
         section = parent.add(
             f"⚡ {edge_label}:",
             guide_style="bold cyan",
@@ -93,19 +83,16 @@ def _render_children(parent: Tree, children: list[GraphViewNode]) -> None:
 def trace(
     fqn: Annotated[str, typer.Option("--fqn", help="Fully qualified name of the target symbol")],
     direction: Annotated[
-        str,
-        typer.Option("--direction", "-d", help="Trace direction: upstream or downstream"),
-    ] = "upstream",
+        TraceDirection,
+        typer.Option("--direction", "-d", help="Trace direction"),
+    ] = TraceDirection.UPSTREAM,
     edge_type: Annotated[
-        str | None,
-        typer.Option("--edge-type", "-e", help="Filter by edge type (e.g. imports, calls, inherits)"),
+        EdgeType | None,
+        typer.Option("--edge-type", "-e", help="Filter by edge type"),
     ] = None,
 ) -> None:
     """Trace symbol dependencies in the code graph."""
-    direction = _validate_direction(direction)
-
-    parsed_edge_type = EdgeType(edge_type) if edge_type else None
-    query = TraceSymbolDependenciesQuery(target_fqn=fqn, direction=direction, edge_type=parsed_edge_type)
+    query = TraceSymbolDependenciesQuery(target_fqn=fqn, direction=direction, edge_type=edge_type)
 
     try:
         root = _trace_symbol_dependencies(query)

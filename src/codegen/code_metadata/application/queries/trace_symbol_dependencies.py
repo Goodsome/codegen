@@ -21,6 +21,7 @@ from codegen.code_metadata.application.dtos.trace_query import TraceSymbolDepend
 from codegen.code_metadata.application.ports.code_node_query_service import CodeNodeQueryService
 from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
+from codegen.code_metadata.domain.enums.trace_direction import TraceDirection
 
 
 @dataclass
@@ -44,7 +45,7 @@ class TraceSymbolDependenciesQueryHandler:
     def _build_tree(
         self,
         detail: CodeNodeDetailDto,
-        direction: str,
+        direction: TraceDirection,
         visited: set[str],
         edge_type_filter: EdgeType | None = None,
     ) -> GraphViewNode:
@@ -53,7 +54,7 @@ class TraceSymbolDependenciesQueryHandler:
 
         children: list[GraphViewNode] = []
 
-        if direction == "upstream":
+        if direction == TraceDirection.UPSTREAM:
             for edge in detail.outbound_edges:
                 if edge.type in self._SKIP_EDGE_TYPES:
                     continue
@@ -102,7 +103,7 @@ class TraceSymbolDependenciesQueryHandler:
         result.extend(grouped.pop(EdgeType.CONTAINS, []))
 
         # 其余非 CONTAINS 边按类型分组为虚拟节点
-        for edge_type in sorted(grouped, key=lambda e: e.value):
+        for edge_type in sorted(grouped, key=lambda e: str(e)):
             section = GraphViewNode(
                 node=None,  # type: ignore[arg-type]
                 edge_type=edge_type,
@@ -128,7 +129,7 @@ def _detail_to_node_dto(detail: CodeNodeDetailDto) -> CodeNodeDto:
             return ModuleNodeDto(
                 fqn=detail.fqn,
                 name=detail.name,
-                is_package=detail.properties.get("is_package", False),
+                is_package=bool(detail.properties.get("is_package", False)),
                 outbound_edges=outbound_edges,
             )
         case CodeNodeKind.CLASS:
