@@ -6,13 +6,17 @@ class EdgeType(StrEnum):
     DEFINES_MODULE = auto()
     
     IMPORTS = auto()
-    CALLS = auto()
+    EXPORTS = auto()
+    
     INHERITS = auto()
     INSTANTIATES = auto()
-    
     IMPLEMENTS = auto()
 
-
-    REFERENCES = auto()
-    EXPORTS = auto()
+    CALLS = auto()
+    READS = auto()
+    WRITES = auto()
+    
+    TYPED_AS = auto()
+    RETURNS = auto()
+    ACCEPTS = auto()
     

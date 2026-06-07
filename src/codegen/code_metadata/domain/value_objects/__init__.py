@@ -1,3 +1,4 @@
+from .arg import Arg
 from .ast_ann_assign import AstAnnAssign
 from .ast_arguments import AstArguments
 from .ast_assert import AstAssert
@@ -146,6 +147,7 @@ SequenceExpr.model_rebuild()
 ReferenceExpr.model_rebuild()
 AstKeyword.model_rebuild()
 
+Arg.model_rebuild()
 AstAnnAssign.model_rebuild()
 AstAssert.model_rebuild()
 AstAssign.model_rebuild()

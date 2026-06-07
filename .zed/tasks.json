@@ -6,8 +6,8 @@
         "allow_concurrent_runs": false
     },
     {
-        "label": "[Debug] CLI: Reverse Code",
-        "command": "uv run python -m pdb -m codegen.entrypoints.cli reverse-code code_metadata -t dto",
+        "label": "[Debug] CLI: ingest-project",
+        "command": "uv run python -m pdb -m codegen.entrypoints.cli ingest-project code_metadata",
         "use_new_terminal": false,
         "allow_concurrent_runs": false
     },

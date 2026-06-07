@@ -1,9 +1,12 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
 from codegen.shared.domain.core import ValueObject
 
+if TYPE_CHECKING:
+    from codegen.code_metadata.domain.value_objects.ast_expr import AstExpr
 
 class Arg(ValueObject):
     """Represents a single function/lambda parameter."""
 
     arg: str
-    annotation: str | None = None
-    type_comment: str | None = None
+    annotation: AstExpr | None = None

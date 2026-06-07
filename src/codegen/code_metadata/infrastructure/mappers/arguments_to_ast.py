@@ -21,5 +21,5 @@ class ArgumentsToAst:
 
     @staticmethod
     def _to_arg(arg: Arg) -> ast.arg:
-        annotation = ast.Name(id=arg.annotation, ctx=ast.Load()) if arg.annotation else None
-        return ast.arg(arg=arg.arg, annotation=annotation, type_comment=arg.type_comment)
+        annotation = ExprToAst.to_node(arg.annotation)
+        return ast.arg(arg=arg.arg, annotation=annotation)

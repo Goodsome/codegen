@@ -16,6 +16,8 @@ if TYPE_CHECKING:
 
 
 class AstFunctionDef(ValueObject):
+    lineno: int
+    
     kind: Literal[AstStmtKind.FUNCTION_DEF] = AstStmtKind.FUNCTION_DEF
     name: str
     args: AstArguments

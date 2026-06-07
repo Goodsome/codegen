@@ -32,7 +32,7 @@ class ReferenceTarget(Entity):
         return False
 
     @model_validator(mode="after")
-    def validate_target(self) -> "ReferenceTarget":
+    def validate_target(self) -> Self:
         if self.module_id is not None:
             return self
         if self.component_id is not None:

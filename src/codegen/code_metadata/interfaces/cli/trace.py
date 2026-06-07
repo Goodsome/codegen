@@ -28,14 +28,17 @@ KIND_ICONS = {
 }
 
 EDGE_LABELS = {
-    EdgeType.IMPORTS: "IMPORTS",
-    EdgeType.INHERITS: "INHERITS",
-    EdgeType.IMPLEMENTS: "IMPLEMENTS",
-    EdgeType.INSTANTIATES: "INSTANTIATES",
-    EdgeType.CALLS: "CALLS",
-    EdgeType.REFERENCES: "REFERENCES",
-    EdgeType.EXPORTS: "EXPORTS",
     EdgeType.CONTAINS: "CONTAINS",
+    EdgeType.DEFINES_MODULE: "DEFINES_MODULE",
+    EdgeType.IMPORTS: "IMPORTS",
+    EdgeType.CALLS: "CALLS",
+    EdgeType.INHERITS: "INHERITS",
+    EdgeType.INSTANTIATES: "INSTANTIATES",
+    EdgeType.EXPORTS: "EXPORTS",
+    EdgeType.IMPLEMENTS: "IMPLEMENTS",
+    EdgeType.TYPED_AS: "TYPED_AS",
+    EdgeType.RETURNS: "RETURNS",
+    EdgeType.ACCEPTS: "ACCEPTS",
 }
 
 
@@ -58,7 +61,7 @@ def _node_label(node) -> str:
 def _render_node(parent: Tree, gv_node: GraphViewNode, *, is_last: bool) -> None:
     if gv_node.node is None:
         # 分组节点（如 "⚡ Calls:"）
-        edge_label = EDGE_LABELS[gv_node.edge_type] if gv_node.edge_type is not None else "UNKNOWN"
+        edge_label = EDGE_LABELS.get(gv_node.edge_type, str(gv_node.edge_type)) if gv_node.edge_type is not None else "UNKNOWN"
         section = parent.add(
             f"⚡ {edge_label}:",
             guide_style="bold cyan",

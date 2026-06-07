@@ -5,13 +5,22 @@ from uuid import UUID
 from sqlalchemy import exists, not_, select
 from sqlalchemy.orm import Session, selectinload, sessionmaker
 
-from codegen.code_metadata.application.dtos.code_node_dto import CodeNodeDto, CodeNodeDetailDto
-from codegen.code_metadata.application.ports.code_node_query_service import CodeNodeQueryService
+from codegen.code_metadata.application.dtos.code_node_dto import (
+    CodeNodeDetailDto,
+    CodeNodeDto,
+)
+from codegen.code_metadata.application.ports.code_node_query_service import (
+    CodeNodeQueryService,
+)
 from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
 from codegen.code_metadata.infrastructure.mappers.code_node_mapper import CodeNodeMapper
-from codegen.code_metadata.infrastructure.orm_models.code_edge_model import CodeEdgeModel
-from codegen.code_metadata.infrastructure.orm_models.code_node_model import CodeNodeModel
+from codegen.code_metadata.infrastructure.orm_models.code_edge_model import (
+    CodeEdgeModel,
+)
+from codegen.code_metadata.infrastructure.orm_models.code_node_model import (
+    CodeNodeModel,
+)
 
 
 @dataclass
@@ -24,8 +33,9 @@ class SqlAlchemyCodeNodeQueryService(CodeNodeQueryService):
             select(CodeNodeModel)
             .where(CodeNodeModel.fqn.like(f"{fqn_prefix}%"))
             .options(
-                selectinload(CodeNodeModel.outbound_edges)
-                .joinedload(CodeEdgeModel.target_entity)
+                selectinload(CodeNodeModel.outbound_edges).joinedload(
+                    CodeEdgeModel.target_entity
+                )
             )
         )
 
@@ -40,10 +50,12 @@ class SqlAlchemyCodeNodeQueryService(CodeNodeQueryService):
             select(CodeNodeModel)
             .where(CodeNodeModel.fqn == fqn)
             .options(
-                selectinload(CodeNodeModel.outbound_edges)
-                .joinedload(CodeEdgeModel.target_entity),
-                selectinload(CodeNodeModel.inbound_edges)
-                .joinedload(CodeEdgeModel.source_entity),
+                selectinload(CodeNodeModel.outbound_edges).joinedload(
+                    CodeEdgeModel.target_entity
+                ),
+                selectinload(CodeNodeModel.inbound_edges).joinedload(
+                    CodeEdgeModel.source_entity
+                ),
             )
         )
 
@@ -61,10 +73,12 @@ class SqlAlchemyCodeNodeQueryService(CodeNodeQueryService):
             select(CodeNodeModel)
             .where(CodeNodeModel.id == node_id)
             .options(
-                selectinload(CodeNodeModel.outbound_edges)
-                .joinedload(CodeEdgeModel.target_entity),
-                selectinload(CodeNodeModel.inbound_edges)
-                .joinedload(CodeEdgeModel.source_entity),
+                selectinload(CodeNodeModel.outbound_edges).joinedload(
+                    CodeEdgeModel.target_entity
+                ),
+                selectinload(CodeNodeModel.inbound_edges).joinedload(
+                    CodeEdgeModel.source_entity
+                ),
             )
         )
 
@@ -86,13 +100,17 @@ class SqlAlchemyCodeNodeQueryService(CodeNodeQueryService):
             )
 
         # 不存在 IMPORTS 或 INHERITS 类型的入边即视为"未被使用"
-        _USAGE_EDGE_TYPES = {EdgeType.IMPORTS, EdgeType.INHERITS}
-        has_usage_inbound = (
-            exists()
-            .where(
-                CodeEdgeModel.target_id == CodeNodeModel.id,
-                CodeEdgeModel.type.in_(_USAGE_EDGE_TYPES),
-            )
+        _USAGE_EDGE_TYPES = {
+            EdgeType.IMPORTS,
+            EdgeType.INHERITS,
+            EdgeType.CALLS,
+            EdgeType.RETURNS,
+            EdgeType.ACCEPTS,
+            EdgeType.TYPED_AS
+        }
+        has_usage_inbound = exists().where(
+            CodeEdgeModel.target_id == CodeNodeModel.id,
+            CodeEdgeModel.type.in_(_USAGE_EDGE_TYPES),
         )
         stmt = (
             select(CodeNodeModel)
@@ -101,8 +119,9 @@ class SqlAlchemyCodeNodeQueryService(CodeNodeQueryService):
                 not_(has_usage_inbound),
             )
             .options(
-                selectinload(CodeNodeModel.outbound_edges)
-                .joinedload(CodeEdgeModel.target_entity),
+                selectinload(CodeNodeModel.outbound_edges).joinedload(
+                    CodeEdgeModel.target_entity
+                ),
             )
         )
 

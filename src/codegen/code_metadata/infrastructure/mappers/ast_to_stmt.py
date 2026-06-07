@@ -209,10 +209,10 @@ class AstToStmt:
 
     @staticmethod
     def _to_arg(node: ast.arg) -> Arg:
+        annotation = AstToExpr.to_expr(node.annotation)
         return Arg(
             arg=node.arg,
-            annotation=getattr(node.annotation, "id", None) or (ast.unparse(node.annotation) if node.annotation else None),
-            type_comment=node.type_comment,
+            annotation=annotation,
         )
 
     @staticmethod
@@ -230,6 +230,7 @@ class AstToStmt:
     @staticmethod
     def to_ast_function_def(node: ast.FunctionDef) -> AstFunctionDef:
         return AstFunctionDef(
+            lineno=node.lineno,
             name=node.name,
             args=AstToStmt._to_arguments(node.args),
             body=[AstToStmt.to_stmt(stmt) for stmt in node.body],

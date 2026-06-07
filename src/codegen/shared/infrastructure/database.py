@@ -55,7 +55,7 @@ def init_database(connection_string: str) -> Iterator[Database]:
     # 2. 启动时的初始化逻辑 (对应 init_resources)
     try:
         # 可选：显式连一下数据库测试连通性，做到 Fail-Fast
-        with db.engine.connect() as conn:
+        with db.engine.connect() as _:
             pass 
             
         # 调用你的建表逻辑（如果你的项目不使用 Alembic 等迁移工具的话）

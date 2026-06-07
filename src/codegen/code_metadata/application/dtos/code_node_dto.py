@@ -34,8 +34,11 @@ class _BaseNodeDto(BaseModel):
 
     def _add_edge(self, type: EdgeType, fqn: str):
         if any(e.target_fqn == fqn for e in self.outbound_edges):
-            raise ValueError(f"Edge to {fqn} already exists")
+            return
         self.outbound_edges.append(OutboundEdgeDto(type=type, target_fqn=fqn))
+
+    def add_edge(self, type: EdgeType, node: CodeNodeDto):
+        self._add_edge(type, node.fqn)
 
 
 class DirectoryNodeDto(_BaseNodeDto):
@@ -94,12 +97,17 @@ class FunctionNodeDto(_BaseNodeDto):
 
     kind: Literal[CodeNodeKind.FUNCTION] = CodeNodeKind.FUNCTION
 
+    def returns(self, node: ClassNodeDto | ExternalNodeDto | VariableNodeDto):
+        self._add_edge(EdgeType.RETURNS, node.fqn)
+
 
 class MethodNodeDto(_BaseNodeDto):
     """方法节点的 DTO：kind 固定为 METHOD，由类节点的 AST 函数定义派生。"""
 
     kind: Literal[CodeNodeKind.METHOD] = CodeNodeKind.METHOD
 
+    def returns(self, node: ClassNodeDto | ExternalNodeDto | VariableNodeDto):
+        self._add_edge(EdgeType.RETURNS, node.fqn)
 
 class VariableNodeDto(_BaseNodeDto):
     """变量节点的 DTO：kind 固定为 VARIABLE，由模块节点的 AST 赋值语句派生。"""

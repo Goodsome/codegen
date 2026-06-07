@@ -31,6 +31,8 @@ from codegen.code_metadata.domain.value_objects import (
     AstYield,
     AstYieldFrom,
 )
+from codegen.code_metadata.domain.value_objects.arg import Arg
+from codegen.code_metadata.domain.value_objects.lambda_args import LambdaArgs
 from codegen.code_metadata.infrastructure.mappers._convert import (
     binop_from_ast,
     boolop_from_ast,
@@ -38,7 +40,6 @@ from codegen.code_metadata.infrastructure.mappers._convert import (
     ctx_from_ast,
     unaryop_from_ast,
 )
-from codegen.code_metadata.infrastructure.mappers.ast_to_lambda_args import AstToLambdaArgs
 
 
 class AstToExpr:
@@ -139,9 +140,36 @@ class AstToExpr:
     @staticmethod
     def to_ast_lambda(node: ast.Lambda) -> AstLambda:
         return AstLambda(
-            args=AstToLambdaArgs.to_lambda_args(node.args),
+            args=AstToExpr.to_lambda_args(node.args),
             body=AstToExpr.to_expr(node.body),
         )
+        
+    @staticmethod
+    def to_lambda_args(node: ast.arguments) -> LambdaArgs:
+        return LambdaArgs(
+            posonlyargs=[AstToExpr.to_arg(a) for a in node.posonlyargs],
+            args=[AstToExpr.to_arg(a) for a in node.args],
+            vararg=AstToExpr.to_arg(node.vararg) if node.vararg else None,
+            kwonlyargs=[AstToExpr.to_arg(a) for a in node.kwonlyargs],
+            kw_defaults=[
+                ast.unparse(d) if d is not None else None
+                for d in node.kw_defaults
+            ],
+            kwarg=AstToExpr.to_arg(node.kwarg) if node.kwarg else None,
+            defaults=[
+                ast.unparse(d) if d is not None else None
+                for d in node.defaults
+            ],
+        )
+
+    @staticmethod
+    def to_arg(node: ast.arg) -> Arg:
+        annotation = AstToExpr.to_expr(node.annotation)
+        return Arg(
+            arg=node.arg,
+            annotation=annotation,
+        )
+
 
     @staticmethod
     def to_ast_if_exp(node: ast.IfExp) -> AstIfExp:

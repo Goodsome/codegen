@@ -30,15 +30,14 @@ from codegen.code_metadata.domain.value_objects import (
     AstYield,
     AstYieldFrom,
 )
+from codegen.code_metadata.domain.value_objects.arg import Arg
+from codegen.code_metadata.domain.value_objects.lambda_args import LambdaArgs
 from codegen.code_metadata.infrastructure.mappers._convert import (
     binop_to_ast,
     boolop_to_ast,
     cmpop_to_ast,
     ctx_to_ast,
     unaryop_to_ast,
-)
-from codegen.code_metadata.infrastructure.mappers.lambda_args_to_ast import (
-    LambdaArgsToAst,
 )
 
 
@@ -149,9 +148,33 @@ class ExprToAst:
     @staticmethod
     def from_lambda(expr: AstLambda) -> ast.Lambda:
         return ast.Lambda(
-            args=LambdaArgsToAst.to_node(expr.args),
+            args=ExprToAst.from_lambda_args(expr.args),
             body=ExprToAst.to_node(expr.body),
         )
+
+    @staticmethod
+    def from_lambda_args(args: LambdaArgs) -> ast.arguments:
+        return ast.arguments(
+            posonlyargs=[ExprToAst.from_arg(a) for a in args.posonlyargs],
+            args=[ExprToAst.from_arg(a) for a in args.args],
+            vararg=ExprToAst.from_arg(args.vararg) if args.vararg else None,
+            kwonlyargs=[ExprToAst.from_arg(a) for a in args.kwonlyargs],
+            kw_defaults=[
+                ast.parse(d, mode="eval").body if d is not None else None
+                for d in args.kw_defaults
+            ],
+            kwarg=ExprToAst.from_arg(args.kwarg) if args.kwarg else None,
+            defaults=[
+                ast.parse(d, mode="eval").body if d is not None else None
+                for d in args.defaults
+            ],
+        )
+
+    @staticmethod
+    def from_arg(arg: Arg) -> ast.arg:
+        annotation = ExprToAst.to_node(arg.annotation)
+        return ast.arg(arg=arg.arg, annotation=annotation)
+
 
     @staticmethod
     def from_if_exp(expr: AstIfExp) -> ast.IfExp:
