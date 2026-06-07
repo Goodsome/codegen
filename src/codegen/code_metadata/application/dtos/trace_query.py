@@ -10,3 +10,4 @@ class TraceSymbolDependenciesQuery(BaseModel):
     target_fqn: str
     direction: TraceDirection
     edge_type: EdgeType | None = None
+    depth: int = 1

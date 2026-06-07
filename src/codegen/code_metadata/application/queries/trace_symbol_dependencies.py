@@ -39,7 +39,7 @@ class TraceSymbolDependenciesQueryHandler:
         if detail is None:
             raise ValueError(f"Node with fqn '{query.target_fqn}' not found")
 
-        root = self._build_tree(detail, query.direction, visited=set(), edge_type_filter=query.edge_type)
+        root = self._build_tree(detail, query.direction, visited=set(), edge_type_filter=query.edge_type, depth=query.depth)
         return GraphViewDTO(root=root)
 
     def _build_tree(
@@ -48,38 +48,29 @@ class TraceSymbolDependenciesQueryHandler:
         direction: TraceDirection,
         visited: set[str],
         edge_type_filter: EdgeType | None = None,
+        depth: int = 1,
     ) -> GraphViewNode:
-        """递归构建以 detail 为根的依赖子树。"""
+        """递归构建以 detail 为根的依赖子树。depth 控制最大递归层数。"""
         visited.add(detail.fqn)
 
         children: list[GraphViewNode] = []
 
-        if direction == TraceDirection.OUT:
-            for edge in detail.outbound_edges:
+        if depth > 0:
+            edges = detail.outbound_edges if direction == TraceDirection.OUT else detail.inbound_edges
+            fqn_attr = "target_fqn" if direction == TraceDirection.OUT else "source_fqn"
+
+            for edge in edges:
                 if edge.type in self._SKIP_EDGE_TYPES:
                     continue
                 if edge_type_filter is not None and edge.type != edge_type_filter:
                     continue
-                if edge.target_fqn in visited:
+                next_fqn = getattr(edge, fqn_attr)
+                if next_fqn in visited:
                     continue
-                child_detail = self.query_service.find_by_fqn(edge.target_fqn)
+                child_detail = self.query_service.find_by_fqn(next_fqn)
                 if child_detail is None:
                     continue
-                child_node = self._build_tree(child_detail, direction, visited, edge_type_filter)
-                child_node.edge_type = edge.type
-                children.append(child_node)
-        else:
-            for edge in detail.inbound_edges:
-                if edge.type in self._SKIP_EDGE_TYPES:
-                    continue
-                if edge_type_filter is not None and edge.type != edge_type_filter:
-                    continue
-                if edge.source_fqn in visited:
-                    continue
-                child_detail = self.query_service.find_by_fqn(edge.source_fqn)
-                if child_detail is None:
-                    continue
-                child_node = self._build_tree(child_detail, direction, visited, edge_type_filter)
+                child_node = self._build_tree(child_detail, direction, visited, edge_type_filter, depth=depth - 1)
                 child_node.edge_type = edge.type
                 children.append(child_node)
 

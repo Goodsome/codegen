@@ -93,9 +93,17 @@ def trace(
         EdgeType | None,
         typer.Option("--edge-type", "-e", help="Filter by edge type"),
     ] = None,
+    depth: Annotated[
+        int,
+        typer.Option("--depth", help="Maximum trace depth (1-5)"),
+    ] = 1,
 ) -> None:
     """Trace symbol dependencies in the code graph."""
-    query = TraceSymbolDependenciesQuery(target_fqn=fqn, direction=direction, edge_type=edge_type)
+    if not 1 <= depth <= 5:
+        console.print("[red]Error: --depth must be between 1 and 5[/red]")
+        raise typer.Exit(1)
+
+    query = TraceSymbolDependenciesQuery(target_fqn=fqn, direction=direction, edge_type=edge_type, depth=depth)
 
     try:
         root = _trace_symbol_dependencies(query)
