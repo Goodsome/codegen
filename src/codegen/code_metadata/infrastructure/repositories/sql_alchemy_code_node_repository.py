@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session, selectinload
 from codegen.code_metadata.domain.aggregates.code_node import CodeNode
 from codegen.code_metadata.domain.identifiers.code_node_id import CodeNodeId
 from codegen.code_metadata.domain.ports.code_node_repository import CodeNodeRepository
-from codegen.code_metadata.infrastructure.mappers.code_node_mapper import CodeNodeMapper
+from codegen.code_metadata.infrastructure.mappers.code_node_mapper import orm_to_domain, domain_to_orm
 from codegen.code_metadata.infrastructure.orm_models.code_node_model import CodeNodeModel
 
 
@@ -28,12 +28,12 @@ class SqlAlchemyCodeNodeRepository(CodeNodeRepository):
 
     @override
     def _add(self, aggregate: CodeNode) -> None:
-        orm_model = CodeNodeMapper.to_orm(aggregate)
+        orm_model = domain_to_orm(aggregate)
         self.session.add(orm_model)
 
     @override
     def _add_all(self, aggregates: list[CodeNode]) -> None:
-        orm_models = [CodeNodeMapper.to_orm(a) for a in aggregates]
+        orm_models = [domain_to_orm(a) for a in aggregates]
         self.session.add_all(orm_models)
 
     @override
@@ -42,18 +42,18 @@ class SqlAlchemyCodeNodeRepository(CodeNodeRepository):
         orm_model = self.session.execute(stmt).scalars().first()
         if orm_model is None:
             raise ValueError(f"CodeNode with id {id.value} not found")
-        return CodeNodeMapper.to_domain(orm_model)
+        return orm_to_domain(orm_model)
 
     @override
     def _save(self, aggregate: CodeNode) -> None:
-        orm_model = CodeNodeMapper.to_orm(aggregate)
+        orm_model = domain_to_orm(aggregate)
         self.session.merge(orm_model)
 
     @override
     def _save_all(self, aggregates: list[CodeNode]) -> None:
         if not aggregates:
             return
-        orm_models = [CodeNodeMapper.to_orm(a) for a in aggregates]
+        orm_models = [domain_to_orm(a) for a in aggregates]
         for orm_model in orm_models:
             self.session.merge(orm_model)
 
@@ -75,7 +75,7 @@ class SqlAlchemyCodeNodeRepository(CodeNodeRepository):
         stmt = self._eager_load().where(CodeNodeModel.id.in_(unique_ids))
         models = self.session.execute(stmt).scalars().unique().all()
         return {
-            CodeNodeId.reconstitute(m.id): CodeNodeMapper.to_domain(m)
+            CodeNodeId.reconstitute(m.id): orm_to_domain(m)
             for m in models
         }
 
@@ -85,7 +85,7 @@ class SqlAlchemyCodeNodeRepository(CodeNodeRepository):
         orm_model = self.session.execute(stmt).scalars().first()
         if orm_model is None:
             return None
-        return CodeNodeMapper.to_domain(orm_model)
+        return orm_to_domain(orm_model)
 
     @override
     def find_by_fqns(self, fqns: set[str]) -> dict[str, CodeNode]:
@@ -93,4 +93,4 @@ class SqlAlchemyCodeNodeRepository(CodeNodeRepository):
             return {}
         stmt = self._eager_load().where(CodeNodeModel.fqn.in_(fqns))
         models = self.session.execute(stmt).scalars().unique().all()
-        return {m.fqn: CodeNodeMapper.to_domain(m) for m in models}
+        return {m.fqn: orm_to_domain(m) for m in models}

@@ -14,7 +14,7 @@ from codegen.code_metadata.application.ports.code_node_query_service import (
 )
 from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
-from codegen.code_metadata.infrastructure.mappers.code_node_mapper import CodeNodeMapper
+from codegen.code_metadata.infrastructure.mappers.code_node_mapper import orm_to_detail_dto, orm_to_dto
 from codegen.code_metadata.infrastructure.orm_models.code_edge_model import (
     CodeEdgeModel,
 )
@@ -42,7 +42,7 @@ class SqlAlchemyCodeNodeQueryService(CodeNodeQueryService):
         with self.session_factory() as session:
             models = session.execute(stmt).scalars().unique().all()
 
-        return [CodeNodeMapper.to_dto(m) for m in models]
+        return [orm_to_dto(m) for m in models]
 
     @override
     def find_by_fqn(self, fqn: str) -> CodeNodeDetailDto | None:
@@ -65,7 +65,7 @@ class SqlAlchemyCodeNodeQueryService(CodeNodeQueryService):
         if model is None:
             return None
 
-        return CodeNodeMapper.to_detail_dto(model)
+        return orm_to_detail_dto(model)
 
     @override
     def find_by_id(self, node_id: UUID) -> CodeNodeDetailDto | None:
@@ -88,7 +88,7 @@ class SqlAlchemyCodeNodeQueryService(CodeNodeQueryService):
         if model is None:
             return None
 
-        return CodeNodeMapper.to_detail_dto(model)
+        return orm_to_detail_dto(model)
 
     @override
     def find_unused_nodes(self, kind: CodeNodeKind) -> list[CodeNodeDto]:
@@ -128,4 +128,4 @@ class SqlAlchemyCodeNodeQueryService(CodeNodeQueryService):
         with self.session_factory() as session:
             models = session.execute(stmt).scalars().unique().all()
 
-        return [CodeNodeMapper.to_dto(m) for m in models]
+        return [orm_to_dto(m) for m in models]

@@ -39,10 +39,21 @@ class ClassEdgeBuilder:
     class_def: AstClassDef
     node_registry: NodeRegistry
     local_aliases: dict[str, str]
-
+    
+    function_local_aliases: dict[str, str] = field(default_factory=dict)
     scope_stack: list[CodeNodeDto] = field(default_factory=list)
     edge_stack: list[EdgeType] = field(default_factory=list)
     attribute_stack: list[str] = field(default_factory=list)
+
+    def _find_fqn(self, alias: str):
+        if alias in self.function_local_aliases:
+            return self.function_local_aliases[alias]
+        if alias in self.local_aliases:
+            return self.local_aliases[alias]
+        return alias
+
+    def _empty_function_local_aliases(self):
+        self.function_local_aliases = {}
 
     @property
     def current_node(self) -> CodeNodeDto | None:
@@ -194,8 +205,12 @@ class ClassEdgeBuilder:
         
         self.scope_stack.append(func_node)
 
+        self._empty_function_local_aliases()
         self._visit_arguments(func_def.args)
         self._visit_return(func_def.returns)
+        
+        # for body in func_def.body:
+            # self._visit_stmt(body)
         
         self.scope_stack.pop()
 
@@ -290,7 +305,7 @@ class ClassEdgeBuilder:
         if not self.current_node or not self.current_edge:
             return
             
-        fqn = self.local_aliases.get(name.id, name.id)
+        fqn = self._find_fqn(name.id)
         target_node = self.node_registry.get_node(fqn)
         while self.attribute_stack:
             attr = self.attribute_stack.pop()

@@ -15,3 +15,13 @@ class AstAssign(ValueObject):
     kind: Literal[AstStmtKind.ASSIGN] = AstStmtKind.ASSIGN
     targets: list[AstExpr] = Field(default_factory=list)
     value: AstExpr | None = None
+
+    @property
+    def target(self):
+        if len(self.targets) != 1:
+            raise ValueError(f"targets must have exactly one element: {self=}")
+        return self.targets[0]
+
+    @property
+    def annotation(self) -> None:
+        return

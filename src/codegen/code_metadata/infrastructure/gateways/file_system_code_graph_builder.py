@@ -19,13 +19,16 @@ from codegen.code_metadata.application.dtos.code_node_dto import (
 )
 from codegen.code_metadata.application.ports.code_graph_builder import CodeGraphBuilder
 from codegen.code_metadata.domain.factories.fqn_factory import FqnFactory
+from codegen.code_metadata.domain.value_objects import AstExpr
 from codegen.code_metadata.domain.value_objects.ast_ann_assign import AstAnnAssign
 from codegen.code_metadata.domain.value_objects.ast_assign import AstAssign
 from codegen.code_metadata.domain.value_objects.ast_class_def import AstClassDef
 from codegen.code_metadata.domain.value_objects.ast_function_def import AstFunctionDef
 from codegen.code_metadata.domain.value_objects.ast_name import AstName
 from codegen.code_metadata.domain.value_objects.ast_stmt import AstStmt
-from codegen.code_metadata.infrastructure.gateways.module_build_context import ModuleBuildContext
+from codegen.code_metadata.infrastructure.gateways.module_build_context import (
+    ModuleBuildContext,
+)
 from codegen.code_metadata.infrastructure.gateways.node_registry import NodeRegistry
 
 
@@ -57,6 +60,7 @@ class FileSystemCodeGraphBuilder(CodeGraphBuilder):
 
         return node_registry.nodes
 
+
 @dataclass
 class CodeGraphAcl:
     fqn_factory: FqnFactory
@@ -76,12 +80,10 @@ class CodeGraphAcl:
             module = self.node_registery.get_node(module_fqn)
             assert isinstance(module, ModuleNodeDto)
             module_builder = ModuleBuildContext(
-                module, 
-                code_document, 
-                self.node_registery
+                module, code_document, self.node_registery
             )
             module_builder.build()
-            
+
     def _add_node(self, dto: CodeNodeDto) -> None:
         self.node_registery.add_node(dto)
 
@@ -154,9 +156,7 @@ class CodeGraphAcl:
                 self._parse_class_def(stmt, parent_node)
             case AstFunctionDef():
                 self._parse_function_def(stmt, parent_node)
-            case AstAnnAssign():
-                self._parse_ann_assign(stmt, parent_node)
-            case AstAssign():
+            case AstAssign() | AstAnnAssign():
                 self._parse_assign(stmt, parent_node)
             case _:
                 pass
@@ -173,7 +173,6 @@ class CodeGraphAcl:
         self._add_node(node)
         return node
 
-
     def _parse_function_def(
         self, func_def: AstFunctionDef, parent_node: ModuleNodeDto | ClassNodeDto
     ) -> FunctionNodeDto | MethodNodeDto:
@@ -189,37 +188,51 @@ class CodeGraphAcl:
 
         match parent_node:
             case ClassNodeDto():
-                dto = MethodNodeDto(fqn=func_fqn, name=func_def.name)
-                parent_node.contains(dto)
+                func_node = MethodNodeDto(fqn=func_fqn, name=func_def.name)
+                parent_node.contains(func_node)
             case ModuleNodeDto():
-                dto = FunctionNodeDto(fqn=func_fqn, name=func_def.name)
-                parent_node.contains(dto)
-        self._add_node(dto)
-        return dto
+                func_node = FunctionNodeDto(fqn=func_fqn, name=func_def.name)
+                parent_node.contains(func_node)
+        self._add_node(func_node)
 
-    def _parse_ann_assign(
-        self, ann_assign: AstAnnAssign, parent_node: ModuleNodeDto | ClassNodeDto
-    ) -> None:
-        target = ann_assign.target
-        if not isinstance(target, AstName):
-            return
-        var_fqn = f"{parent_node.fqn}::{target.id}"
-        dto = VariableNodeDto(fqn=var_fqn, name=target.id)
-        parent_node.contains(dto)
-        self._add_node(dto)
+        for arg in func_def.args.args:
+            self._create_variable_node(
+                name=arg.arg,
+                parent_node=func_node,
+                annotation=arg.annotation,
+                value=None,
+            )
+
+        return func_node
 
     def _parse_assign(
-        self, assign: AstAssign, parent_node: ModuleNodeDto | ClassNodeDto
+        self, assign: AstAssign | AstAnnAssign, parent_node: ModuleNodeDto | ClassNodeDto
     ) -> None:
-        if not assign.targets:
-            return
-        if not len(assign.targets) == 1:
-            return
-        target = assign.targets[0]
+        target = assign.target
         if not isinstance(target, AstName):
             return
-        var_fqn = f"{parent_node.fqn}::{target.id}"
-        dto = VariableNodeDto(fqn=var_fqn, name=target.id)
-        parent_node.contains(dto)
-        self._add_node(dto)
+        self._create_variable_node(
+            name=target.id,
+            parent_node=parent_node,
+            annotation=assign.annotation,
+            value=assign.value,
+        )
 
+    def _create_variable_node(
+        self,
+        name: str,
+        parent_node: ModuleNodeDto | ClassNodeDto | FunctionNodeDto | MethodNodeDto,
+        annotation: AstExpr | None = None,
+        value: AstExpr | None = None,
+    ) -> VariableNodeDto:
+        var_fqn = f"{parent_node.fqn}::{name}"
+        node = VariableNodeDto(
+            fqn=var_fqn,
+            name=name,
+            annotation=annotation,
+            value=value,
+        )
+        parent_node.contains(node)
+        self._add_node(node)
+
+        return node

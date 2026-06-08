@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
+from codegen.code_metadata.domain.value_objects import AstExpr
 
 
 class OutboundEdgeDto(BaseModel):
@@ -96,6 +97,9 @@ class FunctionNodeDto(_BaseNodeDto):
     """函数节点的 DTO：kind 固定为 FUNCTION，由模块节点的 AST 函数定义派生。"""
 
     kind: Literal[CodeNodeKind.FUNCTION] = CodeNodeKind.FUNCTION
+    
+    def contains(self, node: VariableNodeDto):
+        self._add_edge(EdgeType.CONTAINS, node.fqn)
 
     def returns(self, node: ClassNodeDto | ExternalNodeDto | VariableNodeDto):
         self._add_edge(EdgeType.RETURNS, node.fqn)
@@ -106,6 +110,9 @@ class MethodNodeDto(_BaseNodeDto):
 
     kind: Literal[CodeNodeKind.METHOD] = CodeNodeKind.METHOD
 
+    def contains(self, node: VariableNodeDto):
+        self._add_edge(EdgeType.CONTAINS, node.fqn)
+
     def returns(self, node: ClassNodeDto | ExternalNodeDto | VariableNodeDto):
         self._add_edge(EdgeType.RETURNS, node.fqn)
 
@@ -113,6 +120,9 @@ class VariableNodeDto(_BaseNodeDto):
     """变量节点的 DTO：kind 固定为 VARIABLE，由模块节点的 AST 赋值语句派生。"""
 
     kind: Literal[CodeNodeKind.VARIABLE] = CodeNodeKind.VARIABLE
+
+    annotation: AstExpr | None = None
+    value: AstExpr | None = None
 
 
 class ExternalNodeDto(_BaseNodeDto):

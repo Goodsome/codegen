@@ -8,6 +8,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 from codegen.code_metadata.application.dtos.code_node_dto import CodeNodeDetailDto
+from codegen.code_metadata.application.dtos.get_code_node_query import GetCodeNodeQuery
 from codegen.code_metadata.application.queries.get_code_node_detail import GetCodeNodeDetail
 
 console = Console()
@@ -15,24 +16,23 @@ console = Console()
 
 @inject
 def _get_code_node_detail(
-    node_id: UUID,
+    query: GetCodeNodeQuery,
     use_case: GetCodeNodeDetail = Provide["code_metadata_container.get_code_node_detail"],
 ) -> CodeNodeDetailDto:
-    return use_case.execute(node_id)
+    return use_case.execute(query)
 
 
 def get_code_node(
-    id: Annotated[str, typer.Argument(help="UUID of the CodeNode")],
+    id: Annotated[str, typer.Argument(help="UUID or FQN of the CodeNode")],
 ) -> None:
-    """Display detailed information about a CodeNode by its ID."""
+    """Display detailed information about a CodeNode by its ID or FQN."""
     try:
-        node_id = UUID(id)
+        query = GetCodeNodeQuery(node_id=UUID(id))
     except ValueError:
-        console.print(f"[red]Error: '{id}' is not a valid UUID[/red]")
-        raise typer.Exit(1)
+        query = GetCodeNodeQuery(fqn=id)
 
     try:
-        detail = _get_code_node_detail(node_id)
+        detail = _get_code_node_detail(query)
     except ValueError as e:
         console.print(f"[red]Error: {e}[/red]")
         raise typer.Exit(1)

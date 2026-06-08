@@ -12,6 +12,7 @@ from codegen.code_metadata.application.dtos.code_node_dto import CodeNodeDto, Mo
 from codegen.code_metadata.application.ports.code_node_sync_service import (
     CodeNodeSyncService,
 )
+from codegen.code_metadata.infrastructure.mappers.code_node_mapper import dto_to_upsert_dict
 from codegen.code_metadata.infrastructure.orm_models.code_edge_model import (
     CodeEdgeModel,
 )
@@ -38,13 +39,7 @@ class SqlAlchemyCodeNodeSyncService(CodeNodeSyncService):
         with self.session_factory() as session:
             # ── Phase 1: 批量 UPSERT 节点 (利用 executemany) ──
             node_values = [
-                {
-                    "fqn": dto.fqn,
-                    "kind": dto.kind.value,
-                    "name": dto.name,
-                    "properties": {"is_package": dto.is_package} if isinstance(dto, ModuleNodeDto) else {},
-                    "last_sync_id": sync_id,
-                }
+                dto_to_upsert_dict(dto, sync_id)
                 for dto in node_dtos
             ]
             

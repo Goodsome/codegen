@@ -7,6 +7,7 @@ from sqlalchemy import String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.sql import ColumnElement
 
 from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
 from codegen.shared.infrastructure.orm_models.base import BaseORM
@@ -39,7 +40,9 @@ class CodeNodeModel(BaseORM):
 
     # Mark-and-Sweep 同步批次号：每次 ingest 生成一个，用于识别幽灵节点
     last_sync_id: Mapped[str | None] = mapped_column(
-        String(64), nullable=True, index=True,
+        String(64),
+        nullable=True,
+        index=True,
     )
 
     outbound_edges: Mapped[list[CodeEdgeModel]] = relationship(
@@ -47,7 +50,7 @@ class CodeNodeModel(BaseORM):
         foreign_keys="[CodeEdgeModel.source_id]",
         back_populates="source_entity",
         cascade="all, delete-orphan",
-        order_by="CodeEdgeModel.position.asc()"
+        order_by="CodeEdgeModel.position.asc()",
     )
 
     inbound_edges: Mapped[list[CodeEdgeModel]] = relationship(
@@ -65,23 +68,21 @@ class DirectoryNodeModel(CodeNodeModel):
 class FileNodeModel(CodeNodeModel):
     __mapper_args__: dict[str, str] = {"polymorphic_identity": CodeNodeKind.FILE}
 
+
 class ModuleNodeModel(CodeNodeModel):
     __mapper_args__: dict[str, str] = {"polymorphic_identity": CodeNodeKind.MODULE}
 
     @hybrid_property
     def is_package(self) -> bool:
-        if self.properties is None:
-            return False
         return self.properties.get("is_package", False)
 
     @is_package.setter
-    def is_package(self, value: bool) -> None:
-        if self.properties is None:
-            self.properties = {}
+    def _is_package_setter(self, value: bool) -> None:
         self.properties = {**self.properties, "is_package": value}
 
     @is_package.expression
-    def is_package(cls):
+    @classmethod
+    def _is_package_expression(cls) -> ColumnElement[bool]:
         return cls.properties["is_package"].as_boolean()
 
 
@@ -99,6 +100,26 @@ class MethodNodeModel(CodeNodeModel):
 
 class VariableNodeModel(CodeNodeModel):
     __mapper_args__: dict[str, str] = {"polymorphic_identity": CodeNodeKind.VARIABLE}
+
+    @hybrid_property
+    def value(self) -> dict[str, Any] | None:
+        return self.properties.get("value")
+
+    @value.setter
+    def _value_setter(self, value: dict[str, Any] | None) -> None:
+        if value is None:
+            return
+        self.properties = {**self.properties, "value": value}
+
+    @hybrid_property
+    def annotation(self) -> dict[str, Any] | None:
+        return self.properties.get("annotation")
+
+    @annotation.setter
+    def _annotation_setter(self, value: dict[str, Any] | None) -> None:
+        if value is None:
+            return
+        self.properties = {**self.properties, "annotation": value}
 
 
 class ExternalNodeModel(CodeNodeModel):
