@@ -17,7 +17,7 @@ from codegen.code_metadata.domain.value_objects.ast_import_from import AstImport
 from codegen.code_metadata.domain.value_objects.ast_name import AstName
 from codegen.code_metadata.domain.value_objects.ast_stmt import AstStmt
 from codegen.code_metadata.infrastructure.gateways.class_edge_builder import ClassEdgeBuilder
-from codegen.code_metadata.infrastructure.gateways.node_registry import NodeRegistry
+from codegen.code_metadata.application.registry.node_registry import NodeRegistry
 
 @dataclass
 class ModuleBuildContext:

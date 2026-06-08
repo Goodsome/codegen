@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+import re
 from typing import Annotated, Literal
 from uuid import UUID
 
@@ -42,6 +44,9 @@ class _BaseNodeDto(BaseModel):
     def add_edge(self, type: EdgeType, node: CodeNodeDto):
         self._add_edge(type, node.fqn)
 
+    def parent_fqn(self) -> str:
+        splits = re.split(r"[.|::]", self.fqn)
+        return ".".join(splits[:-1])
 
 class DirectoryNodeDto(_BaseNodeDto):
     """目录节点的 DTO：kind 固定为 DIRECTORY。"""
@@ -80,6 +85,9 @@ class ModuleNodeDto(_BaseNodeDto):
         if level >= len(parts):
             raise ValueError(f"Level {level} is greater than the depth of the module {self.fqn}")
         return ".".join(parts[:-level])
+
+    def get_physical_path(self) -> Path:
+        return Path(self.fqn.replace(".", "/"))
 
 
 class ClassNodeDto(_BaseNodeDto):

@@ -3,6 +3,7 @@ import ast
 from codegen.code_metadata.domain.value_objects import (
     AstAsyncFunctionDef,
     AstBreak,
+    AstClassDef,
     AstStmt,
     AstAnnAssign,
     AstAssert,
@@ -74,9 +75,20 @@ class StmtToAst:
                 node = StmtToAst.from_function_def(stmt)
             case AstAsyncFunctionDef():
                 node = StmtToAst.from_async_function_def(stmt)
+            case AstClassDef():
+                node = StmtToAst.from_class_def(stmt)
             case _:
                 raise NotImplementedError(f"Unsupported AstStmt type: {type(stmt)}")
         return StmtToAst._fix_pos(node)
+
+    @staticmethod
+    def from_class_def(stmt: AstClassDef) -> ast.ClassDef:
+        return ast.ClassDef(
+            name=stmt.name,
+            bases=[ExprToAst.to_node(b) for b in stmt.bases],
+            keywords=[],
+            body=[StmtToAst.to_node(s) for s in stmt.body],
+        )
 
     @staticmethod
     def _to_with_item(item: AstWithItem) -> ast.withitem:

@@ -5,7 +5,9 @@ from typing import TYPE_CHECKING, Literal
 from pydantic import Field
 
 from codegen.code_metadata.domain.enums.ast_stmt_kind import AstStmtKind
+from codegen.code_metadata.domain.value_objects.ast_ann_assign import AstAnnAssign
 from codegen.code_metadata.domain.value_objects.ast_arguments import AstArguments
+from codegen.code_metadata.domain.value_objects.ast_assign import AstAssign
 from codegen.code_metadata.domain.value_objects.ast_attribute import AstAttribute
 from codegen.code_metadata.domain.value_objects.ast_name import AstName
 from codegen.shared.domain.core import ValueObject
@@ -20,11 +22,12 @@ class AstFunctionDef(ValueObject):
     
     kind: Literal[AstStmtKind.FUNCTION_DEF] = AstStmtKind.FUNCTION_DEF
     name: str
-    args: AstArguments
+    args: AstArguments = Field(default_factory=AstArguments)
     body: list[AstStmt] = Field(default_factory=list)
     decorator_list: list[AstExpr] = Field(default_factory=list)
     returns: AstExpr | None = None
     type_comment: str | None = None
+    arguments: list[AstAssign | AstAnnAssign] = Field(default_factory=list)
 
     @property
     def is_overload(self) -> bool:

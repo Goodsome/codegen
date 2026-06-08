@@ -1,7 +1,8 @@
-import typer
 from typing import Annotated
-from rich.console import Console
+
+import typer
 from dependency_injector.wiring import Provide, inject
+from rich.console import Console
 
 from codegen.code_metadata.application.commands.ingest_project import IngestProject
 from codegen.code_metadata.application.dtos.ingest_project_command import (
@@ -26,10 +27,14 @@ def _ingest_project(
 
 
 def ingest_project(
-    context_name: Annotated[
-        str, typer.Argument(help="The bounded context name to ingest, e.g. code_metadata")
-    ],
+    prefix: Annotated[
+        str | None,
+        typer.Option(
+            "--prefix", "-p",
+            help="The prefix of the bounded context to ingest, e.g. src/codegen/code_metadata"
+        ),
+    ] = None,
 ) -> None:
     """Scan a bounded context's directory tree into the CodeNode graph."""
-    cmd = IngestProjectCommand(context_name=context_name)
+    cmd = IngestProjectCommand(prefix=prefix)
     _ingest_project(cmd)

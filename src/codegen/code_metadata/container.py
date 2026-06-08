@@ -17,8 +17,10 @@ from codegen.code_metadata.application.ports.code_node_query_service import Code
 from codegen.code_metadata.application.ports.code_node_sync_service import (
     CodeNodeSyncService,
 )
+from codegen.code_metadata.application.ports.file_differ import FileDiffer
 from codegen.code_metadata.application.queries.find_unused_nodes import FindUnusedNodes
 from codegen.code_metadata.application.queries.get_code_node_detail import GetCodeNodeDetail
+from codegen.code_metadata.application.queries.get_dev_progress import GetDevProgressHandler
 from codegen.code_metadata.application.queries.get_directory_tree import GetDirectoryTree
 from codegen.code_metadata.application.queries.list_components import ListComponents
 from codegen.code_metadata.application.queries.trace_symbol_dependencies import TraceSymbolDependenciesQueryHandler
@@ -36,6 +38,9 @@ from codegen.code_metadata.domain.ports.module_repository import ModuleRepositor
 from codegen.code_metadata.domain.services.path_parser import PathParser
 from codegen.code_metadata.infrastructure.gateways.file_system_code_graph_builder import (
     FileSystemCodeGraphBuilder,
+)
+from codegen.code_metadata.infrastructure.gateways.file_system_file_differ import (
+    FileSystemFileDiffer,
 )
 from codegen.code_metadata.infrastructure.repositories.sql_alchemy_code_node_query_service import (
     SqlAlchemyCodeNodeQueryService,
@@ -60,6 +65,9 @@ from codegen.code_metadata.infrastructure.repositories.sql_alchemy_module_query_
 )
 from codegen.code_metadata.infrastructure.repositories.sql_alchemy_module_repository import (
     SqlAlchemyModuleRepository,
+)
+from codegen.code_dom.application.queries.get_code_document_diff import (
+    GetCodeDocumentDiffHandler,
 )
 from codegen.code_dom.application.queries.get_project_documents import (
     GetProjectDocumentsHandler,
@@ -86,6 +94,10 @@ class Container(DeclarativeContainer):
 
     get_project_documents: Dependency[GetProjectDocumentsHandler] = Dependency(
         instance_of=GetProjectDocumentsHandler
+    )
+
+    get_code_document_diff: Dependency[GetCodeDocumentDiffHandler] = Dependency(
+        instance_of=GetCodeDocumentDiffHandler
     )
 
     # ── 仓储工厂 ──
@@ -214,6 +226,17 @@ class Container(DeclarativeContainer):
     find_unused_nodes: Factory[FindUnusedNodes] = Factory(
         FindUnusedNodes,
         query_service=code_node_query_service,
+    )
+
+    file_differ: Factory[FileDiffer] = Factory(
+        FileSystemFileDiffer,
+        handler=get_code_document_diff,
+    )
+
+    get_dev_progress: Factory[GetDevProgressHandler] = Factory(
+        GetDevProgressHandler,
+        query_service=code_node_query_service,
+        file_differ=file_differ,
     )
 
     project_sync_service: Factory[ProjectSyncService] = Factory(

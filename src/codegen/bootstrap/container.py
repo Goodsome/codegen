@@ -49,6 +49,7 @@ class AppContainer(containers.DeclarativeContainer):
         file_system_port=os_file_system,
         project_root=config.project_root,
         get_project_documents=code_dom_container.get_project_documents,
+        get_code_document_diff=code_dom_container.get_code_document_diff,
     )
 
     # DomainDefinition sub-container

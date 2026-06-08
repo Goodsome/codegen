@@ -1,36 +1,31 @@
 from typing import Annotated
 from rich.console import Console
 from dependency_injector.wiring import Provide, inject
-from typer import Option
+from typer import Argument, Option
 
 from codegen.code_metadata.application.dtos.dev_progress import DevProgress
-from codegen.code_metadata.application.services.dev_progress_service import DevProgressService
+from codegen.code_metadata.application.queries.get_dev_progress import GetDevProgressHandler, GetDevProgressQuery
 
 console = Console()
 
 
 @inject
 def _get_dev_progress(
-    module_path: str | None,
-    service: DevProgressService = Provide["code_metadata_container.dev_progress_service"],
+    module_fqn: str,
+    service: GetDevProgressHandler = Provide["code_metadata_container.get_dev_progress"],
 ) -> DevProgress:
-    return service.get_dev_progress_v2(module_path=module_path)
+    return service.execute(
+        query=GetDevProgressQuery(module_fqn=module_fqn)
+    )
 
 
 def get_dev_progress(
-    module_path: Annotated[str | None, Option( "--path", "-p" )] = None,
-    component_type: Annotated[str | None, Option( "--type", "-t" )] = None,
+    fqn: Annotated[str, Argument()],
 ) -> None:
     """Show development progress: AST similarity and line diffs per file."""
-    result = _get_dev_progress(module_path=module_path)
+    result = _get_dev_progress(module_fqn=fqn)
 
     result.order_by_type()
-    component_name = module_path.split(".")[-1] if module_path else None
-    if component_type:
-        result = result.filter_by_type(component_type)
-    if component_name:
-        result = result.filter_by_name(component_name)
-
     if not result.records:
         console.print("[yellow]No component records found.[/yellow]")
         return
@@ -62,14 +57,11 @@ def get_dev_progress(
         + f"Unknown Files: {unknown_count}/{len(result.records)}"
     )
 
-    if component_name:
-        record = result.get_record_by_name(component_name)
-        if record:
-            console.print(f"  {record.file_name:<40} {record.component_type:<20} " )
-            console.print("-" * 76)
-            console.print(f"{record.original_code}")
-            console.print("-" * 76)
-            console.print(f"{record.generated_code}")
-            console.print("-" * 76)
-        else:
-            console.print(f"[yellow]No record found for component name: {component_name}[/yellow]")
+    if len(result.records) == 1:
+        record = result.records[0]
+        console.print(f"  {record.file_name:<40} {record.component_type:<20} " )
+        console.print("-" * 76)
+        console.print(f"{record.original_code}")
+        console.print("-" * 76)
+        console.print(f"{record.generated_code}")
+        console.print("-" * 76)

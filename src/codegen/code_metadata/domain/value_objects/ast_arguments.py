@@ -21,3 +21,4 @@ class AstArguments(ValueObject):
     kw_defaults: list[Optional[AstExpr]] = Field(default_factory=list)
     kwarg: Optional[Arg] = None
     defaults: list[AstExpr] = Field(default_factory=list)
+    

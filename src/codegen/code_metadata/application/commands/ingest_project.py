@@ -30,9 +30,11 @@ class IngestProject:
 
     def execute(self, cmd: IngestProjectCommand) -> IngestProjectResult:
         sync_id = uuid.uuid4().hex
-        # FQN 以 context_name/ 开头，如 code_metadata/domain/aggregates/
-        fqn_prefix = f"src/codegen/{cmd.context_name}/"
-        module_fqn_prefix = f"codegen.{cmd.context_name}."
+        fqn_prefix = "src/codegen/"
+        module_fqn_prefix = "codegen."
+        if cmd.prefix:
+            fqn_prefix = f"src/codegen/{cmd.prefix}/"
+            module_fqn_prefix = f"codegen.{cmd.prefix}."
 
         # 1. 构建图：遍历文件系统，产出 CodeNodeDto 列表
         node_dtos = self.graph_builder.build(fqn_prefix=fqn_prefix)

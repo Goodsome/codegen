@@ -4,7 +4,6 @@ from codegen.code_metadata.application.dtos.code_node_dto import (
     ClassNodeDto,
     CodeNodeDto,
     ExternalNodeDto,
-    FunctionNodeDto,
     MethodNodeDto,
     VariableNodeDto,
 )
@@ -23,13 +22,11 @@ from codegen.code_metadata.domain.value_objects import (
     AstList,
     AstName,
     AstPass,
-    AstReturn,
     AstStmt,
     AstTuple,
 )
-from codegen.code_metadata.domain.value_objects.arg import Arg
 from codegen.code_metadata.domain.value_objects.ast_subscript import AstSubscript
-from codegen.code_metadata.infrastructure.gateways.node_registry import NodeRegistry
+from codegen.code_metadata.application.registry.node_registry import NodeRegistry
 from codegen.shared.domain.enums import PythonBuiltinType
 
 

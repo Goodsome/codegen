@@ -14,4 +14,4 @@ class AstAnnAssign(ValueObject):
     target: AstExpr
     annotation: AstExpr
     value: Optional[AstExpr] = None
-    simple: int = 0
+    simple: int = 1

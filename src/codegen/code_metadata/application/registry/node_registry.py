@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from typing import Self
 
 from codegen.code_metadata.application.dtos.code_node_dto import (
     CodeNodeDto,
@@ -10,6 +11,13 @@ from codegen.shared.domain.enums import PythonBuiltinType
 class NodeRegistry:
     store_by_fqn: dict[str, CodeNodeDto] = field(default_factory=dict)
     temp_store: dict[str, CodeNodeDto] = field(default_factory=dict)
+
+    @classmethod
+    def create(cls, nodes: list[CodeNodeDto]) -> Self:
+        return cls(
+            store_by_fqn={node.fqn: node for node in nodes},
+            temp_store={},
+        )
 
     @property
     def nodes(self) -> list[CodeNodeDto]:

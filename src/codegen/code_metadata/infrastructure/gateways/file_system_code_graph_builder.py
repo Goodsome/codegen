@@ -19,7 +19,7 @@ from codegen.code_metadata.application.dtos.code_node_dto import (
 )
 from codegen.code_metadata.application.ports.code_graph_builder import CodeGraphBuilder
 from codegen.code_metadata.domain.factories.fqn_factory import FqnFactory
-from codegen.code_metadata.domain.value_objects import AstConstant, AstExpr, AstExprStmt, AstIf, AstImport, AstImportFrom
+from codegen.code_metadata.domain.value_objects import AstConstant, AstExpr, AstExprStmt, AstIf, AstImport, AstImportFrom, AstPass
 from codegen.code_metadata.domain.value_objects.ast_ann_assign import AstAnnAssign
 from codegen.code_metadata.domain.value_objects.ast_assign import AstAssign
 from codegen.code_metadata.domain.value_objects.ast_class_def import AstClassDef
@@ -29,7 +29,7 @@ from codegen.code_metadata.domain.value_objects.ast_stmt import AstStmt
 from codegen.code_metadata.infrastructure.gateways.module_build_context import (
     ModuleBuildContext,
 )
-from codegen.code_metadata.infrastructure.gateways.node_registry import NodeRegistry
+from codegen.code_metadata.application.registry.node_registry import NodeRegistry
 
 
 @dataclass
@@ -165,8 +165,10 @@ class CodeGraphAcl:
                 pass
             case AstExprStmt():
                 pass
+            case AstPass():
+                pass
             case _:
-                raise NotImplementedError(f"Unsupported statement: {stmt=}")
+                raise NotImplementedError(f"Unsupported statement: {stmt=} in {parent_node.fqn=}")
 
     def _parse_class_def(
         self, class_def: AstClassDef, module_node: ModuleNodeDto
