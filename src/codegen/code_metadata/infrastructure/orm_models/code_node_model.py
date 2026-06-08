@@ -34,9 +34,7 @@ class CodeNodeModel(BaseORM):
     name: Mapped[str] = mapped_column(String(255), index=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    properties: Mapped[dict[str, Any]] = mapped_column(
-        JSONB, default=dict, server_default="{}"
-    )
+    properties: Mapped[dict[str, Any]] = mapped_column( JSONB, default=dict, server_default="{}" )
 
     # Mark-and-Sweep 同步批次号：每次 ingest 生成一个，用于识别幽灵节点
     last_sync_id: Mapped[str | None] = mapped_column(

@@ -35,7 +35,7 @@ class CodeEdgeModel(BaseORM):
     # AST 节点的物理顺序，解决顺序丢失陷阱
     position: Mapped[int | None] = mapped_column(Integer, nullable=True)
     
-    metadata_payload: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict, server_default="{}")
+    properties: Mapped[dict[str, Any]] = mapped_column( JSONB, default=dict, server_default="{}" )
 
     source_entity: Mapped[CodeNodeModel] = relationship("CodeNodeModel", foreign_keys=[source_id])
     target_entity: Mapped[CodeNodeModel] = relationship("CodeNodeModel", foreign_keys=[target_id])

@@ -57,7 +57,9 @@ def module_node_dto_to_code_document(
     body = collect_body_from_outbound_edges(module.outbound_edges, node_registry)
 
     return CodeDocument(
-        physical_path=physical_path, body=body, description=module.description
+        physical_path=physical_path,
+        body=body,
+        description=module.description,
     )
 
 
@@ -125,7 +127,7 @@ def collect_body_from_outbound_edges(
 ) -> list[AstStmt]:
     body: list[AstStmt] = []
     for edge in edges:
-        if edge.type is not EdgeType.CONTAINS:
+        if edge.type not in [EdgeType.CONTAINS, EdgeType.IMPORTS]:
             continue
         target_node = node_registry.get_node(edge.target_fqn)
         ast_stmt = node_to_ast(target_node, node_registry)
