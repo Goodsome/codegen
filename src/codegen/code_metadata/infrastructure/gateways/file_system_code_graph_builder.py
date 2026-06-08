@@ -19,7 +19,7 @@ from codegen.code_metadata.application.dtos.code_node_dto import (
 )
 from codegen.code_metadata.application.ports.code_graph_builder import CodeGraphBuilder
 from codegen.code_metadata.domain.factories.fqn_factory import FqnFactory
-from codegen.code_metadata.domain.value_objects import AstExpr
+from codegen.code_metadata.domain.value_objects import AstConstant, AstExpr, AstExprStmt, AstIf, AstImport, AstImportFrom
 from codegen.code_metadata.domain.value_objects.ast_ann_assign import AstAnnAssign
 from codegen.code_metadata.domain.value_objects.ast_assign import AstAssign
 from codegen.code_metadata.domain.value_objects.ast_class_def import AstClassDef
@@ -138,6 +138,7 @@ class CodeGraphAcl:
             fqn=module_fqn,
             name=module_fqn.rsplit(".", maxsplit=1)[-1],
             is_package=path.name == "__init__.py",
+            description=code_document.description,
         )
         self._add_node(module_node)
         file_node.defines_module(module_node)
@@ -158,14 +159,24 @@ class CodeGraphAcl:
                 self._parse_function_def(stmt, parent_node)
             case AstAssign() | AstAnnAssign():
                 self._parse_assign(stmt, parent_node)
-            case _:
+            case AstImport() | AstImportFrom() | AstIf(test=AstName(id="TYPE_CHECKING")):
                 pass
+            case AstExprStmt(value=AstConstant()):
+                pass
+            case AstExprStmt():
+                pass
+            case _:
+                raise NotImplementedError(f"Unsupported statement: {stmt=}")
 
     def _parse_class_def(
         self, class_def: AstClassDef, module_node: ModuleNodeDto
     ) -> ClassNodeDto:
         class_fqn = f"{module_node.fqn}::{class_def.name}"
-        node = ClassNodeDto(fqn=class_fqn, name=class_def.name)
+        node = ClassNodeDto(
+            fqn=class_fqn,
+            name=class_def.name,
+            description=class_def.description,
+        )
         module_node.contains(node)
         for stmt in class_def.body:
             self._parse_stmt(stmt, node)

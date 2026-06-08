@@ -34,6 +34,7 @@ class ModuleNodeMapper:
         return ModuleNodeDto(
             fqn=orm_model.fqn,
             name=orm_model.name,
+            description=orm_model.description,
             is_package=orm_model.is_package,
             outbound_edges=BaseMapper.to_outbound_edge_dtos(orm_model),
         )

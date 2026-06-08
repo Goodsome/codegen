@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 class AstClassDef(ValueObject):
     kind: Literal[AstStmtKind.CLASS_DEF] = AstStmtKind.CLASS_DEF
     name: str
+    description: str | None = None
     bases: list[AstExpr] = Field(default_factory=list)
     keywords: list[AstKeyword] = Field(default_factory=list)
     body: list[AstStmt] = Field(default_factory=list)

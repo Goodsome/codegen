@@ -272,6 +272,7 @@ class AstToStmt:
         decorator_list = [AstToExpr.to_expr(dec) for dec in node.decorator_list]
         return AstClassDef(
             name=node.name,
+            description=ast.get_docstring(node),
             bases=bases,
             keywords=keywords,
             body=body,

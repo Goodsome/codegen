@@ -19,7 +19,6 @@ from codegen.code_metadata.application.ports.code_node_sync_service import (
 )
 from codegen.code_metadata.application.queries.find_unused_nodes import FindUnusedNodes
 from codegen.code_metadata.application.queries.get_code_node_detail import GetCodeNodeDetail
-from codegen.code_metadata.application.queries.get_dev_progress import GetDevProgress
 from codegen.code_metadata.application.queries.get_directory_tree import GetDirectoryTree
 from codegen.code_metadata.application.queries.list_components import ListComponents
 from codegen.code_metadata.application.queries.trace_symbol_dependencies import TraceSymbolDependenciesQueryHandler
@@ -195,12 +194,6 @@ class Container(DeclarativeContainer):
         generator=python_code_generator,
         uow=module_unit_of_work,
         path_parser=path_parser,
-    )
-
-    get_dev_progress: Factory[GetDevProgress] = Factory(
-        GetDevProgress,
-        uow=unit_of_work,
-        dev_progress_service=dev_progress_service,
     )
 
     get_directory_tree: Factory[GetDirectoryTree] = Factory(

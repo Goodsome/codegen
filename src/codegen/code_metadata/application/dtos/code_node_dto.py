@@ -31,6 +31,7 @@ class InboundEdgeDto(BaseModel):
 class _BaseNodeDto(BaseModel):
     fqn: str
     name: str
+    description: str | None = Field(default=None)
     outbound_edges: list[OutboundEdgeDto] = Field(default_factory=list)
 
     def _add_edge(self, type: EdgeType, fqn: str):

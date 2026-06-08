@@ -112,6 +112,7 @@ def dto_to_upsert_dict(dto: CodeNodeDto, sync_id: str) -> dict[str, Any]:
         "fqn": dto.fqn,
         "kind": dto.kind.value,
         "name": dto.name,
+        "description": dto.description,
         "properties": properties,
         "last_sync_id": sync_id,
     }

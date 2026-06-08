@@ -49,6 +49,7 @@ class SqlAlchemyCodeNodeSyncService(CodeNodeSyncService):
                 set_={
                     "name": stmt.excluded.name,
                     "kind": stmt.excluded.kind,
+                    "description": stmt.excluded.description,
                     "properties": stmt.excluded.properties,
                     "last_sync_id": stmt.excluded.last_sync_id,
                 },

@@ -138,7 +138,6 @@ __all__ = [
     "AstKeyword",
 ]
 
-# model_rebuild() for ExprDef members
 CallExpr.model_rebuild()
 DictItem.model_rebuild()
 DictExpr.model_rebuild()

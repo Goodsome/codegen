@@ -32,6 +32,7 @@ class ClassNodeMapper:
         return ClassNodeDto(
             fqn=orm_model.fqn,
             name=orm_model.name,
+            description=orm_model.description,
             outbound_edges=BaseMapper.to_outbound_edge_dtos(orm_model),
         )
 
