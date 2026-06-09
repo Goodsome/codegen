@@ -1,15 +1,15 @@
 from dataclasses import dataclass, field
 
 from codegen.code_dom.domain.aggregates.code_document import CodeDocument
-from codegen.code_metadata.application.dtos.code_node_dto import (
-    ClassNodeDto,
-    CodeNodeDto,
-    ExternalNodeDto,
-    FunctionNodeDto,
-    ModuleNodeDto,
-    VariableNodeDto,
+from codegen.code_metadata.domain.aggregates.code_node import (
+    ClassNode,
+    CodeNode,
+    ExternalNode,
+    FunctionNode,
+    ModuleNode,
+    VariableNode,
 )
-from codegen.code_metadata.domain.value_objects.edge import CodeEdge
+from codegen.code_metadata.domain.value_objects.code_edge import CodeEdge
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
 from codegen.code_metadata.domain.value_objects import AstIf
 from codegen.code_metadata.domain.value_objects.ast_class_def import AstClassDef
@@ -22,7 +22,7 @@ from codegen.code_metadata.application.registry.node_registry import NodeRegistr
 
 @dataclass
 class ModuleBuildContext:
-    module: ModuleNodeDto
+    module: ModuleNode
     code_document: CodeDocument
     node_registry: NodeRegistry
     local_aliases: dict[str, str] = field(init=False)
@@ -107,7 +107,7 @@ class ModuleBuildContext:
                 from_name=from_name,
             )
         assert isinstance(
-            node, ExternalNodeDto | ClassNodeDto | FunctionNodeDto | VariableNodeDto
+            node, ExternalNode | ClassNode | FunctionNode | VariableNode
         )
         edge = self.module.imports(node)
         if asname:
@@ -119,14 +119,14 @@ class ModuleBuildContext:
 
         return edge
         
-    def _add_node(self, dto: CodeNodeDto) -> None:
+    def _add_node(self, dto: CodeNode) -> None:
         self.node_registry.add_node(dto)
         
     def _get_internel_node(
         self,
         import_name: str,
         from_name: str | None,
-    ) -> CodeNodeDto:
+    ) -> CodeNode:
         name = import_name
         if from_name is None:
             return self.node_registry.get_node(name)
@@ -138,7 +138,7 @@ class ModuleBuildContext:
         other_node = self.node_registry.find_node(other_fqn)
         if other_node:
             return other_node
-        node = ClassNodeDto(
+        node = ClassNode(
             name=name,
             fqn=other_fqn,
         )
@@ -148,7 +148,7 @@ class ModuleBuildContext:
     def _build_class_edge(self, class_def: AstClassDef):
         class_fqn = f"{self.module.fqn}::{class_def.name}"
         node = self.node_registry.get_node(class_fqn)
-        assert isinstance(node, ClassNodeDto)
+        assert isinstance(node, ClassNode)
         class_edge_builder = ClassEdgeBuilder(
             class_node=node,
             class_def=class_def,

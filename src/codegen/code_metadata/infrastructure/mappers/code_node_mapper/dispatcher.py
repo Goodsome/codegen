@@ -2,11 +2,11 @@ from __future__ import annotations
 from typing import assert_never, Any, cast
 
 from codegen.code_metadata.application.dtos.code_node_detail_dto import CodeNodeDetailDto
-from codegen.code_metadata.application.dtos.code_node_dto import CodeNodeDto, ModuleNodeDto, VariableNodeDto
+from codegen.code_metadata.domain.aggregates.code_node import CodeNode, ModuleNode, VariableNode
 from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
 from codegen.code_metadata.domain.enums.edge_direction import EdgeDirection
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
-from codegen.code_metadata.domain.value_objects.edge import create_edge
+from codegen.code_metadata.domain.value_objects.code_edge import create_edge
 from codegen.code_metadata.infrastructure.orm_models.code_node_model import (
     CodeNodeModel,
     DirectoryNodeModel,
@@ -30,7 +30,7 @@ from .variable_node import VariableNodeMapper
 from .external_node import ExternalNodeMapper
 
 
-def orm_to_dto(orm_model: CodeNodeModel) -> CodeNodeDto:
+def orm_to_dto(orm_model: CodeNodeModel) -> CodeNode:
     """基于 kind 属性将 ORM 模型安全分发至 DTO 转换逻辑"""
     kind = CodeNodeKind(orm_model.kind)
     match kind:
@@ -73,12 +73,12 @@ def orm_to_detail_dto(orm_model: CodeNodeModel) -> CodeNodeDetailDto:
         inbound_edges=inbound_edges,
     )
 
-def dto_to_upsert_dict(dto: CodeNodeDto, sync_id: str) -> dict[str, Any]:
+def dto_to_upsert_dict(dto: CodeNode, sync_id: str) -> dict[str, Any]:
     """高性能批量同步分发"""
     match dto:
-        case ModuleNodeDto():
+        case ModuleNode():
             properties = {"is_package": dto.is_package}
-        case VariableNodeDto():
+        case VariableNode():
             return VariableNodeMapper.dto_to_upsert_dict(dto, sync_id)
         case _:
             properties = {}

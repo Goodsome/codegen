@@ -8,7 +8,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session, sessionmaker
 
 from codegen.code_metadata.application.dtos.bulk_save_result import BulkSaveResult
-from codegen.code_metadata.application.dtos.code_node_dto import CodeNodeDto, ModuleNodeDto
+from codegen.code_metadata.domain.aggregates.code_node import CodeNode, ModuleNode
 from codegen.code_metadata.application.ports.code_node_sync_service import (
     CodeNodeSyncService,
 )
@@ -28,7 +28,7 @@ class SqlAlchemyCodeNodeSyncService(CodeNodeSyncService):
     @override
     def save_nodes_bulk(
         self,
-        node_dtos: list[CodeNodeDto],
+        node_dtos: list[CodeNode],
         sync_id: str,
         fqn_prefix: str,
         module_fqn_prefix: str,

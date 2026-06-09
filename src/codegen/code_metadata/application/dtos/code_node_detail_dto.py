@@ -3,7 +3,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
-from codegen.code_metadata.domain.value_objects.edge import CodeEdge
+from codegen.code_metadata.domain.value_objects.code_edge import CodeEdge
 
 
 class CodeNodeDetailDto(BaseModel):

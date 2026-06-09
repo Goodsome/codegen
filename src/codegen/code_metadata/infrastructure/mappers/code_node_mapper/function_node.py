@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from codegen.code_metadata.application.dtos.code_node_dto import FunctionNodeDto
+from codegen.code_metadata.domain.aggregates.code_node import FunctionNode
 from codegen.code_metadata.infrastructure.mappers.code_node_mapper.base_mapper import (
     BaseMapper,
 )
@@ -15,8 +15,8 @@ class FunctionNodeMapper:
     """FunctionNode 专属的三向 Mapper。"""
 
     @classmethod
-    def to_dto(cls, orm_model: CodeNodeModel) -> FunctionNodeDto:
-        return FunctionNodeDto(
+    def to_dto(cls, orm_model: CodeNodeModel) -> FunctionNode:
+        return FunctionNode(
             fqn=orm_model.fqn,
             name=orm_model.name,
             outbound_edges=BaseMapper.to_outbound_edge_dtos(orm_model),

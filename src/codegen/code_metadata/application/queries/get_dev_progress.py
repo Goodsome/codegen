@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from pydantic import BaseModel
 
-from codegen.code_metadata.application.dtos.code_node_dto import ModuleNodeDto
+from codegen.code_metadata.domain.aggregates.code_node import ModuleNode
 from codegen.code_metadata.application.dtos.dev_progress import DevProgress
 from codegen.code_metadata.application.ports.code_node_query_service import CodeNodeQueryService
 from codegen.code_metadata.application.ports.file_differ import FileDiffer
@@ -26,7 +26,7 @@ class GetDevProgressHandler:
 
         dev_progress = DevProgress()
         for node in nodes:
-            if not isinstance(node, ModuleNodeDto):
+            if not isinstance(node, ModuleNode):
                 continue
             file_metrics = self.file_differ.get_diff_metric(node, registry)
             dev_progress.add_record(file_metrics)

@@ -6,8 +6,8 @@ from sqlalchemy import exists, not_, select
 from sqlalchemy.orm import Session, selectinload, sessionmaker
 
 from codegen.code_metadata.application.dtos.code_node_detail_dto import CodeNodeDetailDto
-from codegen.code_metadata.application.dtos.code_node_dto import (
-    CodeNodeDto,
+from codegen.code_metadata.domain.aggregates.code_node import (
+    CodeNode,
 )
 from codegen.code_metadata.application.ports.code_node_query_service import (
     CodeNodeQueryService,
@@ -28,7 +28,7 @@ class SqlAlchemyCodeNodeQueryService(CodeNodeQueryService):
     session_factory: sessionmaker[Session]
 
     @override
-    def find_by_fqn_prefix(self, fqn_prefix: str) -> list[CodeNodeDto]:
+    def find_by_fqn_prefix(self, fqn_prefix: str) -> list[CodeNode]:
         stmt = (
             select(CodeNodeModel)
             .where(CodeNodeModel.fqn.like(f"{fqn_prefix}%"))
@@ -91,7 +91,7 @@ class SqlAlchemyCodeNodeQueryService(CodeNodeQueryService):
         return orm_to_detail_dto(model)
 
     @override
-    def find_unused_nodes(self, kind: CodeNodeKind) -> list[CodeNodeDto]:
+    def find_unused_nodes(self, kind: CodeNodeKind) -> list[CodeNode]:
         _SUPPORTED = {CodeNodeKind.CLASS, CodeNodeKind.FUNCTION, CodeNodeKind.VARIABLE}
         if kind not in _SUPPORTED:
             raise ValueError(

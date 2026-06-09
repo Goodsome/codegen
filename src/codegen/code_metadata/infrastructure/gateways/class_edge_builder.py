@@ -1,11 +1,11 @@
 from dataclasses import dataclass, field
 
-from codegen.code_metadata.application.dtos.code_node_dto import (
-    ClassNodeDto,
-    CodeNodeDto,
-    ExternalNodeDto,
-    MethodNodeDto,
-    VariableNodeDto,
+from codegen.code_metadata.domain.aggregates.code_node import (
+    ClassNode,
+    CodeNode,
+    ExternalNode,
+    MethodNode,
+    VariableNode,
 )
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
 from codegen.code_metadata.domain.value_objects import (
@@ -32,13 +32,13 @@ from codegen.shared.domain.enums import PythonBuiltinType
 
 @dataclass
 class ClassEdgeBuilder:
-    class_node: ClassNodeDto
+    class_node: ClassNode
     class_def: AstClassDef
     node_registry: NodeRegistry
     local_aliases: dict[str, str]
     
     function_local_aliases: dict[str, str] = field(default_factory=dict)
-    scope_stack: list[CodeNodeDto] = field(default_factory=list)
+    scope_stack: list[CodeNode] = field(default_factory=list)
     edge_stack: list[EdgeType] = field(default_factory=list)
     attribute_stack: list[str] = field(default_factory=list)
 
@@ -53,7 +53,7 @@ class ClassEdgeBuilder:
         self.function_local_aliases = {}
 
     @property
-    def current_node(self) -> CodeNodeDto | None:
+    def current_node(self) -> CodeNode | None:
         if not self.scope_stack:
             return None
         return self.scope_stack[-1]
@@ -76,7 +76,7 @@ class ClassEdgeBuilder:
                 node_alias_key = base.id
                 node_key = self.local_aliases.get(node_alias_key, node_alias_key)
                 node = self.node_registry.get_node(node_key)
-                assert isinstance(node, (ClassNodeDto, ExternalNodeDto)), node
+                assert isinstance(node, (ClassNode, ExternalNode)), node
                 self.class_node.inherits(node)
             case AstSubscript():
                 self._parse_base(
@@ -103,7 +103,7 @@ class ClassEdgeBuilder:
         elif func_def.is_expression_property:
             func_fqn = f"{func_fqn}::<expression>"
         func_node = self.node_registry.get_node(func_fqn)
-        assert isinstance(func_node, MethodNodeDto), func_node
+        assert isinstance(func_node, MethodNode), func_node
         if func_def.returns:
             self._build_function_returns_edge(
                 function_node=func_node,
@@ -112,7 +112,7 @@ class ClassEdgeBuilder:
 
     def _build_function_returns_edge(
         self,
-        function_node: MethodNodeDto,
+        function_node: MethodNode,
         returns: AstExpr,
     ):
         match returns:
@@ -120,7 +120,7 @@ class ClassEdgeBuilder:
                 fqn = self.local_aliases.get(id, id)
                 target_node = self.node_registry.get_node(fqn)
                 assert isinstance(
-                    target_node, ClassNodeDto | ExternalNodeDto | VariableNodeDto
+                    target_node, ClassNode | ExternalNode | VariableNode
                 ), target_node
                 function_node.returns(target_node)
             case AstConstant(value=None):
@@ -198,7 +198,7 @@ class ClassEdgeBuilder:
         elif func_def.is_expression_property:
             func_fqn = f"{func_fqn}::<expression>"
         func_node = self.node_registry.get_node(func_fqn)
-        assert isinstance(func_node, MethodNodeDto), func_node
+        assert isinstance(func_node, MethodNode), func_node
         
         self.scope_stack.append(func_node)
 
@@ -213,7 +213,7 @@ class ClassEdgeBuilder:
 
     def _visit_assign(self, assign: AstAssign):
         match self.current_node:
-            case ClassNodeDto():
+            case ClassNode():
                 self._visit_assign_in_class(assign)
             case _:
                 raise ValueError(f"Unsupported node type: {self.current_node}")
@@ -235,9 +235,9 @@ class ClassEdgeBuilder:
 
     def _visit_ann_assign(self, ann_assign: AstAnnAssign):
         match self.current_node:
-            case ClassNodeDto():
+            case ClassNode():
                 self._visit_ann_assign_in_class(ann_assign)
-            # case MethodNodeDto():
+            # case MethodNode():
                 # self._visit_ann_assign_in_function(ann_assign)
             case _:
                 raise ValueError(f"Unsupported node type: {self.current_node}")
@@ -306,7 +306,7 @@ class ClassEdgeBuilder:
         target_node = self.node_registry.get_node(fqn)
         while self.attribute_stack:
             attr = self.attribute_stack.pop()
-            if isinstance(target_node, ExternalNodeDto):
+            if isinstance(target_node, ExternalNode):
                 attr_fqn = f"{target_node.fqn}.{attr}"
             else:
                 attr_fqn = f"{target_node.fqn}::{attr}"

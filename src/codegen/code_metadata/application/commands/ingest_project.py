@@ -36,7 +36,7 @@ class IngestProject:
             fqn_prefix = f"src/codegen/{cmd.prefix}/"
             module_fqn_prefix = f"codegen.{cmd.prefix}."
 
-        # 1. 构建图：遍历文件系统，产出 CodeNodeDto 列表
+        # 1. 构建图：遍历文件系统，产出 CodeNode 列表
         node_dtos = self.graph_builder.build(fqn_prefix=fqn_prefix)
 
         # 2. Mark：批量 UPSERT 节点 + 全量替换出边

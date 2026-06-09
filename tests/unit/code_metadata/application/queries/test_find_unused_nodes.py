@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock
 
-from codegen.code_metadata.application.dtos.code_node_dto import ClassNodeDto
+from codegen.code_metadata.domain.aggregates.code_node import ClassNode
 from codegen.code_metadata.application.queries.find_unused_nodes import FindUnusedNodes
 from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
 
@@ -9,8 +9,8 @@ class TestFindUnusedNodes:
     def test_execute_delegates_to_query_service(self) -> None:
         mock_service = MagicMock()
         expected = [
-            ClassNodeDto(fqn="codegen.foo.Bar", name="Bar"),
-            ClassNodeDto(fqn="codegen.baz.Qux", name="Qux"),
+            ClassNode(fqn="codegen.foo.Bar", name="Bar"),
+            ClassNode(fqn="codegen.baz.Qux", name="Qux"),
         ]
         mock_service.find_unused_nodes.return_value = expected
 

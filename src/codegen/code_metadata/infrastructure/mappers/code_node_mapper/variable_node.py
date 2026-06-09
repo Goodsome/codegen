@@ -3,7 +3,7 @@
 from __future__ import annotations
 from typing import Any
 
-from codegen.code_metadata.application.dtos.code_node_dto import VariableNodeDto
+from codegen.code_metadata.domain.aggregates.code_node import VariableNode
 from codegen.code_metadata.domain.value_objects.ast_expr import ast_expr_adapter
 from codegen.code_metadata.infrastructure.mappers.code_node_mapper.base_mapper import (
     BaseMapper,
@@ -17,7 +17,7 @@ class VariableNodeMapper:
     """VariableNode 专属的三向 Mapper。"""
 
     @classmethod
-    def to_dto(cls, orm_model: VariableNodeModel) -> VariableNodeDto:
+    def to_dto(cls, orm_model: VariableNodeModel) -> VariableNode:
         annotation = (
             ast_expr_adapter.validate_python(orm_model.annotation)
             if orm_model.annotation
@@ -28,7 +28,7 @@ class VariableNodeMapper:
             if orm_model.value
             else None
         )
-        return VariableNodeDto(
+        return VariableNode(
             fqn=orm_model.fqn,
             name=orm_model.name,
             annotation=annotation,
@@ -37,7 +37,7 @@ class VariableNodeMapper:
         )
 
     @classmethod
-    def dto_to_upsert_dict(cls, dto: VariableNodeDto, sync_id: str) -> dict[str, Any]:
+    def dto_to_upsert_dict(cls, dto: VariableNode, sync_id: str) -> dict[str, Any]:
         annotation = (
             ast_expr_adapter.dump_python(dto.annotation, mode="json")
             if dto.annotation

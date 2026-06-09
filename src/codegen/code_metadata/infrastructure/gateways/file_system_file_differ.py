@@ -7,15 +7,15 @@ from codegen.code_dom.application.queries.get_code_document_diff import (
     GetCodeDocumentDiffQuery,
 )
 from codegen.code_dom.domain.aggregates.code_document import CodeDocument
-from codegen.code_metadata.application.dtos.code_node_dto import (
-    ClassNodeDto,
-    CodeNodeDto,
-    FunctionNodeDto,
-    MethodNodeDto,
-    ModuleNodeDto,
-    VariableNodeDto,
+from codegen.code_metadata.domain.aggregates.code_node import (
+    ClassNode,
+    CodeNode,
+    FunctionNode,
+    MethodNode,
+    ModuleNode,
+    VariableNode,
 )
-from codegen.code_metadata.domain.value_objects.edge import CodeEdge
+from codegen.code_metadata.domain.value_objects.code_edge import CodeEdge
 from codegen.code_metadata.application.dtos.file_metrics import FileMetrics
 from codegen.code_metadata.application.ports.file_differ import FileDiffer
 from codegen.code_metadata.application.registry.node_registry import NodeRegistry
@@ -40,7 +40,7 @@ class FileSystemFileDiffer(FileDiffer):
 
     @override
     def get_diff_metric(
-        self, module: ModuleNodeDto, node_registry: NodeRegistry
+        self, module: ModuleNode, node_registry: NodeRegistry
     ) -> FileMetrics:
         code_document = module_node_dto_to_code_document(module, node_registry)
         query = GetCodeDocumentDiffQuery(code_document=code_document)
@@ -49,7 +49,7 @@ class FileSystemFileDiffer(FileDiffer):
 
 
 def module_node_dto_to_code_document(
-    module: ModuleNodeDto, node_registry: NodeRegistry
+    module: ModuleNode, node_registry: NodeRegistry
 ) -> CodeDocument:
     physical_path = Path("src") / module.fqn.replace(".", "/")
     if module.is_package:
@@ -80,20 +80,20 @@ def edge_to_ast(edge: CodeEdge, node_registry: NodeRegistry) -> AstStmt:
             raise NotImplementedError(f"{edge=}")
 
 
-def node_to_ast(node: CodeNodeDto, node_registry: NodeRegistry) -> AstStmt:
+def node_to_ast(node: CodeNode, node_registry: NodeRegistry) -> AstStmt:
     match node:
-        case ClassNodeDto():
+        case ClassNode():
             return class_node_dto_to_ast_class_def(node, node_registry)
-        case MethodNodeDto() | FunctionNodeDto():
+        case MethodNode() | FunctionNode():
             return method_node_dto_to_ast(node, node_registry)
-        case VariableNodeDto():
+        case VariableNode():
             return variable_node_dto_to_ast(node, node_registry)
         case _:
             raise NotImplementedError(f"{node}=")
 
 
 def class_node_dto_to_ast_class_def(
-    class_node: ClassNodeDto, node_registry: NodeRegistry
+    class_node: ClassNode, node_registry: NodeRegistry
 ) -> AstClassDef:
     body: list[AstStmt] = []
     for edge in class_node.outbound_edges:
@@ -110,7 +110,7 @@ def class_node_dto_to_ast_class_def(
 
 
 def method_node_dto_to_ast(
-    method_node: MethodNodeDto | FunctionNodeDto,
+    method_node: MethodNode | FunctionNode,
     node_registry: NodeRegistry,
 ) -> AstFunctionDef:
     arguments = collect_arguments_from_outbound_edges(
@@ -129,7 +129,7 @@ def method_node_dto_to_ast(
 
 
 def variable_node_dto_to_ast(
-    variable_node: VariableNodeDto, node_registry: NodeRegistry
+    variable_node: VariableNode, node_registry: NodeRegistry
 ) -> AstAssign | AstAnnAssign:
     target = AstName(id=variable_node.name)
     if variable_node.annotation:
@@ -167,7 +167,7 @@ def collect_arguments_from_outbound_edges(
         if edge.kind is not EdgeType.CONTAINS:
             continue
         target_node = node_registry.get_node(edge.fqn)
-        if not isinstance(target_node, VariableNodeDto):
+        if not isinstance(target_node, VariableNode):
             continue
         ast_arg = variable_node_dto_to_ast(target_node, node_registry)
         arguments.append(ast_arg)

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from codegen.code_metadata.application.dtos.code_node_dto import ModuleNodeDto
+from codegen.code_metadata.domain.aggregates.code_node import ModuleNode
 from codegen.code_metadata.infrastructure.mappers.code_node_mapper.base_mapper import (
     BaseMapper,
 )
@@ -16,9 +16,9 @@ class ModuleNodeMapper:
     """ModuleNode 专属的三向 Mapper。"""
 
     @classmethod
-    def to_dto(cls, orm_model: CodeNodeModel) -> ModuleNodeDto:
+    def to_dto(cls, orm_model: CodeNodeModel) -> ModuleNode:
         assert isinstance(orm_model, ModuleNodeModel)
-        return ModuleNodeDto(
+        return ModuleNode(
             fqn=orm_model.fqn,
             name=orm_model.name,
             description=orm_model.description,

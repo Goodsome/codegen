@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from codegen.code_metadata.domain.enums.edge_direction import EdgeDirection
-from codegen.code_metadata.domain.value_objects.edge import CodeEdge, create_edge
+from codegen.code_metadata.domain.value_objects.code_edge import CodeEdge, create_edge
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
 from codegen.code_metadata.infrastructure.orm_models.code_node_model import (
     CodeNodeModel,

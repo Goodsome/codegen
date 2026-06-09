@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from codegen.code_metadata.application.dtos.code_node_dto import CodeNodeDto
+from codegen.code_metadata.domain.aggregates.code_node import CodeNode
 from codegen.code_metadata.application.dtos.node_tree import NodeTree
 from codegen.code_metadata.application.ports.code_node_query_service import CodeNodeQueryService
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
@@ -22,10 +22,10 @@ class GetDirectoryTree:
 
         return self._build_subtree(root_dto, index)
 
-    def _build_subtree(self, dto: CodeNodeDto, index: dict[str, CodeNodeDto]) -> NodeTree:
+    def _build_subtree(self, dto: CodeNode, index: dict[str, CodeNode]) -> NodeTree:
         children = [
-            self._build_subtree(index[e.target_fqn], index)
+            self._build_subtree(index[e.fqn], index)
             for e in dto.outbound_edges
-            if e.type == EdgeType.CONTAINS and e.target_fqn in index
+            if e.kind == EdgeType.CONTAINS and e.fqn in index
         ]
         return NodeTree(node=dto, children=children)

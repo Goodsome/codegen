@@ -5,7 +5,7 @@ from dependency_injector.wiring import Provide, inject
 from rich.console import Console
 from rich.table import Table
 
-from codegen.code_metadata.application.dtos.code_node_dto import CodeNodeDto
+from codegen.code_metadata.domain.aggregates.code_node import CodeNode
 from codegen.code_metadata.application.queries.find_unused_nodes import FindUnusedNodes
 from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
 
@@ -22,7 +22,7 @@ SUPPORTED_KINDS: set[CodeNodeKind] = {
 def _find_unused_nodes(
     kind: CodeNodeKind,
     use_case: FindUnusedNodes = Provide["code_metadata_container.find_unused_nodes"],
-) -> list[CodeNodeDto]:
+) -> list[CodeNode]:
     return use_case.execute(kind)
 
 

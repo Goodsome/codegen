@@ -4,16 +4,16 @@ from collections import defaultdict
 from dataclasses import dataclass
 
 from codegen.code_metadata.application.dtos.code_node_detail_dto import CodeNodeDetailDto
-from codegen.code_metadata.application.dtos.code_node_dto import (
-    ClassNodeDto,
-    CodeNodeDto,
-    DirectoryNodeDto,
-    ExternalNodeDto,
-    FileNodeDto,
-    FunctionNodeDto,
-    MethodNodeDto,
-    ModuleNodeDto,
-    VariableNodeDto,
+from codegen.code_metadata.domain.aggregates.code_node import (
+    ClassNode,
+    CodeNode,
+    DirectoryNode,
+    ExternalNode,
+    FileNode,
+    FunctionNode,
+    MethodNode,
+    ModuleNode,
+    VariableNode,
 )
 from codegen.code_metadata.application.dtos.graph_view import GraphViewDTO, GraphViewNode
 from codegen.code_metadata.application.dtos.trace_query import TraceSymbolDependenciesQuery
@@ -72,7 +72,7 @@ class TraceSymbolDependenciesQueryHandler:
                 child_node.edge_type = edge.kind
                 children.append(child_node)
 
-        return GraphViewNode(node=_detail_to_node_dto(detail), children=children)
+        return GraphViewNode(node=_detail_to_node(detail), children=children)
 
     @staticmethod
     def group_children_by_edge_type(
@@ -103,28 +103,28 @@ class TraceSymbolDependenciesQueryHandler:
         return result
 
 
-def _detail_to_node_dto(detail: CodeNodeDetailDto) -> CodeNodeDto:
-    """将 CodeNodeDetailDto 降级为 CodeNodeDto（用于树节点存储）。"""
+def _detail_to_node(detail: CodeNodeDetailDto) -> CodeNode:
+    """将 CodeNodeDetailDto 降级为 CodeNode（用于树节点存储）。"""
     outbound_edges = detail.outbound_edges
     match detail.kind:
         case CodeNodeKind.DIRECTORY:
-            return DirectoryNodeDto(fqn=detail.fqn, name=detail.name, outbound_edges=outbound_edges)
+            return DirectoryNode(fqn=detail.fqn, name=detail.name, outbound_edges=outbound_edges)
         case CodeNodeKind.FILE:
-            return FileNodeDto(fqn=detail.fqn, name=detail.name, outbound_edges=outbound_edges)
+            return FileNode(fqn=detail.fqn, name=detail.name, outbound_edges=outbound_edges)
         case CodeNodeKind.MODULE:
-            return ModuleNodeDto(
+            return ModuleNode(
                 fqn=detail.fqn,
                 name=detail.name,
                 is_package=bool(detail.properties.get("is_package", False)),
                 outbound_edges=outbound_edges,
             )
         case CodeNodeKind.CLASS:
-            return ClassNodeDto(fqn=detail.fqn, name=detail.name, outbound_edges=outbound_edges)
+            return ClassNode(fqn=detail.fqn, name=detail.name, outbound_edges=outbound_edges)
         case CodeNodeKind.FUNCTION:
-            return FunctionNodeDto(fqn=detail.fqn, name=detail.name, outbound_edges=outbound_edges)
+            return FunctionNode(fqn=detail.fqn, name=detail.name, outbound_edges=outbound_edges)
         case CodeNodeKind.METHOD:
-            return MethodNodeDto(fqn=detail.fqn, name=detail.name, outbound_edges=outbound_edges)
+            return MethodNode(fqn=detail.fqn, name=detail.name, outbound_edges=outbound_edges)
         case CodeNodeKind.VARIABLE:
-            return VariableNodeDto(fqn=detail.fqn, name=detail.name, outbound_edges=outbound_edges)
+            return VariableNode(fqn=detail.fqn, name=detail.name, outbound_edges=outbound_edges)
         case CodeNodeKind.EXTERNAL:
-            return ExternalNodeDto(fqn=detail.fqn, name=detail.name, outbound_edges=outbound_edges)
+            return ExternalNode(fqn=detail.fqn, name=detail.name, outbound_edges=outbound_edges)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from codegen.code_metadata.application.dtos.code_node_dto import CodeNodeDto
+from codegen.code_metadata.domain.aggregates.code_node import CodeNode
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
 
 
@@ -13,7 +13,7 @@ class GraphViewNode:
     node 为 None 时表示分组节点（如 "Calls:" 标签），仅用于展示分组标题。
     """
 
-    node: CodeNodeDto | None
+    node: CodeNode | None
     edge_type: EdgeType | None = None
     children: list[GraphViewNode] = field(default_factory=list)
 
