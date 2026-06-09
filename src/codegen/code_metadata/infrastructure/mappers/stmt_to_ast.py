@@ -1,4 +1,5 @@
 import ast
+from typing import cast
 
 from codegen.code_metadata.domain.value_objects import (
     AstAlias,
@@ -29,12 +30,13 @@ from codegen.code_metadata.domain.value_objects import (
 from codegen.code_metadata.domain.value_objects.ast_import import AstImport
 from codegen.code_metadata.infrastructure.mappers._convert import binop_to_ast
 from codegen.code_metadata.infrastructure.mappers.arguments_to_ast import ArgumentsToAst
-from codegen.code_metadata.infrastructure.mappers.match_pattern_to_ast import MatchPatternToAst
+from codegen.code_metadata.infrastructure.mappers.match_pattern_to_ast import (
+    MatchPatternToAst,
+)
 from codegen.code_metadata.infrastructure.mappers.expr_to_ast import ExprToAst
 
 
 class StmtToAst:
-
     @staticmethod
     def _fix_pos(node: ast.stmt) -> ast.stmt:
         if not hasattr(node, "lineno"):
@@ -101,7 +103,7 @@ class StmtToAst:
             names=[StmtToAst.from_alias(n) for n in stmt.names],
             level=stmt.level,
         )
-    
+
     @staticmethod
     def from_alias(stmt: AstAlias) -> ast.alias:
         return ast.alias(
@@ -156,15 +158,15 @@ class StmtToAst:
         )
 
     @staticmethod
-    def from_pass(stmt: AstPass) -> ast.Pass:
+    def from_pass(_stmt: AstPass) -> ast.Pass:
         return ast.Pass()
 
     @staticmethod
-    def from_continue(stmt: AstContinue) -> ast.Continue:
+    def from_continue(_stmt: AstContinue) -> ast.Continue:
         return ast.Continue()
 
     @staticmethod
-    def from_break(stmt: AstBreak) -> ast.Break:
+    def from_break(_stmt: AstBreak) -> ast.Break:
         return ast.Break()
 
     @staticmethod
@@ -176,15 +178,19 @@ class StmtToAst:
 
     @staticmethod
     def from_assign(stmt: AstAssign) -> ast.Assign:
+        value = ExprToAst.to_node(stmt.value)
         return ast.Assign(
             targets=[ExprToAst.to_node(t) for t in stmt.targets],
-            value=ExprToAst.to_node(stmt.value),
+            value=value,
         )
 
     @staticmethod
     def from_ann_assign(stmt: AstAnnAssign) -> ast.AnnAssign:
         return ast.AnnAssign(
-            target=ExprToAst.to_node(stmt.target),
+            target=cast(
+                "ast.Name | ast.Attribute | ast.Subscript",
+                ExprToAst.to_node(stmt.target),
+            ),
             annotation=ExprToAst.to_node(stmt.annotation),
             value=ExprToAst.to_node(stmt.value),
             simple=stmt.simple,
@@ -193,7 +199,10 @@ class StmtToAst:
     @staticmethod
     def from_aug_assign(stmt: AstAugAssign) -> ast.AugAssign:
         return ast.AugAssign(
-            target=ExprToAst.to_node(stmt.target),
+            target=cast(
+                "ast.Name | ast.Attribute | ast.Subscript",
+                ExprToAst.to_node(stmt.target),
+            ),
             op=binop_to_ast(stmt.op),
             value=ExprToAst.to_node(stmt.value),
         )

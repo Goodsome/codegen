@@ -105,15 +105,15 @@ class AstToStmt:
         )
 
     @staticmethod
-    def to_ast_pass(node: ast.Pass) -> AstPass:
+    def to_ast_pass(_node: ast.Pass) -> AstPass:
         return AstPass()
 
     @staticmethod
-    def to_ast_break(node: ast.Break) -> AstBreak:
+    def to_ast_break(_node: ast.Break) -> AstBreak:
         return AstBreak()
 
     @staticmethod
-    def to_ast_continue(node: ast.Continue) -> AstContinue:
+    def to_ast_continue(_node: ast.Continue) -> AstContinue:
         return AstContinue()
 
     @staticmethod
@@ -131,7 +131,8 @@ class AstToStmt:
     @staticmethod
     def to_ast_assign(node: ast.Assign) -> AstAssign:
         targets = [AstToExpr.to_expr(target) for target in node.targets]
-        return AstAssign(targets=targets, value=AstToExpr.to_expr(node.value))
+        value = AstToExpr.to_expr(node.value)
+        return AstAssign(targets=targets, value=value)
 
     @staticmethod
     def to_ast_ann_assign(node: ast.AnnAssign) -> AstAnnAssign:

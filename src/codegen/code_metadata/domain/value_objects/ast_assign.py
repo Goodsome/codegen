@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 class AstAssign(ValueObject):
     kind: Literal[AstStmtKind.ASSIGN] = AstStmtKind.ASSIGN
     targets: list[AstExpr] = Field(default_factory=list)
-    value: AstExpr | None = None
+    value: AstExpr
 
     @property
     def target(self):
