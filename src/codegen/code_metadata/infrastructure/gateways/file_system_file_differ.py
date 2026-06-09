@@ -15,7 +15,7 @@ from codegen.code_metadata.domain.aggregates.code_node import (
     ModuleNode,
     VariableNode,
 )
-from codegen.code_metadata.domain.value_objects.code_edge import CodeEdge
+from codegen.code_metadata.domain.value_objects.code_edge import CodeEdge, ContainsEdge, ImportsEdge, InheritsEdge
 from codegen.code_metadata.application.dtos.file_metrics import FileMetrics
 from codegen.code_metadata.application.ports.file_differ import FileDiffer
 from codegen.code_metadata.application.registry.node_registry import NodeRegistry
@@ -24,6 +24,7 @@ from codegen.code_metadata.domain.value_objects import (
     AstAlias,
     AstAnnAssign,
     AstAssign,
+    AstExpr,
     AstFunctionDef,
     AstImport,
     AstImportFrom,
@@ -60,9 +61,9 @@ def module_node_dto_to_code_document(
     
     for edge in module.outbound_edges:
         if edge.kind == EdgeType.IMPORTS:
-            imports.append(edge_to_ast(edge, node_registry))
+            imports.append(edge_to_ast_stmt(edge, node_registry))
         else:
-            body.append(edge_to_ast(edge, node_registry))
+            body.append(edge_to_ast_stmt(edge, node_registry))
 
     return CodeDocument(
         physical_path=physical_path,
@@ -70,17 +71,17 @@ def module_node_dto_to_code_document(
         description=module.description,
     )
 
-def edge_to_ast(edge: CodeEdge, node_registry: NodeRegistry) -> AstStmt:
-    match edge.kind:
-        case EdgeType.IMPORTS:
-            return import_edge_to_ast(edge, node_registry)
-        case EdgeType.CONTAINS:
+def edge_to_ast_stmt(edge: CodeEdge, node_registry: NodeRegistry) -> AstStmt:
+    match edge:
+        case ImportsEdge():
+            return imports_edge_to_ast(edge, node_registry)
+        case ContainsEdge():
             return contains_edge_to_ast(edge, node_registry)
         case _:
             raise NotImplementedError(f"{edge=}")
 
 
-def node_to_ast(node: CodeNode, node_registry: NodeRegistry) -> AstStmt:
+def node_to_ast_stmt(node: CodeNode, node_registry: NodeRegistry) -> AstStmt:
     match node:
         case ClassNode():
             return class_node_dto_to_ast_class_def(node, node_registry)
@@ -91,18 +92,30 @@ def node_to_ast(node: CodeNode, node_registry: NodeRegistry) -> AstStmt:
         case _:
             raise NotImplementedError(f"{node}=")
 
+def edge_to_ast_expr(edge: CodeEdge, node_registry: NodeRegistry) -> AstExpr:
+    match edge:
+        case InheritsEdge():
+            return inherits_edge_to_ast_name(edge, node_registry)
+        case _:
+            raise NotImplementedError(f"{edge=}")
 
 def class_node_dto_to_ast_class_def(
     class_node: ClassNode, node_registry: NodeRegistry
 ) -> AstClassDef:
+    bases: list[AstExpr] = []
     body: list[AstStmt] = []
     for edge in class_node.outbound_edges:
-        body.append(edge_to_ast(edge, node_registry))
+        match edge:
+            case InheritsEdge():
+                ast_expr = edge_to_ast_expr(edge, node_registry)
+                bases.append(ast_expr)
+            case _:
+                body.append(edge_to_ast_stmt(edge, node_registry))
 
     return AstClassDef(
         name=class_node.name,
         description=class_node.description,
-        bases=[],
+        bases=bases,
         keywords=[],
         body=body,
         decorator_list=[],
@@ -140,14 +153,22 @@ def variable_node_dto_to_ast(
         )
     return AstAssign(targets=[target], value=variable_node.value)
 
-def contains_edge_to_ast(edge: CodeEdge, node_registry: NodeRegistry) -> AstStmt:
+def contains_edge_to_ast(edge: ContainsEdge, node_registry: NodeRegistry) -> AstStmt:
     target_node = node_registry.get_node(edge.fqn)
-    ast_stmt = node_to_ast(target_node, node_registry)
+    ast_stmt = node_to_ast_stmt(target_node, node_registry)
     return ast_stmt
 
+def inherits_edge_to_ast_name(edge: InheritsEdge, node_registry: NodeRegistry) -> AstName:
+    if "::" in edge.fqn:
+        name = edge.fqn.rsplit("::", 1)[-1]
+    else:
+        name = edge.fqn.rsplit(".", 1)[-1]
+    return AstName(
+        id=name,
+    )
 
-def import_edge_to_ast(
-    edge: CodeEdge, node_registry: NodeRegistry
+def imports_edge_to_ast(
+    edge: ImportsEdge, node_registry: NodeRegistry
 ) -> AstImport | AstImportFrom:
     if "::" in edge.fqn:
         module, name = edge.fqn.rsplit("::", 1)
