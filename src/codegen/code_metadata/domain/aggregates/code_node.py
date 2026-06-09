@@ -9,7 +9,7 @@ from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
 from codegen.code_metadata.domain.enums.edge_direction import EdgeDirection
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
 from codegen.code_metadata.domain.value_objects import AstExpr, AstStmt
-from codegen.code_metadata.domain.value_objects.code_edge import CodeEdge, create_edge
+from codegen.code_metadata.domain.value_objects.code_edge import CodeEdge, ImportsEdge, create_edge
 
 
 class _BaseNode(BaseModel):
@@ -18,16 +18,18 @@ class _BaseNode(BaseModel):
     description: str | None = Field(default=None)
     outbound_edges: list[CodeEdge] = Field(default_factory=list)
 
-    def _add_edge(self, type: EdgeType, fqn: str) -> CodeEdge:
-        for e in self.outbound_edges:
-            if e.fqn == fqn and e.kind == type:
-                return e
-        edge = create_edge(kind=type, fqn=fqn, direction=EdgeDirection.OUT)
+    def _add_edge(self, edge: CodeEdge):
+        if edge in self.outbound_edges:
+            return
         self.outbound_edges.append(edge)
+
+    def _add_edge_by_type(self, type: EdgeType, fqn: str) -> CodeEdge:
+        edge = create_edge(kind=type, fqn=fqn, direction=EdgeDirection.OUT)
+        self._add_edge(edge)
         return edge
 
     def add_edge(self, type: EdgeType, node: CodeNode):
-        self._add_edge(type, node.fqn)
+        self._add_edge_by_type(type, node.fqn)
 
     def parent_fqn(self) -> str:
         splits = re.split(r"[.|::]", self.fqn)
@@ -39,7 +41,7 @@ class DirectoryNode(_BaseNode):
     kind: Literal[CodeNodeKind.DIRECTORY] = CodeNodeKind.DIRECTORY
 
     def contains(self, node: FileNode | DirectoryNode):
-        self._add_edge(EdgeType.CONTAINS, node.fqn)
+        self._add_edge_by_type(EdgeType.CONTAINS, node.fqn)
 
 
 class FileNode(_BaseNode):
@@ -48,7 +50,7 @@ class FileNode(_BaseNode):
     kind: Literal[CodeNodeKind.FILE] = CodeNodeKind.FILE
 
     def defines_module(self, node: ModuleNode):
-        self._add_edge(EdgeType.DEFINES_MODULE, node.fqn)
+        self._add_edge_by_type(EdgeType.DEFINES_MODULE, node.fqn)
 
 
 class ModuleNode(_BaseNode):
@@ -58,10 +60,19 @@ class ModuleNode(_BaseNode):
     is_package: bool = False
 
     def contains(self, node: ClassNode | FunctionNode | VariableNode):
-        self._add_edge(EdgeType.CONTAINS, node.fqn)
+        self._add_edge_by_type(EdgeType.CONTAINS, node.fqn)
 
-    def imports(self, node: ExternalNode | ClassNode | FunctionNode | VariableNode) -> CodeEdge:
-        return self._add_edge(EdgeType.IMPORTS, node.fqn)
+    def imports(
+        self, 
+        node: ExternalNode | ClassNode | FunctionNode | VariableNode,
+        is_type_checking: bool = False,
+    ):
+        edge = ImportsEdge(
+            fqn=node.fqn,
+            direction=EdgeDirection.OUT,
+            is_type_checking=is_type_checking,
+        )
+        self._add_edge(edge)
 
     def get_parent_by_level(self, level: int) -> str:
         if level == 0:
@@ -83,10 +94,10 @@ class ClassNode(_BaseNode):
     decorator_list: list[AstExpr] = Field(default_factory=list)
 
     def contains(self, node: MethodNode | VariableNode):
-        self._add_edge(EdgeType.CONTAINS, node.fqn)
+        self._add_edge_by_type(EdgeType.CONTAINS, node.fqn)
 
     def inherits(self, node: ClassNode | ExternalNode):
-        self._add_edge(EdgeType.INHERITS, node.fqn)
+        self._add_edge_by_type(EdgeType.INHERITS, node.fqn)
 
 
 class FunctionNode(_BaseNode):
@@ -99,10 +110,10 @@ class FunctionNode(_BaseNode):
     body: list[AstStmt] = Field(default_factory=list)
 
     def contains(self, node: VariableNode):
-        self._add_edge(EdgeType.CONTAINS, node.fqn)
+        self._add_edge_by_type(EdgeType.CONTAINS, node.fqn)
 
     def add_returns(self, node: ClassNode | ExternalNode | VariableNode):
-        self._add_edge(EdgeType.RETURNS, node.fqn)
+        self._add_edge_by_type(EdgeType.RETURNS, node.fqn)
 
 
 class MethodNode(_BaseNode):
@@ -115,10 +126,10 @@ class MethodNode(_BaseNode):
     body: list[AstStmt] = Field(default_factory=list)
 
     def contains(self, node: VariableNode):
-        self._add_edge(EdgeType.CONTAINS, node.fqn)
+        self._add_edge_by_type(EdgeType.CONTAINS, node.fqn)
 
     def add_returns(self, node: ClassNode | ExternalNode | VariableNode):
-        self._add_edge(EdgeType.RETURNS, node.fqn)
+        self._add_edge_by_type(EdgeType.RETURNS, node.fqn)
 
 class VariableNode(_BaseNode):
     """变量节点：kind 固定为 VARIABLE，由模块节点的 AST 赋值语句派生。"""

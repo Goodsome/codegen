@@ -26,6 +26,7 @@ from codegen.code_metadata.domain.value_objects import (
     AstAssign,
     AstExpr,
     AstFunctionDef,
+    AstIf,
     AstImport,
     AstImportFrom,
     AstName,
@@ -112,6 +113,9 @@ def class_node_dto_to_ast_class_def(
             case _:
                 body.append(edge_to_ast_stmt(edge, node_registry))
 
+    if not body:
+        body = [AstPass()]
+        
     return AstClassDef(
         name=class_node.name,
         description=class_node.description,
@@ -129,6 +133,9 @@ def method_node_dto_to_ast(
     arguments = collect_arguments_from_outbound_edges(
         method_node.outbound_edges, node_registry
     )
+    body = method_node.body
+    if not body:
+        body = [AstPass()]
     return AstFunctionDef(
         name=method_node.name,
         body=method_node.body,
@@ -167,15 +174,21 @@ def inherits_edge_to_ast_name(edge: InheritsEdge, node_registry: NodeRegistry) -
 
 def imports_edge_to_ast(
     edge: ImportsEdge, node_registry: NodeRegistry
-) -> AstImport | AstImportFrom:
+) -> AstImport | AstImportFrom | AstIf:
     if "::" in edge.fqn:
         module, name = edge.fqn.rsplit("::", 1)
-        return AstImportFrom(module=module, names=[AstAlias(name=name, asname=None)])
+        imports = AstImportFrom(module=module, names=[AstAlias(name=name, asname=None)])
     elif "." in edge.fqn:
         module, name = edge.fqn.rsplit(".", 1)
-        return AstImportFrom(module=module, names=[AstAlias(name=name, asname=None)])
+        imports = AstImportFrom(module=module, names=[AstAlias(name=name, asname=None)])
     else:
-        return AstImport(names=[AstAlias(name=edge.fqn, asname=None)])
+        imports = AstImport(names=[AstAlias(name=edge.fqn, asname=None)])
+    if edge.is_type_checking:
+        imports = AstIf(
+            test=AstName(id="TYPE_CHECKING"),
+            body=[imports]
+        )
+    return imports
 
 
 def collect_arguments_from_outbound_edges(

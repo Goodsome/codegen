@@ -4,6 +4,7 @@ from dependency_injector.wiring import Provide, inject
 from typer import Argument, Option
 
 from codegen.code_metadata.application.dtos.dev_progress import DevProgress
+from codegen.code_metadata.application.dtos.file_metrics import FileMetrics
 from codegen.code_metadata.application.queries.get_dev_progress import GetDevProgressHandler, GetDevProgressQuery
 
 console = Console()
@@ -37,10 +38,14 @@ def get_dev_progress(
 
     match_count = 0
     unknown_count = 0
+    unmatch_records: list[FileMetrics] = []
     for r in result.records:
+        if r.file_name == "__init__":
+            continue
         if r.ast_similarity == 1:
             match_count += 1
             continue
+        unmatch_records.append(r)
         if r.component_type == "unknown":
             unknown_count += 1
         diff_sign = "+" if r.line_diff > 0 else ""
@@ -57,8 +62,8 @@ def get_dev_progress(
         + f"Unknown Files: {unknown_count}/{len(result.records)}"
     )
 
-    if len(result.records) == 1:
-        record = result.records[0]
+    if len(unmatch_records) == 1:
+        record = unmatch_records[0]
         console.print(f"  {record.file_name:<40} {record.component_type:<20} " )
         console.print("-" * 76)
         console.print(f"{record.original_code}")

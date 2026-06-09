@@ -15,15 +15,7 @@ from codegen.code_metadata.application.ports.code_node_sync_service import (
 
 @dataclass
 class IngestProject:
-    """将一个 bounded context 下的目录结构扫描入库为 CodeNode 图。
-
-    采用 Mark-and-Sweep 算法处理增量同步：
-    1. CodeGraphBuilder 构建图（产出 DTO，不含 ID）
-    2. CodeNodeSyncService 批量 UPSERT 节点 + 全量替换边（Mark）
-    3. CodeNodeSyncService 清除幽灵节点（Sweep）
-
-    纯粹的编排者：不包含任何业务规则或领域状态计算。
-    """
+    """将一个 bounded context 下的目录结构扫描入库为 CodeNode 图。"""
 
     graph_builder: CodeGraphBuilder
     sync_service: CodeNodeSyncService

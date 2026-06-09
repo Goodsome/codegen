@@ -8,10 +8,7 @@ from codegen.code_metadata.domain.enums.edge_type import EdgeType
 
 @dataclass
 class GraphViewNode:
-    """依赖图视图的递归树节点。
-
-    node 为 None 时表示分组节点（如 "Calls:" 标签），仅用于展示分组标题。
-    """
+    """依赖图视图的递归树节点。 node 为 None 时表示分组节点（如 "Calls:" 标签），仅用于展示分组标题。"""
 
     node: CodeNode | None
     edge_type: EdgeType | None = None
