@@ -15,6 +15,7 @@ from codegen.code_metadata.domain.aggregates.code_node import (
     ModuleNode,
     VariableNode,
 )
+from codegen.code_metadata.domain.value_objects.ast_expr_stmt import AstExprStmt
 from codegen.code_metadata.domain.value_objects.code_edge import CodeEdge, ContainsEdge, ImportsEdge, InheritsEdge
 from codegen.code_metadata.application.dtos.file_metrics import FileMetrics
 from codegen.code_metadata.application.ports.file_differ import FileDiffer
@@ -58,13 +59,28 @@ def module_node_dto_to_code_document(
         physical_path = physical_path / "__init__.py"
 
     imports: list[AstStmt] = []
+    if_imports: list[AstStmt] = []
     body: list[AstStmt] = []
     
     for edge in module.outbound_edges:
-        if edge.kind == EdgeType.IMPORTS:
-            imports.append(edge_to_ast_stmt(edge, node_registry))
-        else:
-            body.append(edge_to_ast_stmt(edge, node_registry))
+        match edge:
+            case ImportsEdge(is_type_checking=True):
+                if_imports.append(edge_to_ast_stmt(edge, node_registry))
+            case ImportsEdge(is_type_checking=False):
+                imports.append(edge_to_ast_stmt(edge, node_registry))
+            case _:
+                body.append(edge_to_ast_stmt(edge, node_registry))
+
+    for expr in module.exprs:
+        body.append(AstExprStmt(value=expr))
+
+    if if_imports:
+        imports.append(
+            AstIf(
+                test=AstName(id="TYPE_CHECKING"),
+                body=if_imports
+            )
+        )
 
     return CodeDocument(
         physical_path=physical_path,
@@ -103,13 +119,11 @@ def edge_to_ast_expr(edge: CodeEdge, node_registry: NodeRegistry) -> AstExpr:
 def class_node_dto_to_ast_class_def(
     class_node: ClassNode, node_registry: NodeRegistry
 ) -> AstClassDef:
-    bases: list[AstExpr] = []
     body: list[AstStmt] = []
     for edge in class_node.outbound_edges:
         match edge:
             case InheritsEdge():
-                ast_expr = edge_to_ast_expr(edge, node_registry)
-                bases.append(ast_expr)
+                continue
             case _:
                 body.append(edge_to_ast_stmt(edge, node_registry))
 
@@ -119,7 +133,7 @@ def class_node_dto_to_ast_class_def(
     return AstClassDef(
         name=class_node.name,
         description=class_node.description,
-        bases=bases,
+        bases=class_node.bases,
         keywords=[],
         body=body,
         decorator_list=class_node.decorator_list,
@@ -174,7 +188,7 @@ def inherits_edge_to_ast_name(edge: InheritsEdge, node_registry: NodeRegistry) -
 
 def imports_edge_to_ast(
     edge: ImportsEdge, node_registry: NodeRegistry
-) -> AstImport | AstImportFrom | AstIf:
+) -> AstImport | AstImportFrom:
     if "::" in edge.fqn:
         module, name = edge.fqn.rsplit("::", 1)
         imports = AstImportFrom(module=module, names=[AstAlias(name=name, asname=None)])
@@ -183,11 +197,7 @@ def imports_edge_to_ast(
         imports = AstImportFrom(module=module, names=[AstAlias(name=name, asname=None)])
     else:
         imports = AstImport(names=[AstAlias(name=edge.fqn, asname=None)])
-    if edge.is_type_checking:
-        imports = AstIf(
-            test=AstName(id="TYPE_CHECKING"),
-            body=[imports]
-        )
+        
     return imports
 
 

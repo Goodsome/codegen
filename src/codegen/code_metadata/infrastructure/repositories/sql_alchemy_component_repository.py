@@ -25,34 +25,25 @@ from codegen.shared.application.dtos.page_query import PageQuery
 
 @dataclass
 class SqlAlchemyComponentRepository(ComponentRepository):
-    """
-    Component 仓储的 SQLAlchemy 实现。
-    负责管理 Component 聚合根的持久化生命周期，隔离基础设施层与领域层。
-    """
+    """ Component 仓储的 SQLAlchemy 实现。 负责管理 Component 聚合根的持久化生命周期，隔离基础设施层与领域层。 """
 
     session: Session
 
     @override
     def _add(self, aggregate: Component) -> None:
-        """
-        新增一个 Component 聚合根到数据库。
-        """
+        """ 新增一个 Component 聚合根到数据库。 """
         orm_model = ComponentMapper.to_orm(aggregate)
         self.session.add(orm_model)
 
     @override
     def _add_all(self, aggregates: list[Component]) -> None:
-        """
-        批量新增 Component 聚合根到数据库。
-        """
+        """ 批量新增 Component 聚合根到数据库。 """
         orm_models = [ComponentMapper.to_orm(aggregate) for aggregate in aggregates]
         self.session.add_all(orm_models)
 
     @override
     def _get(self, id: ComponentId) -> Component:
-        """
-        根据 ID 获取 Component 聚合根。如果找不到则抛出异常。
-        """
+        """ 根据 ID 获取 Component 聚合根。如果找不到则抛出异常。 """
 
         orm_model = self.session.get(
             ComponentModel,
@@ -71,9 +62,7 @@ class SqlAlchemyComponentRepository(ComponentRepository):
 
     @override
     def _save(self, aggregate: Component) -> None:
-        """
-        更新现有的 Component 聚合根。
-        """
+        """ 更新现有的 Component 聚合根。 """
         orm_model = ComponentMapper.to_orm(aggregate)
         self.session.merge(orm_model)
 
@@ -87,9 +76,7 @@ class SqlAlchemyComponentRepository(ComponentRepository):
 
     @override
     def _delete(self, id: ComponentId) -> None:
-        """
-        删除 Component 聚合根及其所有下属实体。
-        """
+        """ 删除 Component 聚合根及其所有下属实体。 """
         model = self.session.get(ComponentModel, id.value)
         if model:
             self.session.delete(model)

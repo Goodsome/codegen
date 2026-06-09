@@ -20,12 +20,17 @@ class ClassNodeMapper:
             ast_expr_adapter.validate_python(decorator)
             for decorator in orm_model.decorator_list
         ]
+        bases = [
+            ast_expr_adapter.validate_python(base)
+            for base in orm_model.bases
+        ]
         return ClassNode(
             fqn=orm_model.fqn,
             name=orm_model.name,
             description=orm_model.description,
             outbound_edges=to_outbound_edges(orm_model.outbound_edges),
-            decorator_list=decorator_list
+            decorator_list=decorator_list,
+            bases=bases,
         )
 
     @classmethod
@@ -34,6 +39,11 @@ class ClassNodeMapper:
             ast_expr_adapter.dump_python(decorator, mode="json")
             for decorator in dto.decorator_list
         ]
+        bases = [
+            ast_expr_adapter.dump_python(base, mode="json")
+            for base in dto.bases
+        ]
         return {
-            "decorator_list": decorator_list
+            "decorator_list": decorator_list,
+            "bases": bases,
         }

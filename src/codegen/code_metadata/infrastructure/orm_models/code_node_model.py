@@ -83,6 +83,14 @@ class ModuleNodeModel(CodeNodeModel):
     def _is_package_expression(cls) -> ColumnElement[bool]:
         return cls.properties["is_package"].as_boolean()
 
+    @hybrid_property
+    def exprs(self) -> list[dict[str, object]]:
+        return self.properties.get("exprs", [])
+
+    @exprs.setter
+    def _exprs_setter(self, value: list[dict[str, object]]):
+        self.properties = {**self.properties, "exprs": value}
+
 
 class ClassNodeModel(CodeNodeModel):
     __mapper_args__: dict[str, str] = {"polymorphic_identity": CodeNodeKind.CLASS}
@@ -94,7 +102,14 @@ class ClassNodeModel(CodeNodeModel):
     @decorator_list.setter
     def _decorator_lista_setter(self, value: list[dict[str, object]]):
         self.properties = {**self.properties, "decorator_list": value}
-        
+
+    @hybrid_property
+    def bases(self) -> list[dict[str, object]]:
+        return self.properties.get("bases", [])
+
+    @bases.setter
+    def _bases_setter(self, value: list[dict[str, object]]):
+        self.properties = {**self.properties, "bases": value}
 
 class FunctionNodeModel(CodeNodeModel):
     __mapper_args__: dict[str, str] = {"polymorphic_identity": CodeNodeKind.FUNCTION}

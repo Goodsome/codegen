@@ -13,9 +13,7 @@ if TYPE_CHECKING:
     from .code_node_model import CodeNodeModel
 
 class CodeEdgeModel(BaseORM):
-    """
-    统一的关联实体表（图谱边表）
-    """
+    """ 统一的关联实体表（图谱边表） """
     __tablename__: str = "code_edges"
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)

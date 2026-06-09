@@ -128,13 +128,18 @@ class CodeGraphAcl:
             case AstExprStmt(value=AstConstant()):
                 pass
             case AstExprStmt():
-                pass
+                self._parse_expr(stmt, parent_node)
             case AstPass():
                 pass
             case _:
                 raise NotImplementedError(
                     f"Unsupported statement: {stmt=} in {parent_node.fqn=}"
                 )
+
+    def _parse_expr(self, stmt: AstExprStmt, node: ModuleNode | ClassNode):
+        if isinstance(node, ClassNode):
+            raise NotImplementedError(f"{stmt=}, {node=}")
+        node.exprs.append(stmt.value)
 
     def _parse_class_def(
         self, class_def: AstClassDef, module_node: ModuleNode
@@ -145,6 +150,7 @@ class CodeGraphAcl:
             name=class_def.name,
             description=class_def.description,
             decorator_list=class_def.decorator_list,
+            bases=class_def.bases,
         )
         module_node.contains(node)
         for stmt in class_def.body:

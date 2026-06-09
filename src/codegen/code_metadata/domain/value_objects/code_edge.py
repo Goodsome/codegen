@@ -4,6 +4,7 @@ from pydantic import Field, TypeAdapter
 
 from codegen.code_metadata.domain.enums.edge_direction import EdgeDirection
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
+from codegen.code_metadata.domain.value_objects import AstExpr
 from codegen.shared.domain.core import ValueObject
 
 

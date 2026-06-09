@@ -9,7 +9,7 @@ from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
 from codegen.code_metadata.domain.enums.edge_direction import EdgeDirection
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
 from codegen.code_metadata.domain.value_objects import AstExpr, AstStmt
-from codegen.code_metadata.domain.value_objects.code_edge import CodeEdge, ImportsEdge, create_edge
+from codegen.code_metadata.domain.value_objects.code_edge import CodeEdge, ImportsEdge, InheritsEdge, create_edge
 
 
 class _BaseNode(BaseModel):
@@ -58,6 +58,7 @@ class ModuleNode(_BaseNode):
 
     kind: Literal[CodeNodeKind.MODULE] = CodeNodeKind.MODULE
     is_package: bool = False
+    exprs: list[AstExpr] = Field(default_factory=list)
 
     def contains(self, node: ClassNode | FunctionNode | VariableNode):
         self._add_edge_by_type(EdgeType.CONTAINS, node.fqn)
@@ -92,12 +93,17 @@ class ClassNode(_BaseNode):
     kind: Literal[CodeNodeKind.CLASS] = CodeNodeKind.CLASS
     
     decorator_list: list[AstExpr] = Field(default_factory=list)
+    bases: list[AstExpr] = Field(default_factory=list)
 
     def contains(self, node: MethodNode | VariableNode):
         self._add_edge_by_type(EdgeType.CONTAINS, node.fqn)
 
-    def inherits(self, node: ClassNode | ExternalNode):
-        self._add_edge_by_type(EdgeType.INHERITS, node.fqn)
+    def inherits(self, node: ClassNode | ExternalNode, base: AstExpr):
+        edge = InheritsEdge(
+            fqn=node.fqn,
+            direction=EdgeDirection.OUT,
+        )
+        self._add_edge(edge)
 
 
 class FunctionNode(_BaseNode):

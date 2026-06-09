@@ -108,7 +108,7 @@ class AstToExpr:
             case ast.YieldFrom():
                 return AstToExpr.to_ast_yield_from(node)
             case _:
-                raise NotImplementedError(f"Unsupported node type: {type(node)}")
+                raise NotImplementedError(f"Unsupported node type: {type(node)}, {ast.unparse(node)=}")
 
     @staticmethod
     def to_ast_constant(node: ast.Constant) -> AstConstant:

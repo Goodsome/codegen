@@ -21,9 +21,10 @@ class GetProjectDocumentsHandler:
 
     def handle(self, query: GetProjectDocumentsQuery) -> GetProjectDocumentsResult:
         path = query.dir_path
+        file_path = query.dir_path.with_suffix(".py")
         if path.is_dir():
             code_documents = self.code_parser.parse_directory(query.dir_path)
-        elif (file_path := query.dir_path.with_suffix(".py")).is_file():
+        elif file_path.is_file():
             code_document = self.code_parser.parse_file(file_path)
             code_documents = [code_document]
         else:

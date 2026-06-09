@@ -25,6 +25,7 @@ from codegen.code_metadata.domain.value_objects import (
     AstRaise,
     AstReturn,
     AstTry,
+    AstWhile,
     AstWith,
     AstWithItem,
 )
@@ -87,9 +88,19 @@ class StmtToAst:
                 node = StmtToAst.from_import(stmt)
             case AstImportFrom():
                 node = StmtToAst.from_import_from(stmt)
+            case AstWhile():
+                node = StmtToAst.from_while(stmt)
             case _:
                 raise NotImplementedError(f"Unsupported AstStmt type: {type(stmt)}")
         return StmtToAst._fix_pos(node)
+
+    @staticmethod
+    def from_while(stmt: AstWhile):
+        return ast.While(
+            test=ExprToAst.to_node(stmt.test),
+            body=[StmtToAst.to_node(b) for b in stmt.body],
+            orelse=[StmtToAst.to_node(b) for b in stmt.orelse],
+        )
 
     @staticmethod
     def from_import(stmt: AstImport) -> ast.Import:
