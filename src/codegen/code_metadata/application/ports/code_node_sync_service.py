@@ -25,7 +25,7 @@ class CodeNodeSyncService(ABC):
         1. 以 FQN 为自然键执行 UPSERT（存在则更新，不存在则插入）。
         2. 将每个节点的 last_sync_id 标记为 sync_id（Mark 阶段）。
         3. 查询 FQN → 数据库实际 ID 的映射。
-        4. 将 OutboundEdgeDto.target_fqn 解析为 target_id。
+        4. 将 Edge.fqn 解析为 target_id。
         5. 清空旧出边 → 批量插入新出边。
 
         Returns:

@@ -13,9 +13,9 @@ from codegen.code_metadata.application.dtos.code_node_dto import (
     FunctionNodeDto,
     MethodNodeDto,
     ModuleNodeDto,
-    OutboundEdgeDto,
     VariableNodeDto,
 )
+from codegen.code_metadata.domain.value_objects.edge import CodeEdge
 from codegen.code_metadata.application.dtos.file_metrics import FileMetrics
 from codegen.code_metadata.application.ports.file_differ import FileDiffer
 from codegen.code_metadata.application.registry.node_registry import NodeRegistry
@@ -23,7 +23,6 @@ from codegen.code_metadata.domain.enums.edge_type import EdgeType
 from codegen.code_metadata.domain.value_objects import (
     AstAlias,
     AstAnnAssign,
-    AstArguments,
     AstAssign,
     AstFunctionDef,
     AstImport,
@@ -32,7 +31,6 @@ from codegen.code_metadata.domain.value_objects import (
     AstPass,
     AstStmt,
 )
-from codegen.code_metadata.domain.value_objects.arg import Arg
 from codegen.code_metadata.domain.value_objects.ast_class_def import AstClassDef
 
 
@@ -61,7 +59,7 @@ def module_node_dto_to_code_document(
     body: list[AstStmt] = []
     
     for edge in module.outbound_edges:
-        if edge.type == EdgeType.IMPORTS:
+        if edge.kind == EdgeType.IMPORTS:
             imports.append(edge_to_ast(edge, node_registry))
         else:
             body.append(edge_to_ast(edge, node_registry))
@@ -72,8 +70,8 @@ def module_node_dto_to_code_document(
         description=module.description,
     )
 
-def edge_to_ast(edge: OutboundEdgeDto, node_registry: NodeRegistry) -> AstStmt:
-    match edge.type:
+def edge_to_ast(edge: CodeEdge, node_registry: NodeRegistry) -> AstStmt:
+    match edge.kind:
         case EdgeType.IMPORTS:
             return import_edge_to_ast(edge, node_registry)
         case EdgeType.CONTAINS:
@@ -97,7 +95,9 @@ def node_to_ast(node: CodeNodeDto, node_registry: NodeRegistry) -> AstStmt:
 def class_node_dto_to_ast_class_def(
     class_node: ClassNodeDto, node_registry: NodeRegistry
 ) -> AstClassDef:
-    body = collect_body_from_outbound_edges(class_node.outbound_edges, node_registry)
+    body: list[AstStmt] = []
+    for edge in class_node.outbound_edges:
+        body.append(edge_to_ast(edge, node_registry))
 
     return AstClassDef(
         name=class_node.name,
@@ -140,55 +140,33 @@ def variable_node_dto_to_ast(
         )
     return AstAssign(targets=[target], value=variable_node.value)
 
-
-def collect_body_from_outbound_edges(
-    edges: list[OutboundEdgeDto], node_registry: NodeRegistry
-) -> list[AstStmt]:
-    body: list[AstStmt] = []
-    for edge in edges:
-        if edge.type not in [EdgeType.CONTAINS]:
-            continue
-        ast_stmt = contains_edge_to_ast(edge, node_registry)
-        body.append(ast_stmt)
-
-    return body
-
-def contains_edge_to_ast(edge: OutboundEdgeDto, node_registry: NodeRegistry) -> AstStmt:
-    target_node = node_registry.get_node(edge.target_fqn)
+def contains_edge_to_ast(edge: CodeEdge, node_registry: NodeRegistry) -> AstStmt:
+    target_node = node_registry.get_node(edge.fqn)
     ast_stmt = node_to_ast(target_node, node_registry)
     return ast_stmt
 
-def collect_imports_from_outbound_edges(
-    edges: list[OutboundEdgeDto], node_registry: NodeRegistry
-) -> list[AstStmt]:
-    return [
-        import_edge_to_ast(edge, node_registry)
-        for edge in edges
-        if edge.type is EdgeType.IMPORTS
-    ]
-
 
 def import_edge_to_ast(
-    edge: OutboundEdgeDto, node_registry: NodeRegistry
+    edge: CodeEdge, node_registry: NodeRegistry
 ) -> AstImport | AstImportFrom:
-    if "::" in edge.target_fqn:
-        module, name = edge.target_fqn.rsplit("::", 1)
+    if "::" in edge.fqn:
+        module, name = edge.fqn.rsplit("::", 1)
         return AstImportFrom(module=module, names=[AstAlias(name=name, asname=None)])
-    elif "." in edge.target_fqn:
-        module, name = edge.target_fqn.rsplit(".", 1)
+    elif "." in edge.fqn:
+        module, name = edge.fqn.rsplit(".", 1)
         return AstImportFrom(module=module, names=[AstAlias(name=name, asname=None)])
     else:
-        return AstImport(names=[AstAlias(name=edge.target_fqn, asname=None)])
+        return AstImport(names=[AstAlias(name=edge.fqn, asname=None)])
 
 
 def collect_arguments_from_outbound_edges(
-    edges: list[OutboundEdgeDto], node_registry: NodeRegistry
+    edges: list[CodeEdge], node_registry: NodeRegistry
 ) -> list[AstAssign | AstAnnAssign]:
     arguments: list[AstAssign | AstAnnAssign] = []
     for edge in edges:
-        if edge.type is not EdgeType.CONTAINS:
+        if edge.kind is not EdgeType.CONTAINS:
             continue
-        target_node = node_registry.get_node(edge.target_fqn)
+        target_node = node_registry.get_node(edge.fqn)
         if not isinstance(target_node, VariableNodeDto):
             continue
         ast_arg = variable_node_dto_to_ast(target_node, node_registry)

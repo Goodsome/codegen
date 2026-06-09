@@ -13,7 +13,6 @@ from codegen.code_metadata.application.dtos.code_node_dto import (
     FunctionNodeDto,
     MethodNodeDto,
     ModuleNodeDto,
-    OutboundEdgeDto,
     VariableNodeDto,
 )
 from codegen.code_metadata.application.dtos.graph_view import GraphViewDTO, GraphViewNode
@@ -21,7 +20,7 @@ from codegen.code_metadata.application.dtos.trace_query import TraceSymbolDepend
 from codegen.code_metadata.application.ports.code_node_query_service import CodeNodeQueryService
 from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
-from codegen.code_metadata.domain.enums.trace_direction import TraceDirection
+from codegen.code_metadata.domain.enums.edge_direction import EdgeDirection
 
 
 @dataclass
@@ -45,7 +44,7 @@ class TraceSymbolDependenciesQueryHandler:
     def _build_tree(
         self,
         detail: CodeNodeDetailDto,
-        direction: TraceDirection,
+        direction: EdgeDirection,
         visited: set[str],
         edge_type_filter: EdgeType | None = None,
         depth: int = 1,
@@ -56,22 +55,21 @@ class TraceSymbolDependenciesQueryHandler:
         children: list[GraphViewNode] = []
 
         if depth > 0:
-            edges = detail.outbound_edges if direction == TraceDirection.OUT else detail.inbound_edges
-            fqn_attr = "target_fqn" if direction == TraceDirection.OUT else "source_fqn"
+            edges = detail.outbound_edges if direction == EdgeDirection.OUT else detail.inbound_edges
 
             for edge in edges:
-                if edge.type in self._SKIP_EDGE_TYPES:
+                if edge.kind in self._SKIP_EDGE_TYPES:
                     continue
-                if edge_type_filter is not None and edge.type != edge_type_filter:
+                if edge_type_filter is not None and edge.kind != edge_type_filter:
                     continue
-                next_fqn = getattr(edge, fqn_attr)
+                next_fqn = edge.fqn
                 if next_fqn in visited:
                     continue
                 child_detail = self.query_service.find_by_fqn(next_fqn)
                 if child_detail is None:
                     continue
                 child_node = self._build_tree(child_detail, direction, visited, edge_type_filter, depth=depth - 1)
-                child_node.edge_type = edge.type
+                child_node.edge_type = edge.kind
                 children.append(child_node)
 
         return GraphViewNode(node=_detail_to_node_dto(detail), children=children)
@@ -107,10 +105,7 @@ class TraceSymbolDependenciesQueryHandler:
 
 def _detail_to_node_dto(detail: CodeNodeDetailDto) -> CodeNodeDto:
     """将 CodeNodeDetailDto 降级为 CodeNodeDto（用于树节点存储）。"""
-    outbound_edges = [
-        OutboundEdgeDto(type=e.type, target_fqn=e.target_fqn)
-        for e in detail.outbound_edges
-    ]
+    outbound_edges = detail.outbound_edges
     match detail.kind:
         case CodeNodeKind.DIRECTORY:
             return DirectoryNodeDto(fqn=detail.fqn, name=detail.name, outbound_edges=outbound_edges)

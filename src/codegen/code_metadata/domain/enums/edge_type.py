@@ -9,7 +9,6 @@ class EdgeType(StrEnum):
     EXPORTS = auto()
     
     INHERITS = auto()
-    INSTANTIATES = auto()
     IMPLEMENTS = auto()
 
     CALLS = auto()

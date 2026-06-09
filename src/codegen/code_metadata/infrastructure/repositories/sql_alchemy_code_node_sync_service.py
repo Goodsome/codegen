@@ -60,8 +60,8 @@ class SqlAlchemyCodeNodeSyncService(CodeNodeSyncService):
             external_fqns: set[str] = set()
             for dto in node_dtos:
                 for edge in dto.outbound_edges:
-                    if not edge.target_fqn.startswith(fqn_prefix):
-                        external_fqns.add(edge.target_fqn)
+                    if not edge.fqn.startswith(fqn_prefix):
+                        external_fqns.add(edge.fqn)
 
             conditions = [CodeNodeModel.fqn.startswith(fqn_prefix)]
             if external_fqns:
@@ -92,14 +92,14 @@ class SqlAlchemyCodeNodeSyncService(CodeNodeSyncService):
                     continue
 
                 for idx, edge_dto in enumerate(dto.outbound_edges):
-                    target_id = fqn_to_id.get(edge_dto.target_fqn)
+                    target_id = fqn_to_id.get(edge_dto.fqn)
                     if not target_id:
                         continue 
                         
                     edge_values.append({
                         "source_id": source_id,
                         "target_id": target_id,
-                        "type": edge_dto.type.value,
+                        "type": edge_dto.kind.value,
                         "position": idx,
                     })
                     

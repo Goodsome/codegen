@@ -7,17 +7,16 @@ from codegen.code_metadata.application.dtos.code_node_dto import (
     ExternalNodeDto,
     FunctionNodeDto,
     ModuleNodeDto,
-    OutboundEdgeDto,
     VariableNodeDto,
 )
+from codegen.code_metadata.domain.value_objects.edge import CodeEdge
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
-from codegen.code_metadata.domain.value_objects import AstExpr, AstIf, AstSubscript
+from codegen.code_metadata.domain.value_objects import AstIf
 from codegen.code_metadata.domain.value_objects.ast_class_def import AstClassDef
 from codegen.code_metadata.domain.value_objects.ast_import import AstImport
 from codegen.code_metadata.domain.value_objects.ast_import_from import AstImportFrom
 from codegen.code_metadata.domain.value_objects.ast_name import AstName
 from codegen.code_metadata.domain.value_objects.ast_stmt import AstStmt
-from codegen.code_metadata.domain.value_objects.code_edge import OutboundEdge
 from codegen.code_metadata.infrastructure.gateways.class_edge_builder import ClassEdgeBuilder
 from codegen.code_metadata.application.registry.node_registry import NodeRegistry
 
@@ -31,10 +30,10 @@ class ModuleBuildContext:
     def __post_init__(self):
         self.local_aliases = {}
         for edge in self.module.outbound_edges:
-            if edge.type is not EdgeType.CONTAINS:
+            if edge.kind is not EdgeType.CONTAINS:
                 continue
-            target_name = edge.target_fqn.split("::")[-1]
-            self.local_aliases[target_name] = edge.target_fqn
+            target_name = edge.fqn.split("::")[-1]
+            self.local_aliases[target_name] = edge.fqn
 
     def build(self):
         for stmt in self.code_document.body:
@@ -93,7 +92,7 @@ class ModuleBuildContext:
         import_name: str,
         from_name: str | None = None,
         asname: str | None = None,
-    ) -> OutboundEdgeDto:
+    ) -> CodeEdge:
         if from_name:
             is_external = not from_name.startswith("codegen.")
         else:

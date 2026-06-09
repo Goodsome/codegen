@@ -8,39 +8,23 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
+from codegen.code_metadata.domain.enums.edge_direction import EdgeDirection
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
 from codegen.code_metadata.domain.value_objects import AstExpr
-
-
-class OutboundEdgeDto(BaseModel):
-    """边的 DTO：用 target_fqn 引用目标节点，而非 target_id。
-
-    在构建阶段目标节点的数据库 ID 尚不可知，
-    因此通过自然键（FQN）建立引用，由仓储层在持久化时解析为实际 ID。
-    """
-
-    type: EdgeType
-    target_fqn: str
-
-
-class InboundEdgeDto(BaseModel):
-    """入边 DTO：用 source_fqn 引用源节点。"""
-
-    type: EdgeType
-    source_fqn: str
+from codegen.code_metadata.domain.value_objects.edge import CodeEdge, create_edge
 
 
 class _BaseNodeDto(BaseModel):
     fqn: str
     name: str
     description: str | None = Field(default=None)
-    outbound_edges: list[OutboundEdgeDto] = Field(default_factory=list)
+    outbound_edges: list[CodeEdge] = Field(default_factory=list)
 
-    def _add_edge(self, type: EdgeType, fqn: str) -> OutboundEdgeDto:
+    def _add_edge(self, type: EdgeType, fqn: str) -> CodeEdge:
         for e in self.outbound_edges:
-            if e.target_fqn == fqn and e.type == type:
+            if e.fqn == fqn and e.kind == type:
                 return e
-        edge = OutboundEdgeDto(type=type, target_fqn=fqn)
+        edge = create_edge(kind=type, fqn=fqn, direction=EdgeDirection.OUT)
         self.outbound_edges.append(edge)
         return edge
 
@@ -78,7 +62,7 @@ class ModuleNodeDto(_BaseNodeDto):
     def contains(self, node: ClassNodeDto | FunctionNodeDto | VariableNodeDto):
         self._add_edge(EdgeType.CONTAINS, node.fqn)
 
-    def imports(self, node: ExternalNodeDto | ClassNodeDto | FunctionNodeDto | VariableNodeDto) -> OutboundEdgeDto:
+    def imports(self, node: ExternalNodeDto | ClassNodeDto | FunctionNodeDto | VariableNodeDto) -> CodeEdge:
         return self._add_edge(EdgeType.IMPORTS, node.fqn)
 
     def get_parent_by_level(self, level: int) -> str:
@@ -165,5 +149,5 @@ class CodeNodeDetailDto(BaseModel):
     kind: CodeNodeKind
     description: str | None
     properties: dict[str, object]
-    outbound_edges: list[OutboundEdgeDto] = Field(default_factory=list)
-    inbound_edges: list[InboundEdgeDto] = Field(default_factory=list)
+    outbound_edges: list[CodeEdge] = Field(default_factory=list)
+    inbound_edges: list[CodeEdge] = Field(default_factory=list)

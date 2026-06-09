@@ -12,7 +12,7 @@ from codegen.code_metadata.application.queries.trace_symbol_dependencies import 
 )
 from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
-from codegen.code_metadata.domain.enums.trace_direction import TraceDirection
+from codegen.code_metadata.domain.enums.edge_direction import EdgeDirection
 
 console = Console()
 
@@ -33,7 +33,6 @@ EDGE_LABELS = {
     EdgeType.IMPORTS: "IMPORTS",
     EdgeType.CALLS: "CALLS",
     EdgeType.INHERITS: "INHERITS",
-    EdgeType.INSTANTIATES: "INSTANTIATES",
     EdgeType.EXPORTS: "EXPORTS",
     EdgeType.IMPLEMENTS: "IMPLEMENTS",
     EdgeType.TYPED_AS: "TYPED_AS",
@@ -86,9 +85,9 @@ def _render_children(parent: Tree, children: list[GraphViewNode]) -> None:
 def trace(
     fqn: Annotated[str, typer.Argument(help="Fully qualified name of the target symbol")],
     direction: Annotated[
-        TraceDirection,
+        EdgeDirection,
         typer.Option("--direction", "-d", help="Trace direction"),
-    ] = TraceDirection.OUT,
+    ] = EdgeDirection.OUT,
     edge_type: Annotated[
         EdgeType | None,
         typer.Option("--edge-type", "-e", help="Filter by edge type"),
