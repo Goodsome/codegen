@@ -28,6 +28,9 @@ from codegen.code_metadata.domain.value_objects import (
     AstWhile,
     AstWith,
     AstWithItem,
+    AstTypeVar,
+    AstTypeVarTuple,
+    AstParamSpec,
 )
 from codegen.code_metadata.domain.value_objects.ast_import import AstImport
 from codegen.code_metadata.infrastructure.mappers._convert import binop_to_ast
@@ -124,6 +127,26 @@ class StmtToAst:
         )
 
     @staticmethod
+    def from_type_param(tp: AstTypeVar | AstTypeVarTuple | AstParamSpec) -> ast.TypeVar | ast.TypeVarTuple | ast.ParamSpec:
+        match tp:
+            case AstTypeVar():
+                return ast.TypeVar(
+                    name=tp.name,
+                    bound=ExprToAst.to_node(tp.bound) if tp.bound else None,
+                    default_value=ExprToAst.to_node(tp.default_value) if tp.default_value else None,
+                )
+            case AstTypeVarTuple():
+                return ast.TypeVarTuple(
+                    name=tp.name,
+                    default_value=ExprToAst.to_node(tp.default_value) if tp.default_value else None,
+                )
+            case AstParamSpec():
+                return ast.ParamSpec(
+                    name=tp.name,
+                    default_value=ExprToAst.to_node(tp.default_value) if tp.default_value else None,
+                )
+
+    @staticmethod
     def from_class_def(stmt: AstClassDef) -> ast.ClassDef:
         if stmt.keywords:
             raise NotImplementedError(f"{stmt.keywords=}")
@@ -137,8 +160,9 @@ class StmtToAst:
             name=stmt.name,
             bases=[ExprToAst.to_node(b) for b in stmt.bases],
             keywords=[],
+            type_params=[StmtToAst.from_type_param(tp) for tp in stmt.type_params],
             body=body,
-            decorator_list=[ExprToAst.to_node(d) for d in stmt.decorator_list]
+            decorator_list=[ExprToAst.to_node(d) for d in stmt.decorator_list],
         )
 
     @staticmethod
@@ -311,6 +335,7 @@ class StmtToAst:
         return ast.FunctionDef(
             name=stmt.name,
             args=args,
+            type_params=[StmtToAst.from_type_param(tp) for tp in stmt.type_params],
             body=StmtToAst._to_body(stmt.body),
             decorator_list=[ExprToAst.to_node(d) for d in stmt.decorator_list],
             returns=ExprToAst.to_node(stmt.returns) if stmt.returns else None,
@@ -322,6 +347,7 @@ class StmtToAst:
         return ast.AsyncFunctionDef(
             name=stmt.name,
             args=ArgumentsToAst.to_node(stmt.args),
+            type_params=[StmtToAst.from_type_param(tp) for tp in stmt.type_params],
             body=StmtToAst._to_body(stmt.body),
             decorator_list=[ExprToAst.to_node(d) for d in stmt.decorator_list],
             returns=ExprToAst.to_node(stmt.returns) if stmt.returns else None,

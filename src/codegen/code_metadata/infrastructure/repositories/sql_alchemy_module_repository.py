@@ -24,10 +24,7 @@ from codegen.shared.application.dtos.page_query import PageQuery
 
 @dataclass
 class SqlAlchemyModuleRepository(ModuleRepository):
-    """
-    Module 仓储的 SQLAlchemy 实现。
-    负责管理 Module 聚合根的持久化生命周期，隔离基础设施层与领域层。
-    """
+    """Module 仓储的 SQLAlchemy 实现。 负责管理 Module 聚合根的持久化生命周期，隔离基础设施层与领域层。"""
 
     session: Session
 
@@ -78,10 +75,7 @@ class SqlAlchemyModuleRepository(ModuleRepository):
         unique_ids = {id.value for id in ids}
         stmt = select(ModuleModel).where(ModuleModel.id.in_(unique_ids))
         models = self.session.execute(stmt).scalars().all()
-        return {
-            ModuleId.reconstitute(m.id): ModuleMapper.to_domain(m)
-            for m in models
-        }
+        return {ModuleId.reconstitute(m.id): ModuleMapper.to_domain(m) for m in models}
 
     @override
     def find_by_paths(self, paths: set[str]) -> dict[str, Module]:
@@ -93,7 +87,8 @@ class SqlAlchemyModuleRepository(ModuleRepository):
 
     @override
     def find_components_by_ids(
-        self, component_ids: list[ComponentId],
+        self,
+        component_ids: list[ComponentId],
     ) -> dict[ComponentId, Component]:
         if not component_ids:
             return {}

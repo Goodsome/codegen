@@ -1,33 +1,33 @@
-from collections.abc import Iterator
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.engine import Engine
-from codegen.shared.infrastructure.orm_models.base import BaseORM
 import logging
+from collections.abc import Iterator
+
+from sqlalchemy import create_engine
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session, sessionmaker
+
+from codegen.shared.infrastructure.orm_models.base import BaseORM
+
 
 class Database:
-    """
-    Database connection handling using SQLAlchemy.
-    """
+    """Database connection handling using SQLAlchemy."""
+
     def __init__(self, connection_string: str) -> None:
         self._engine: Engine = create_engine(
             connection_string,
             pool_pre_ping=True,
         )
         self._session_factory: sessionmaker[Session] = sessionmaker(
-            bind=self._engine,
-            expire_on_commit=False,
-            autoflush=False
+            bind=self._engine, expire_on_commit=False, autoflush=False
         )
-    
+
     def get_session(self) -> Session:
         """Create a new database session."""
         return self._session_factory()
-    
+
     def close(self) -> None:
         """Close the database connection pool."""
         self._engine.dispose()
-    
+
     def init_db(self) -> None:
         """Create database tables if they don't exist."""
         try:
@@ -51,13 +51,13 @@ def init_database(connection_string: str) -> Iterator[Database]:
     """数据库资源的生命周期管理"""
     # 1. 实例化 Database 对象
     db = Database(connection_string)
-    
+
     # 2. 启动时的初始化逻辑 (对应 init_resources)
     try:
         # 可选：显式连一下数据库测试连通性，做到 Fail-Fast
         with db.engine.connect() as _:
-            pass 
-            
+            pass
+
         # 调用你的建表逻辑（如果你的项目不使用 Alembic 等迁移工具的话）
         db.init_db()
         logging.info("Database initialized and connected successfully.")

@@ -23,11 +23,6 @@ from codegen.code_metadata.infrastructure.orm_models.module_model import (
 
 
 class ModuleMapper:
-    """
-    负责 Module 聚合根与 Module ORM Model 之间的互相转换。
-    - FileModule / ExternalModule 的 components 通过 ComponentV2Mapper 转换。
-    - DirectoryModule 的 public_component_ids / sub_module_ids 以 JSONB 存储。
-    """
 
     # ==========================================
     # ORM -> DTO

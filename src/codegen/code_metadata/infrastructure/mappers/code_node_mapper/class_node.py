@@ -5,6 +5,7 @@ from typing import Any
 
 from codegen.code_metadata.domain.aggregates.code_node import ClassNode
 from codegen.code_metadata.domain.value_objects.ast_expr import ast_expr_adapter
+from codegen.code_metadata.domain.value_objects.ast_type_param import type_param_adapter
 from codegen.code_metadata.infrastructure.mappers.code_edge_mapper import (
     to_outbound_edges,
 )
@@ -24,6 +25,10 @@ class ClassNodeMapper:
             ast_expr_adapter.validate_python(base)
             for base in orm_model.bases
         ]
+        type_params = [
+            type_param_adapter.validate_python(tp)
+            for tp in orm_model.type_params
+        ]
         return ClassNode(
             fqn=orm_model.fqn,
             name=orm_model.name,
@@ -31,6 +36,7 @@ class ClassNodeMapper:
             outbound_edges=to_outbound_edges(orm_model.outbound_edges),
             decorator_list=decorator_list,
             bases=bases,
+            type_params=type_params,
         )
 
     @classmethod
@@ -43,7 +49,12 @@ class ClassNodeMapper:
             ast_expr_adapter.dump_python(base, mode="json")
             for base in dto.bases
         ]
+        type_params = [
+            type_param_adapter.dump_python(tp, mode="json")
+            for tp in dto.type_params
+        ]
         return {
             "decorator_list": decorator_list,
             "bases": bases,
+            "type_params": type_params,
         }

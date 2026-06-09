@@ -11,11 +11,13 @@ from codegen.shared.domain.core import ValueObject
 if TYPE_CHECKING:
     from codegen.code_metadata.domain.value_objects.ast_expr import AstExpr
     from codegen.code_metadata.domain.value_objects.ast_stmt import AstStmt
+    from codegen.code_metadata.domain.value_objects.ast_type_param import AstTypeParam
 
 
 class AstAsyncFunctionDef(ValueObject):
     kind: Literal[AstStmtKind.ASYNC_FUNCTION_DEF] = AstStmtKind.ASYNC_FUNCTION_DEF
     name: str
+    type_params: list[AstTypeParam] = Field(default_factory=list)
     args: AstArguments
     body: list[AstStmt] = Field(default_factory=list)
     decorator_list: list[AstExpr] = Field(default_factory=list)

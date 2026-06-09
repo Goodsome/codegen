@@ -7,9 +7,7 @@ from pydantic_core.core_schema import CoreSchema
 
 
 class NamingString(str):
-    """
-    基于 case-converter 的增强型字符串
-    """
+    """基于 case-converter 的增强型字符串"""
 
     def to_pascal(self) -> str:
         return caseconverter.pascalcase(self)
@@ -34,5 +32,3 @@ class NamingString(str):
             cls,
             core_schema.str_schema(),
         )
-
-

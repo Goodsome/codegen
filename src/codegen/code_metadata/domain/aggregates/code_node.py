@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
 from codegen.code_metadata.domain.enums.edge_direction import EdgeDirection
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
-from codegen.code_metadata.domain.value_objects import AstExpr, AstStmt
+from codegen.code_metadata.domain.value_objects import AstExpr, AstStmt, AstTypeParam
 from codegen.code_metadata.domain.value_objects.code_edge import CodeEdge, ImportsEdge, InheritsEdge, create_edge
 
 
@@ -94,6 +94,7 @@ class ClassNode(_BaseNode):
     
     decorator_list: list[AstExpr] = Field(default_factory=list)
     bases: list[AstExpr] = Field(default_factory=list)
+    type_params: list[AstTypeParam] = Field(default_factory=list)
 
     def contains(self, node: MethodNode | VariableNode):
         self._add_edge_by_type(EdgeType.CONTAINS, node.fqn)

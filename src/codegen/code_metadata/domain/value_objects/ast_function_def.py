@@ -15,13 +15,15 @@ from codegen.shared.domain.core import ValueObject
 if TYPE_CHECKING:
     from codegen.code_metadata.domain.value_objects.ast_expr import AstExpr
     from codegen.code_metadata.domain.value_objects.ast_stmt import AstStmt
+    from codegen.code_metadata.domain.value_objects.ast_type_param import AstTypeParam
 
 
 class AstFunctionDef(ValueObject):
     lineno: int
-    
+
     kind: Literal[AstStmtKind.FUNCTION_DEF] = AstStmtKind.FUNCTION_DEF
     name: str
+    type_params: list[AstTypeParam] = Field(default_factory=list)
     body: list[AstStmt] = Field(default_factory=list)
     decorator_list: list[AstExpr] = Field(default_factory=list)
     returns: AstExpr | None = None

@@ -9,8 +9,8 @@ from codegen.shared.infrastructure.orm_models.base import BaseORM
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .attribute_model import AttributeModel
-    from .behavior_model import BehaviorModel
+    from codegen.code_metadata.infrastructure.orm_models.attribute_model import AttributeModel
+    from codegen.code_metadata.infrastructure.orm_models.behavior_model import BehaviorModel
 
 
 class ComponentModel(BaseORM):

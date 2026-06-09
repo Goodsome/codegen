@@ -40,8 +40,6 @@ def get_dev_progress(
     unknown_count = 0
     unmatch_records: list[FileMetrics] = []
     for r in result.records:
-        if r.file_name == "__init__":
-            continue
         if r.ast_similarity == 1:
             match_count += 1
             continue

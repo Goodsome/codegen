@@ -30,6 +30,9 @@ from codegen.code_metadata.domain.value_objects import (
     AstTry,
     AstWith,
     AstWithItem,
+    AstTypeVar,
+    AstTypeVarTuple,
+    AstParamSpec,
 )
 from codegen.code_metadata.domain.value_objects.arg import Arg
 from codegen.code_metadata.infrastructure.mappers._convert import binop_from_ast
@@ -266,6 +269,7 @@ class AstToStmt:
         return AstFunctionDef(
             lineno=node.lineno,
             name=node.name,
+            type_params=[AstToStmt.to_type_param(tp) for tp in node.type_params],
             body=[AstToStmt.to_stmt(stmt) for stmt in node.body],
             decorator_list=[AstToExpr.to_expr(dec) for dec in node.decorator_list],
             returns=AstToExpr.to_expr(node.returns) if node.returns else None,
@@ -277,6 +281,7 @@ class AstToStmt:
     def to_ast_async_function_def(node: ast.AsyncFunctionDef) -> AstAsyncFunctionDef:
         return AstAsyncFunctionDef(
             name=node.name,
+            type_params=[AstToStmt.to_type_param(tp) for tp in node.type_params],
             args=AstToStmt._to_arguments(node.args),
             body=[AstToStmt.to_stmt(stmt) for stmt in node.body],
             decorator_list=[AstToExpr.to_expr(dec) for dec in node.decorator_list],
@@ -299,9 +304,32 @@ class AstToStmt:
         )
 
     @staticmethod
+    def to_type_param(node: ast.type_param) -> AstTypeVar | AstTypeVarTuple | AstParamSpec:
+        match node:
+            case ast.TypeVar():
+                return AstTypeVar(
+                    name=node.name,
+                    bound=AstToExpr.to_expr(node.bound) if node.bound else None,
+                    default_value=AstToExpr.to_expr(node.default_value) if node.default_value else None,
+                )
+            case ast.TypeVarTuple():
+                return AstTypeVarTuple(
+                    name=node.name,
+                    default_value=AstToExpr.to_expr(node.default_value) if node.default_value else None,
+                )
+            case ast.ParamSpec():
+                return AstParamSpec(
+                    name=node.name,
+                    default_value=AstToExpr.to_expr(node.default_value) if node.default_value else None,
+                )
+            case _:
+                raise NotImplementedError(f"Unsupported type_param: {type(node)}")
+
+    @staticmethod
     def to_ast_class_def(node: ast.ClassDef) -> AstClassDef:
         bases = [AstToExpr.to_expr(base) for base in node.bases]
         keywords = [AstKeyword(arg=kw.arg, value=AstToExpr.to_expr(kw.value)) for kw in node.keywords]
+        type_params = [AstToStmt.to_type_param(tp) for tp in node.type_params]
         body = [AstToStmt.to_stmt(stmt) for stmt in node.body]
         decorator_list = [AstToExpr.to_expr(dec) for dec in node.decorator_list]
         return AstClassDef(
@@ -309,6 +337,7 @@ class AstToStmt:
             description=ast.get_docstring(node),
             bases=bases,
             keywords=keywords,
+            type_params=type_params,
             body=body,
             decorator_list=decorator_list,
         )

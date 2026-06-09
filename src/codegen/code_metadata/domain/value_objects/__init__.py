@@ -51,6 +51,7 @@ from .ast_yield_from import AstYieldFrom
 from .ast_while import AstWhile
 from .ast_with import AstWith
 from .ast_with_item import AstWithItem
+from .ast_type_param import AstTypeParam, AstTypeVar, AstTypeVarTuple, AstParamSpec, type_param_adapter
 from .call_expr import CallExpr
 from .constant_expr import ConstantExpr
 from .dict_expr import DictExpr
@@ -126,6 +127,11 @@ __all__ = [
     "AstWhile",
     "AstWith",
     "AstWithItem",
+    "AstTypeParam",
+    "AstTypeVar",
+    "AstTypeVarTuple",
+    "AstParamSpec",
+    "type_param_adapter",
     "CallExpr",
     "ConstantExpr",
     "DictExpr",
@@ -192,4 +198,7 @@ AstRaise.model_rebuild()
 AstImport.model_rebuild()
 AstImportFrom.model_rebuild()
 AstClassDef.model_rebuild()
+AstTypeVar.model_rebuild()
+AstTypeVarTuple.model_rebuild()
+AstParamSpec.model_rebuild()
 AstWhile.model_rebuild()

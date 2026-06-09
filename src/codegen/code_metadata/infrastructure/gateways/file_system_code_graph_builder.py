@@ -40,11 +40,7 @@ from codegen.code_metadata.infrastructure.gateways.module_build_context import (
 
 @dataclass
 class FileSystemCodeGraphBuilder(CodeGraphBuilder):
-    """从文件系统构建 CodeNode 图的实现。
-
-    通过 GetProjectDocumentsHandler 获取项目文档列表，
-    再从文档路径派生目录树结构，同步完成节点构造和 CONTAINS 边的建立。
-    """
+    """从文件系统构建 CodeNode 图的实现。 """
 
     get_project_documents: GetProjectDocumentsHandler
 
@@ -131,6 +127,8 @@ class CodeGraphAcl:
                 self._parse_expr(stmt, parent_node)
             case AstPass():
                 pass
+            case AstIf():
+                pass
             case _:
                 raise NotImplementedError(
                     f"Unsupported statement: {stmt=} in {parent_node.fqn=}"
@@ -151,6 +149,7 @@ class CodeGraphAcl:
             description=class_def.description,
             decorator_list=class_def.decorator_list,
             bases=class_def.bases,
+            type_params=class_def.type_params,
         )
         module_node.contains(node)
         for stmt in class_def.body:

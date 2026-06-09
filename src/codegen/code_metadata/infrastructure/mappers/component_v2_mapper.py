@@ -21,10 +21,6 @@ from codegen.code_metadata.infrastructure.orm_models.component_v2_model import (
 
 
 class ComponentV2Mapper:
-    """
-    负责 Component 聚合根与 ComponentV2 ORM Model 之间的互相转换。
-    attributes / behaviors / bases 全部以 JSONB 形式存储，不再分表。
-    """
 
     # ==========================================
     # ORM -> Domain

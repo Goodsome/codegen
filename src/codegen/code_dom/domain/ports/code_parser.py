@@ -5,11 +5,8 @@ from codegen.code_dom.domain.aggregates.code_document import CodeDocument
 
 
 class CodeParser(ABC):
+    @abstractmethod
+    def parse_file(self, path: Path) -> CodeDocument: ...
 
     @abstractmethod
-    def parse_file(self, path: Path) -> CodeDocument:
-        ...
-
-    @abstractmethod
-    def parse_directory(self, path: Path) -> list[CodeDocument]:
-        ...
+    def parse_directory(self, path: Path) -> list[CodeDocument]: ...

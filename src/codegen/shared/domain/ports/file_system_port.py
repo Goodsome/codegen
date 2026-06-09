@@ -4,19 +4,14 @@ from typing import Iterator
 
 
 class FileSystemPort(ABC):
-    """
-    Port for interacting with the file system.
-    """
+    """Port for interacting with the file system."""
 
     @abstractmethod
     def read_file(self, path: Path) -> str: ...
 
     @abstractmethod
     def write_file(self, path: Path, content: str, overwrite: bool = False) -> bool:
-        """
-        Writes content to file.
-        Returns True if written, False if skipped (due to overwrite=False).
-        """
+        """Writes content to file. Returns True if written, False if skipped (due to overwrite=False)."""
         ...
 
     @abstractmethod

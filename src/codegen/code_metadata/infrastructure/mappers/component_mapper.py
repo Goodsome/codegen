@@ -1,5 +1,9 @@
 from codegen.code_metadata.application.dtos.component_dto import ComponentDto
-from codegen.code_metadata.domain.aggregates.component import ClassComponent, Component, UnionComponent
+from codegen.code_metadata.domain.aggregates.component import (
+    ClassComponent,
+    Component,
+    UnionComponent,
+)
 from codegen.code_metadata.domain.entities.attribute import Attribute
 from codegen.code_metadata.domain.entities.behavior import Behavior
 from codegen.code_metadata.domain.enums import ArchitectureLayer, ComponentType
@@ -25,9 +29,7 @@ from codegen.code_metadata.infrastructure.orm_models.component_model import (
 
 
 class ComponentMapper:
-    """
-    负责 Component 聚合根及其所有子实体、值对象在 Domain Model 和 ORM Model 之间的互相转换。
-    """
+    """负责 Component 聚合根及其所有子实体、值对象在 Domain Model 和 ORM Model 之间的互相转换。"""
 
     @classmethod
     def to_dto(cls, orm_model: ComponentModel) -> ComponentDto:
@@ -104,9 +106,7 @@ class ComponentMapper:
             else None
         )
         _type = (
-            TypeDef.model_validate(orm_model.type_def)
-            if orm_model.type_def
-            else None
+            TypeDef.model_validate(orm_model.type_def) if orm_model.type_def else None
         )
         return Attribute(
             id=AttributeId.reconstitute(orm_model.id),
@@ -196,20 +196,13 @@ class ComponentMapper:
         component_id: ComponentId | None = None,
         behavior_id: BehaviorId | None = None,
     ) -> AttributeModel:
-        """
-        动态处理双重归属权：
-        如果作为 Component 的属性，component_id 有值；
-        如果作为 Behavior 的输入参数，behavior_id 有值。
-        """
         value_dict = (
             expr_def_adapter.dump_python(domain_entity.value, mode="json")
             if domain_entity.value
             else None
         )
         type_def = (
-            domain_entity.type.model_dump(mode="json")
-            if domain_entity.type
-            else None
+            domain_entity.type.model_dump(mode="json") if domain_entity.type else None
         )
         return AttributeModel(
             id=domain_entity.id.value,

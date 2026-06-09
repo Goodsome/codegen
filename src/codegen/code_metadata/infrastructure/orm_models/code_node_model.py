@@ -111,6 +111,14 @@ class ClassNodeModel(CodeNodeModel):
     def _bases_setter(self, value: list[dict[str, object]]):
         self.properties = {**self.properties, "bases": value}
 
+    @hybrid_property
+    def type_params(self) -> list[dict[str, object]]:
+        return self.properties.get("type_params", [])
+
+    @type_params.setter
+    def _type_params_setter(self, value: list[dict[str, object]]):
+        self.properties = {**self.properties, "type_params": value}
+
 class FunctionNodeModel(CodeNodeModel):
     __mapper_args__: dict[str, str] = {"polymorphic_identity": CodeNodeKind.FUNCTION}
 

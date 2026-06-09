@@ -1,7 +1,4 @@
-"""
-通用日志配置模块
-为应用程序各个组件提供统一的日志配置方案
-"""
+"""通用日志配置模块 为应用程序各个组件提供统一的日志配置方案"""
 
 import logging
 from logging.handlers import RotatingFileHandler
