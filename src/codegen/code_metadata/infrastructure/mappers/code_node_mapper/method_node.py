@@ -7,8 +7,8 @@ from typing import Any
 from codegen.code_metadata.domain.aggregates.code_node import MethodNode
 from codegen.code_metadata.domain.value_objects.ast_expr import ast_expr_adapter
 from codegen.code_metadata.domain.value_objects.ast_stmt import ast_stmt_adapter
-from codegen.code_metadata.infrastructure.mappers.code_node_mapper.base_mapper import (
-    BaseMapper,
+from codegen.code_metadata.infrastructure.mappers.code_edge_mapper import (
+    to_outbound_edges,
 )
 from codegen.code_metadata.infrastructure.orm_models import MethodNodeModel
 
@@ -34,7 +34,7 @@ class MethodNodeMapper:
         return MethodNode(
             fqn=orm_model.fqn,
             name=orm_model.name,
-            outbound_edges=BaseMapper.to_outbound_edge_dtos(orm_model),
+            outbound_edges=to_outbound_edges(orm_model.outbound_edges),
             decorator_list=decorator_list,
             returns=returns,
             body=body,

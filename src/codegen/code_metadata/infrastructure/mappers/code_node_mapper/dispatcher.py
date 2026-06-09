@@ -1,7 +1,10 @@
 from __future__ import annotations
-from typing import assert_never, Any, cast
 
-from codegen.code_metadata.application.dtos.code_node_detail_dto import CodeNodeDetailDto
+from typing import Any, assert_never, cast
+
+from codegen.code_metadata.application.dtos.code_node_detail_dto import (
+    CodeNodeDetailDto,
+)
 from codegen.code_metadata.domain.aggregates.code_node import (
     ClassNode,
     CodeNode,
@@ -14,30 +17,32 @@ from codegen.code_metadata.domain.aggregates.code_node import (
     VariableNode,
 )
 from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
-from codegen.code_metadata.domain.enums.edge_direction import EdgeDirection
-from codegen.code_metadata.domain.enums.edge_type import EdgeType
-from codegen.code_metadata.domain.value_objects.code_edge import create_edge
+from codegen.code_metadata.infrastructure.mappers.code_edge_mapper import (
+    to_inbound_edges,
+    to_outbound_edges,
+)
 from codegen.code_metadata.infrastructure.orm_models.code_node_model import (
+    ClassNodeModel,
     CodeNodeModel,
     DirectoryNodeModel,
+    ExternalNodeModel,
     FileNodeModel,
-    ModuleNodeModel,
-    ClassNodeModel,
     FunctionNodeModel,
     MethodNodeModel,
+    ModuleNodeModel,
     VariableNodeModel,
-    ExternalNodeModel,
 )
+
+from .class_node import ClassNodeMapper
 
 # 导入具体的子 Mapper
 from .directory_node import DirectoryNodeMapper
+from .external_node import ExternalNodeMapper
 from .file_node import FileNodeMapper
-from .module_node import ModuleNodeMapper
-from .class_node import ClassNodeMapper
 from .function_node import FunctionNodeMapper
 from .method_node import MethodNodeMapper
+from .module_node import ModuleNodeMapper
 from .variable_node import VariableNodeMapper
-from .external_node import ExternalNodeMapper
 
 
 def orm_to_dto(orm_model: CodeNodeModel) -> CodeNode:
@@ -63,15 +68,10 @@ def orm_to_dto(orm_model: CodeNodeModel) -> CodeNode:
         case _:
             assert_never(kind)
 
+
 def orm_to_detail_dto(orm_model: CodeNodeModel) -> CodeNodeDetailDto:
-    outbound_edges = [
-        create_edge(EdgeType(e.type), e.target_entity.fqn, EdgeDirection.OUT)
-        for e in orm_model.outbound_edges
-    ]
-    inbound_edges = [
-        create_edge(EdgeType(e.type), e.source_entity.fqn, EdgeDirection.IN)
-        for e in orm_model.inbound_edges
-    ]
+    outbound_edges = to_outbound_edges(orm_model.outbound_edges)
+    inbound_edges = to_inbound_edges(orm_model.inbound_edges)
     return CodeNodeDetailDto(
         id=orm_model.id,
         fqn=orm_model.fqn,
@@ -82,6 +82,7 @@ def orm_to_detail_dto(orm_model: CodeNodeModel) -> CodeNodeDetailDto:
         outbound_edges=outbound_edges,
         inbound_edges=inbound_edges,
     )
+
 
 def dto_to_upsert_dict(dto: CodeNode, sync_id: str) -> dict[str, Any]:
     """高性能批量同步分发"""

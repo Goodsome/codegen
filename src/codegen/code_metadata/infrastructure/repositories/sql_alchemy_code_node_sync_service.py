@@ -8,9 +8,12 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session, sessionmaker
 
 from codegen.code_metadata.application.dtos.bulk_save_result import BulkSaveResult
-from codegen.code_metadata.domain.aggregates.code_node import CodeNode, ModuleNode
+from codegen.code_metadata.domain.aggregates.code_node import CodeNode
 from codegen.code_metadata.application.ports.code_node_sync_service import (
     CodeNodeSyncService,
+)
+from codegen.code_metadata.infrastructure.mappers.code_edge_mapper import (
+    code_edge_to_upsert_dict as edge_to_upsert_dict,
 )
 from codegen.code_metadata.infrastructure.mappers.code_node_mapper import dto_to_upsert_dict
 from codegen.code_metadata.infrastructure.orm_models.code_edge_model import (
@@ -90,14 +93,13 @@ class SqlAlchemyCodeNodeSyncService(CodeNodeSyncService):
                 for idx, edge_dto in enumerate(dto.outbound_edges):
                     target_id = fqn_to_id.get(edge_dto.fqn)
                     if not target_id:
-                        continue 
-                        
-                    edge_values.append({
-                        "source_id": source_id,
-                        "target_id": target_id,
-                        "type": edge_dto.kind.value,
-                        "position": idx,
-                    })
+                        continue
+
+                    edge_dict = edge_to_upsert_dict(edge_dto)
+                    edge_dict["source_id"] = source_id
+                    edge_dict["target_id"] = target_id
+                    edge_dict["position"] = idx
+                    edge_values.append(edge_dict)
                     
             if edge_values:
                 session.execute(insert(CodeEdgeModel), edge_values)

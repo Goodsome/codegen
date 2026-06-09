@@ -5,8 +5,8 @@ from typing import Any
 
 from codegen.code_metadata.domain.aggregates.code_node import VariableNode
 from codegen.code_metadata.domain.value_objects.ast_expr import ast_expr_adapter
-from codegen.code_metadata.infrastructure.mappers.code_node_mapper.base_mapper import (
-    BaseMapper,
+from codegen.code_metadata.infrastructure.mappers.code_edge_mapper import (
+    to_outbound_edges,
 )
 from codegen.code_metadata.infrastructure.orm_models.code_node_model import (
     VariableNodeModel,
@@ -33,7 +33,7 @@ class VariableNodeMapper:
             name=orm_model.name,
             annotation=annotation,
             value=value,
-            outbound_edges=BaseMapper.to_outbound_edge_dtos(orm_model),
+            outbound_edges=to_outbound_edges(orm_model.outbound_edges),
         )
 
     @classmethod

@@ -5,8 +5,8 @@ from __future__ import annotations
 from typing import Any
 
 from codegen.code_metadata.domain.aggregates.code_node import ModuleNode
-from codegen.code_metadata.infrastructure.mappers.code_node_mapper.base_mapper import (
-    BaseMapper,
+from codegen.code_metadata.infrastructure.mappers.code_edge_mapper import (
+    to_outbound_edges,
 )
 from codegen.code_metadata.infrastructure.orm_models.code_node_model import (
     CodeNodeModel,
@@ -25,7 +25,7 @@ class ModuleNodeMapper:
             name=orm_model.name,
             description=orm_model.description,
             is_package=orm_model.is_package,
-            outbound_edges=BaseMapper.to_outbound_edge_dtos(orm_model),
+            outbound_edges=to_outbound_edges(orm_model.outbound_edges),
         )
 
     @classmethod
