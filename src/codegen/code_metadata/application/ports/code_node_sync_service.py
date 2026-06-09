@@ -17,7 +17,6 @@ class CodeNodeSyncService(ABC):
         node_dtos: list[CodeNode],
         sync_id: str,
         fqn_prefix: str,
-        module_fqn_prefix: str,
     ) -> BulkSaveResult:
         """批量 UPSERT 节点，并全量替换其出边。
 
@@ -38,7 +37,6 @@ class CodeNodeSyncService(ABC):
         self,
         fqn_prefix: str,
         current_sync_id: str,
-        module_fqn_prefix: str,
     ) -> int:
         """清除幽灵节点（Sweep 阶段）。
 

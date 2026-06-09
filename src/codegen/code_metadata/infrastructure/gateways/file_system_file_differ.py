@@ -147,7 +147,7 @@ def variable_node_dto_to_ast(
         return AstAnnAssign(
             target=target,
             annotation=variable_node.annotation,
-            value=None,
+            value=variable_node.value,
         )
     return AstAssign(targets=[target], value=variable_node.value)
 

@@ -23,6 +23,7 @@ from codegen.code_metadata.domain.value_objects import (
     AstKeyword,
     AstMatch,
     AstMatchCase,
+    AstName,
     AstPass,
     AstRaise,
     AstReturn,
@@ -229,15 +230,47 @@ class AstToStmt:
         )
 
     @staticmethod
+    def arguments_to_assigns(node: ast.arguments) -> list[AstAssign | AstAnnAssign]:
+        if node.posonlyargs or node.vararg or node.kwonlyargs or node.kw_defaults or node.kwarg:
+            raise ValueError(
+                f"Only args and defaults are supported in arguments_to_assigns, {ast.dump(node)=}"
+            )
+
+        result: list[AstAssign | AstAnnAssign] = []
+        num_args = len(node.args)
+        num_defaults = len(node.defaults)
+        offset = num_args - num_defaults
+
+        for i, arg in enumerate(node.args):
+            target = AstName(id=arg.arg)
+            default_index = i - offset
+            value = AstToExpr.to_expr(node.defaults[default_index]) if default_index >= 0 else None
+
+            if arg.annotation is not None:
+                result.append(AstAnnAssign(
+                    target=target,
+                    annotation=AstToExpr.to_expr(arg.annotation),
+                    value=value,
+                ))
+            else:
+                result.append(AstAssign(
+                    targets=[target],
+                    value=value,
+                ))
+
+        return result
+
+    @staticmethod
     def to_ast_function_def(node: ast.FunctionDef) -> AstFunctionDef:
+        arguments = AstToStmt.arguments_to_assigns(node.args)
         return AstFunctionDef(
             lineno=node.lineno,
             name=node.name,
-            args=AstToStmt._to_arguments(node.args),
             body=[AstToStmt.to_stmt(stmt) for stmt in node.body],
             decorator_list=[AstToExpr.to_expr(dec) for dec in node.decorator_list],
             returns=AstToExpr.to_expr(node.returns) if node.returns else None,
             type_comment=node.type_comment,
+            arguments=arguments,
         )
 
     @staticmethod

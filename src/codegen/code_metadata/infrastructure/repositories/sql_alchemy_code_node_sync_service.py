@@ -31,7 +31,6 @@ class SqlAlchemyCodeNodeSyncService(CodeNodeSyncService):
         node_dtos: list[CodeNode],
         sync_id: str,
         fqn_prefix: str,
-        module_fqn_prefix: str,
     ) -> BulkSaveResult:
         if not node_dtos:
             return BulkSaveResult(nodes_upserted=0, edges_created=0)
@@ -74,10 +73,7 @@ class SqlAlchemyCodeNodeSyncService(CodeNodeSyncService):
 
             # ── Phase 3: 子查询一键清空当前前缀下的旧出边 ──
             subq = select(CodeNodeModel.id).where(
-                or_(
-                    CodeNodeModel.fqn.startswith(fqn_prefix),
-                    CodeNodeModel.fqn.startswith(module_fqn_prefix),
-                )
+                CodeNodeModel.fqn.startswith(fqn_prefix),
             ).scalar_subquery()
 
             session.execute(
@@ -118,14 +114,10 @@ class SqlAlchemyCodeNodeSyncService(CodeNodeSyncService):
         self,
         fqn_prefix: str,
         current_sync_id: str,
-        module_fqn_prefix: str,
     ) -> int:
         with self.session_factory() as session:
             stmt = delete(CodeNodeModel).where(
-                or_(
-                    CodeNodeModel.fqn.startswith(fqn_prefix),
-                    CodeNodeModel.fqn.startswith(module_fqn_prefix),
-                ),
+                CodeNodeModel.fqn.startswith(fqn_prefix),
                 CodeNodeModel.last_sync_id != current_sync_id,
             )
             result = session.execute(stmt)

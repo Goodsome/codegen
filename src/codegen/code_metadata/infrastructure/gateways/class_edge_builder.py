@@ -10,7 +10,6 @@ from codegen.code_metadata.domain.aggregates.code_node import (
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
 from codegen.code_metadata.domain.value_objects import (
     AstAnnAssign,
-    AstArguments,
     AstAssign,
     AstAttribute,
     AstBinOp,
@@ -203,7 +202,6 @@ class ClassEdgeBuilder:
         self.scope_stack.append(func_node)
 
         self._empty_function_local_aliases()
-        self._visit_arguments(func_def.args)
         self._visit_return(func_def.returns)
         
         # for body in func_def.body:
@@ -257,15 +255,6 @@ class ClassEdgeBuilder:
         self.edge_stack.append(EdgeType.TYPED_AS)
         self._visit_expr(annotation)
         self.edge_stack.pop()
-
-    def _visit_arguments(self, args: AstArguments):
-        self.edge_stack.append(EdgeType.ACCEPTS)
-        for arg in args.args:
-            self._visit_expr(arg.annotation)
-        self.edge_stack.pop()
-        
-        for default in args.defaults:
-            self._visit_expr(default)
 
     def _visit_return(self, returns: AstExpr | None):
         self.edge_stack.append(EdgeType.RETURNS)

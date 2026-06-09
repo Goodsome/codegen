@@ -8,4 +8,4 @@ if TYPE_CHECKING:
 
 class DictItemDto(BaseModel):
     key: ParsedExpr | None
-    value: "ParsedExpr"
+    value: ParsedExpr

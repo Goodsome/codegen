@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import override
 
@@ -7,19 +7,26 @@ from codegen.code_dom.application.queries.get_project_documents import (
     GetProjectDocumentsQuery,
 )
 from codegen.code_dom.domain.aggregates.code_document import CodeDocument
+from codegen.code_metadata.application.ports.code_graph_builder import CodeGraphBuilder
+from codegen.code_metadata.application.registry.node_registry import NodeRegistry
 from codegen.code_metadata.domain.aggregates.code_node import (
     ClassNode,
     CodeNode,
-    DirectoryNode,
-    FileNode,
     FunctionNode,
     MethodNode,
     ModuleNode,
     VariableNode,
 )
-from codegen.code_metadata.application.ports.code_graph_builder import CodeGraphBuilder
 from codegen.code_metadata.domain.factories.fqn_factory import FqnFactory
-from codegen.code_metadata.domain.value_objects import AstConstant, AstExpr, AstExprStmt, AstIf, AstImport, AstImportFrom, AstPass
+from codegen.code_metadata.domain.value_objects import (
+    AstConstant,
+    AstExpr,
+    AstExprStmt,
+    AstIf,
+    AstImport,
+    AstImportFrom,
+    AstPass,
+)
 from codegen.code_metadata.domain.value_objects.ast_ann_assign import AstAnnAssign
 from codegen.code_metadata.domain.value_objects.ast_assign import AstAssign
 from codegen.code_metadata.domain.value_objects.ast_class_def import AstClassDef
@@ -29,7 +36,6 @@ from codegen.code_metadata.domain.value_objects.ast_stmt import AstStmt
 from codegen.code_metadata.infrastructure.gateways.module_build_context import (
     ModuleBuildContext,
 )
-from codegen.code_metadata.application.registry.node_registry import NodeRegistry
 
 
 @dataclass
@@ -68,8 +74,9 @@ class CodeGraphAcl:
     node_registery: NodeRegistry
 
     def build_nodes(self, code_documents: list[CodeDocument]) -> list[CodeNode]:
-        self._build_directory_nodes(code_documents)
-        self._build_file_nodes(code_documents)
+        for doc in code_documents:
+            self._build_module_node(doc)
+            
         self._build_edges(code_documents=code_documents)
 
         return self.node_registery.nodes
@@ -87,50 +94,8 @@ class CodeGraphAcl:
     def _add_node(self, dto: CodeNode) -> None:
         self.node_registery.add_node(dto)
 
-    def _build_directory_nodes(self, code_documents: list[CodeDocument]) -> None:
-        dir_paths: set[Path] = set()
-        for doc in code_documents:
-            parent = doc.physical_path.parent
-            while parent != self.root_path and self.root_path in parent.parents:
-                dir_paths.add(parent)
-                parent = parent.parent
-
-        for dir_path in sorted(dir_paths, key=lambda p: len(p.parts)):
-            self._build_directory_node(dir_path)
-
-    def _build_file_nodes(self, code_documents: list[CodeDocument]) -> None:
-        for doc in code_documents:
-            self._build_file_node(doc)
-
-    def _build_directory_node(self, path: Path) -> DirectoryNode:
-        fqn = self.fqn_factory.build_dir_fqn(path)
-        dto = DirectoryNode(fqn=fqn, name=path.name or fqn)
-        parent_fqn = self.fqn_factory.build_dir_fqn(path.parent)
-        parent_node = self.node_registery.find_node(parent_fqn)
-        if parent_node is not None:
-            assert isinstance(parent_node, DirectoryNode)
-            parent_node.contains(dto)
-
-        self._add_node(dto)
-
-        return dto
-
-    def _build_file_node(self, code_document: CodeDocument) -> None:
-        path = code_document.physical_path
-        fqn = self.fqn_factory.build_file_fqn(path)
-        file_dto = FileNode(fqn=fqn, name=path.name)
-
-        parent_fqn = self.fqn_factory.build_dir_fqn(path.parent)
-        parent_node = self.node_registery.find_node(parent_fqn)
-        if parent_node is not None:
-            assert isinstance(parent_node, DirectoryNode)
-            parent_node.contains(file_dto)
-
-        self._add_node(file_dto)
-        self._build_module_node(code_document, file_dto)
-
     def _build_module_node(
-        self, code_document: CodeDocument, file_node: FileNode
+        self, code_document: CodeDocument
     ) -> ModuleNode:
         path = code_document.physical_path
         module_fqn = self.fqn_factory.build_module_fqn(path)
@@ -141,16 +106,13 @@ class CodeGraphAcl:
             description=code_document.description,
         )
         self._add_node(module_node)
-        file_node.defines_module(module_node)
 
         for stmt in code_document.body:
             self._parse_stmt(stmt, module_node)
 
         return module_node
 
-    def _parse_stmt(
-        self, stmt: AstStmt, parent_node: ModuleNode | ClassNode
-    ) -> None:
+    def _parse_stmt(self, stmt: AstStmt, parent_node: ModuleNode | ClassNode) -> None:
         match stmt:
             case AstClassDef():
                 assert isinstance(parent_node, ModuleNode)
@@ -159,7 +121,9 @@ class CodeGraphAcl:
                 self._parse_function_def(stmt, parent_node)
             case AstAssign() | AstAnnAssign():
                 self._parse_assign(stmt, parent_node)
-            case AstImport() | AstImportFrom() | AstIf(test=AstName(id="TYPE_CHECKING")):
+            case (
+                AstImport() | AstImportFrom() | AstIf(test=AstName(id="TYPE_CHECKING"))
+            ):
                 pass
             case AstExprStmt(value=AstConstant()):
                 pass
@@ -168,7 +132,9 @@ class CodeGraphAcl:
             case AstPass():
                 pass
             case _:
-                raise NotImplementedError(f"Unsupported statement: {stmt=} in {parent_node.fqn=}")
+                raise NotImplementedError(
+                    f"Unsupported statement: {stmt=} in {parent_node.fqn=}"
+                )
 
     def _parse_class_def(
         self, class_def: AstClassDef, module_node: ModuleNode
@@ -221,18 +187,15 @@ class CodeGraphAcl:
                 parent_node.contains(func_node)
         self._add_node(func_node)
 
-        for arg in func_def.args.args:
-            self._create_variable_node(
-                name=arg.arg,
-                parent_node=func_node,
-                annotation=arg.annotation,
-                value=None,
-            )
+        for arg in func_def.arguments:
+            self._parse_assign(arg, func_node)
 
         return func_node
 
     def _parse_assign(
-        self, assign: AstAssign | AstAnnAssign, parent_node: ModuleNode | ClassNode
+        self,
+        assign: AstAssign | AstAnnAssign,
+        parent_node: ModuleNode | ClassNode | MethodNode | FunctionNode,
     ) -> None:
         target = assign.target
         if not isinstance(target, AstName):

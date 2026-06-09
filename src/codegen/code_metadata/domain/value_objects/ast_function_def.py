@@ -22,7 +22,6 @@ class AstFunctionDef(ValueObject):
     
     kind: Literal[AstStmtKind.FUNCTION_DEF] = AstStmtKind.FUNCTION_DEF
     name: str
-    args: AstArguments = Field(default_factory=AstArguments)
     body: list[AstStmt] = Field(default_factory=list)
     decorator_list: list[AstExpr] = Field(default_factory=list)
     returns: AstExpr | None = None

@@ -15,6 +15,8 @@ class _BaseEdge(ValueObject):
 class ImportsEdge(_BaseEdge):
     kind: Literal[EdgeType.IMPORTS] = EdgeType.IMPORTS
 
+    is_type_checking: bool = False
+
 
 class ContainsEdge(_BaseEdge):
     kind: Literal[EdgeType.CONTAINS] = EdgeType.CONTAINS

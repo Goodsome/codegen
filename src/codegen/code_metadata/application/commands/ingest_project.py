@@ -30,23 +30,21 @@ class IngestProject:
 
     def execute(self, cmd: IngestProjectCommand) -> IngestProjectResult:
         sync_id = uuid.uuid4().hex
-        fqn_prefix = "src/codegen/"
-        module_fqn_prefix = "codegen."
+        fqn_prefix = "codegen."
         if cmd.prefix:
-            fqn_prefix = f"src/codegen/{cmd.prefix}/"
-            module_fqn_prefix = f"codegen.{cmd.prefix}."
+            fqn_prefix = f"codegen.{cmd.prefix}"
 
+        path = "src/" + fqn_prefix.replace(".", "/")
         # 1. 构建图：遍历文件系统，产出 CodeNode 列表
-        node_dtos = self.graph_builder.build(fqn_prefix=fqn_prefix)
-
+        node_dtos = self.graph_builder.build(fqn_prefix=path)
         # 2. Mark：批量 UPSERT 节点 + 全量替换出边
         bulk_result = self.sync_service.save_nodes_bulk(
-            node_dtos, sync_id, fqn_prefix, module_fqn_prefix=module_fqn_prefix
+            node_dtos, sync_id, fqn_prefix
         )
 
         # 3. Sweep：清除属于该上下文但未被本次扫描标记的幽灵节点
         deleted_count = self.sync_service.delete_stale_nodes(
-            fqn_prefix, sync_id, module_fqn_prefix=module_fqn_prefix
+            fqn_prefix, sync_id
         )
 
         return IngestProjectResult(

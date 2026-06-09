@@ -22,9 +22,3 @@ class DomainEvent(BaseModel):
         frozen=True,
         extra="forbid",
     )
-
-    def __init__(self, **data):
-        # 自动设置 event_type 为类名（如果未提供）
-        if "event_type" not in data or not data["event_type"]:
-            data["event_type"] = self.__class__.__name__
-        super().__init__(**data)

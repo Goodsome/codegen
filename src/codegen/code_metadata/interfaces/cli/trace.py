@@ -57,7 +57,7 @@ def _node_label(node) -> str:
     return f"{icon} {node.kind.value.capitalize()}: {node.fqn}"
 
 
-def _render_node(parent: Tree, gv_node: GraphViewNode, *, is_last: bool) -> None:
+def _render_node(parent: Tree, gv_node: GraphViewNode, is_last: bool) -> None:
     if gv_node.node is None:
         # 分组节点（如 "⚡ Calls:"）
         edge_label = EDGE_LABELS.get(gv_node.edge_type, str(gv_node.edge_type)) if gv_node.edge_type is not None else "UNKNOWN"
