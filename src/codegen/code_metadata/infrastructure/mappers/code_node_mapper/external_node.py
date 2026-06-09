@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from codegen.code_metadata.domain.aggregates.code_node import ExternalNode
 from codegen.code_metadata.infrastructure.mappers.code_node_mapper.base_mapper import (
     BaseMapper,
@@ -21,3 +23,7 @@ class ExternalNodeMapper:
             name=orm_model.name,
             outbound_edges=BaseMapper.to_outbound_edge_dtos(orm_model),
         )
+
+    @classmethod
+    def to_properties(cls, dto: ExternalNode) -> dict[str, Any]:
+        return {}

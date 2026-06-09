@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
 from codegen.code_metadata.domain.enums.edge_direction import EdgeDirection
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
-from codegen.code_metadata.domain.value_objects import AstExpr
+from codegen.code_metadata.domain.value_objects import AstExpr, AstStmt
 from codegen.code_metadata.domain.value_objects.code_edge import CodeEdge, create_edge
 
 
@@ -94,10 +94,14 @@ class FunctionNode(_BaseNode):
 
     kind: Literal[CodeNodeKind.FUNCTION] = CodeNodeKind.FUNCTION
 
+    decorator_list: list[AstExpr] = Field(default_factory=list)
+    returns: AstExpr | None = None
+    body: list[AstStmt] = Field(default_factory=list)
+
     def contains(self, node: VariableNode):
         self._add_edge(EdgeType.CONTAINS, node.fqn)
 
-    def returns(self, node: ClassNode | ExternalNode | VariableNode):
+    def add_returns(self, node: ClassNode | ExternalNode | VariableNode):
         self._add_edge(EdgeType.RETURNS, node.fqn)
 
 
@@ -106,10 +110,14 @@ class MethodNode(_BaseNode):
 
     kind: Literal[CodeNodeKind.METHOD] = CodeNodeKind.METHOD
 
+    decorator_list: list[AstExpr] = Field(default_factory=list)
+    returns: AstExpr | None = None
+    body: list[AstStmt] = Field(default_factory=list)
+
     def contains(self, node: VariableNode):
         self._add_edge(EdgeType.CONTAINS, node.fqn)
 
-    def returns(self, node: ClassNode | ExternalNode | VariableNode):
+    def add_returns(self, node: ClassNode | ExternalNode | VariableNode):
         self._add_edge(EdgeType.RETURNS, node.fqn)
 
 class VariableNode(_BaseNode):

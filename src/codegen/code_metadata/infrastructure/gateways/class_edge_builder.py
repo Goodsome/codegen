@@ -122,7 +122,7 @@ class ClassEdgeBuilder:
                 assert isinstance(
                     target_node, ClassNode | ExternalNode | VariableNode
                 ), target_node
-                function_node.returns(target_node)
+                function_node.add_returns(target_node)
             case AstConstant(value=None):
                 pass
             case AstBinOp(left=left, right=right):

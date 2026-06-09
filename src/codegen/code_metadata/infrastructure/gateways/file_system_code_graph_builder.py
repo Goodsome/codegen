@@ -202,10 +202,22 @@ class CodeGraphAcl:
 
         match parent_node:
             case ClassNode():
-                func_node = MethodNode(fqn=func_fqn, name=func_def.name)
+                func_node = MethodNode(
+                    fqn=func_fqn,
+                    name=func_def.name,
+                    decorator_list=func_def.decorator_list,
+                    returns=func_def.returns,
+                    body=func_def.body,
+                )
                 parent_node.contains(func_node)
             case ModuleNode():
-                func_node = FunctionNode(fqn=func_fqn, name=func_def.name)
+                func_node = FunctionNode(
+                    fqn=func_fqn,
+                    name=func_def.name,
+                    decorator_list=func_def.decorator_list,
+                    returns=func_def.returns,
+                    body=func_def.body,
+                )
                 parent_node.contains(func_node)
         self._add_node(func_node)
 

@@ -129,15 +129,13 @@ def method_node_dto_to_ast(
     arguments = collect_arguments_from_outbound_edges(
         method_node.outbound_edges, node_registry
     )
-    body: list[AstStmt] = []
-    if not body:
-        body = [AstPass()]
     return AstFunctionDef(
         name=method_node.name,
-        body=body,
-        decorator_list=[],
+        body=method_node.body,
+        decorator_list=method_node.decorator_list,
         lineno=0,
         arguments=arguments,
+        returns=method_node.returns,
     )
 
 

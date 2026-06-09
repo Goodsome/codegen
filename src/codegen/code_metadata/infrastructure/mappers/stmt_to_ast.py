@@ -18,6 +18,7 @@ from codegen.code_metadata.domain.value_objects import (
     AstFor,
     AstFunctionDef,
     AstIf,
+    AstName,
     AstMatch,
     AstMatchCase,
     AstPass,
@@ -115,11 +116,17 @@ class StmtToAst:
     def from_class_def(stmt: AstClassDef) -> ast.ClassDef:
         if stmt.keywords:
             raise NotImplementedError(f"{stmt.keywords=}")
+        body: list[ast.stmt] = []
+        if stmt.description:
+            doc = ast.Expr(ast.Constant(value=stmt.description))
+            body.append(doc)
+        for b in stmt.body:
+            body.append(StmtToAst.to_node(b))
         return ast.ClassDef(
             name=stmt.name,
             bases=[ExprToAst.to_node(b) for b in stmt.bases],
             keywords=[],
-            body=[StmtToAst.to_node(s) for s in stmt.body],
+            body=body,
             decorator_list=[ExprToAst.to_node(d) for d in stmt.decorator_list]
         )
 
@@ -258,10 +265,45 @@ class StmtToAst:
         )
 
     @staticmethod
+    def _assigns_to_arguments(assigns: list[AstAssign | AstAnnAssign]) -> ast.arguments:
+        args_list: list[ast.arg] = []
+        defaults: list[ast.expr] = []
+
+        for assign in assigns:
+            if isinstance(assign, AstAnnAssign):
+                target = assign.target
+                annotation = ExprToAst.to_node(assign.annotation)
+                if assign.value is not None:
+                    defaults.append(ExprToAst.to_node(assign.value))
+            else:
+                target = assign.target
+                annotation = None
+                if assign.value is not None:
+                    defaults.append(ExprToAst.to_node(assign.value))
+
+            if isinstance(target, AstName):
+                args_list.append(ast.arg(arg=target.id, annotation=annotation))
+
+        return ast.arguments(
+            posonlyargs=[],
+            args=args_list,
+            vararg=None,
+            kwonlyargs=[],
+            kw_defaults=[],
+            kwarg=None,
+            defaults=defaults,
+        )
+
+    @staticmethod
     def from_function_def(stmt: AstFunctionDef) -> ast.FunctionDef:
+        args = (
+            StmtToAst._assigns_to_arguments(stmt.arguments)
+            if stmt.arguments
+            else ArgumentsToAst.to_node(stmt.args)
+        )
         return ast.FunctionDef(
             name=stmt.name,
-            args=ArgumentsToAst.to_node(stmt.args),
+            args=args,
             body=StmtToAst._to_body(stmt.body),
             decorator_list=[ExprToAst.to_node(d) for d in stmt.decorator_list],
             returns=ExprToAst.to_node(stmt.returns) if stmt.returns else None,

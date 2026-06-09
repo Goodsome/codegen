@@ -99,9 +99,61 @@ class ClassNodeModel(CodeNodeModel):
 class FunctionNodeModel(CodeNodeModel):
     __mapper_args__: dict[str, str] = {"polymorphic_identity": CodeNodeKind.FUNCTION}
 
+    @hybrid_property
+    def decorator_list(self) -> list[dict[str, object]]:
+        return self.properties.get("decorator_list", [])
+
+    @decorator_list.setter
+    def _decorator_list_setter(self, value: list[dict[str, object]]):
+        self.properties = {**self.properties, "decorator_list": value}
+
+    @hybrid_property
+    def returns(self) -> dict[str, Any] | None:
+        return self.properties.get("returns")
+
+    @returns.setter
+    def _returns_setter(self, value: dict[str, Any] | None) -> None:
+        if value is None:
+            return
+        self.properties = {**self.properties, "returns": value}
+
+    @hybrid_property
+    def body(self) -> list[dict[str, object]]:
+        return self.properties.get("body", [])
+
+    @body.setter
+    def _body_setter(self, value: list[dict[str, object]]):
+        self.properties = {**self.properties, "body": value}
+
 
 class MethodNodeModel(CodeNodeModel):
     __mapper_args__: dict[str, str] = {"polymorphic_identity": CodeNodeKind.METHOD}
+
+    @hybrid_property
+    def decorator_list(self) -> list[dict[str, object]]:
+        return self.properties.get("decorator_list", [])
+
+    @decorator_list.setter
+    def _decorator_list_setter(self, value: list[dict[str, object]]):
+        self.properties = {**self.properties, "decorator_list": value}
+
+    @hybrid_property
+    def returns(self) -> dict[str, Any] | None:
+        return self.properties.get("returns")
+
+    @returns.setter
+    def _returns_setter(self, value: dict[str, Any] | None) -> None:
+        if value is None:
+            return
+        self.properties = {**self.properties, "returns": value}
+
+    @hybrid_property
+    def body(self) -> list[dict[str, object]]:
+        return self.properties.get("body", [])
+
+    @body.setter
+    def _body_setter(self, value: list[dict[str, object]]):
+        self.properties = {**self.properties, "body": value}
 
 
 class VariableNodeModel(CodeNodeModel):

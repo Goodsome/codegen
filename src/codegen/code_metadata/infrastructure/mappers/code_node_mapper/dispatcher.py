@@ -2,7 +2,17 @@ from __future__ import annotations
 from typing import assert_never, Any, cast
 
 from codegen.code_metadata.application.dtos.code_node_detail_dto import CodeNodeDetailDto
-from codegen.code_metadata.domain.aggregates.code_node import ClassNode, CodeNode, ModuleNode, VariableNode
+from codegen.code_metadata.domain.aggregates.code_node import (
+    ClassNode,
+    CodeNode,
+    DirectoryNode,
+    ExternalNode,
+    FileNode,
+    FunctionNode,
+    MethodNode,
+    ModuleNode,
+    VariableNode,
+)
 from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
 from codegen.code_metadata.domain.enums.edge_direction import EdgeDirection
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
@@ -76,14 +86,24 @@ def orm_to_detail_dto(orm_model: CodeNodeModel) -> CodeNodeDetailDto:
 def dto_to_upsert_dict(dto: CodeNode, sync_id: str) -> dict[str, Any]:
     """高性能批量同步分发"""
     match dto:
+        case DirectoryNode():
+            properties = DirectoryNodeMapper.to_properties(dto)
+        case FileNode():
+            properties = FileNodeMapper.to_properties(dto)
         case ModuleNode():
-            properties = {"is_package": dto.is_package}
-        case VariableNode():
-            properties = VariableNodeMapper.to_properties(dto)
+            properties = ModuleNodeMapper.to_properties(dto)
         case ClassNode():
             properties = ClassNodeMapper.to_properties(dto)
+        case FunctionNode():
+            properties = FunctionNodeMapper.to_properties(dto)
+        case MethodNode():
+            properties = MethodNodeMapper.to_properties(dto)
+        case VariableNode():
+            properties = VariableNodeMapper.to_properties(dto)
+        case ExternalNode():
+            properties = ExternalNodeMapper.to_properties(dto)
         case _:
-            properties = {}
+            assert_never(dto)
 
     return {
         "fqn": dto.fqn,
