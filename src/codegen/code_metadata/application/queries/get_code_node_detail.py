@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from codegen.code_metadata.application.dtos.code_node_dto import CodeNodeDetailDto
+from codegen.code_metadata.application.dtos.code_node_detail_dto import CodeNodeDetailDto
 from codegen.code_metadata.application.dtos.get_code_node_query import GetCodeNodeQuery
 from codegen.code_metadata.application.ports.code_node_query_service import CodeNodeQueryService
 

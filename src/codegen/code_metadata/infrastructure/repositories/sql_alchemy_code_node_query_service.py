@@ -5,8 +5,8 @@ from uuid import UUID
 from sqlalchemy import exists, not_, select
 from sqlalchemy.orm import Session, selectinload, sessionmaker
 
+from codegen.code_metadata.application.dtos.code_node_detail_dto import CodeNodeDetailDto
 from codegen.code_metadata.application.dtos.code_node_dto import (
-    CodeNodeDetailDto,
     CodeNodeDto,
 )
 from codegen.code_metadata.application.ports.code_node_query_service import (

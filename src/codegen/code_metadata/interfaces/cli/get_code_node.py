@@ -7,7 +7,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from codegen.code_metadata.application.dtos.code_node_dto import CodeNodeDetailDto
+from codegen.code_metadata.application.dtos.code_node_detail_dto import CodeNodeDetailDto
 from codegen.code_metadata.application.dtos.get_code_node_query import GetCodeNodeQuery
 from codegen.code_metadata.application.queries.get_code_node_detail import GetCodeNodeDetail
 
@@ -58,7 +58,7 @@ def get_code_node(
         out_table.add_column("Type", style="cyan")
         out_table.add_column("Target FQN", style="green")
         for edge in detail.outbound_edges:
-            out_table.add_row(edge.type.value, edge.target_fqn)
+            out_table.add_row(edge.kind.value, edge.fqn)
         console.print(out_table)
     else:
         console.print("[dim]No outbound edges[/dim]")
@@ -69,7 +69,7 @@ def get_code_node(
         in_table.add_column("Type", style="cyan")
         in_table.add_column("Source FQN", style="green")
         for edge in detail.inbound_edges:
-            in_table.add_row(edge.type.value, edge.source_fqn)
+            in_table.add_row(edge.kind.value, edge.fqn)
         console.print(in_table)
     else:
         console.print("[dim]No inbound edges[/dim]")

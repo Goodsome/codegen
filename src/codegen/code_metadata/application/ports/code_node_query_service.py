@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from codegen.code_metadata.application.dtos.code_node_dto import CodeNodeDto, CodeNodeDetailDto
+from codegen.code_metadata.application.dtos.code_node_detail_dto import CodeNodeDetailDto
+from codegen.code_metadata.application.dtos.code_node_dto import CodeNodeDto
 from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
 
 

@@ -3,9 +3,9 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass
 
+from codegen.code_metadata.application.dtos.code_node_detail_dto import CodeNodeDetailDto
 from codegen.code_metadata.application.dtos.code_node_dto import (
     ClassNodeDto,
-    CodeNodeDetailDto,
     CodeNodeDto,
     DirectoryNodeDto,
     ExternalNodeDto,
