@@ -87,6 +87,14 @@ class ModuleNodeModel(CodeNodeModel):
 class ClassNodeModel(CodeNodeModel):
     __mapper_args__: dict[str, str] = {"polymorphic_identity": CodeNodeKind.CLASS}
 
+    @hybrid_property
+    def decorator_list(self) -> list[dict[str, object]]:
+        return self.properties.get("decorator_list", [])
+
+    @decorator_list.setter
+    def _decorator_lista_setter(self, value: list[dict[str, object]]):
+        self.properties = {**self.properties, "decorator_list": value}
+        
 
 class FunctionNodeModel(CodeNodeModel):
     __mapper_args__: dict[str, str] = {"polymorphic_identity": CodeNodeKind.FUNCTION}

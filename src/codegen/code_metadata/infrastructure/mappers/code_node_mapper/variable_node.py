@@ -37,7 +37,7 @@ class VariableNodeMapper:
         )
 
     @classmethod
-    def dto_to_upsert_dict(cls, dto: VariableNode, sync_id: str) -> dict[str, Any]:
+    def to_properties(cls, dto: VariableNode) -> dict[str, Any]:
         annotation = (
             ast_expr_adapter.dump_python(dto.annotation, mode="json")
             if dto.annotation
@@ -48,14 +48,7 @@ class VariableNodeMapper:
             if dto.value
             else None
         )
-        properties = {
+        return {
             "annotation": annotation,
             "value": value,
-        }
-        return {
-            "fqn": dto.fqn,
-            "kind": dto.kind.value,
-            "name": dto.name,
-            "properties": properties,
-            "last_sync_id": sync_id,
         }

@@ -118,7 +118,7 @@ def class_node_dto_to_ast_class_def(
         bases=bases,
         keywords=[],
         body=body,
-        decorator_list=[],
+        decorator_list=class_node.decorator_list,
     )
 
 

@@ -113,11 +113,14 @@ class StmtToAst:
 
     @staticmethod
     def from_class_def(stmt: AstClassDef) -> ast.ClassDef:
+        if stmt.keywords:
+            raise NotImplementedError(f"{stmt.keywords=}")
         return ast.ClassDef(
             name=stmt.name,
             bases=[ExprToAst.to_node(b) for b in stmt.bases],
             keywords=[],
             body=[StmtToAst.to_node(s) for s in stmt.body],
+            decorator_list=[ExprToAst.to_node(d) for d in stmt.decorator_list]
         )
 
     @staticmethod
@@ -179,6 +182,8 @@ class StmtToAst:
     @staticmethod
     def from_assign(stmt: AstAssign) -> ast.Assign:
         value = ExprToAst.to_node(stmt.value)
+        if value is None:
+            raise ValueError(f"has None value: {stmt=}")
         return ast.Assign(
             targets=[ExprToAst.to_node(t) for t in stmt.targets],
             value=value,

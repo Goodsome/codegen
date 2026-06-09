@@ -178,6 +178,7 @@ class CodeGraphAcl:
             fqn=class_fqn,
             name=class_def.name,
             description=class_def.description,
+            decorator_list=class_def.decorator_list,
         )
         module_node.contains(node)
         for stmt in class_def.body:

@@ -13,7 +13,6 @@ class GetDevProgressQuery(BaseModel):
     module_fqn: str
     
 
-
 @dataclass
 class GetDevProgressHandler:
     

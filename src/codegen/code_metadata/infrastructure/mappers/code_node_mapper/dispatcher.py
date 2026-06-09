@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import assert_never, Any, cast
 
 from codegen.code_metadata.application.dtos.code_node_detail_dto import CodeNodeDetailDto
-from codegen.code_metadata.domain.aggregates.code_node import CodeNode, ModuleNode, VariableNode
+from codegen.code_metadata.domain.aggregates.code_node import ClassNode, CodeNode, ModuleNode, VariableNode
 from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
 from codegen.code_metadata.domain.enums.edge_direction import EdgeDirection
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
@@ -79,10 +79,12 @@ def dto_to_upsert_dict(dto: CodeNode, sync_id: str) -> dict[str, Any]:
         case ModuleNode():
             properties = {"is_package": dto.is_package}
         case VariableNode():
-            return VariableNodeMapper.dto_to_upsert_dict(dto, sync_id)
+            properties = VariableNodeMapper.to_properties(dto)
+        case ClassNode():
+            properties = ClassNodeMapper.to_properties(dto)
         case _:
             properties = {}
-            
+
     return {
         "fqn": dto.fqn,
         "kind": dto.kind.value,

@@ -1,8 +1,7 @@
 from __future__ import annotations
-
 from pathlib import Path
 import re
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -80,6 +79,8 @@ class ClassNode(_BaseNode):
     """类节点：kind 固定为 CLASS，由模块节点的 AST 类定义派生。"""
 
     kind: Literal[CodeNodeKind.CLASS] = CodeNodeKind.CLASS
+    
+    decorator_list: list[AstExpr] = Field(default_factory=list)
 
     def contains(self, node: MethodNode | VariableNode):
         self._add_edge(EdgeType.CONTAINS, node.fqn)
