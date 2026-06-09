@@ -85,11 +85,8 @@ class SqlAlchemyCodeNodeSyncService(CodeNodeSyncService):
             )
 
             # ── Phase 4: 批量插入新出边 ──
-            edge_values = []
+            edge_values: list[dict[str, object]] = []
             for dto in node_dtos:
-                if not dto.outbound_edges:
-                    continue
-                    
                 source_id = fqn_to_id.get(dto.fqn)
                 if not source_id:
                     continue

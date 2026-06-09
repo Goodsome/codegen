@@ -7,6 +7,7 @@ from codegen.code_metadata.application.dtos.code_node_dto import (
     ExternalNodeDto,
     FunctionNodeDto,
     ModuleNodeDto,
+    OutboundEdgeDto,
     VariableNodeDto,
 )
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
@@ -16,6 +17,7 @@ from codegen.code_metadata.domain.value_objects.ast_import import AstImport
 from codegen.code_metadata.domain.value_objects.ast_import_from import AstImportFrom
 from codegen.code_metadata.domain.value_objects.ast_name import AstName
 from codegen.code_metadata.domain.value_objects.ast_stmt import AstStmt
+from codegen.code_metadata.domain.value_objects.code_edge import OutboundEdge
 from codegen.code_metadata.infrastructure.gateways.class_edge_builder import ClassEdgeBuilder
 from codegen.code_metadata.application.registry.node_registry import NodeRegistry
 
@@ -58,7 +60,7 @@ class ModuleBuildContext:
                 for subnode in stmt.body:
                     self._build_import_edges(subnode)
             case _:
-                pass
+                raise ValueError(f"Unexpected statement type: {stmt=}")
                 
     def _parse_import(self, import_: AstImport) -> None:
         for name in import_.names:
@@ -91,7 +93,7 @@ class ModuleBuildContext:
         import_name: str,
         from_name: str | None = None,
         asname: str | None = None,
-    ) -> None:
+    ) -> OutboundEdgeDto:
         if from_name:
             is_external = not from_name.startswith("codegen.")
         else:
@@ -108,13 +110,15 @@ class ModuleBuildContext:
         assert isinstance(
             node, ExternalNodeDto | ClassNodeDto | FunctionNodeDto | VariableNodeDto
         )
-        self.module.imports(node)
+        edge = self.module.imports(node)
         if asname:
             local_alias_key = asname
         else:
             local_alias_key = node.name
 
         self.local_aliases[local_alias_key] = node.fqn
+
+        return edge
         
     def _add_node(self, dto: CodeNodeDto) -> None:
         self.node_registry.add_node(dto)

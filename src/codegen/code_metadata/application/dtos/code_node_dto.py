@@ -36,10 +36,13 @@ class _BaseNodeDto(BaseModel):
     description: str | None = Field(default=None)
     outbound_edges: list[OutboundEdgeDto] = Field(default_factory=list)
 
-    def _add_edge(self, type: EdgeType, fqn: str):
-        if any(e.target_fqn == fqn for e in self.outbound_edges):
-            return
-        self.outbound_edges.append(OutboundEdgeDto(type=type, target_fqn=fqn))
+    def _add_edge(self, type: EdgeType, fqn: str) -> OutboundEdgeDto:
+        for e in self.outbound_edges:
+            if e.target_fqn == fqn and e.type == type:
+                return e
+        edge = OutboundEdgeDto(type=type, target_fqn=fqn)
+        self.outbound_edges.append(edge)
+        return edge
 
     def add_edge(self, type: EdgeType, node: CodeNodeDto):
         self._add_edge(type, node.fqn)
@@ -75,8 +78,8 @@ class ModuleNodeDto(_BaseNodeDto):
     def contains(self, node: ClassNodeDto | FunctionNodeDto | VariableNodeDto):
         self._add_edge(EdgeType.CONTAINS, node.fqn)
 
-    def imports(self, node: ExternalNodeDto | ClassNodeDto | FunctionNodeDto | VariableNodeDto):
-        self._add_edge(EdgeType.IMPORTS, node.fqn)
+    def imports(self, node: ExternalNodeDto | ClassNodeDto | FunctionNodeDto | VariableNodeDto) -> OutboundEdgeDto:
+        return self._add_edge(EdgeType.IMPORTS, node.fqn)
 
     def get_parent_by_level(self, level: int) -> str:
         if level == 0:

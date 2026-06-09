@@ -1,9 +1,11 @@
 import ast
 
 from codegen.code_metadata.domain.value_objects import (
+    AstAlias,
     AstAsyncFunctionDef,
     AstBreak,
     AstClassDef,
+    AstImportFrom,
     AstStmt,
     AstAnnAssign,
     AstAssert,
@@ -24,6 +26,7 @@ from codegen.code_metadata.domain.value_objects import (
     AstWith,
     AstWithItem,
 )
+from codegen.code_metadata.domain.value_objects.ast_import import AstImport
 from codegen.code_metadata.infrastructure.mappers._convert import binop_to_ast
 from codegen.code_metadata.infrastructure.mappers.arguments_to_ast import ArgumentsToAst
 from codegen.code_metadata.infrastructure.mappers.match_pattern_to_ast import MatchPatternToAst
@@ -77,9 +80,34 @@ class StmtToAst:
                 node = StmtToAst.from_async_function_def(stmt)
             case AstClassDef():
                 node = StmtToAst.from_class_def(stmt)
+            case AstImport():
+                node = StmtToAst.from_import(stmt)
+            case AstImportFrom():
+                node = StmtToAst.from_import_from(stmt)
             case _:
                 raise NotImplementedError(f"Unsupported AstStmt type: {type(stmt)}")
         return StmtToAst._fix_pos(node)
+
+    @staticmethod
+    def from_import(stmt: AstImport) -> ast.Import:
+        return ast.Import(
+            names=[StmtToAst.from_alias(n) for n in stmt.names],
+        )
+
+    @staticmethod
+    def from_import_from(stmt: AstImportFrom) -> ast.ImportFrom:
+        return ast.ImportFrom(
+            module=stmt.module,
+            names=[StmtToAst.from_alias(n) for n in stmt.names],
+            level=stmt.level,
+        )
+    
+    @staticmethod
+    def from_alias(stmt: AstAlias) -> ast.alias:
+        return ast.alias(
+            name=stmt.name,
+            asname=stmt.asname,
+        )
 
     @staticmethod
     def from_class_def(stmt: AstClassDef) -> ast.ClassDef:
