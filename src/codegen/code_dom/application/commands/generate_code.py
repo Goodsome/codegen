@@ -18,9 +18,8 @@ class GenerateCodeHandler:
     def execute(self, cmd: GenerateCodeCommand):
         
         for code_document in cmd.code_documents:
-            print(f"will write code to {self.file_system.root}/{code_document.physical_path}")
-            # code = self.code_generator.generate(code_document)
-            # self.file_system.write_file(
-                # path=code_document.physical_path,
-                # content=code
-            # )
+            code = self.code_generator.generate(code_document)
+            self.file_system.write_file(
+                path=code_document.physical_path,
+                content=code
+            )
