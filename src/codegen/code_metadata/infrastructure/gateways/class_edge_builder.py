@@ -208,17 +208,11 @@ class ClassEdgeBuilder:
         target_node = self.node_registry.get_node(fqn)
         while self.attribute_stack:
             attr = self.attribute_stack.pop()
-            if isinstance(target_node, ExternalNode):
-                attr_fqn = f"{target_node.fqn}.{attr}"
-            else:
-                attr_fqn = f"{target_node.fqn}::{attr}"
-                
-            target_node = self.node_registry.get_node(attr_fqn)
-            
+            fqn = f"{target_node.fqn}::{attr}"
             if self.attribute_stack:
-                self.current_node.add_edge(EdgeType.READS, target_node)
+                self.current_node.add_edge(EdgeType.READS, fqn)
             
-        self.current_node.add_edge(self.current_edge, target_node)
+        self.current_node.add_edge(self.current_edge, fqn)
         
     def _visit_attribute(self, attr: AstAttribute):
         

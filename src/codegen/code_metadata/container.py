@@ -203,6 +203,7 @@ class Container(DeclarativeContainer):
         IngestProject,
         graph_builder=code_graph_builder,
         sync_service=code_node_sync_service,
+        query_service=code_node_query_service,
     )
 
     dev_progress_service: Factory[DevProgressService] = Factory(

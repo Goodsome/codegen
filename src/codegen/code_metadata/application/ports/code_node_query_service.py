@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections.abc import Collection
 from uuid import UUID
 
 from codegen.code_metadata.application.dtos.code_node_detail_dto import CodeNodeDetailDto
@@ -12,6 +13,16 @@ class CodeNodeQueryService(ABC):
     @abstractmethod
     def find_by_fqn_prefix(self, fqn_prefix: str) -> list[CodeNode]:
         """查询 fqn 以指定前缀开头的所有 CodeNode（含根节点自身）。"""
+        pass
+
+    @abstractmethod
+    def find_by_fqns(self, fqns: Collection[str], with_outbounds: bool = False) -> list[CodeNode]:
+        """按 FQN 集合批量查询 CodeNode。
+
+        Args:
+            fqns: 要查询的 FQN 集合。
+            with_outbounds: 若为 True，还会将出边指向的节点一并查出。
+        """
         pass
 
     @abstractmethod

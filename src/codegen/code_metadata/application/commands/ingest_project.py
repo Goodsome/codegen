@@ -1,3 +1,4 @@
+from pathlib import Path
 import uuid
 from dataclasses import dataclass
 
@@ -8,9 +9,11 @@ from codegen.code_metadata.application.dtos.ingest_project_result import (
     IngestProjectResult,
 )
 from codegen.code_metadata.application.ports.code_graph_builder import CodeGraphBuilder
+from codegen.code_metadata.application.ports.code_node_query_service import CodeNodeQueryService
 from codegen.code_metadata.application.ports.code_node_sync_service import (
     CodeNodeSyncService,
 )
+from codegen.code_metadata.application.registry.node_registry import NodeRegistry
 
 
 @dataclass
@@ -19,6 +22,7 @@ class IngestProject:
 
     graph_builder: CodeGraphBuilder
     sync_service: CodeNodeSyncService
+    query_service: CodeNodeQueryService
 
     def execute(self, cmd: IngestProjectCommand) -> IngestProjectResult:
         sync_id = uuid.uuid4().hex
@@ -26,18 +30,33 @@ class IngestProject:
         if cmd.prefix:
             fqn_prefix = f"codegen.{cmd.prefix}"
 
-        path = "src/" + fqn_prefix.replace(".", "/")
-        # 1. 构建图：遍历文件系统，产出 CodeNode 列表
-        node_dtos = self.graph_builder.build(fqn_prefix=path)
-        # 2. Mark：批量 UPSERT 节点 + 全量替换出边
+        module_path = Path("src") / fqn_prefix.replace(".", "/")
+        code_documents = self.graph_builder.get_code_documents(module_path=module_path)
+        node_reistry: NodeRegistry = NodeRegistry()
+        imports = self.graph_builder.build_nodes(
+            root_path=module_path,
+            node_registry=node_reistry,
+            code_documents=code_documents,
+        )
+        query_imports: set[str] = set()
+        for import_module_fqn in imports:
+            if node_reistry.find_node(import_module_fqn):
+                continue
+            query_imports.add(import_module_fqn)
+        query_nodes = self.query_service.find_by_fqns(query_imports, with_outbounds=True)
+        node_reistry.registry_nodes(query_nodes)
+
+        self.graph_builder.build_edges(
+            node_registry=node_reistry,
+            code_documents=code_documents,
+        )
+        # return IngestProjectResult( nodes_created=0, edges_created=0, nodes_deleted=0 )
         bulk_result = self.sync_service.save_nodes_bulk(
-            node_dtos, sync_id, fqn_prefix
+            node_reistry.upsert_nodes, sync_id, fqn_prefix
         )
 
         # 3. Sweep：清除属于该上下文但未被本次扫描标记的幽灵节点
-        deleted_count = self.sync_service.delete_stale_nodes(
-            fqn_prefix, sync_id
-        )
+        deleted_count = self.sync_service.delete_stale_nodes(fqn_prefix, sync_id)
 
         return IngestProjectResult(
             nodes_created=bulk_result.nodes_upserted,

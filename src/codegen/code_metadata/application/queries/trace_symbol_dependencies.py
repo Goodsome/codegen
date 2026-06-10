@@ -88,8 +88,8 @@ class TraceSymbolDependenciesQueryHandler:
         # 无 edge_type 的节点排最前
         result.extend(grouped.pop(None, []))
 
-        # CONTAINS 组的成员直接平铺
-        result.extend(grouped.pop(EdgeType.CONTAINS, []))
+        # DEFINES 组的成员直接平铺
+        result.extend(grouped.pop(EdgeType.DEFINES, []))
 
         # 其余非 CONTAINS 边按类型分组为虚拟节点
         for edge_type in sorted(grouped, key=lambda e: str(e)):

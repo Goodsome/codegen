@@ -3,6 +3,7 @@ from enum import StrEnum, auto
 
 class EdgeType(StrEnum):
     CONTAINS = auto()
+    DEFINES = auto()
     DEFINES_MODULE = auto()
     
     IMPORTS = auto()

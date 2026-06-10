@@ -1,3 +1,4 @@
+from collections.abc import Collection
 from dataclasses import dataclass
 from typing import override
 from uuid import UUID
@@ -43,6 +44,52 @@ class SqlAlchemyCodeNodeQueryService(CodeNodeQueryService):
             models = session.execute(stmt).scalars().unique().all()
 
         return [orm_to_dto(m) for m in models]
+
+    @override
+    def find_by_fqns(self, fqns: Collection[str], with_outbounds: bool = False) -> list[CodeNode]:
+        if not fqns:
+            return []
+
+        stmt = (
+            select(CodeNodeModel)
+            .where(CodeNodeModel.fqn.in_(fqns))
+            .options(
+                selectinload(CodeNodeModel.outbound_edges).joinedload(
+                    CodeEdgeModel.target_entity
+                )
+            )
+        )
+
+        with self.session_factory() as session:
+            models = session.execute(stmt).scalars().unique().all()
+
+        if not with_outbounds:
+            return [orm_to_dto(m) for m in models]
+
+        # 收集出边指向的目标 FQN，排除已在结果集中的节点
+        result_by_fqn: dict[str, CodeNodeModel] = {m.fqn: m for m in models}
+        extra_fqns: set[str] = set()
+        for m in models:
+            for edge in m.outbound_edges:
+                target = edge.target_entity
+                if target is not None and target.fqn not in result_by_fqn:
+                    extra_fqns.add(target.fqn)
+
+        if extra_fqns:
+            extra_stmt = (
+                select(CodeNodeModel)
+                .where(CodeNodeModel.fqn.in_(extra_fqns))
+                .options(
+                    selectinload(CodeNodeModel.outbound_edges).joinedload(
+                        CodeEdgeModel.target_entity
+                    )
+                )
+            )
+            with self.session_factory() as session:
+                extra_models = session.execute(extra_stmt).scalars().unique().all()
+            result_by_fqn.update({m.fqn: m for m in extra_models})
+
+        return [orm_to_dto(m) for m in result_by_fqn.values()]
 
     @override
     def find_by_fqn(self, fqn: str) -> CodeNodeDetailDto | None:

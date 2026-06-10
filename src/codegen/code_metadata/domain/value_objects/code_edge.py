@@ -11,6 +11,15 @@ class _BaseEdge(ValueObject):
     fqn: str
     direction: EdgeDirection
 
+    @property
+    def node_name(self) -> str:
+        if "::" in self.fqn:
+            name = self.fqn.rsplit("::")[-1]
+        elif "." in self.fqn:
+            name = self.fqn.rsplit(".")[-1]
+        else:
+            name = self.fqn
+        return name
 
 class ImportsEdge(_BaseEdge):
     kind: Literal[EdgeType.IMPORTS] = EdgeType.IMPORTS
@@ -21,6 +30,10 @@ class ImportsEdge(_BaseEdge):
 
 class ContainsEdge(_BaseEdge):
     kind: Literal[EdgeType.CONTAINS] = EdgeType.CONTAINS
+
+
+class DefinesEdge(_BaseEdge):
+    kind: Literal[EdgeType.DEFINES] = EdgeType.DEFINES
 
 
 class DefinesModuleEdge(_BaseEdge):
@@ -64,6 +77,7 @@ class AcceptsEdge(_BaseEdge):
 CodeEdge = Annotated[
     ImportsEdge
     | ContainsEdge
+    | DefinesEdge
     | DefinesModuleEdge
     | ExportsEdge
     | InheritsEdge

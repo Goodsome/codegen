@@ -11,6 +11,7 @@ from codegen.code_metadata.domain.value_objects.code_edge import (
     CallsEdge,
     CodeEdge,
     ContainsEdge,
+    DefinesEdge,
     DefinesModuleEdge,
     ExportsEdge,
     ImportsEdge,
@@ -25,6 +26,7 @@ from codegen.code_metadata.domain.value_objects.code_edge import (
 from .accepts_edge import AcceptsEdgeMapper
 from .calls_edge import CallsEdgeMapper
 from .contains_edge import ContainsEdgeMapper
+from .defines_edge import DefinesEdgeMapper
 from .defines_module_edge import DefinesModuleEdgeMapper
 from .exports_edge import ExportsEdgeMapper
 from .imports_edge import ImportsEdgeMapper
@@ -47,6 +49,8 @@ def to_dto(edge_model: CodeEdgeModel, direction: EdgeDirection) -> CodeEdge:
     match edge_type:
         case EdgeType.CONTAINS:
             return ContainsEdgeMapper.to_dto(edge_model, direction)
+        case EdgeType.DEFINES:
+            return DefinesEdgeMapper.to_dto(edge_model, direction)
         case EdgeType.DEFINES_MODULE:
             return DefinesModuleEdgeMapper.to_dto(edge_model, direction)
         case EdgeType.IMPORTS:
@@ -88,6 +92,8 @@ def code_edge_to_upsert_dict(edge: CodeEdge) -> dict[str, Any]:
     match edge:
         case ContainsEdge():
             properties = ContainsEdgeMapper.to_properties(edge)
+        case DefinesEdge():
+            properties = DefinesEdgeMapper.to_properties(edge)
         case DefinesModuleEdge():
             properties = DefinesModuleEdgeMapper.to_properties(edge)
         case ImportsEdge():

@@ -37,6 +37,7 @@ from codegen.code_metadata.domain.value_objects.ast_expr_stmt import AstExprStmt
 from codegen.code_metadata.domain.value_objects.code_edge import (
     CodeEdge,
     ContainsEdge,
+    DefinesEdge,
     ImportsEdge,
     InheritsEdge,
 )
@@ -71,6 +72,8 @@ def module_node_dto_to_code_document(
 
     for edge in module.outbound_edges:
         match edge:
+            case ContainsEdge():
+                continue
             case ImportsEdge(is_type_checking=True):
                 if_imports.append(edge_to_ast_stmt(edge, node_registry))
             case ImportsEdge(is_type_checking=False):
@@ -95,7 +98,7 @@ def edge_to_ast_stmt(edge: CodeEdge, node_registry: NodeRegistry) -> AstStmt:
     match edge:
         case ImportsEdge():
             return imports_edge_to_ast(edge, node_registry)
-        case ContainsEdge():
+        case DefinesEdge():
             return contains_edge_to_ast(edge, node_registry)
         case _:
             raise NotImplementedError(f"{edge=}")
@@ -110,7 +113,7 @@ def node_to_ast_stmt(node: CodeNode, node_registry: NodeRegistry) -> AstStmt:
         case VariableNode():
             return variable_node_dto_to_ast(node, node_registry)
         case _:
-            raise NotImplementedError(f"{node}=")
+            raise NotImplementedError(f"{node.kind=}, {node.fqn=}")
 
 
 def edge_to_ast_expr(edge: CodeEdge, node_registry: NodeRegistry) -> AstExpr:
@@ -179,7 +182,7 @@ def variable_node_dto_to_ast(
     return AstAssign(targets=[target], value=variable_node.value)
 
 
-def contains_edge_to_ast(edge: ContainsEdge, node_registry: NodeRegistry) -> AstStmt:
+def contains_edge_to_ast(edge: DefinesEdge, node_registry: NodeRegistry) -> AstStmt:
     target_node = node_registry.get_node(edge.fqn)
     ast_stmt = node_to_ast_stmt(target_node, node_registry)
     return ast_stmt
@@ -221,7 +224,7 @@ def collect_arguments_from_outbound_edges(
 ) -> list[AstAssign | AstAnnAssign]:
     arguments: list[AstAssign | AstAnnAssign] = []
     for edge in edges:
-        if edge.kind is not EdgeType.CONTAINS:
+        if edge.kind is not EdgeType.DEFINES:
             continue
         target_node = node_registry.get_node(edge.fqn)
         if not isinstance(target_node, VariableNode):

@@ -9,7 +9,7 @@ from codegen.code_metadata.domain.enums.code_node_kind import CodeNodeKind
 from codegen.code_metadata.domain.enums.edge_direction import EdgeDirection
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
 from codegen.code_metadata.domain.value_objects import AstExpr, AstStmt, AstTypeParam
-from codegen.code_metadata.domain.value_objects.code_edge import CodeEdge, ImportsEdge, InheritsEdge, create_edge
+from codegen.code_metadata.domain.value_objects.code_edge import CodeEdge, ContainsEdge, DefinesEdge, ImportsEdge, InheritsEdge, create_edge
 
 
 class _BaseNode(BaseModel):
@@ -28,8 +28,8 @@ class _BaseNode(BaseModel):
         self._add_edge(edge)
         return edge
 
-    def add_edge(self, type: EdgeType, node: CodeNode):
-        self._add_edge_by_type(type, node.fqn)
+    def add_edge(self, type: EdgeType, fqn: str):
+        self._add_edge_by_type(type, fqn)
 
     def parent_fqn(self) -> str:
         splits = re.split(r"[.|::]", self.fqn)
@@ -40,17 +40,11 @@ class DirectoryNode(_BaseNode):
 
     kind: Literal[CodeNodeKind.DIRECTORY] = CodeNodeKind.DIRECTORY
 
-    def contains(self, node: FileNode | DirectoryNode):
-        self._add_edge_by_type(EdgeType.CONTAINS, node.fqn)
-
 
 class FileNode(_BaseNode):
     """文件节点：kind 固定为 FILE。"""
 
     kind: Literal[CodeNodeKind.FILE] = CodeNodeKind.FILE
-
-    def defines_module(self, node: ModuleNode):
-        self._add_edge_by_type(EdgeType.DEFINES_MODULE, node.fqn)
 
 
 class ModuleNode(_BaseNode):
@@ -60,8 +54,19 @@ class ModuleNode(_BaseNode):
     is_package: bool = False
     exprs: list[AstExpr] = Field(default_factory=list)
 
-    def contains(self, node: ClassNode | FunctionNode | VariableNode):
-        self._add_edge_by_type(EdgeType.CONTAINS, node.fqn)
+    def contains(self, node: ModuleNode):
+        edge = ContainsEdge(
+            fqn=node.fqn,
+            direction=EdgeDirection.OUT,
+        )
+        self._add_edge(edge)
+
+    def defines(self, node: ClassNode | FunctionNode | VariableNode):
+        edge = DefinesEdge(
+            fqn=node.fqn,
+            direction=EdgeDirection.OUT,
+        )
+        self._add_edge(edge)
 
     def imports(
         self,
@@ -86,7 +91,7 @@ class ModuleNode(_BaseNode):
         return ".".join(parts[:-level])
 
     def get_physical_path(self) -> Path:
-        return Path(self.fqn.replace(".", "/"))
+        return Path("src") / self.fqn.replace(".", "/")
 
 
 class ClassNode(_BaseNode):
@@ -98,8 +103,12 @@ class ClassNode(_BaseNode):
     bases: list[AstExpr] = Field(default_factory=list)
     type_params: list[AstTypeParam] = Field(default_factory=list)
 
-    def contains(self, node: MethodNode | VariableNode):
-        self._add_edge_by_type(EdgeType.CONTAINS, node.fqn)
+    def defines(self, node: MethodNode | VariableNode):
+        edge = DefinesEdge(
+            fqn=node.fqn,
+            direction=EdgeDirection.OUT,
+        )
+        self._add_edge(edge)
 
     def inherits(self, node: ClassNode | ExternalNode, base: AstExpr):
         edge = InheritsEdge(
@@ -118,8 +127,12 @@ class FunctionNode(_BaseNode):
     returns: AstExpr | None = None
     body: list[AstStmt] = Field(default_factory=list)
 
-    def contains(self, node: VariableNode):
-        self._add_edge_by_type(EdgeType.CONTAINS, node.fqn)
+    def defines(self, node: VariableNode):
+        edge = DefinesEdge(
+            fqn=node.fqn,
+            direction=EdgeDirection.OUT,
+        )
+        self._add_edge(edge)
 
     def add_returns(self, node: ClassNode | ExternalNode | VariableNode):
         self._add_edge_by_type(EdgeType.RETURNS, node.fqn)
@@ -134,8 +147,12 @@ class MethodNode(_BaseNode):
     returns: AstExpr | None = None
     body: list[AstStmt] = Field(default_factory=list)
 
-    def contains(self, node: VariableNode):
-        self._add_edge_by_type(EdgeType.CONTAINS, node.fqn)
+    def defines(self, node: VariableNode):
+        edge = DefinesEdge(
+            fqn=node.fqn,
+            direction=EdgeDirection.OUT,
+        )
+        self._add_edge(edge)
 
     def add_returns(self, node: ClassNode | ExternalNode | VariableNode):
         self._add_edge_by_type(EdgeType.RETURNS, node.fqn)

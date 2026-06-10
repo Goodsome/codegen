@@ -33,7 +33,7 @@ class ModuleBuildContext:
     def __post_init__(self):
         self.local_aliases = {}
         for edge in self.module.outbound_edges:
-            if edge.kind is not EdgeType.CONTAINS:
+            if edge.kind is not EdgeType.DEFINES:
                 continue
             target_name = edge.fqn.split("::")[-1]
             self.local_aliases[target_name] = edge.fqn
@@ -153,20 +153,12 @@ class ModuleBuildContext:
         name = import_name
         if from_name is None:
             return self.node_registry.get_node(name)
-        module_fqn = f"{from_name}.{name}"
-        module_node = self.node_registry.find_node(module_fqn)
-        if module_node:
-            return module_node
-        other_fqn = f"{from_name}::{name}"
-        other_node = self.node_registry.find_node(other_fqn)
-        if other_node:
-            return other_node
-        node = ClassNode(
-            name=name,
-            fqn=other_fqn,
-        )
-        self.node_registry.add_temp_node(node)
-        return node
+        from_module = self.node_registry.get_node(from_name)
+        for edge in from_module.outbound_edges:
+            if edge.node_name == import_name:
+                node = self.node_registry.get_node(edge.fqn)
+                return node
+        raise ValueError(f"{import_name} not found in {from_name}")
 
     def _build_class_edge(self, class_def: AstClassDef):
         class_fqn = f"{self.module.fqn}::{class_def.name}"

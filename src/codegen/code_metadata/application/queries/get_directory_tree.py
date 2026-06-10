@@ -26,6 +26,6 @@ class GetDirectoryTree:
         children = [
             self._build_subtree(index[e.fqn], index)
             for e in dto.outbound_edges
-            if e.kind == EdgeType.CONTAINS and e.fqn in index
+            if e.kind == EdgeType.DEFINES and e.fqn in index
         ]
         return NodeTree(node=dto, children=children)

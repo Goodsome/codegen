@@ -29,6 +29,7 @@ KIND_ICONS = {
 
 EDGE_LABELS = {
     EdgeType.CONTAINS: "CONTAINS",
+    EdgeType.DEFINES: "DEFINES",
     EdgeType.DEFINES_MODULE: "DEFINES_MODULE",
     EdgeType.IMPORTS: "IMPORTS",
     EdgeType.CALLS: "CALLS",
