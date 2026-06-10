@@ -64,13 +64,15 @@ class ModuleNode(_BaseNode):
         self._add_edge_by_type(EdgeType.CONTAINS, node.fqn)
 
     def imports(
-        self, 
+        self,
         node: ExternalNode | ClassNode | FunctionNode | VariableNode,
+        asname: str | None = None,
         is_type_checking: bool = False,
     ):
         edge = ImportsEdge(
             fqn=node.fqn,
             direction=EdgeDirection.OUT,
+            asname=asname,
             is_type_checking=is_type_checking,
         )
         self._add_edge(edge)

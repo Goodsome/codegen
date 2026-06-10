@@ -1,5 +1,5 @@
 from dependency_injector.containers import DeclarativeContainer
-from dependency_injector.providers import Configuration, Dependency, Factory
+from dependency_injector.providers import Configuration, Dependency, Factory, Singleton
 
 from codegen.code_dom.application.commands.generate_code import GenerateCodeHandler
 from codegen.code_dom.application.queries.get_code_document_diff import (
@@ -23,6 +23,7 @@ from codegen.code_dom.infrastructure.gateways.ast_code_parser import ASTCodePars
 from codegen.code_dom.infrastructure.gateways.ast_code_similarity_calculator import (
     AstCodeSimilarityCalculator,
 )
+from codegen.code_dom.infrastructure.gateways.black_code_formatter import BlackCodeFormatter
 from codegen.shared.domain.ports.file_system_port import FileSystemPort
 
 
@@ -40,6 +41,10 @@ class Container(DeclarativeContainer):
     code_parser: Factory[CodeParser] = Factory(
         ASTCodeParser,
         file_system=file_system_port,
+    )
+
+    black_code_formatter: Singleton[BlackCodeFormatter] = Singleton(
+        BlackCodeFormatter
     )
 
     # ── Query Handlers ──
@@ -75,4 +80,5 @@ class Container(DeclarativeContainer):
         GenerateCodeHandler,
         code_generator=code_generator,
         file_system=file_system_port,
+        code_formatter=black_code_formatter
     )

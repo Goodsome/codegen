@@ -11,10 +11,10 @@ class AstCodeSimilarityCalculator(CodeSimilarityCalculator):
         tree_orig = ast.parse(code1)
         tree_gen = ast.parse(code2)
 
-        tree_orig.body = [
-            i for i in tree_orig.body if not isinstance(i, ast.ImportFrom)
-        ]
-        tree_gen.body = [i for i in tree_gen.body if not isinstance(i, ast.ImportFrom)]
+        # tree_orig.body = [
+        #     i for i in tree_orig.body if not isinstance(i, ast.ImportFrom)
+        # ]
+        # tree_gen.body = [i for i in tree_gen.body if not isinstance(i, ast.ImportFrom)]
 
         dump_orig = ast.dump(tree_orig, annotate_fields=True, include_attributes=False)
         dump_gen = ast.dump(tree_gen, annotate_fields=True, include_attributes=False)

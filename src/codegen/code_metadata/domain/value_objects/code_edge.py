@@ -4,7 +4,6 @@ from pydantic import Field, TypeAdapter
 
 from codegen.code_metadata.domain.enums.edge_direction import EdgeDirection
 from codegen.code_metadata.domain.enums.edge_type import EdgeType
-from codegen.code_metadata.domain.value_objects import AstExpr
 from codegen.shared.domain.core import ValueObject
 
 
@@ -16,6 +15,7 @@ class _BaseEdge(ValueObject):
 class ImportsEdge(_BaseEdge):
     kind: Literal[EdgeType.IMPORTS] = EdgeType.IMPORTS
 
+    asname: str | None = None
     is_type_checking: bool = False
 
 

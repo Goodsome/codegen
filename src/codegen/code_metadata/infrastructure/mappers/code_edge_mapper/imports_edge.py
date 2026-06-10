@@ -22,9 +22,13 @@ class ImportsEdgeMapper(BaseEdgeMapper):
         return ImportsEdge(
             fqn=BaseEdgeMapper._get_target_fqn(edge_model, direction),
             direction=direction,
+            asname=edge_model.properties.get("asname"),
             is_type_checking=edge_model.properties.get("is_type_checking", False),
         )
 
     @staticmethod
     def to_properties(dto: ImportsEdge) -> dict[str, Any]:
-        return {"is_type_checking": dto.is_type_checking}
+        return {
+            "asname": dto.asname,
+            "is_type_checking": dto.is_type_checking,
+        }

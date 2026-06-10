@@ -133,6 +133,7 @@ class ModuleBuildContext:
         self.module.imports(
             node,
             is_type_checking=is_type_checking,
+            asname=asname,
         )
         if asname:
             local_alias_key = asname
