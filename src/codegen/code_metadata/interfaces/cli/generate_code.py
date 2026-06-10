@@ -24,11 +24,11 @@ def _generate_code(
 
 
 def generate_code(
-    component_id: Annotated[
-        str, typer.Argument(help="The UUID of the component to generate code for")
-    ],
+    fqn: Annotated[
+        str, typer.Argument()
+    ]
 ) -> None:
     """Generate Python code from a stored component."""
-    cmd = GenerateCodeCommand(component_id=component_id)
+    cmd = GenerateCodeCommand(fqn=fqn)
     result = _generate_code(cmd)
     console.print(Syntax(result.code, "python"))

@@ -57,6 +57,8 @@ def module_node_dto_to_code_document(
     physical_path = Path("src") / module.fqn.replace(".", "/")
     if module.is_package:
         physical_path = physical_path / "__init__.py"
+    else:
+        physical_path = physical_path.with_suffix(".py")
 
     imports: list[AstStmt] = []
     if_imports: list[AstStmt] = []

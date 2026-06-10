@@ -1,6 +1,7 @@
 from dependency_injector.containers import DeclarativeContainer
 from dependency_injector.providers import Configuration, Dependency, Factory
 
+from codegen.code_dom.application.commands.generate_code import GenerateCodeHandler
 from codegen.code_dom.application.queries.get_code_document_diff import (
     GetCodeDocumentDiffHandler,
 )
@@ -68,4 +69,10 @@ class Container(DeclarativeContainer):
         code_generator=code_generator,
         file_system=file_system_port,
         code_similarity_calculator=code_similarity_calculator,
+    )
+
+    generate_code_handler: Factory[GenerateCodeHandler] = Factory(
+        GenerateCodeHandler,
+        code_generator=code_generator,
+        file_system=file_system_port,
     )

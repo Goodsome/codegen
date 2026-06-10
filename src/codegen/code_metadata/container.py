@@ -9,6 +9,7 @@ from dependency_injector.providers import (
 )
 from event_hub import EventHub
 
+from codegen.code_dom.application.commands.generate_code import GenerateCodeHandler
 from codegen.code_metadata.application.commands.delete_component import DeleteComponent
 from codegen.code_metadata.application.commands.generate_code import GenerateCode
 from codegen.code_metadata.application.commands.ingest_project import IngestProject
@@ -99,6 +100,10 @@ class Container(DeclarativeContainer):
     get_code_document_diff: Dependency[GetCodeDocumentDiffHandler] = Dependency(
         instance_of=GetCodeDocumentDiffHandler
     )
+    
+    generate_code_handler: Dependency[GenerateCodeHandler] = Dependency(
+        instance_of=GenerateCodeHandler
+    )
 
     # ── 仓储工厂 ──
 
@@ -151,6 +156,7 @@ class Container(DeclarativeContainer):
     python_code_generator: Factory[PythonCodeGenerator] = Factory(
         PythonCodeGenerator,
         component_policy_factory=component_policy_factory,
+        generate_code_handler=generate_code_handler
     )
 
     path_parser: Factory[PathParser] = Factory(
@@ -184,9 +190,8 @@ class Container(DeclarativeContainer):
 
     generate_code: Factory[GenerateCode] = Factory(
         GenerateCode,
-        query_service=component_query_service,
-        uow=unit_of_work,
-        generator=python_code_generator,
+        query_service=code_node_query_service,
+        code_generator=python_code_generator,
     )
 
     delete_component: Factory[DeleteComponent] = Factory(

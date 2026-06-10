@@ -50,6 +50,8 @@ class AppContainer(containers.DeclarativeContainer):
         project_root=config.project_root,
         get_project_documents=code_dom_container.get_project_documents,
         get_code_document_diff=code_dom_container.get_code_document_diff,
+        generate_code_handler=code_dom_container.generate_code_handler,
+        
     )
 
     # DomainDefinition sub-container

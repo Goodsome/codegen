@@ -22,7 +22,7 @@ class GetCodeDocumentDiffHandler:
     def execute(self, query: GetCodeDocumentDiffQuery) -> FileMetrics:
         code_document = query.code_document
         generate_code = self.code_generator.generate(code_document)
-        current_code = self.file_system.read_file(code_document.physical_path.with_suffix(".py"))
+        current_code = self.file_system.read_file(code_document.physical_path)
         similarity = self.code_similarity_calculator.calculate_similarity(current_code, generate_code)
 
         return FileMetrics(
